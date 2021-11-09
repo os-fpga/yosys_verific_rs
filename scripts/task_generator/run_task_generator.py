@@ -29,15 +29,20 @@ logger = logging.getLogger("task_generator_logs")
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Read commandline arguments
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="The script will generate \
+        OpenFPGA tasks based on existing tasks and the settings provided \
+        in the input JSON file. It will read the input JSON file, \
+        copy each 'original_task_dir' to 'new_task_dir' in the provided \
+        OpenFPGA directory and set all configuration settings specified in \
+        the 'config_sections' for each new task correspondingly.")
 parser.add_argument("openfpga_path", type=str, 
-        help="Path to OpenFPGA root directory")
+        help="path to OpenFPGA root directory")
 parser.add_argument("--settings_file", type=str,
         default=os.path.join(os.path.dirname(os.path.abspath(__file__)),
                 "default_settings.json"),
-        help="The JSON settings file for the tasks generation.")
+        help="the JSON settings file for the tasks generation.")
 parser.add_argument("--debug", action="store_true",
-        help="Run script in debug mode.")
+        help="run script in debug mode.")
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Initialize global variables
