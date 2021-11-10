@@ -41,6 +41,8 @@ parser.add_argument("--settings_file", type=str,
         default=os.path.join(os.path.dirname(os.path.abspath(__file__)),
                 "default_settings.json"),
         help="the JSON settings file for the tasks generation.")
+parser.add_argument("--reg_tests", action="store_true",
+        help="generate also regression tests script.")
 parser.add_argument("--debug", action="store_true",
         help="run script in debug mode.")
 
@@ -49,6 +51,7 @@ parser.add_argument("--debug", action="store_true",
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 tasks_dir = ""
 generator_settings = None
+reg_tests_list = []
 
 def error_exit(msg):
     """Exit with error message"""
@@ -56,6 +59,7 @@ def error_exit(msg):
     logger.error(msg)
     logger.error("Exiting . . . . . .")
     exit(1)
+
 
 def validate_inputs():
     """
@@ -77,10 +81,42 @@ def validate_inputs():
         error_exit("The OpenFPGA tasks directory not found - %s" %
                 tasks_dir)
 
+
+def generate_regression_tests():
+    global reg_tests_list
+    setup_lines = [
+            "#!/bin/bash",
+            "set -e",
+            "source openfpga.sh",
+            "PYTHON_EXEC=python3.8",
+            "###############################################",
+            "# OpenFPGA Shell with VPR8",
+            "###############################################",
+            "echo -e \"yosys+verific regression tests\";",
+            "\n"
+            ]
+    abs_script_name = os.path.join(args.openfpga_path, "openfpga_flow",
+            "regression_test_scripts", "yosys+verific_reg_test.sh")
+    try:
+        with open(abs_script_name, "w") as f:
+            f.write("\n".join(setup_lines))
+            for test in reg_tests_list:
+                f.write(" ".join(["run-task", test, 
+                        "--debug --show_thread_logs"]))
+                f.write("\n")
+                if args.debug:
+                    logger.debug("Adding to regression tests - %s" % test)
+    except OSError as e:
+        error_exit(e.strerror)
+    logger.info("Regression test has been created - %s" % abs_script_name)
+
+
 def main():
     """Main function."""
     logger.info("Starting tasks generation . . . . .")
     validate_inputs()
+    global generator_settings
+    global reg_tests_list
 
     try:
         with open(args.settings_file) as f:
@@ -131,9 +167,18 @@ def main():
         except OSError as e:
             error_exit(e.strerror)
 
+        if args.reg_tests:
+            reg_tests_list.append(task_settings["new_task_dir"])
+
         if args.debug:
             logger.debug("New task has been generated - %s" %
                     abs_new_task_dir)
+    
+    if args.reg_tests:
+        if reg_tests_list:
+            generate_regression_tests()
+        else:
+            logger.warning("There is no test to add into regression tests.")
 
 
 if __name__ == "__main__":
