@@ -1,0 +1,49 @@
+# Yosys synthesis script for ${TOP_MODULE}
+
+# Print all commands to log before executing them.
+echo on
+# Add include directory for Verific mode
+${ADD_INCLUDE_DIR}
+# Add library directory for Verific mode
+${ADD_LIBRARY_DIR}
+# Read hdl files into specified library
+${READ_LIBRARY}
+# Read hdl files
+${READ_HDL_FILE}
+# Import to Yosys for Verific mode
+verific -import -all ${TOP_MODULE}
+
+# Technology mapping
+hierarchy -top ${TOP_MODULE}
+techmap -D NO_LUT -map +/adff2dff.v
+
+# Synthesis
+flatten
+opt_expr
+opt_clean
+check
+opt -nodffe -nosdff
+fsm
+opt -nodffe -nosdff
+wreduce
+peepopt
+opt_clean
+opt -nodffe -nosdff
+memory -nomap
+opt_clean
+opt -fast -full -nodffe -nosdff
+memory_map
+opt -full -nodffe -nosdff
+techmap
+opt -fast -nodffe -nosdff
+clean
+
+# LUT mapping
+abc -lut ${LUT_SIZE}
+
+# Check
+synth -run check
+
+# Clean and output blif
+opt_clean -purge
+write_blif ${OUTPUT_BLIF}
