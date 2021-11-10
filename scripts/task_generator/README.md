@@ -1,9 +1,10 @@
 # Introduction
-The script will generate OpenFPGA tasks based on existing tasks and the settings provided in the input JSON file. It will read the input JSON file, copy each 'original_task_dir' to 'new_task_dir' in the provided OpenFPGA directory and set all configuration settings specified in the 'config_sections' for each new task correspondingly.
+The script will generate OpenFPGA tasks based on existing tasks and the settings provided in the input JSON file. It will read the input JSON file, copy each 'original_task_dir' to 'new_task_dir' in the provided OpenFPGA directory and set all configuration settings specified in the 'config_sections' for each new task correspondingly. The script optionally can also generate regression tests bash script for newly generated tasks. The regression tests bash script will be generated in the provided OpenFPGA directory tree's regression_test_scripts directory.
 
 # Command line arguments
 - openfpga_path: path to OpenFPGA root directory
 - --settings_file: the JSON settings file for the tasks generation. 'default_settings.json' will be used if option is omitted.
+- --reg_tests: generate also regression tests script.
 - --debug: run script in debug mode.
 
 # Input JSON settings format
