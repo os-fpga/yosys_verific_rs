@@ -52,6 +52,7 @@ parser.add_argument("--debug", action="store_true",
 tasks_dir = ""
 generator_settings = None
 reg_tests_list = []
+abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 
 def error_exit(msg):
     """Exit with error message"""
@@ -156,10 +157,22 @@ def main():
         except OSError as e:
             error_exit(e.strerror)
 
-        for section, section_settings in task_settings["config_sections"].items():
+        if "discard_config_sections" in task_settings:
+            for section, section_settings in \
+                   task_settings["discard_config_sections"].items():
+                if not section_settings:
+                    task_config[section].clear()
+                else:
+                    task_config_section = task_config[section]
+                    for key in section_settings:
+                        del task_config_section[key]
+
+        for section, section_settings in \
+               task_settings["config_sections"].items():
             task_config_section = task_config[section]
             for key in section_settings:
-                task_config_section[key] = section_settings[key]
+                task_config_section[key] = section_settings[key].\
+                       replace("${ROOT_PATH}", abs_root_dir)
 
         try:
             with open(abs_task_conf, "w") as f:
