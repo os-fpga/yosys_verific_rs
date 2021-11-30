@@ -40,11 +40,11 @@ The repository has the following submodules:
 `yosys` directory contains Yosys submodule.
 
 ## Build
-After cloning the repo, run 'all' Makefile target to initialize/update all submodules and build Yosys with Verific enabled:
+After cloning the repo, run **all** Makefile target to initialize/update all submodules and build Yosys with Verific enabled:
 ```bash
 make all
 ```
-All available Makefile targets can be seen running 'help' target:
+All available Makefile targets can be seen running **help** target:
 ```bash
 make help
 ```
