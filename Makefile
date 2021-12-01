@@ -9,95 +9,98 @@ all: co_benchmarks build_yosys_verific
 ##     |---> info       :  Compile yosys
 ##     |---> usage      :  make build_yosys
 build_yosys: co_yosys 
-	@make -C ./yosys config-gcc
-	@make -C ./yosys
+	$(eval YOSYS_MK_ARGS := -j 4)
+	@cd yosys && $(MAKE) config-gcc
+	@cd yosys && $(MAKE) $(YOSYS_MK_ARGS)
 
 ##
 ## @ build_yosys_verific
 ##     |---> info       :  Compile yosys with Verific enabled
 ##     |---> usage      :  make build_yosys_verific
 build_yosys_verific: co_yosys_verific
-	@make -C ./yosys CONFIG=gcc ENABLE_VERIFIC_EXECUTIONS=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=/opt/verific-Sep21-2021
+	$(eval YOSYS_MK_ARGS  := ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=/opt/verific-Sep21-2021 -j 4)
+	@cd yosys && $(MAKE) config-gcc
+	@cd yosys && $(MAKE) $(YOSYS_MK_ARGS) 
 
 ##
 ## @ co_yosys_verific
 ##     |---> info       :  Checkout yosys submodule verific-integration branch
 ##     |---> usage      :  make co_yosys_verific
-co_yosys_verific: clean_yosys
+co_yosys_verific:
 	@git submodule update --init yosys
-	@git -C ./yosys checkout verific-integration
+	@cd yosys && git checkout verific-integration
 
 ##
 ## @ co_yosys
 ##     |---> info       :  Checkout yosys submodule
 ##     |---> usage      :  make co_yosys
-co_yosys: clean_yosys
+co_yosys:
 	@git submodule update --init yosys
-	@git -C ./yosys checkout master
+	@cd yosys && git checkout master
 
 ##
 ## @ co_benchmarks
-##     |---> info       :  Checkout all submodule benchmarks
+##     |---> info       :  Checkout all benchmark submodules
 ##     |---> usage      :  make co_benchmarks
-co_benchmarks: co_vhdl co_sv co_mixed_languages
+co_benchmarks: co_vhdl co_system_verilog co_mixed_languages
 
 ##
 ## @ co_vhdl
-##     |---> info       :  Checkout all VHDL submodule benchmarks
+##     |---> info       :  Checkout all VHDL benchmark submodules
 ##     |---> usage      :  make co_vhdl
-co_vhdl: clean_vhdl
+co_vhdl:
 	@git submodule update --init --recursive benchmarks/vhdl
 
 ##
-## @ co_sv
-##     |---> info       :  Checkout all SV submodule benchmarks
-##     |---> usage      :  make co_sv
-co_sv: clean_system_verilog
+## @ co_system_verilog
+##     |---> info       :  Checkout all SV benchmark submodules
+##     |---> usage      :  make co_system_verilog
+co_system_verilog:
 	@git submodule update --init --recursive benchmarks/system_verilog
 
 ##
 ## @ co_mixed_languages
 ##     |---> info       :  Checkout all mixed language benchmarks
 ##     |---> usage      :  make co_mixed_languages
-co_mixed_languages: clean_mixed_languages
+co_mixed_languages:
 	@git submodule update --init --recursive benchmarks/mixed_languages
 
 ##
 ## @ co_benchmark_name
-##     |---> info       :  Checkout benchmark_name submodule benchmark
-##     |---> usage      :  make co_benchmark_name
+##     |---> info       :  Checkout specified benchmark submodule
+##     |---> usage      :  make co_benchmark_name BENCHMARK_NAME=VALUE
 co_benchmark_name:
 	@git submodule update --init --recursive $(shell find ./benchmarks -name $(BENCHMARK_NAME))
 
 ##
 ## @ clean
-##     |---> info       :  Clean all generated files 
+##     |---> info       :  Clean all generated files and remove all benchmark submodules
 ##     |---> usage      :  make clean
 clean: clean_benchmarks clean_yosys
 
 ##
 ## @ clean_benchmarks
-##     |---> info       :  Clean all benchmark submodule folders
+##     |---> info       :  Remove all benchmark submodules
 ##     |---> usage      :  make clean_benchmarks
 clean_benchmarks: clean_vhdl clean_mixed_languages clean_system_verilog
 
 ##
 ## @ clean_vhdl
-##     |---> info       :  Clean all benchmark/vhdl submodule folders
+##     |---> info       :  Remove all benchmark/vhdl benchmark submodules 
 ##     |---> usage      :  make clean_vhdl
 clean_vhdl:
 	@grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 	@grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 ##
 ## @ clean_system_verilog
-##     |---> info       :  Clean all benchmark/system_verilog submodule folders
+##     |---> info       :  Remove all benchmark/system_verilog benchmark submodules
 ##     |---> usage      :  make clean_system_verilog
 clean_system_verilog:
 	@grep 'path = benchmarks/system_verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 	@grep 'path = benchmarks/system_verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 ##
 ## @ clean_mixed_languages
-##     |---> info       :  Clean all benchmark/mixed_languages submodule folders
+##     |---> info       :  Clean all benchmark/mixed_languages benchmark submodules
 ##     |---> usage      :  make clean_mixed_languages
 clean_mixed_languages:
 	@grep 'path = benchmarks/mixed_languages' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
@@ -105,11 +108,10 @@ clean_mixed_languages:
 
 ##
 ## @ clean_yosys
-##     |---> info       :  Clean all yosys submodule folders
+##     |---> info       :  Clean yosys submodule generated files
 ##     |---> usage      :  make clean_yosys
 clean_yosys:
-	@grep 'path = yosys' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-	@grep 'path = yosys' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
+	@cd yosys && $(MAKE) clean
 
 help: Makefile
 	@echo '   #############################################'
