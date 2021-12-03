@@ -9,7 +9,7 @@ all: co_benchmarks build_yosys_verific
 
 ##
 ## @ build_yosys_verific
-##     |---> info       :  Compile yosys with Verific enabled
+##     |---> info       :  Compile yosys with Verific enabled and yosys-plugins
 ##     |---> usage      :  make build_yosys_verific
 build_yosys_verific: co_yosys_verific 
 	$(eval YOSYS_MK_ARGS  := PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=/opt/verific-Sep21-2021 -j 4)
@@ -20,7 +20,7 @@ build_yosys_verific: co_yosys_verific
 
 ##
 ## @ build_yosys
-##     |---> info       :  Compile yosys
+##     |---> info       :  Compile yosys and yosys-plugins
 ##     |---> usage      :  make build_yosys
 build_yosys: co_yosys
 	$(eval YOSYS_MK_ARGS := PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install -j 4)
@@ -117,7 +117,7 @@ clean_mixed_languages:
 
 ##
 ## @ clean_yosys
-##     |---> info       :  Clean yosys submodule generated files
+##     |---> info       :  Clean yosys and yosys-plugins submodules generated files
 ##     |---> usage      :  make clean_yosys
 clean_yosys:
 	@cd yosys && $(MAKE) clean
