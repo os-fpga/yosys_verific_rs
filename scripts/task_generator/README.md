@@ -14,6 +14,7 @@ Each TASK_SETTING has the following properties:
 - new_task_dir - new task directory in the provided openfpga directory tree,
 - config_sections - contains individual properties for a task configuration section,
 - discard_config_sections - contains configurations which should not be included in the newly generated task.
+The `${ROOT_PATH}` variable can be used in the properties. The variable will be substituted with the `yosys_verific_rs` repository absolute path during the task generation.
 An example input JSON settings for one TASK_SETTINGs is as the following:
 ```bash
 [
