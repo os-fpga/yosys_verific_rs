@@ -12,7 +12,8 @@ The input JSON file contains list of TASK_SETTINGs.
 Each TASK_SETTING has the following properties:
 - original_task_dir - existing task directory in the provided openfpga directory tree,
 - new_task_dir - new task directory in the provided openfpga directory tree,
-- config_sections - contains individual properties for a task configuration section.
+- config_sections - contains individual properties for a task configuration section,
+- discard_config_sections - contains configurations which should not be included in the newly generated task.
 An example input JSON settings for one TASK_SETTINGs is as the following:
 ```bash
 [
@@ -27,10 +28,14 @@ An example input JSON settings for one TASK_SETTINGs is as the following:
                 "yosys_blackbox_modules": "latchre,dffrn,dffre,dff,dffr"
             },
             "SYNTHESIS_PARAM": {
-                "bench_yosys_common": "${PATH:OPENFPGA_PATH}/openfpga_flow/misc/ys_tmpl_yosys+verific_vpr_dff_flow.ys",
-                "bench_yosys_rewrite_common": "${PATH:OPENFPGA_PATH}/openfpga_flow/misc/ys_tmpl_yosys+verific_vpr_flow_with_rewrite.ys;${PATH:OPENFPGA_PATH}/openfpga_flow/misc/ys_tmpl_rewrite_flow.ys"
+                "bench_yosys_common": "${ROOT_PATH}/scripts/yosys_templates/ys_tmpl_yosys+verific_vpr_dff_flow.ys"
             }
-        }
+        },
+	"discard_config_sections": {
+	    "SYNTHESIS_PARAM": {
+                "bench_yosys_rewrite_recommon": "${ROOT_PATH}/scripts/yosys_templates/ys_tmpl_yosys+verific_vpr_flow_with_rewrite.ys;${PATH:OPENFPGA_PATH}/openfpga_flow/misc/ys_tmpl_rewrite_flow.ys""
+	    }
+	}
     }
 ]
 ```
