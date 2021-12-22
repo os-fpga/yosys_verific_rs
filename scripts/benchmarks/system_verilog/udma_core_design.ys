@@ -1,0 +1,52 @@
+# Yosys synthesis script for udma_core
+#
+# Print all commands to log before executing them.
+echo on
+# Add include directory for Verific mode
+verific -vlog-incdir ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl
+verific -vlog-incdir ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/
+verific -vlog-incdir ../../../benchmarks/system_verilog/udma_core_design/common_cells/include/
+
+# Read sv files
+read -verific
+
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/binary_to_gray.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/sync.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/deprecated/pulp_sync.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/deprecated/pulp_sync_wedge.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/spill_register.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/spill_register_flushable.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/gray_to_binary.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/tech_cells_generic/src/deprecated/pulp_clock_gating_async.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/tech_cells_generic/src/rtl/tc_clk.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/tech_cells_generic/src/deprecated/pulp_clk_cells.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/common_cells/src/cdc_fifo_gray.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_clk_gen.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_event_counter.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_generic_fifo.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_shiftreg.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/udma_apb_if.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/udma_clk_div_cnt.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/udma_ctrl.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/udma_dc_fifo.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_arbiter.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_ch_addrgen.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_tx_fifo.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_tx_fifo_dc.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/io_tx_fifo_mark.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/common/udma_clkgen.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_tx_channels.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_stream_unit.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_rx_channels.sv
+read -sv ../../../benchmarks/system_verilog/udma_core_design/udma_core/rtl/core/udma_core.sv
+
+synth -flatten -top udma_core
+
+# Perform LUT mapping
+abc -lut 6
+
+# Write synthesized verilog
+write_verilog -noattr -nohex udma_core_output_verilog.v
+
+# Print statistics
+stat
