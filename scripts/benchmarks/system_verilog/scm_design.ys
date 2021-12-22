@@ -1,0 +1,36 @@
+# Yosys synthesis script for scm
+
+# Print all commands to log before executing them.
+echo on
+
+# Read sv files
+read -verific
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1r_1w_all.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1r_1w_be.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1r_1w.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1r_1w_1row.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1r_1w_raw.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1w_multi_port_read.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1w_64b_multi_port_read_32b.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_1w_64b_1r_32b.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_2r_1w_asymm.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_2r_1w_asymm_test_wrap.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_2r_2w.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_3r_2w.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/scm/fpga_scm/register_file_3r_2w_be.sv 
+read -sv ../../../benchmarks/system_verilog/scm_design/common/xpm_memory_tdpram.sv 
+
+# Mark cell simulation library modules as BLACKBOX
+blackbox \xpm_memory_tdpram
+
+# Performe synthesis
+synth  -flatten -top register_file_2r_1w_asymm_test_wrap
+
+# Perform LUT mapping
+abc -lut 6
+
+# Write synthesized verilog
+write_verilog -noattr -nohex register_file_2r_1w_asymm_test_wrap_output_verilog.v
+
+# Print statistics
+stat
