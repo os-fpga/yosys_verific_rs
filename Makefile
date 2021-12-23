@@ -46,7 +46,7 @@ build_verific:
 ##     |---> usage      :  make co_yosys
 co_yosys:
 	git submodule update --init yosys
-	cd yosys && git checkout master
+	cd yosys && git checkout master && git pull
 	git submodule update --init yosys-plugins
 
 ##
@@ -55,7 +55,7 @@ co_yosys:
 ##     |---> usage      :  make co_verific
 co_verific:
 	git submodule update --init verific
-	cd verific && git checkout vNov21-yosys
+	cd verific && git checkout vNov21-yosys && git pull
 
 ##
 ## @ co_benchmarks
