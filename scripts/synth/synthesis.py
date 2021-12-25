@@ -110,7 +110,7 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
         try:
             return_value = result.get(TIMEOUT) # wait for up to TIMEOUT seconds
         except mp.TimeoutError:
-            print('Timeout for benchmark', i)
+            logger.error('Timeout for benchmark', i)
     pool.terminate()
     pool.close()
 
@@ -148,7 +148,7 @@ def run_benchmark(benchmark, yosys_path, yosys_file_template, abc_script, run_di
     benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
     shutil.copytree(abs_rtl_path, benchmark_run_dir)
     yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
-
+    
     rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
     rep = dict((re.escape(k), v) for k, v in rep.items())
     pattern = re.compile("|".join(rep.keys()))
@@ -161,7 +161,15 @@ def run_benchmark(benchmark, yosys_path, yosys_file_template, abc_script, run_di
                     fout.write(result_line)
     except OSError as e:
         error_exit(e.strerror)
-    os.system('cd {0}; ls; {1} yosys.ys > yosys_output.log'.format(benchmark_run_dir, yosys_path))
+    
+    startTime = time.time()
+    logger.info('Starting synthesis run of {0}'.format(benchmark["name"]))
+    try:
+        os.system('cd {0}; {1} yosys.ys > yosys_output.log'.format(benchmark_run_dir, yosys_path))
+    except Exception as e:
+        logger.error('Synthesis run error for {0}. Error message: {1}'.format(benchmark["name"], e.strerror))
+    endTime = time.time()
+    logger.info('Completed synthesis run of {0} in {1} seconds.'.format(benchmark["name"], str(endTime - startTime)))
 
 
 if __name__ == "__main__":
@@ -169,4 +177,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main()
     endTime = time.time()
-    logger.info("Benchmark synthesis run completed in %s seconds." % str(endTime - startTime))
+    logger.info("Synthesis run completed in %s seconds." % str(endTime - startTime))
