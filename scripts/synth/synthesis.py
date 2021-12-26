@@ -15,6 +15,7 @@ import json
 import re
 import multiprocessing as mp
 from datetime import datetime
+from vivado_sysnthesis import *
 
 if sys.version_info[0] < 3:
     raise Exception("Script must be run with Python 3")
@@ -89,23 +90,25 @@ def main():
 
 
 def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
-    read_hdl_base = "read"
-    if (synthesis_settings["verific"]):
-        read_hdl_base += " -verific"
-    else:
-        read_hdl_base += " -noverific"
-    yosys_file_template = os.path.join(abs_root_dir, synthesis_settings["yosys_template_script"])
-    yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys_path"])
-    
-    benchmarks = synthesis_settings["benchmarks"]
-    abc_script = os.path.abspath( os.path.join(abs_root_dir, synthesis_settings["abc_script"]) )
+            
     config_run_dir_base = os.path.join(run_dir_base, cfg_name)
     os.mkdir(config_run_dir_base)
 
     # running benchmarks parallel
     TIMEOUT = synthesis_settings["timeout"]
     pool = mp.Pool(synthesis_settings["num_process"])
-    results = [pool.apply_async(run_benchmark, args=(benchmark, yosys_abs, yosys_file_template, abc_script, config_run_dir_base, read_hdl_base)) for benchmark in benchmarks]
+    
+    results = []
+    if (synthesis_settings["tool"] == "yosys"):
+        results = run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, pool)
+    elif (synthesis_settings["tool"] == "vivado"):
+        results = run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool)
+    else:
+        logger.error("Invalid tool in config file {0}".format(cfg_name))
+        pool.terminate()
+        pool.close()
+        return
+    
     for i, result in enumerate(results):
         try:
             return_value = result.get(TIMEOUT) # wait for up to TIMEOUT seconds
@@ -115,8 +118,30 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
     pool.close()
 
 
+def run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, pool):
+    read_hdl_base = "read"
+    if (synthesis_settings["verific"]):
+        read_hdl_base += " -verific"
+    else:
+        read_hdl_base += " -noverific"
+    yosys_file_template = os.path.join(abs_root_dir, synthesis_settings["yosys_template_script"])
+    yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys_path"])
+    abc_script = os.path.abspath( os.path.join(abs_root_dir, synthesis_settings["abc_script"]) )
+    benchmarks = synthesis_settings["benchmarks"]
+
+    results = [pool.apply_async(run_benchmark_with_yosys, args=(benchmark, yosys_abs, yosys_file_template, abc_script, config_run_dir_base, read_hdl_base, cfg_name)) for benchmark in benchmarks]
+    return results
+ 
+
+def run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool):
+    logger.error("Not implemented for Vivado.")
+    #TODO:
+    #benchmarks = synthesis_settings["benchmarks"]
+    results = []
+    return results
+
     
-def run_benchmark(benchmark, yosys_path, yosys_file_template, abc_script, run_dir_base, read_hdl_base):
+def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_script, run_dir_base, read_hdl_base, cfg_name):
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     filename_extension = ""
     read_hdl = ""
@@ -163,13 +188,13 @@ def run_benchmark(benchmark, yosys_path, yosys_file_template, abc_script, run_di
         error_exit(e.strerror)
     
     startTime = time.time()
-    logger.info('Starting synthesis run of {0}'.format(benchmark["name"]))
+    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
     try:
         os.system('cd {0}; {1} yosys.ys > yosys_output.log'.format(benchmark_run_dir, yosys_path))
     except Exception as e:
-        logger.error('Synthesis run error for {0}. Error message: {1}'.format(benchmark["name"], e.strerror))
+        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
     endTime = time.time()
-    logger.info('Completed synthesis run of {0} in {1} seconds.'.format(benchmark["name"], str(endTime - startTime)))
+    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
 
 
 if __name__ == "__main__":
