@@ -134,10 +134,9 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, poo
  
 
 def run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool):
-    logger.error("Not implemented for Vivado.")
-    #TODO:
-    #benchmarks = synthesis_settings["benchmarks"]
-    results = []
+    benchmarks = synthesis_settings["benchmarks"]
+    vivado_file_template = os.path.join(abs_root_dir, synthesis_settings["vivado_template_script"])
+    results = [pool.apply_async(run_benchmark_with_vivado, args=(benchmark, vivado_file_template, config_run_dir_base, cfg_name)) for benchmark in benchmarks]
     return results
 
     
@@ -175,17 +174,7 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_scr
     yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
     
     rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
-    rep = dict((re.escape(k), v) for k, v in rep.items())
-    pattern = re.compile("|".join(rep.keys()))
-    
-    try:
-        with open(yosys_file_template, "rt") as fin:
-            with open(yosys_file, "wt") as fout:
-                for line in fin:
-                    result_line = pattern.sub(lambda m: rep[re.escape(m.group(0))], line)
-                    fout.write(result_line)
-    except OSError as e:
-        error_exit(e.strerror)
+    create_file_from_template(yosys_file_template, rep, yosys_file) 
     
     startTime = time.time()
     logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
@@ -196,6 +185,38 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_scr
     endTime = time.time()
     logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
 
+
+def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_base, cfg_name):
+    benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
+    abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
+    shutil.copytree(abs_rtl_path, benchmark_run_dir)
+    vivado_file = os.path.join(benchmark_run_dir, "vivado_script.tcl")
+    
+    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
+    create_file_from_template(vivado_file_template, rep, vivado_file)
+
+    startTime = time.time()
+    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
+    try:
+        os.system('load_vivado; cd {0}; vivado -mode batch -source {1} -tempDir tmp > vivado_output.log'.format(benchmark_run_dir, vivado_file))
+    except Exception as e:
+        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
+    endTime = time.time()
+    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+
+
+def create_file_from_template(file_template, replacements, resulting_file):
+    replacements = dict((re.escape(k), v) for k, v in replacements.items())
+    pattern = re.compile("|".join(replacements.keys()))
+    try:
+        with open(file_template, "rt") as fin:
+            with open(resulting_file, "wt") as fout:
+                for line in fin:
+                    result_line = pattern.sub(lambda m: replacements[re.escape(m.group(0))], line)
+                    fout.write(result_line)
+    except OSError as e:
+        error_exit(e.strerror)
+ 
 
 if __name__ == "__main__":
     startTime = time.time()
