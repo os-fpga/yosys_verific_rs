@@ -15,7 +15,6 @@ import json
 import re
 import multiprocessing as mp
 from datetime import datetime
-from vivado_sysnthesis import *
 
 if sys.version_info[0] < 3:
     raise Exception("Script must be run with Python 3")
@@ -83,6 +82,7 @@ def main():
     now = datetime.now()
     run_dir_base = os.path.join(abs_root_dir, "result_" + now.strftime("%d-%m-%YT%H-%M-%S"))
     os.mkdir(run_dir_base)
+    logger.info("Output directory - {0}".format(run_dir_base))
 
     for cfg_name, settings in synthesis_settings_list:
         run_benchmarks_for_config(settings, run_dir_base, cfg_name)
@@ -144,6 +144,17 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_scr
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     filename_extension = ""
     read_hdl = ""
+    for filename in os.listdir(abs_rtl_path):
+        if filename.endswith(".svh"):
+            filename_extension = ".svh"
+            read_hdl += "\nread -sv"
+        elif filename.endswith(".vh"):
+            filename_extension = ".vh"
+            read_hdl += "\nread -vlog2k"
+        else:
+            filename_extension = ""
+        if (filename_extension != "" and filename.endswith(filename_extension)):
+            read_hdl += " " + filename
     for filename in os.listdir(abs_rtl_path):
         if filename.endswith(".vhd"):
             filename_extension = ".vhd"
