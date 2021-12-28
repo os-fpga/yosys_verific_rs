@@ -31,13 +31,12 @@ logger = logging.getLogger("benchmark_run_logs")
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 parser = argparse.ArgumentParser(description="The script will run benchmarks provided by config.json file")
 parser.add_argument("--config_files", type=str, nargs="*",
-        help="the JSON settings file for the tasks generation.")
+        help="The JSON configuration files.")
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Initialize global variables
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 configuration_files = []
-#abs_root_dir = os.getcwd() #dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 
 def error_exit(msg):
