@@ -1,5 +1,5 @@
 # Introduction
-The script will run sysnthesis for the list of benchmarks provided in JSON input file alongside the corresponding configuration for synthesis. For each benchmark in JSON it will copy design files from 'rtl_path' corresponding directory created for that design run. The script will run the synthesis with the tool provided in the JSON as 'tool'. The benchmarks inthe list will be run parallel with up to 'num_process'number of processes. 
+The script will run synthesis for the list of benchmarks provided in JSON input file alongside the corresponding configuration for synthesis. For each benchmark in JSON it will copy design files from 'rtl_path' to corresponding directory created for that design run. The script will run the synthesis with the tool provided in the JSON as 'tool'. The benchmarks inthe list will be run parallel with up to 'num_process' number of processes. 
 
 # Command line arguments
 - --config_files: The JSON configuration files
