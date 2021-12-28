@@ -17,7 +17,7 @@ This directory contains scripts which will run sysnthesis for the list of benchm
 # Command line arguments
 - --config_files: The JSON configuration files
 
-# Input JSON configurations format
+# Input JSON configuration format
 The input JSON file contains list of benchmarks with synthesis run configurations. 
 
 - tool - The tool to run the synthesis with (vivado/yosys),
@@ -34,6 +34,7 @@ The input JSON file contains list of benchmarks with synthesis run configuration
 	- top_module - The design's top module.
 
 An example input JSON configuration:
+```bash
 {
     "tool": "vivado",
     "yosys_path": "yosys/install/bin/yosys",
@@ -56,6 +57,7 @@ An example input JSON configuration:
         }
     ]
 }
+```
 
 # How to run
 Before running the automation script for comercial tools on **kyber** server the following command should be executed:
