@@ -208,7 +208,7 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_ba
     startTime = time.time()
     logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
     try:
-        os.system('load_vivado; cd {0}; vivado -mode batch -source {1} -tempDir tmp > vivado_output.log'.format(benchmark_run_dir, vivado_file))
+        os.system('cd {0}; vivado -mode batch -source {1} -tempDir tmp > vivado_output.log'.format(benchmark_run_dir, vivado_file))
     except Exception as e:
         logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
     endTime = time.time()
