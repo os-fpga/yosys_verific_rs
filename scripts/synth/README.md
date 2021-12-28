@@ -4,7 +4,7 @@ The script will run sysnthesis for the list of benchmarks provided in JSON input
 # Command line arguments
 - --config_files: The JSON configuration files
 
-# Input JSON settings format
+# Input JSON configurations format
 The input JSON file contains list of benchmarks with synthesis run configurations. 
 
 - tool - The tool to run the synthesis with (vivado/yosys),
