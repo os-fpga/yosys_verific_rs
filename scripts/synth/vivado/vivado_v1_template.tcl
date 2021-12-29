@@ -1,14 +1,12 @@
 set_param general.maxThreads 1
 add_files -norecurse ${BENCHMARK_RUN_DIR}
 
-if {[glob -nocomplain -directory ${BENCHMARK_RUN_DIR} "*.vh"] != ""} {
-  set_property is_global_include true [get_files [glob -nocomplain -directory ${BENCHMARK_RUN_DIR} "*.vh"]] 
+if {[glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.vh"] != ""} {
+  set_property is_global_include true [get_files [glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.vh"]] 
 }
-if {[glob -nocomplain -directory ${BENCHMARK_RUN_DIR} "*.svh"] != ""} {
-  set_property is_global_include true [get_files [glob -nocomplain -directory ${BENCHMARK_RUN_DIR} "*.svh"]] 
+if {[glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.svh"] != ""} {
+  set_property is_global_include true [get_files [glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.svh"]] 
 }
-
-set VIVADO_PART "xc7a100tfgg676-1"
 
 synth_design -top ${TOP_MODULE} \
     -part xc7a100tfgg676-1 \
