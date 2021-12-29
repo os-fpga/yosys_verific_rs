@@ -24,3 +24,4 @@ Available scripts:
 - itc99-poli/b20.ys
 - itc99-poli/b21.ys
 - itc99-poli/b22.ys
+- comb_ckt.ys
