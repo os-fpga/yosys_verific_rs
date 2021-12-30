@@ -123,6 +123,7 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, poo
         read_hdl_base += " -verific"
     else:
         read_hdl_base += " -noverific"
+    read_hdl_base += "\nread -incdir ."
     yosys_file_template = os.path.join(abs_root_dir, synthesis_settings["yosys_template_script"])
     yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys_path"])
     abc_script = os.path.abspath( os.path.join(abs_root_dir, synthesis_settings["abc_script"]) )
@@ -141,43 +142,35 @@ def run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, po
     
 def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_script, run_dir_base, read_hdl_base, cfg_name):
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
-    filename_extension = ""
-    read_hdl = ""
+    files_dict = {"v": [], "sv": [], "vhdl": []}
     for filename in os.listdir(abs_rtl_path):
         if filename.endswith(".svh"):
-            filename_extension = ".svh"
-            read_hdl += "\nread -sv"
+            files_dict["sv"].append(filename)
         elif filename.endswith(".vh"):
-            filename_extension = ".vh"
-            read_hdl += "\nread -vlog2k"
-        else:
-            filename_extension = ""
-        if (filename_extension != "" and filename.endswith(filename_extension)):
-            read_hdl += " " + filename
+            files_dict["v"].append(filename)
     for filename in os.listdir(abs_rtl_path):
         if filename.endswith(".vhd"):
-            filename_extension = ".vhd"
-            read_hdl += "\nread -vhdl"
+            files_dict["vhdl"].append(filename)
         elif filename.endswith(".vhdl"):
-            filename_extension = ".vhdl"
-            read_hdl += "\nread -vhdl"
+            files_dict["vhdl"].append(filename)
         elif filename.endswith(".sv"):
-            filename_extension = ".sv"
-            read_hdl += "\nread -sv"
+            files_dict["sv"].append(filename)
         elif filename.endswith(".v"):
-            filename_extension = ".v"
-            read_hdl += "\nread -vlog2k"
+            files_dict["v"].append(filename)
         elif filename.endswith(".verilog"):
-            filename_extension = ".verilog"
-            read_hdl += "\nread -vlog2k"
+            files_dict["v"].append(filename)
         elif filename.endswith(".vlg"):
-            filename_extension = ".vlg"
-            read_hdl += "\nread -vlog2k"
-        else:
-            filename_extension = ""
-        if (filename_extension != "" and filename.endswith(filename_extension)):
-            read_hdl += " " + filename
-    read_hdl = read_hdl_base + read_hdl
+            files_dict["v"].append(filename)
+    read_hdl = read_hdl_base
+    if files_dict["v"]:
+        read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
+        read_hdl += read_verilog
+    if files_dict["sv"]:
+        read_sv = "\nread -sv " + " ".join(files_dict["sv"])
+        read_hdl += read_sv
+    if files_dict["vhdl"]:
+        read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
+        read_hdl += read_vhdl
     
     benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
     shutil.copytree(abs_rtl_path, benchmark_run_dir)
