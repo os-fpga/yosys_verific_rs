@@ -101,14 +101,17 @@ def get_design_index(design_name):
 def extract_column_name(metric, tool, label):
     return metric + "s " + tool + " " + label
 
-def init_columns(tool, label):
+def init_columns(metric_list):
     global metrics
-    metrics[extract_column_name("LUT",tool,label)] = '-'
-    metrics[extract_column_name("DFF",tool,label)] = '-'
-    metrics[extract_column_name("SRL",tool,label)] = '-'
-    metrics[extract_column_name("DRAM",tool,label)] = '-'
-    metrics[extract_column_name("BRAM",tool,label)] = '-'
-    metrics[extract_column_name("DSP",tool,label)] = '-'
+    global output_yosys_dirs
+    global output_vivado_dirs
+    for metric in metric_list:
+        for output_vivado_dir in output_vivado_dirs:
+            label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+            metrics[extract_column_name(metric,"Vivado",label)] = '-'
+        for output_yosys_dir in output_yosys_dirs:
+            label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+            metrics[extract_column_name(metric,"Yosys",label)] = '-'
 
 def add_value(count, design_index, metric, tool, label):
     if count:
@@ -121,7 +124,6 @@ def extract_yosys_metrics():
     for output_yosys_dir in output_yosys_dirs:
         label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
         tool = "Yosys"
-        init_columns(tool, label)
         tasks = os.listdir(output_yosys_dir)
         for task_name in tasks:
             if not os.path.isdir(os.path.join(output_yosys_dir, task_name)):
@@ -154,7 +156,6 @@ def extract_vivado_metrics():
     for output_vivado_dir in output_vivado_dirs:
         label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
         tool = "Vivado"
-        init_columns(tool, label)
         tasks = os.listdir(output_vivado_dir)
         for task_name in tasks:
             task_dir = os.path.join(output_vivado_dir, task_name)
@@ -226,6 +227,8 @@ def main():
     global metrics
     validate_inputs()
 
+    metric_list = ["LUT", "DFF", "SRL", "DRAM", "BRAM", "DSP"]
+    init_columns(metric_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
     metrics_to_csv()
