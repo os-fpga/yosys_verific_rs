@@ -33,13 +33,13 @@ logger = logging.getLogger("metrics_extractor_logs")
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 parser = argparse.ArgumentParser(description="The script will generate a CSV \
          sheet with different metrics extracted from Vivado and Yosys output \
-         logs. It will read all log files from the input directory, extract \
-         all necessary information from each design and write the generated \
-         sheet in the provided input directory.")
-parser.add_argument("--vivado", type=str, 
-        help="path to Vivado run output")
-parser.add_argument("--yosys", type=str, 
-        help="path to Yosys run output")
+         logs. It will read all log files from the given list of vivado and \
+         yosys runs, extract all necessary information from each design and \
+         write the generated sheet into file given as input argument.")
+parser.add_argument("--vivado", type=str, nargs="*", 
+        help="list of paths to Vivado run outputs")
+parser.add_argument("--yosys", type=str, nargs="*", 
+        help="list of path to Yosys run outputs")
 parser.add_argument("--output_file", type=str, 
         help="output csv file")
 parser.add_argument("--debug", action="store_true",
@@ -48,12 +48,10 @@ parser.add_argument("--debug", action="store_true",
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Initialize global variables
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-output_vivado_dir = ""
-output_yosys_dir = ""
+output_vivado_dirs = []
+output_yosys_dirs = []
 metrics = pd.DataFrame()
-metrics = pd.DataFrame(metrics,columns=["Benchmarks", "LUTs Yosys", "LUTs Vivado",
-"DFFs Yosys", "DFFs Vivado", "SRLs Yosys", "SRLs Vivado", "DRAMs Yosys", 
-"DRAMs Vivado", "BRAMs Yosys", "BRAMs Vivado", "DSPs Yosys", "DSPs Vivado"])
+metrics = pd.DataFrame(metrics,columns=["Benchmarks"])
 metrics = metrics.fillna(0)
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 yosys_log = "yosys_output.log" 
@@ -76,18 +74,21 @@ def validate_inputs():
     if not (args.vivado or args.yosys):
         error_exit("Please provide run output directory")
 
-    global output_yosys_dir
-    global output_vivado_dir
+    global output_yosys_dirs
+    global output_vivado_dirs
     if args.yosys:
-        output_yosys_dir = os.path.abspath(args.yosys)
-        if not os.path.isdir(output_yosys_dir):
-            error_exit("Provided directory not found - %s" %
-                output_yosys_dir)
+        for yosys_dir in args.yosys:
+            if not os.path.isdir(os.path.abspath(yosys_dir)):
+                error_exit("Provided directory not found - %s" %
+                    yosys_dir)
+            output_yosys_dirs.append(os.path.abspath(yosys_dir))
+
     if args.vivado:
-        output_vivado_dir = os.path.abspath(args.vivado)
-        if not os.path.isdir(output_vivado_dir):
-            error_exit("Provided directory not found - %s" %
-                output_vivado_dir)
+        for vivado_dir in args.vivado:
+            if not os.path.isdir(os.path.abspath(vivado_dir)):
+                error_exit("Provided directory not found - %s" %
+                    vivado_dir)
+            output_vivado_dirs.append(os.path.abspath(vivado_dir))
 
 def metrics_to_csv():
     logger.info("Saving into : " + args.output_file)
@@ -97,123 +98,127 @@ def metrics_to_csv():
 def get_design_index(design_name):
     return metrics[metrics['Benchmarks'] == design_name].index.item()
 
+def extract_column_name(metric, tool, label):
+    return metric + "s " + tool + " " + label
+
+def init_columns(tool, label):
+    global metrics
+    metrics[extract_column_name("LUT",tool,label)] = '-'
+    metrics[extract_column_name("DFF",tool,label)] = '-'
+    metrics[extract_column_name("SRL",tool,label)] = '-'
+    metrics[extract_column_name("DRAM",tool,label)] = '-'
+    metrics[extract_column_name("BRAM",tool,label)] = '-'
+    metrics[extract_column_name("DSP",tool,label)] = '-'
+
+def add_value(count, design_index, metric, tool, label):
+    if count:
+        metrics.at[design_index, extract_column_name(metric,tool,label)] = \
+            int(metrics.at[design_index, extract_column_name(metric,tool,label)]) + int(count)
+
 def extract_yosys_metrics():
     global metrics
-    global output_yosys_dir
-    tasks = os.listdir(output_yosys_dir)
-    for task_name in tasks:
-        if not os.path.isdir(os.path.join(output_yosys_dir, task_name)):
-            continue
-        if not metrics['Benchmarks'].eq(task_name).any():
-            metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
-        task_log = os.path.join(output_yosys_dir, task_name, yosys_log)
-        design_index = get_design_index(task_name)
-        metrics.at[design_index, "LUTs Yosys"] = 0
-        metrics.at[design_index, "DFFs Yosys"] = 0
-        logger.info("Processing Yosys log : " + task_log)
-        try:
-            with open(task_log, 'r') as f:
-                results = re.findall(r"Printing statistics.*\n\n.*\n\n(.*?)\n\n", f.read(), re.DOTALL)
-                if not results:
-                    logger.error("No information found in : " + task_name + " log file")
-                    continue
-                results = results[len(results) - 1].splitlines()
-                for line in results:
-                    if re.search(r"lut", line, re.IGNORECASE):
-                        lut_count = line.split()[1]
-                        if lut_count:
-                            metrics.at[design_index, "LUTs Yosys"] = int(metrics.at[design_index, "LUTs Yosys"]) + int(lut_count)
-                    if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
-                        dff_count = line.split()[1]
-                        if dff_count:
-                            metrics.at[design_index, "DFFs Yosys"] = int(metrics.at[design_index, "DFFs Yosys"]) + int(dff_count)
-        except OSError as e:
-            error_exit(e.strerror)
+    global output_yosys_dirs
+    for output_yosys_dir in output_yosys_dirs:
+        label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+        tool = "Yosys"
+        init_columns(tool, label)
+        tasks = os.listdir(output_yosys_dir)
+        for task_name in tasks:
+            if not os.path.isdir(os.path.join(output_yosys_dir, task_name)):
+                continue
+            if not metrics['Benchmarks'].eq(task_name).any():
+                metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
+            task_log = os.path.join(output_yosys_dir, task_name, yosys_log)
+            design_index = get_design_index(task_name)
+            metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
+            logger.info("Processing Yosys log : " + task_log)
+            try:
+                with open(task_log, 'r') as f:
+                    results = re.findall(r"Printing statistics.*\n\n.*\n\n(.*?)\n\n", f.read(), re.DOTALL)
+                    if not results:
+                        logger.error("No information found in : " + task_name + " log file")
+                        continue
+                    results = results[len(results) - 1].splitlines()
+                    for line in results:
+                        if re.search(r"lut", line, re.IGNORECASE):
+                            add_value(line.split()[1], design_index, "LUT", tool, label)
+                        if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
+                            add_value(line.split()[1], design_index, "DFF", tool, label)
+            except OSError as e:
+                error_exit(e.strerror)
    
 def extract_vivado_metrics():
     global metrics
-    global output_vivado_dir
-    tasks = os.listdir(output_vivado_dir)
-    for task_name in tasks:
-        task_dir = os.path.join(output_vivado_dir, task_name)
-        if not os.path.isdir(task_dir):
-            continue
-        if not metrics['Benchmarks'].eq(task_name).any():
-            metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
-        design_index = get_design_index(task_name)
-        metrics.at[design_index, "LUTs Vivado"] = 0
-        metrics.at[design_index, "DFFs Vivado"] = 0
-        metrics.at[design_index, "SRLs Vivado"] = 0
-        metrics.at[design_index, "DRAMs Vivado"] = 0
-        metrics.at[design_index, "BRAMs Vivado"] = 0
-        metrics.at[design_index, "DSPs Vivado"] = 0
-        vivado_log = "util_temp_\w+_vivado_synth.log" 
-        try:
-            for filename in os.listdir(os.path.join(task_dir)):
-                if re.match(vivado_log, filename):
-                    logger.info("Processing Vivado log : " + os.path.join(task_dir, filename))
-                    with open(os.path.join(task_dir, filename), 'r') as f:
-                        primitives = re.findall(r"Primitives\n?.*Ref Name.*Used.*Functional Category(.*?)\n\n", f.read(), re.DOTALL)
-                        if not primitives:
-                            logger.error("No Primitives section found in : " + task_name + " log file")
-                            continue
-                        for record in primitives:
-                            if not record:
+    global output_vivado_dirs
+    for output_vivado_dir in output_vivado_dirs:
+        label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+        tool = "Vivado"
+        init_columns(tool, label)
+        tasks = os.listdir(output_vivado_dir)
+        for task_name in tasks:
+            task_dir = os.path.join(output_vivado_dir, task_name)
+            if not os.path.isdir(task_dir):
+                continue
+            if not metrics['Benchmarks'].eq(task_name).any():
+                metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
+            design_index = get_design_index(task_name)
+            metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("SRL",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("DRAM",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("BRAM",tool,label)] = 0
+            vivado_log = "util_temp_\w+_vivado_synth.log" 
+            try:
+                for filename in os.listdir(os.path.join(task_dir)):
+                    if re.match(vivado_log, filename):
+                        logger.info("Processing Vivado log : " + os.path.join(task_dir, filename))
+                        with open(os.path.join(task_dir, filename), 'r') as f:
+                            primitives = re.findall(r"Primitives\n?.*Ref Name.*Used.*Functional Category(.*?)\n\n", f.read(), re.DOTALL)
+                            if not primitives:
+                                logger.error("No Primitives section found in : " + task_name + " log file")
                                 continue
-                            lines = re.split("\n", record)
-                            for line in lines:
-                                if re.search(r"lut", line, re.IGNORECASE):
-                                    lut_count = line.split()[3]
-                                    if lut_count:
-                                        metrics.at[design_index, "LUTs Vivado"] = int(metrics.at[design_index, "LUTs Vivado"]) + int(lut_count)
-                                if re.search(r"muxf7", line, re.IGNORECASE):
-                                    mux_count = line.split()[3]
-                                    if mux_count:
-                                        metrics.at[design_index, "LUTs Vivado"] = int(metrics.at[design_index, "LUTs Vivado"]) + int(mux_count)
-                                if re.search(r"muxf8", line, re.IGNORECASE):
-                                    mux_count = line.split()[3]
-                                    if mux_count:
-                                        metrics.at[design_index, "LUTs Vivado"] = int(metrics.at[design_index, "LUTs Vivado"]) + int(mux_count)
-                                if re.search(r"carry", line, re.IGNORECASE):
-                                    carry_count = line.split()[3]
-                                    if carry_count:
-                                        metrics.at[design_index, "LUTs Vivado"] = int(metrics.at[design_index, "LUTs Vivado"]) + int(carry_count)
-                                if re.search(r"Flop & Latch", line, re.IGNORECASE):
-                                    dff_count = line.split()[3]
-                                    if dff_count:
-                                        metrics.at[design_index, "DFFs Vivado"] = int(metrics.at[design_index, "DFFs Vivado"]) + int(dff_count)
-                                if re.search(r"srl", line, re.IGNORECASE):
-                                    srl_count = line.split()[3]
-                                    if srl_count:
-                                        metrics.at[design_index, "SRLs Vivado"] = int(metrics.at[design_index, "SRLs Vivado"]) + int(srl_count)
-                                if re.search(r"Distributed Memory", line, re.IGNORECASE):
-                                    dram_count = line.split()[3]
-                                    if dram_count:
-                                        metrics.at[design_index, "DRAMs Vivado"] = int(metrics.at[design_index, "DRAMs Vivado"]) + int(dram_count)
-                                if re.search(r"Block Memory", line, re.IGNORECASE):
-                                    bram_count = line.split()[3]
-                                    if bram_count:
-                                        metrics.at[design_index, "BRAMs Vivado"] = int(metrics.at[design_index, "BRAMs Vivado"]) + int(bram_count)
-                                if re.search(r"dsp", line, re.IGNORECASE):
-                                    dsp_count = line.split()[3]
-                                    if dsp_count:
-                                        metrics.at[design_index, "DSPs Vivado"] = int(metrics.at[design_index, "DSPs Vivado"]) + int(dsp_count)
-                    with open(os.path.join(task_dir, filename), 'r') as f:
-                        slice_logic = re.findall(r"Slice Logic.*Site Type.*Used.*Fixed.*Available.*Util\%|\n?(.*?)\n\n?", f.read(), re.DOTALL)
-                        if not slice_logic:
-                            logger.error("No Slice Logic section found in : " + task_name + " log file")
-                            continue
-                        for record in slice_logic:
-                            if not record:
+                            for record in primitives:
+                                if not record:
+                                    continue
+                                lines = re.split("\n", record)
+                                for line in lines:
+                                    if re.search(r"lut", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                    if re.search(r"muxf7", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                    if re.search(r"muxf8", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                    if re.search(r"carry", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                    if re.search(r"Flop & Latch", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "DFF", tool, label)
+                                    if re.search(r"srl", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "SRL", tool, label)
+                                    if re.search(r"Distributed Memory", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "DRAM", tool, label)
+                                    if re.search(r"Block Memory", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "BRAM", tool, label)
+                                    if re.search(r"dsp", line, re.IGNORECASE):
+                                        add_value(line.split()[3], design_index, "DSP", tool, label)
+                        with open(os.path.join(task_dir, filename), 'r') as f:
+                            slice_logic = re.findall(r"Slice Logic.*Site Type.*Used.*Fixed.*Available.*Util\%|\n?(.*?)\n\n?", f.read(), re.DOTALL)
+                            if not slice_logic:
+                                logger.error("No Slice Logic section found in : " + task_name + " log file")
                                 continue
-                            lines = re.split("\n", record)
-                            for line in lines:
-                                if re.search("LUT as Memory", line, re.IGNORECASE):
-                                    lut_count = line.split()[5]
-                                    if lut_count:
-                                        metrics.at[design_index, "LUTs Vivado"] = int(metrics.at[design_index, "LUTs Vivado"]) - int(lut_count)
-        except OSError as e:
-            logger.error(e.strerror)
+                            for record in slice_logic:
+                                if not record:
+                                    continue
+                                lines = re.split("\n", record)
+                                for line in lines:
+                                    if re.search("LUT as Memory", line, re.IGNORECASE):
+                                        lut_count = line.split()[5]
+                                        if lut_count:
+                                            metrics.at[design_index, extract_column_name("LUT",tool,label)] = \
+                                                int(metrics.at[design_index, extract_column_name("LUT",tool,label)]) - int(lut_count)
+            except OSError as e:
+                logger.error(e.strerror)
 
 def main():
     """Main function."""
