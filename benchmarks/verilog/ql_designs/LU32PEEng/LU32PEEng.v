@@ -5462,8 +5462,8 @@ module dual_port_ram (
 			ram[addr1] <= data1;
 
 		data_out2 <= ram[addr2];
+        data_out1 <= 0;
 	end
-  assign data_out1 = 0;
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
     // Otherwise, data will be read out through addr2
@@ -5506,8 +5506,8 @@ module dual_port_ram_4096x32 (
 		if (we1) 
 			ram[addr1] <= data1;
 		data_out2 <= ram[addr2];
+        data_out1 <= 0;
 	end
-  assign data_out1 = 0;
 
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
@@ -5550,9 +5550,9 @@ module dual_port_ram_rfifo (
 	always @(posedge clk) begin
 		if (we1) 
 			ram[addr1] <= data1;
-    data_out1 <= ram[addr2];
+        data_out1 <= ram[addr2];
+        data_out2 <= 0;
 	end
-  assign data_out2 = 0;
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
     // Otherwise, data will be read out through addr2
@@ -5595,8 +5595,8 @@ module dual_port_ram_wfifo (
 		if (we1) 
 			ram[addr1] <= data1;
 		data_out1 <= ram[addr2];
+        data_out2 <= 0;
 	end
-  assign data_out2 =0;
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
     // Otherwise, data will be read out through addr2
@@ -5639,8 +5639,8 @@ module dual_port_ram_afifo (
 		if (we1) 
 			ram[addr1] <= data1;
 		data_out1 <= ram[addr2];
+        data_out2 <= 0;
 	end
-  assign data_out2 = 0;
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
     // Otherwise, data will be read out through addr2
@@ -5683,8 +5683,8 @@ module dual_port_ram_mfifo (
 		if (we1) 
 			ram[addr1] <= data1;
 		data_out1 <= ram[addr2];
+        data_out2 <= 0;
 	end
-  assign data_out2 = 0;
     // If writen enable 2 is activated,
     // data1 will be loaded through addr2
     // Otherwise, data will be read out through addr2
