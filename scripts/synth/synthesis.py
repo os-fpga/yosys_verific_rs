@@ -76,7 +76,7 @@ def main():
         except OSError as e:
             error_exit(e.strerror)
         except json.JSONDecodeError as e:
-            error_exit(e.msg)
+            error_exit(config_file + ": " + str(e))
 
     now = datetime.now()
     run_dir_base = os.path.join(abs_root_dir, "result_" + now.strftime("%d-%m-%YT%H-%M-%S"))
