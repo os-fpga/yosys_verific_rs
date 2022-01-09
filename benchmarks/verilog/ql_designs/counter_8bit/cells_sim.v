@@ -478,12 +478,12 @@ module logic_cell_macro (
 
 endmodule
 
-// Include simulation models of QLAL4S3B eFPGA interface
-`include "qlal4s3b_sim.v"
-// Include simulation models for QLAL3 hard blocks
-`include "qlal3_sim.v"
-// Include BRAM and FIFO simulation models
-`include "brams_sim.v"
-// Include MULT simulation models
-`include "mult_sim.v"
+//// Include simulation models of QLAL4S3B eFPGA interface
+//`include "qlal4s3b_sim.v"
+//// Include simulation models for QLAL3 hard blocks
+//`include "qlal3_sim.v"
+//// Include BRAM and FIFO simulation models
+//`include "brams_sim.v"
+//// Include MULT simulation models
+//`include "mult_sim.v"
 
