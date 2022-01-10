@@ -76,7 +76,7 @@ def main():
         except OSError as e:
             error_exit(e.strerror)
         except json.JSONDecodeError as e:
-            error_exit(e.msg)
+            error_exit(config_file + ": " + str(e))
 
     now = datetime.now()
     run_dir_base = os.path.join(abs_root_dir, "result_" + now.strftime("%d-%m-%YT%H-%M-%S"))
@@ -102,6 +102,8 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
         results = run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, pool)
     elif (synthesis_settings["tool"] == "vivado"):
         results = run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool)
+    elif (synthesis_settings["tool"] == "diamond"):
+        results = run_config_with_diamond(synthesis_settings, config_run_dir_base, cfg_name, pool)
     else:
         logger.error("Invalid tool in config file {0}".format(cfg_name))
         pool.terminate()
@@ -139,7 +141,14 @@ def run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, po
     results = [pool.apply_async(run_benchmark_with_vivado, args=(benchmark, vivado_file_template, config_run_dir_base, cfg_name)) for benchmark in benchmarks]
     return results
 
+
+def run_config_with_diamond(synthesis_settings, config_run_dir_base, cfg_name, pool):
+    benchmarks = synthesis_settings["benchmarks"]
+    diamond_file_template = os.path.join(abs_root_dir, synthesis_settings["diamond_template_script"])
+    results = [pool.apply_async(run_benchmark_with_diamond, args=(benchmark, diamond_file_template, config_run_dir_base, cfg_name)) for benchmark in benchmarks]
+    return results
     
+
 def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_script, run_dir_base, read_hdl_base, cfg_name):
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     files_dict = {"v": [], "sv": [], "vhdl": []}
@@ -194,6 +203,25 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_ba
     os.system('cd {0}'.format(benchmark_run_dir))
     run_command(benchmark["name"], cfg_name, "vivado_output.log", "vivado -mode batch -source {1} -tempDir tmp".format(vivado_file))
 
+
+def run_benchmark_with_diamond(benchmark, diamond_file_template, config_run_dir_base, cfg_name):
+    benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
+    abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
+    shutil.copytree(abs_rtl_path, benchmark_run_dir)
+    diamond_file = os.path.join(benchmark_run_dir, "diamond_script.tcl")
+    top_module = os.path.join(benchmark_run_dir, benchmark["top_module"] + ".v")
+    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": top_module, "${BENCHMARK_NAME}": benchmark["name"]}
+    create_file_from_template(diamond_file_template, rep, diamond_file)
+
+    startTime = time.time()
+    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
+    try:
+        os.system('cd {0}; diamondc {1} > diamond_output.log'.format(benchmark_run_dir, diamond_file))
+    except Exception as e:
+        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
+    endTime = time.time()
+    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    
 
 def create_file_from_template(file_template, replacements, resulting_file):
     replacements = dict((re.escape(k), v) for k, v in replacements.items())
