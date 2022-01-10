@@ -179,14 +179,8 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_scr
     rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
     create_file_from_template(yosys_file_template, rep, yosys_file) 
     
-    startTime = time.time()
-    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
-    try:
-        os.system('cd {0}; {1} yosys.ys > yosys_output.log'.format(benchmark_run_dir, yosys_path))
-    except Exception as e:
-        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
-    endTime = time.time()
-    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    os.system('cd {0}'.format(benchmark_run_dir))
+    run_command(benchmark["name"], cfg_name, "yosys_output.log", "{1} yosys.ys".format(yosys_path))
 
 
 def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_base, cfg_name):
@@ -197,15 +191,8 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_ba
     
     rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
     create_file_from_template(vivado_file_template, rep, vivado_file)
-
-    startTime = time.time()
-    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
-    try:
-        os.system('cd {0}; vivado -mode batch -source {1} -tempDir tmp > vivado_output.log'.format(benchmark_run_dir, vivado_file))
-    except Exception as e:
-        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
-    endTime = time.time()
-    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    os.system('cd {0}'.format(benchmark_run_dir))
+    run_command(benchmark["name"], cfg_name, "vivado_output.log", "vivado -mode batch -source {1} -tempDir tmp".format(vivado_file))
 
 
 def create_file_from_template(file_template, replacements, resulting_file):
@@ -219,6 +206,26 @@ def create_file_from_template(file_template, replacements, resulting_file):
                     fout.write(result_line)
     except OSError as e:
         error_exit(e.strerror)
+
+def run_command(bench_name, cfg_name, logfile, command):
+    logger.info('Starting synthesis run of {0} for configuration {1}'.format(bench_name, cfg_name))
+    with open(logfile, 'w') as output:
+        try:
+            startTime = time.time()
+            process = subprocess.run(command,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     universal_newlines=True)
+            endTime = time.time()
+            output.write(process.stdout)
+            output.write(process.stderr)
+            output.write(str(process.returncode))
+            if process.returncode:
+                logger.error('Failed synthesis run of {0} for configuration {1} in {2} seconds.'.format(bench_name, cfg_name, str(endTime - startTime)))
+        except Exception:
+            logger.error('Failed to execute synthesis of {0} for configuration {1}. Error message: {2}'.format(bench_name, cfg_name, e.strerror))
+    logger.info('Completed synthesis run of {0} for configuration {1} in {2} seconds.'.format(bench_name, cfg_name, str(endTime - startTime)))
+    return process.stdout
  
 
 if __name__ == "__main__":
