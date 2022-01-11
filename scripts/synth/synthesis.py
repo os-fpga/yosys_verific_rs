@@ -14,22 +14,19 @@ import shutil
 import json
 import re
 import multiprocessing as mp
+import traceback
+import subprocess
+import copy
 from datetime import datetime
 
 if sys.version_info[0] < 3:
     raise Exception("Script must be run with Python 3")
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-# Configure logging system
-# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-LOG_FORMAT = "%(levelname)8s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format=LOG_FORMAT)
-logger = logging.getLogger("benchmark_run_logs")
-
-# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Read commandline arguments
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-parser = argparse.ArgumentParser(description="The script will run benchmarks provided by config.json file")
+parser = argparse.ArgumentParser(description="The script will run benchmarks "
+        "provided by config.json file")
 parser.add_argument("--config_files", type=str, nargs="*",
         help="The JSON configuration files.")
 
@@ -38,6 +35,21 @@ parser.add_argument("--config_files", type=str, nargs="*",
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 configuration_files = []
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+run_dir_base = None
+
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+# Configure logging system
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+logFile = os.path.join(abs_root_dir, "run.log")
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)8s - %(message)s",
+    handlers=[
+        logging.FileHandler(logFile),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("synthesis")
 
 def error_exit(msg):
     """Exit with error message"""
@@ -58,13 +70,16 @@ def validate_inputs():
         config_file = os.path.abspath(config_file)
         if not os.path.isfile(config_file):
             error_exit("The JSON settings file not found - %s" % config_file)
-        configuration_files.append( (os.path.basename(config_file), config_file) )
+        configuration_files.append( (os.path.basename(config_file), 
+                config_file) )
     args.config_files = configuration_files
 
 
 def main():
     """Main function."""
-    logger.info("Starting synthesis scripts generation . . . . .")
+    logger.info("Starting synthesis for configs:")
+    for config_file in args.config_files:
+        logger.info("\t{0}".format(config_file))
     validate_inputs()
 
     synthesis_settings_list = []
@@ -79,13 +94,19 @@ def main():
             error_exit(config_file + ": " + str(e))
 
     now = datetime.now()
-    run_dir_base = os.path.join(abs_root_dir, "result_" + now.strftime("%d-%m-%YT%H-%M-%S"))
+    global run_dir_base
+    run_dir_base = os.path.join(abs_root_dir, "result_" +\
+            now.strftime("%d-%m-%YT%H-%M-%S"))
     os.mkdir(run_dir_base)
     logger.info("Output directory - {0}".format(run_dir_base))
 
     for cfg_name, settings in synthesis_settings_list:
+        logger.info("Running synthesis for {0} config".format(cfg_name))
+        startTime = time.time()
         run_benchmarks_for_config(settings, run_dir_base, cfg_name)
-
+        endTime = time.time()
+        logger.info("Finished synthesis for {0} config in {1} seconds".format(
+                cfg_name, str(endTime - startTime)))
 
 
 def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
@@ -99,57 +120,78 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
     
     results = []
     if (synthesis_settings["tool"] == "yosys"):
-        results = run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, pool)
+        results = run_config_with_yosys(synthesis_settings, 
+                config_run_dir_base, cfg_name, pool)
     elif (synthesis_settings["tool"] == "vivado"):
-        results = run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool)
+        results = run_config_with_vivado(synthesis_settings, 
+                config_run_dir_base, cfg_name, pool)
     elif (synthesis_settings["tool"] == "diamond"):
-        results = run_config_with_diamond(synthesis_settings, config_run_dir_base, cfg_name, pool)
+        results = run_config_with_diamond(synthesis_settings, 
+                config_run_dir_base, cfg_name, pool)
     else:
         logger.error("Invalid tool in config file {0}".format(cfg_name))
         pool.terminate()
         pool.close()
         return
     
-    for i, result in enumerate(results):
+    for result in results:
         try:
-            return_value = result.get(TIMEOUT) # wait for up to TIMEOUT seconds
+            # wait for up to TIMEOUT seconds
+            return_value = result[0].get(TIMEOUT) 
         except mp.TimeoutError:
-            logger.error('Timeout for benchmark', i)
+            logger.error('Timeout synthesis run of {0} for configuration '
+                    '{1} in {2} seconds.'.format(result[1]["name"], 
+                    cfg_name, str(TIMEOUT)))
     pool.terminate()
     pool.close()
 
 
-def run_config_with_yosys(synthesis_settings, config_run_dir_base, cfg_name, pool):
+def run_config_with_yosys(synthesis_settings, config_run_dir_base, 
+        cfg_name, pool):
     read_hdl_base = "read"
     if (synthesis_settings["verific"]):
         read_hdl_base += " -verific"
     else:
         read_hdl_base += " -noverific"
     read_hdl_base += "\nread -incdir ."
-    yosys_file_template = os.path.join(abs_root_dir, synthesis_settings["yosys_template_script"])
+    yosys_file_template = os.path.join(abs_root_dir, 
+            synthesis_settings["yosys_template_script"])
     yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys_path"])
-    abc_script = os.path.abspath( os.path.join(abs_root_dir, synthesis_settings["abc_script"]) )
+    abc_script = os.path.abspath( os.path.join(abs_root_dir, 
+            synthesis_settings["abc_script"]) )
     benchmarks = synthesis_settings["benchmarks"]
 
-    results = [pool.apply_async(run_benchmark_with_yosys, args=(benchmark, yosys_abs, yosys_file_template, abc_script, config_run_dir_base, read_hdl_base, cfg_name)) for benchmark in benchmarks]
+    results = [(pool.apply_async(run_benchmark_with_yosys, 
+            args=(benchmark, yosys_abs, yosys_file_template, abc_script,
+            config_run_dir_base, read_hdl_base, cfg_name)), benchmark) 
+            for benchmark in benchmarks]
     return results
  
 
-def run_config_with_vivado(synthesis_settings, config_run_dir_base, cfg_name, pool):
+def run_config_with_vivado(synthesis_settings, config_run_dir_base, 
+        cfg_name, pool):
     benchmarks = synthesis_settings["benchmarks"]
-    vivado_file_template = os.path.join(abs_root_dir, synthesis_settings["vivado_template_script"])
-    results = [pool.apply_async(run_benchmark_with_vivado, args=(benchmark, vivado_file_template, config_run_dir_base, cfg_name)) for benchmark in benchmarks]
+    vivado_file_template = os.path.join(abs_root_dir, 
+            synthesis_settings["vivado_template_script"])
+    results = [(pool.apply_async(run_benchmark_with_vivado, 
+            args=(benchmark, vivado_file_template, config_run_dir_base, 
+            cfg_name)), benchmark) for benchmark in benchmarks]
     return results
 
 
-def run_config_with_diamond(synthesis_settings, config_run_dir_base, cfg_name, pool):
+def run_config_with_diamond(synthesis_settings, config_run_dir_base, 
+        cfg_name, pool):
     benchmarks = synthesis_settings["benchmarks"]
-    diamond_file_template = os.path.join(abs_root_dir, synthesis_settings["diamond_template_script"])
-    results = [pool.apply_async(run_benchmark_with_diamond, args=(benchmark, diamond_file_template, config_run_dir_base, cfg_name)) for benchmark in benchmarks]
+    diamond_file_template = os.path.join(abs_root_dir, 
+            synthesis_settings["diamond_template_script"])
+    results = [(pool.apply_async(run_benchmark_with_diamond, 
+            args=(benchmark, diamond_file_template, config_run_dir_base, 
+            cfg_name)), benchmark) for benchmark in benchmarks]
     return results
     
 
-def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_script, run_dir_base, read_hdl_base, cfg_name):
+def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, 
+        abc_script, run_dir_base, read_hdl_base, cfg_name):
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     files_dict = {"v": [], "sv": [], "vhdl": []}
     for filename in os.listdir(abs_rtl_path):
@@ -185,55 +227,44 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, abc_scr
     shutil.copytree(abs_rtl_path, benchmark_run_dir)
     yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
     
-    rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
+    rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
+            "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
     create_file_from_template(yosys_file_template, rep, yosys_file) 
     
-    startTime = time.time()
-    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
-    try:
-        os.system('cd {0}; {1} yosys.ys > yosys_output.log'.format(benchmark_run_dir, yosys_path))
-    except Exception as e:
-        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
-    endTime = time.time()
-    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    os.chdir(benchmark_run_dir)
+    run_command(benchmark["name"], cfg_name, "yosys_output.log", 
+            [yosys_path, "yosys.ys"])
 
 
-def run_benchmark_with_vivado(benchmark, vivado_file_template, config_run_dir_base, cfg_name):
+def run_benchmark_with_vivado(benchmark, vivado_file_template, 
+        config_run_dir_base, cfg_name):
     benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     shutil.copytree(abs_rtl_path, benchmark_run_dir)
     vivado_file = os.path.join(benchmark_run_dir, "vivado_script.tcl")
     
-    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
+    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": 
+            benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
     create_file_from_template(vivado_file_template, rep, vivado_file)
-
-    startTime = time.time()
-    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
-    try:
-        os.system('cd {0}; vivado -mode batch -source {1} -tempDir tmp > vivado_output.log'.format(benchmark_run_dir, vivado_file))
-    except Exception as e:
-        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
-    endTime = time.time()
-    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    os.chdir(benchmark_run_dir)
+    run_command(benchmark["name"], cfg_name, "vivado_output.log", ["vivado", 
+            "-mode", "batch", "-source", vivado_file, "-tempDir", "tmp"])
 
 
-def run_benchmark_with_diamond(benchmark, diamond_file_template, config_run_dir_base, cfg_name):
+def run_benchmark_with_diamond(benchmark, diamond_file_template, 
+        config_run_dir_base, cfg_name):
     benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
     abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
     shutil.copytree(abs_rtl_path, benchmark_run_dir)
     diamond_file = os.path.join(benchmark_run_dir, "diamond_script.tcl")
     top_module = os.path.join(benchmark_run_dir, benchmark["top_module"] + ".v")
-    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": top_module, "${BENCHMARK_NAME}": benchmark["name"]}
+    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, 
+            "${TOP_MODULE}": top_module, "${BENCHMARK_NAME}": benchmark["name"]}
     create_file_from_template(diamond_file_template, rep, diamond_file)
 
-    startTime = time.time()
-    logger.info('Starting synthesis run of {0} for configuration {1}'.format(benchmark["name"], cfg_name))
-    try:
-        os.system('cd {0}; diamondc {1} > diamond_output.log'.format(benchmark_run_dir, diamond_file))
-    except Exception as e:
-        logger.error('Synthesis run error for {0} with configuration {1}. Error message: {2}'.format(benchmark["name"], cfg_name, e.strerror))
-    endTime = time.time()
-    logger.info('Completed synthesis run of {0} with configuration {1} in {2} seconds.'.format(benchmark["name"], cfg_name, str(endTime - startTime)))
+    os.chdir(benchmark_run_dir)
+    run_command(benchmark["name"], cfg_name, "diamond_output.log", 
+            ["diamondc", diamond_file])
     
 
 def create_file_from_template(file_template, replacements, resulting_file):
@@ -243,10 +274,36 @@ def create_file_from_template(file_template, replacements, resulting_file):
         with open(file_template, "rt") as fin:
             with open(resulting_file, "wt") as fout:
                 for line in fin:
-                    result_line = pattern.sub(lambda m: replacements[re.escape(m.group(0))], line)
+                    result_line = pattern.sub(lambda m: replacements[
+                            re.escape(m.group(0))], line)
                     fout.write(result_line)
     except OSError as e:
         error_exit(e.strerror)
+
+def run_command(bench_name, cfg_name, logfile, command):
+    logger.info('Starting synthesis run of {0} for configuration {1}'.format(
+            bench_name, cfg_name))
+    with open(logfile, 'w') as output:
+        try:
+            startTime = time.time()
+            process = subprocess.run(command, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, universal_newlines=True)
+            output.write(process.stdout)
+            output.write(process.stderr)
+            output.write(str(process.returncode))
+            if process.returncode:
+                endTime = time.time()
+                logger.error('Failed synthesis run of {0} for configuration ' 
+                        '{1} in {2} seconds.'.format(bench_name, cfg_name, 
+                        str(endTime - startTime)))
+        except Exception as e:
+            endTime = time.time()
+            logger.error('Failed to execute synthesis of {0} for configuration '
+                    '{1}:\n {2}'.format(bench_name, cfg_name, 
+                    traceback.format_exc()))
+    endTime = time.time()
+    logger.info('Completed synthesis run of {0} for configuration {1} in {2} '
+            'seconds.'.format(bench_name, cfg_name, str(endTime - startTime)))
  
 
 if __name__ == "__main__":
@@ -254,4 +311,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main()
     endTime = time.time()
-    logger.info("Synthesis run completed in %s seconds." % str(endTime - startTime))
+    logger.info("Synthesis run completed in %s seconds." % str(
+            endTime - startTime))
+    if os.path.isdir(run_dir_base):
+        shutil.move(logFile, os.path.join(run_dir_base, "run.log"))
+
