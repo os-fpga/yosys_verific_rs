@@ -14,16 +14,17 @@ end endgenerate
 endmodule
 
 
-module D_ff(input QCK,QRT,QST,D, output CQZ);
-
-always @ (posedge QCK or posedge QST or posedge QRT)
-
-begin
-if (QST)
-	CQZ <= 1'b1;
-else if(QRT)
-	CQZ <= 1'b1;
-else
-CQZ <= D;
-end
+module D_ff(QCK, QRT, QST, D, CQZ);
+    input QCK, QRT, QST, D;
+    output reg CQZ;
+    
+    always @ (posedge QCK or posedge QST or posedge QRT)
+    begin
+        if (QST)
+        	CQZ <= 1'b1;
+        else if(QRT)
+        	CQZ <= 1'b1;
+        else
+            CQZ <= D;
+    end
 endmodule
