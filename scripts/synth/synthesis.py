@@ -46,7 +46,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)8s - %(message)s",
     handlers=[
-        logging.FileHandler(logFile),
+        logging.FileHandler(logFile, mode="w"),
         logging.StreamHandler()
     ]
 )
