@@ -16,6 +16,7 @@ import re
 import multiprocessing as mp
 import traceback
 import subprocess
+import signal
 import copy
 from datetime import datetime
 
@@ -277,34 +278,44 @@ def create_file_from_template(file_template, replacements, resulting_file):
     except OSError as e:
         error_exit(e.strerror)
 
-def run_command(bench_name, cfg_name, logfile, command, timeout):
+def run_command(bench_name, cfg_name, logfile, command, timeout_s):
     logger.info('Starting synthesis run of {0} for configuration {1}'.format(
             bench_name, cfg_name))
+    process = None
+    timeout = False
+    startTime = time.time()
     with open(logfile, 'w') as output:
         try:
-            startTime = time.time()
-            process = subprocess.run(command, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, timeout=timeout, universal_newlines=True)
-            output.write(process.stdout)
-            output.write(process.stderr)
-            output.write(str(process.returncode))
-            if process.returncode:
-                endTime = time.time()
-                logger.error('Failed synthesis run of {0} for configuration ' 
-                        '{1} in {2} seconds.'.format(bench_name, cfg_name, 
-                        str(endTime - startTime)))
-        except TimeoutExpired as e:
-            logger.error('Timeout of {0} seconds expired for synthesis '
-                    'run of {1} for configuration {2}.'.format(str(timeout), 
-                    bench_name, cfg_name))
+            process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, start_new_session=True)
+            stdout, stderr = process.communicate(timeout=timeout_s)
+            output.write(stdout.decode('utf-8'))
+            output.write(stderr.decode('utf-8'))
+        except subprocess.TimeoutExpired as e:
+            timeout = True
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            stdout, stderr = process.communicate()
+            output.write(stdout.decode('utf-8'))
+            output.write(stderr.decode('utf-8'))
         except Exception as e:
-            endTime = time.time()
             logger.error('Failed to execute synthesis of {0} for configuration '
                     '{1}:\n {2}'.format(bench_name, cfg_name, 
                     traceback.format_exc()))
+            return
     endTime = time.time()
-    logger.info('Completed synthesis run of {0} for configuration {1} in {2} '
-            'seconds.'.format(bench_name, cfg_name, str(endTime - startTime)))
+    if process:
+        if timeout:
+            logger.error('Timeout of {0} seconds expired for synthesis '
+                    'run of {1} for configuration {2}.'.format(str(timeout_s), 
+                    bench_name, cfg_name))
+        elif process.returncode:
+            logger.error('Failed synthesis run of {0} for configuration ' 
+                    '{1} in {2} seconds.'.format(bench_name, cfg_name, 
+                    str(endTime - startTime)))
+        else:
+            logger.info('Successfully completed synthesis run of {0} for '
+                    'configuration {1} in {2} seconds.'.format(bench_name,
+                    cfg_name, str(endTime - startTime)))
  
 
 if __name__ == "__main__":
