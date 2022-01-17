@@ -117,9 +117,10 @@ def init_columns(metric_list):
             for output_vivado_dir in output_vivado_dirs:
                 label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
                 metrics[extract_column_name(metric,"Vivado",label)] = '-'
-        for output_yosys_dir in output_yosys_dirs:
-            label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-            metrics[extract_column_name(metric,"Yosys",label)] = '-'
+        if metric != "LUT_AS_LOGIC" and metric != "LUT_AS_MEMORY" and metric != "CARRY4" and metric != "MUXF7" and metric != "MUXF8":
+           for output_yosys_dir in output_yosys_dirs:
+               label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+               metrics[extract_column_name(metric,"Yosys",label)] = '-'
 
 def add_value(count, design_index, metric, tool, label):
     if count:
@@ -173,6 +174,11 @@ def extract_vivado_metrics():
                 metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
             design_index = get_design_index(task_name)
             metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("LUT_AS_MEMORY",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("MUXF7",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("MUXF8",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("CARRY4",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
             metrics.at[design_index, extract_column_name("SRL",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
@@ -197,10 +203,13 @@ def extract_vivado_metrics():
                                         add_value(line.split()[3], design_index, "LUT", tool, label)
                                     if re.search(r"muxf7", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "MUXF7", tool, label)
                                     if re.search(r"muxf8", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "MUXF8", tool, label)
                                     if re.search(r"carry", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "CARRY4", tool, label)
                                     if re.search(r"Flop & Latch", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "DFF", tool, label)
                                     if re.search(r"srl", line, re.IGNORECASE):
@@ -226,6 +235,11 @@ def extract_vivado_metrics():
                                         if lut_count:
                                             metrics.at[design_index, extract_column_name("LUT",tool,label)] = \
                                                 int(metrics.at[design_index, extract_column_name("LUT",tool,label)]) - int(lut_count)
+                                            metrics.at[design_index, extract_column_name("LUT_AS_MEMORY",tool,label)] = int(lut_count)
+                                    if re.search("LUT as Logic", line, re.IGNORECASE):
+                                        lut_count = line.split()[5]
+                                        if lut_count:
+                                            metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = int(lut_count)
             except OSError as e:
                 logger.error(e.strerror)
 def extract_run_log():
@@ -253,6 +267,7 @@ def extract_run_log():
                     design_index = get_design_index(value[11])
                     metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = value[4]
                     metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Timeout"
+
     if args.yosys:
         global output_yosys_dirs
         for output_yosys_dir in output_yosys_dirs:
@@ -273,6 +288,7 @@ def extract_run_log():
                         design_index = get_design_index(value[11])
                         metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = value[4]
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Timeout"
+
             if args.vivado:
                 for i in range(len(metrics['Benchmarks'])):
                     m = int(metrics.at[i, extract_column_name("LUT","Vivado",vivado_label)])
@@ -287,7 +303,7 @@ def main():
     logger.info("Starting metrics extraction . . . . .")
     global metrics
     validate_inputs()
-    metric_list = ["STATUS", "LUT", "PERCENTAGE", "DFF", "SRL", "DRAM", "BRAM", "DSP", "RUNTIME"]
+    metric_list = ["STATUS", "LUT", "PERCENTAGE", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "DFF", "SRL", "DRAM", "BRAM", "DSP", "RUNTIME"]
     init_columns(metric_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
