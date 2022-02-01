@@ -37,11 +37,12 @@ parser.add_argument("--config_files", type=str, nargs="*",
 configuration_files = []
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 run_dir_base = None
+now = datetime.now()
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Configure logging system
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-logFile = os.path.join(abs_root_dir, "run.log")
+logFile = os.path.join(abs_root_dir, now.strftime("%d-%m-%YT%H-%M-%S") + ".log")
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)8s - %(message)s",
@@ -94,8 +95,8 @@ def main():
         except json.JSONDecodeError as e:
             error_exit(config_file + ": " + str(e))
 
-    now = datetime.now()
     global run_dir_base
+    global now
     run_dir_base = os.path.join(abs_root_dir, "result_" +\
             now.strftime("%d-%m-%YT%H-%M-%S"))
     os.mkdir(run_dir_base)
