@@ -1,0 +1,47 @@
+# Yosys synthesis script for b03
+# Print all commands to log before executing them.
+echo on
+
+# Read hdl files
+${READ_HDL}
+
+# Sythesis
+# begin
+hierarchy -check -top ${TOP_MODULE}
+# coarse
+proc
+flatten
+opt_expr
+opt_clean
+check
+opt -nodffe -nosdff
+fsm
+opt -sat
+wreduce
+peepopt
+opt_clean
+alumacc
+share
+opt
+memory -nomap
+opt_clean
+# fine
+opt -fast -full
+memory_map
+opt -full
+techmap
+opt
+# check
+hierarchy -check
+check
+
+# perform LUT mapping
+abc -script ${ABC_SCRIPT}
+# remove unused cells and wires
+opt
+
+# write synthesized verilog
+write_verilog ${BENCHMARK_NAME}
+
+# print stats
+stat
