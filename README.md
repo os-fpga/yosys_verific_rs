@@ -1,6 +1,9 @@
 # Introduction
 This repository is designed for the Yosys+Verific support. The open-source Yosys has extensive Verilog-2005 support while Verific adds complete support for SystemVerilog IEEE-1800, UPF IEEE-1801 and VHDL IEEE-1076 standards. 
-The repository contains yosys_rs and open-source HDL projects as submodules, which are going to be used for the Sythesis and Verification. It also contains Yosys template scripts which can be used in the OpenFPGA tasks for the yosys_vpr flow. These scripts are designed to be used only with Yosys with Verific enabled.
+The repository contains yosys_rs, verific_rs and open-source HDL projects as submodules, which are going to be used for the Sythesis and Verification. It also contains Yosys template scripts which can be used in the OpenFPGA tasks for the yosys_vpr flow. These scripts are designed to be used only with Yosys with Verific enabled.
+
+# Requirements
+The repository requires SSH key setup. Please see instructions at [connecting-to-github-with-ssh](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
 # Repository Structure
 ```
@@ -12,6 +15,7 @@ The repository contains yosys_rs and open-source HDL projects as submodules, whi
 |-- suites
 |-- scripts
 |   |-- benchmarks
+|   |-- log_automation
 |   |-- synth
 |   |-- task_generator
 |   `-- yosys_templates
@@ -45,6 +49,7 @@ The repository has the following submodules:
 `suites` directory contains benchmark suites which can be automatically run by the automation scripts available at `scripts/synth`.
 `scripts` directory contains the OpenFPGA task generator and OpenFPGA Yosys template scripts: 
  - `benchmarks` holds Yosys synthesis scripts for the available benchmarks.
+ - `log_automation` holds the automation scripts to extract metrics from tools output log files.
  - `synth` holds the automation scripts to run synthesis on different tools.
  - `task_generator` holds the OpenFPGA tasks generator script and it's default settings JSON file. 
  - `yosys_templates` holds the OpenFPGA Yosys template scripts which are written to use the `verific` frontend.
@@ -53,7 +58,11 @@ The repository has the following submodules:
 `yosys-plugins` directory contains yosys-symbiflow-plugins submodule.
 
 ## Build
-After cloning the repo, run **all** Makefile target to initialize/update all submodules and build Yosys with Verific enabled:
+After cloning the repo, run **co_and_build_yosys_verific** Makefile target to initialize/update required submodules and build Yosys with Verific enabled:
+```bash
+make co_and_build_yosys_verific
+```
+Run **all** Makefile target to initialize/update all submodules and build Yosys with Verific enabled:
 ```bash
 make all
 ```
