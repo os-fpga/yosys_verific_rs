@@ -9,6 +9,7 @@ The repository requires SSH key setup. Please see instructions at [connecting-to
 ```
 .
 |-- benchmarks
+|   |-- verilog
 |   |-- mixed_languages
 |   |-- system_verilog
 |   `-- vhdl
@@ -29,6 +30,7 @@ The repository has the following submodules:
  - [yosys](https://github.com/RapidSilicon/yosys_rs.git) 
  - [yosys-plugins](https://github.com/SymbiFlow/yosys-symbiflow-plugins.git) 
  - [verific](https://github.com/RapidSilicon/verific_rs.git) 
+ - [benchmarks/verilog/RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
  - [benchmarks/system_verilog/black-parrot](https://github.com/black-parrot/black-parrot.git)
  - [benchmarks/system_verilog/ariane](https://github.com/lowRISC/ariane.git)
  - [benchmarks/system_verilog/scm_design/scm](https://github.com/pulp-platform/scm.git)
@@ -42,7 +44,8 @@ The repository has the following submodules:
  - [benchmarks/vhdl/vhdl-hdmi-out](https://github.com/fcayci/vhdl-hdmi-out.git)
  - [benchmarks/vhdl/itc99-poli](https://github.com/squillero/itc99-poli.git)
 
-`benchmarks` directory contains benchmark open-source designs written in VHDL, SystemVerilog and mixed languages:
+`benchmarks` directory contains benchmark open-source designs written in Verilog, VHDL, SystemVerilog and mixed languages:
+ - `verilog` holds Verilog language desings.
  - `mixed_languages` holds mixed language desings.
  - `system_verilog` holds SystemVerilog submodule designs.
  - `vhdl` holds VHDL submodule designs.
