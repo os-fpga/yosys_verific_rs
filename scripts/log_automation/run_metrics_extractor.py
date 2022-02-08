@@ -60,6 +60,7 @@ metrics = pd.DataFrame(metrics,columns=["Benchmarks"])
 metrics = metrics.fillna(0)
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 yosys_log = "yosys_output.log" 
+
 def error_exit(msg):
     """Exit with error message"""
     logger.error("Current working directory : " + os.getcwd())
@@ -93,14 +94,12 @@ def validate_inputs():
                 error_exit("Provided directory not found - %s" %
                     yosys_dir)
             output_yosys_dirs.append(os.path.abspath(yosys_dir))
-
     if args.vivado:
         for vivado_dir in args.vivado:
             if not os.path.isdir(os.path.abspath(vivado_dir)):
                 error_exit("Provided directory not found - %s" %
                     vivado_dir)
             output_vivado_dirs.append(os.path.abspath(vivado_dir))
-
     if not os.path.isfile(os.path.abspath(args.run_log)):
         error_exit("Provided file is not found - %s" % 
             args.run_log)
@@ -269,7 +268,6 @@ def extract_run_log():
                         design_index = get_design_index(value[7])
                         metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[12]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Pass"
-                        metrics.at[design_index, extract_column_name("LUT",tool,label)]
                     elif ("Failed" in value) and (output_vivado_dir.split(os.path.sep)[-1] in value) :
                         design_index = get_design_index(value[6])
                         metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[11]), '.1f')
@@ -299,10 +297,11 @@ def extract_run_log():
                         design_index = get_design_index(value[11])
                         metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[4]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Timeout"
-def add_metrics():
-    global metrics
+
+def calc_vivado_luts():
     if args.vivado:
         global output_vivado_dirs
+        global metrics
         for output_vivado_dir in output_vivado_dirs:
             label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
             tool = "Vivado"
@@ -320,7 +319,7 @@ def add_metrics():
                     metrics.at[i, extract_column_name("LUT:CARRY4=4*LUT",tool,label)] = '-'
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = '-'
 
-def make_percentage(percentage_list):
+def calc_percentage(percentage_list):
     global output_yosys_dirs
     global output_vivado_dirs
     label_base = None
@@ -352,8 +351,8 @@ def make_percentage(percentage_list):
         label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
         for metric in percentage_list[1::]:
             var_carry = metric.split()[1]
+            #if one suite provided for vivado and that one is base , it cannot be compared with itself
             if len(args.vivado) > 1:
-#if one suite provided for vivado and that one is base , it cannot be compared with itself, for that need condition
                 for output_vivado_dir in output_vivado_dirs:
                     comparision_suit = output_vivado_dir.split(os.path.sep)[-1]
                     if comparision_suit in args.base:
@@ -374,17 +373,17 @@ def make_percentage(percentage_list):
                     except Exception:
                         metrics.at[i, extract_column_name(metric,"Yosys",label)] = '-'
 
-def slice_metrics():
+def reorder_columns():
     global metrics
-    a =  list(metrics.columns)
-    b = [column for column in a if column.startswith("LUT:CARRY4=5*LUT")]
-    if len(b) == 0:
-        b = [column for column in a if column.startswith("LUT ")]
-    ind = a.index(b[-1])
-    for column in a:
+    title_columns =  list(metrics.columns)
+    title_luts = [column for column in title_columns if column.startswith("LUT:CARRY4=5*LUT")]
+    if len(title_luts) == 0:
+        title_luts= [column for column in title_columns if column.startswith("LUT ")]
+    ind = title_columns.index(title_luts[-1])
+    for column in title_columns:
         if 'PERCENTAGE' in column:
-            b = metrics.pop(column)
-            metrics.insert(ind + 1, column, b)
+            temp = metrics.pop(column)
+            metrics.insert(ind + 1, column, temp)
 
 def main():
     """Main function."""
