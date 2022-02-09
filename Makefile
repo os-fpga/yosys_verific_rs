@@ -101,7 +101,7 @@ clean: clean_benchmarks clean_yosys clean_verific
 ## @ clean_benchmarks
 ##     |---> info       :  Remove all benchmark submodules
 ##     |---> usage      :  make clean_benchmarks
-clean_benchmarks: clean_vhdl clean_mixed_languages clean_system_verilog
+clean_benchmarks: clean_verilog clean_vhdl clean_mixed_languages clean_system_verilog
 
 ##
 ## @ clean_vhdl
@@ -110,6 +110,14 @@ clean_benchmarks: clean_vhdl clean_mixed_languages clean_system_verilog
 clean_vhdl:
 	grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 	grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
+
+##
+## @ clean_verilog
+##     |---> info       :  Remove all Verilog benchmark submodules 
+##     |---> usage      :  make clean_verilog
+clean_verilog:
+	grep 'path = benchmarks/verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
+	grep 'path = benchmarks/verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
 
 ##
 ## @ clean_system_verilog
