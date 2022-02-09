@@ -396,9 +396,9 @@ def main():
     extract_yosys_metrics()
     extract_vivado_metrics()
     extract_run_log()
-    add_metrics()
-    make_percentage(percentage_list)
-    slice_metrics()
+    calc_vivado_luts()
+    calc_percentage(percentage_list)
+    reorder_columns()
     metrics_to_csv()
 
 if __name__ == "__main__":
