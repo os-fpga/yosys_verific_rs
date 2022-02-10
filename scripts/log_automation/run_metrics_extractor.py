@@ -321,7 +321,7 @@ def calc_percentage(percentage_list):
     global output_yosys_dirs
     global output_vivado_dirs
     label_base = None
-    if args.yosys and (args.base in args.yosys):
+    if output_yosys_dirs and (args.base in output_yosys_dirs):
         label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
         for metric in percentage_list[1::]:
             var_carry = metric.split()[1]
@@ -345,7 +345,7 @@ def calc_percentage(percentage_list):
                 except Exception:
                     metrics.at[i,extract_column_name(percentage_list[0],"Yosys",label)] = '-'
               
-    if args.vivado and (args.base in args.vivado):
+    if output_vivado_dirs and (args.base in output_vivado_dirs):
         label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
         for metric in percentage_list[1::]:
             var_carry = metric.split()[1]
