@@ -85,16 +85,13 @@ def validate_inputs():
     global output_vivado_dirs
     if args.yosys:
         args.yosys = [arg[:-1] if arg.endswith('/') else arg for arg in args.yosys]
-    if args.vivado:
-        args.vivado = [arg[:-1] if arg.endswith('/') else arg for arg in args.vivado]
-    if args.base and args.base.endswith('/'): args.base = args.base[:-1]
-    if args.yosys:
         for yosys_dir in args.yosys:
             if not os.path.isdir(os.path.abspath(yosys_dir)):
                 error_exit("Provided directory not found - %s" %
                     yosys_dir)
             output_yosys_dirs.append(os.path.abspath(yosys_dir))
     if args.vivado:
+        args.vivado = [arg[:-1] if arg.endswith('/') else arg for arg in args.vivado]
         for vivado_dir in args.vivado:
             if not os.path.isdir(os.path.abspath(vivado_dir)):
                 error_exit("Provided directory not found - %s" %
@@ -104,7 +101,8 @@ def validate_inputs():
         error_exit("Provided file is not found - %s" % 
             args.run_log)
     if args.base:
-        if not ((args.base in args.yosys) or (args.base in args.vivado)):
+        args.base = os.path.abspath(args.base[:-1] if args.base.endswith('/') else args.base)
+        if not ((args.base in output_yosys_dirs) or (args.base in output_vivado_dirs)):
             error_exit("Incorrect base for the calculations - %s" %
                 args.base)
 
