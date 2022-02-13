@@ -1,0 +1,71 @@
+# -----------------------------------------------------------------
+# Author : Thierry (RapidSilicon) , 02/11/2022
+#
+# Customized ABC scripts targeting mapping on LUT6 for Area/Luts optimization
+#
+# Performs a sequence of different mapping with two kind of choices:
+#      - &dch
+#      - &synch2
+#
+# Best solution is saved at each mapping.
+#
+# We do not call "&satlut" in the first passes because it may degrade the process of
+# optimization. Indeed the idea is to do like in a simulated annealing fashion: we improve in 
+# the first passes the mapping and evenutaly degrade it but we start to strongly optimize
+# in the middle of the process, where we start to call "&satlut" which is relatively
+# efficient to further reduce the Luts count. If we call "&satlut" too early then the 
+# incremental process of improvement can get stuck
+#
+
+&get -n -m;
+
+# Alternate between &dch and &synch2 choices procedures
+#
+&dch ; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m;  &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m;  &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m;  &save -a
+&ps
+
+
+&dch; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &save -a
+&ps
+
+# Start to call &satlut : go further in the optimization process !
+#
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+
+
+&dch; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&synch2 -K 6 -C 500; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&st; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+&st; &if -K 6 -a; &put; mfs2 -W 4 -M 500 -C 7000; &get -n -m; &satlut; &save -a
+&ps
+
+# Ok get back the best mapping solution seen so far
+&load
+&ps
+
+&satlut;
+&ps
+
+&put
+
+lutpack
+
+&get -m -n ; &ps; 
+
+&put

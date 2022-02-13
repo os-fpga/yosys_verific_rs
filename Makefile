@@ -21,6 +21,8 @@ build_yosys_verific: build_verific
 	$(eval YOSYS_MK_ARGS  := CONFIG=gcc PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=$(CURRENT_SOURCE_DIR)/verific/verific-vJan22 -j 4)
 	$(eval YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install EXTRA_FLAGS="-DPASS_NAME=synth_ql")
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
+	cd yosys/abc/ && git apply ../../patches/giaDup.patch
+	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
 
 ##
