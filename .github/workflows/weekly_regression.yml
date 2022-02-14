@@ -2,7 +2,7 @@ name: Run script every week
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "0 13 * * *"
 
 jobs:
   build:
@@ -27,13 +27,13 @@ jobs:
 
       - name: Clone RTL benchmarks and itc99-poli 
         run: |
-          git clone git@github.com:RapidSilicon/RTL_Benchmark.git benchmarks/verilog/RTL_Benchmark
-          git clone git@github.com:squillero/itc99-poli.git benchmarks/vhdl/itc99-poli
+          make co_benchmark_name BENCHMARK_NAME=RTL_Benchmark
+          make co_benchmark_name BENCHMARK_NAME=itc99-poli
 
       - name: Execute Python script
         run: |
           load_vivado_2021.2
-          python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_noshare_verific_abc6.json suites/All/All_lut_vivado.json
+          python3 scripts/synth/synthesis.py --config_files suites/test_yosys.json suites/test_vivado.json
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
@@ -43,10 +43,10 @@ jobs:
 
       - name: Execute metrics extraction
         run:
-          python3 scripts/log_automation/run_metrics_extractor.py --vivado result*/All_lut_vivado.json/ --yosys result*/All_lut_noshare_verific_abc6.json --output_file All_lut.csv --run_log result*/run.log --base result*/All_lut_vivado.json/ 
+          python3 scripts/log_automation/run_metrics_extractor.py --vivado result*/test_vivado.json/ --yosys result*/test_yosys.json --output_file test.csv --run_log result*/run.log --base result*/test_vivado.json/ 
         
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
           name: cvs
-          path: All_lut.csv
+          path: test.csv
