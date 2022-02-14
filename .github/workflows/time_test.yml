@@ -1,0 +1,47 @@
+name: Weekly Regression tests
+
+on:
+  schedule:
+    - cron: "10 * * * *"
+
+jobs:
+  build:
+    runs-on: verific-builder
+    steps:
+      - name: Runner workspace path
+        run: |
+          echo "Cleaning up previous run"
+          rm -rf "${{ github.workspace }}"
+          mkdir -p "${{ github.workspace }}"
+
+      - uses: actions/checkout@v2
+
+      - name: Checkout and build yosys+verific
+        run:
+          make co_and_build_yosys_verific
+
+      - name: Clone RTL benchmarks and itc99-poli 
+        run: |
+          make co_benchmark_name BENCHMARK_NAME=RTL_Benchmark
+          make co_benchmark_name BENCHMARK_NAME=itc99-poli
+
+      - name: Execute Python script
+        run: |
+          load_vivado_2021.2
+          python3 scripts/synth/synthesis.py --config_files suites/test_yosys.json suites/test_vivado.json
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: result*/
+
+      - name: Execute metrics extraction
+        run:
+          python3 scripts/log_automation/run_metrics_extractor.py --vivado result*/test_vivado.json/ --yosys result*/test_yosys.json --output_file test.csv --run_log result*/run.log --base result*/test_vivado.json/ 
+        
+      - name: Upload csv file
+        uses: actions/upload-artifact@v2
+        with:
+          name: cvs
+          path: test.csv
