@@ -1,0 +1,27 @@
+diff --git a/src/aig/gia/giaDup.c b/src/aig/gia/giaDup.c
+index b3fcd295..a797818c 100644
+--- a/src/aig/gia/giaDup.c
++++ b/src/aig/gia/giaDup.c
+@@ -788,6 +788,22 @@ Gia_Man_t * Gia_ManDupWithAttributes( Gia_Man_t * p )
+         pNew->vConfigs = Vec_IntDup( p->vConfigs );
+     if ( p->pCellStr )
+         pNew->pCellStr = Abc_UtilStrsav( p->pCellStr );
++
++#if 1
++    // RapidSilicon:begin [Thierry] : we need to save the original PIs and POs names
++    // when using &save and &load. If we do not we come up after &load with a logic
++    // network which does not have the original names and when it is returned to Yosys
++    // this one cannot associate the original objects by names.
++    //
++    if ( p->vNamesIn )
++        pNew->vNamesIn = Vec_PtrDupStr(p->vNamesIn);
++
++    if ( p->vNamesOut )
++        pNew->vNamesOut = Vec_PtrDupStr(p->vNamesOut);
++
++    // RapidSilicon:end [Thierry]
++#endif
++
+     return pNew;
+ }
+ Gia_Man_t * Gia_ManDupRemovePis( Gia_Man_t * p, int nRemPis )

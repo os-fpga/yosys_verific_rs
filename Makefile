@@ -18,9 +18,11 @@ co_and_build_yosys_verific: co_yosys co_verific build_yosys_verific
 ##     |---> info       :  Compile yosys with Verific enabled and yosys-plugins
 ##     |---> usage      :  make build_yosys_verific
 build_yosys_verific: build_verific
-	$(eval YOSYS_MK_ARGS  := CONFIG=gcc PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=$(CURRENT_SOURCE_DIR)/verific/verific-vNov21 -j 4)
+	$(eval YOSYS_MK_ARGS  := CONFIG=gcc PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=$(CURRENT_SOURCE_DIR)/verific/verific-vJan22 -j 4)
 	$(eval YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install EXTRA_FLAGS="-DPASS_NAME=synth_ql")
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
+	cd yosys/abc/ && git apply ../../patches/giaDup.patch
+	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
 
 ##
@@ -38,7 +40,7 @@ build_yosys:
 ##     |---> info       :  Compile Verific
 ##     |---> usage      :  make build_verific
 build_verific: 
-	cd verific/verific-vNov21/tclmain && $(MAKE) VERSION="-O3" TOPFLAGS="-I/usr/include/tcl -fPIC -std=c++11"
+	cd verific/verific-vJan22/tclmain && $(MAKE) VERSION="-O3" TOPFLAGS="-I/usr/include/tcl -fPIC -std=c++11"
 
 ##
 ## @ co_yosys
@@ -55,7 +57,7 @@ co_yosys:
 ##     |---> usage      :  make co_verific
 co_verific:
 	git submodule update --init verific
-	cd verific && git checkout vNov21-yosys && git pull
+	cd verific && git checkout vJan22-yosys && git pull
 
 ##
 ## @ co_benchmarks
@@ -148,7 +150,7 @@ clean_yosys:
 ##     |---> info       :  Clean verific_rs submodule generated files
 ##     |---> usage      :  make clean_verific_rs
 clean_verific:
-	cd verific/verific-vNov21/tclmain && $(MAKE) clean
+	cd verific/verific-vJan22/tclmain && $(MAKE) clean
 	cd verific && git restore .
 
 help: Makefile
