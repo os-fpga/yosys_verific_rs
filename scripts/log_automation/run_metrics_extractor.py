@@ -154,12 +154,13 @@ def extract_yosys_metrics():
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
-                    results = re.findall(r"Printing statistics.*\n\n.*\n\n(.*?)\n\n", f.read(), re.DOTALL)
+                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", f.read(), re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
                     results = results[len(results) - 1].splitlines()
                     for line in results:
+                        logger.debug(line)
                         if re.search(r"lut", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
