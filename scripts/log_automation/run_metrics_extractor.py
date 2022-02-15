@@ -154,13 +154,12 @@ def extract_yosys_metrics():
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
-                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", f.read(), re.DOTALL)
+                    results = re.findall(r"Printing statistics.*\n\n.*\n\n(.*?)\n\n", f.read(), re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
                     results = results[len(results) - 1].splitlines()
                     for line in results:
-                        logger.debug(line)
                         if re.search(r"lut", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
@@ -301,6 +300,7 @@ def calc_vivado_luts():
     if args.vivado:
         global output_vivado_dirs
         global metrics
+        title_columns = list(metrics.columns)
         for output_vivado_dir in output_vivado_dirs:
             label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
             tool = "Vivado"
@@ -317,6 +317,12 @@ def calc_vivado_luts():
                 else:
                     metrics.at[i, extract_column_name("LUT:CARRY4=4*LUT",tool,label)] = '-'
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = '-'
+
+                ind = title_columns.index(extract_column_name("LUT",tool,label))
+                temp = metrics.pop(extract_column_name("LUT:CARRY4=4*LUT",tool,label))
+                metrics.insert(ind + 1, extract_column_name("LUT:CARRY4=4*LUT",tool,label), temp)
+                temp = metrics.pop(extract_column_name("LUT:CARRY4=5*LUT",tool,label))
+                metrics.insert(ind + 2, extract_column_name("LUT:CARRY4=5*LUT",tool,label), temp)
 
 def calc_percentage(percentage_list):
     global output_yosys_dirs
@@ -375,14 +381,23 @@ def calc_percentage(percentage_list):
 def reorder_columns():
     global metrics
     title_columns =  list(metrics.columns)
-    title_luts = [column for column in title_columns if column.startswith("LUT:CARRY4=5*LUT")]
-    if len(title_luts) == 0:
-        title_luts= [column for column in title_columns if column.startswith("LUT ")]
+    title_luts= [column for column in title_columns if column.startswith("LUT Yosys")]
     ind = title_columns.index(title_luts[-1])
+    i = 1
     for column in title_columns:
         if 'PERCENTAGE' in column:
             temp = metrics.pop(column)
-            metrics.insert(ind + 1, column, temp)
+            metrics.insert(ind + i, column, temp)
+            i += 1
+    if len(title_luts) == 0:
+        title_luts = [column for column in title_columns if column.startswith("LUT_AS_LOGIC")]
+        ind = title_columns.index(title_luts[0])
+        i = 1
+        for column in title_columns:
+            if 'PERCENTAGE' in column:
+                temp = metrics.pop(column)
+                metrics.insert(ind - i, column, temp)
+                i += 1
 
 def main():
     """Main function."""
