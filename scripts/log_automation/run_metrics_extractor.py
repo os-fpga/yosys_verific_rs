@@ -25,7 +25,7 @@ if sys.version_info[0] < 3:
 # Configure logging system
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 LOG_FORMAT = "%(levelname)8s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format=LOG_FORMAT)
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format=LOG_FORMAT)
 logger = logging.getLogger("metrics_extractor_logs")
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -74,6 +74,8 @@ def validate_inputs():
     absolute path.
     In case of error - print error message and exit the script.
     """
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     if not args.output_file:
         error_exit("Please provide output file.")
     if not (args.vivado or args.yosys):
@@ -155,12 +157,13 @@ def extract_yosys_metrics():
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
-                    results = re.findall(r"Printing statistics.*\n\n.*\n\n(.*?)\n\n", f.read(), re.DOTALL)
+                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", f.read(), re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
                     results = results[len(results) - 1].splitlines()
                     for line in results:
+                        logger.debug(line)
                         if re.search(r"lut", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
