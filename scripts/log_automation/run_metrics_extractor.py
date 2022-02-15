@@ -388,7 +388,7 @@ def reorder_columns():
                 temp = metrics.pop(column)
                 metrics.insert(ind + i, column, temp)
                 i += 1
-    if len(title_luts) == 0:
+    else:
         title_luts = [column for column in title_columns if column.startswith("LUT ")]
         ind = title_columns.index(title_luts[-1])
         i = 1
@@ -410,8 +410,9 @@ def main():
     extract_vivado_metrics()
     extract_run_log()
     calc_vivado_luts()
-    calc_percentage(percentage_list)
-    reorder_columns()
+    if args.base:
+        calc_percentage(percentage_list)
+        reorder_columns()
     metrics_to_csv()
 
 if __name__ == "__main__":
