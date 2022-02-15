@@ -28,13 +28,6 @@ synth_design -top ${TOP_MODULE} \
     -max_uram_cascade_height 0 \
     -shreg_min_size 5
 
-set opt_att "Default"
-set place_att "Default"
-set route_att "Default"
-
 report_utilization -file ${BENCHMARK_RUN_DIR}/util_temp_${TOP_MODULE}_vivado_synth.log
 report_timing_summary -file ${BENCHMARK_RUN_DIR}/timing_temp_${TOP_MODULE}_vivado_synth.log -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10000 -input_pins -routable_nets
 report_power -file ${BENCHMARK_RUN_DIR}/power_temp_${TOP_MODULE}_vivado_synth.log
-#write_checkpoint -force $::env(VIVADO_GEN_LOG_PATH)/post_synth
-
-
