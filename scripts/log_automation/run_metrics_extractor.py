@@ -25,7 +25,7 @@ if sys.version_info[0] < 3:
 # Configure logging system
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 LOG_FORMAT = "%(levelname)8s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format=LOG_FORMAT)
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format=LOG_FORMAT)
 logger = logging.getLogger("metrics_extractor_logs")
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -74,6 +74,8 @@ def validate_inputs():
     absolute path.
     In case of error - print error message and exit the script.
     """
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     if not args.output_file:
         error_exit("Please provide output file.")
     if not (args.vivado or args.yosys):
@@ -122,13 +124,14 @@ def init_columns(metric_list):
     global output_yosys_dirs
     global output_vivado_dirs
     for metric in metric_list:
-        for output_vivado_dir in output_vivado_dirs:
-            label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
-            metrics[extract_column_name(metric,"Vivado",label)] = '-'
+        if not (metric == metric_list[0]):
+            for output_vivado_dir in output_vivado_dirs:
+                label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                metrics[extract_column_name(metric,"Vivado",label)] = '-'
         if metric not in metric_list[1 : 8]:
-           for output_yosys_dir in output_yosys_dirs:
-               label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-               metrics[extract_column_name(metric,"Yosys",label)] = '-'
+            for output_yosys_dir in output_yosys_dirs:
+                label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+                metrics[extract_column_name(metric,"Yosys",label)] = '-'
 
 def add_value(count, design_index, metric, tool, label):
     if count:
@@ -182,7 +185,7 @@ def extract_vivado_metrics():
             if not metrics['Benchmarks'].eq(task_name).any():
                 metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
             design_index = get_design_index(task_name)
-            metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = 0
             metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = 0
             metrics.at[design_index, extract_column_name("LUT_AS_MEMORY",tool,label)] = 0
             metrics.at[design_index, extract_column_name("MUXF7",tool,label)] = 0
@@ -209,15 +212,15 @@ def extract_vivado_metrics():
                                 lines = re.split("\n", record)
                                 for line in lines:
                                     if re.search(r"lut", line, re.IGNORECASE):
-                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                     if re.search(r"muxf7", line, re.IGNORECASE):
-                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                         add_value(line.split()[3], design_index, "MUXF7", tool, label)
                                     if re.search(r"muxf8", line, re.IGNORECASE):
-                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                         add_value(line.split()[3], design_index, "MUXF8", tool, label)
                                     if re.search(r"carry", line, re.IGNORECASE):
-                                        add_value(line.split()[3], design_index, "LUT", tool, label)
+                                        add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                         add_value(line.split()[3], design_index, "CARRY4", tool, label)
                                     if re.search(r"Flop & Latch", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "DFF", tool, label)
@@ -242,8 +245,8 @@ def extract_vivado_metrics():
                                     if re.search("LUT as Memory", line, re.IGNORECASE):
                                         lut_count = line.split()[5]
                                         if lut_count:
-                                            metrics.at[design_index, extract_column_name("LUT",tool,label)] = \
-                                                int(metrics.at[design_index, extract_column_name("LUT",tool,label)]) - int(lut_count)
+                                            metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = \
+                                                int(metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)]) - int(lut_count)
                                             metrics.at[design_index, extract_column_name("LUT_AS_MEMORY",tool,label)] = int(lut_count)
                                     if re.search("LUT as Logic", line, re.IGNORECASE):
                                         lut_count = line.split()[5]
@@ -301,22 +304,23 @@ def calc_vivado_luts():
     if args.vivado:
         global output_vivado_dirs
         global metrics
+        title_columns = list(metrics.columns)
         for output_vivado_dir in output_vivado_dirs:
             label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
             tool = "Vivado"
             for i in range(0, len(metrics['Benchmarks'])):
                 if metrics.at[i, extract_column_name("STATUS",tool,label)] == "Pass":
-                    metrics.at[i, extract_column_name("LUT:CARRY4=4*LUT",tool,label)] = \
-                        int(metrics.at[i, extract_column_name("LUT",tool,label)]) - \
-                        int(metrics.at[i, extract_column_name("CARRY4",tool,label)]) + \
-                        4 * int(metrics.at[i, extract_column_name("CARRY4",tool,label)])
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = \
-                        int(metrics.at[i, extract_column_name("LUT",tool,label)]) - \
+                        int(metrics.at[i, extract_column_name("LUT:CARRY4=1*LUT",tool,label)]) - \
                         int(metrics.at[i, extract_column_name("CARRY4",tool,label)]) + \
                         5 * int(metrics.at[i, extract_column_name("CARRY4",tool,label)])
                 else:
-                    metrics.at[i, extract_column_name("LUT:CARRY4=4*LUT",tool,label)] = '-'
+                    metrics.at[i, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = '-'
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = '-'
+
+                ind = title_columns.index(extract_column_name("LUT:CARRY4=1*LUT",tool,label))
+                temp = metrics.pop(extract_column_name("LUT:CARRY4=5*LUT",tool,label))
+                metrics.insert(ind + 1, extract_column_name("LUT:CARRY4=5*LUT",tool,label), temp)
 
 def calc_percentage(percentage_list):
     global output_yosys_dirs
@@ -375,29 +379,40 @@ def calc_percentage(percentage_list):
 def reorder_columns():
     global metrics
     title_columns =  list(metrics.columns)
-    title_luts = [column for column in title_columns if column.startswith("LUT:CARRY4=5*LUT")]
-    if len(title_luts) == 0:
-        title_luts= [column for column in title_columns if column.startswith("LUT ")]
-    ind = title_columns.index(title_luts[-1])
-    for column in title_columns:
-        if 'PERCENTAGE' in column:
-            temp = metrics.pop(column)
-            metrics.insert(ind + 1, column, temp)
+    title_luts = [column for column in title_columns if column.startswith("LUT_AS_LOGIC")]
+    i = 0
+    if len(title_luts) != 0:
+        ind = title_columns.index(title_luts[0])
+        for column in title_columns:
+            if 'PERCENTAGE' in column:
+                temp = metrics.pop(column)
+                metrics.insert(ind + i, column, temp)
+                i += 1
+    else:
+        title_luts = [column for column in title_columns if column.startswith("LUT ")]
+        ind = title_columns.index(title_luts[-1])
+        i = 1
+        for column in title_columns:
+            if 'PERCENTAGE' in column:
+                temp = metrics.pop(column)
+                metrics.insert(ind + i, column, temp)
+                i += 1
 
 def main():
     """Main function."""
     logger.info("Starting metrics extraction . . . . .")
     global metrics
     validate_inputs()
-    percentage_list = ["PERCENTAGE", "PERCENTAGE LUT:CARRY4=4*LUT", "PERCENTAGE LUT:CARRY4=5*LUT"]
-    metric_list = ["LUT", "LUT:CARRY4=4*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
+    percentage_list = ["PERCENTAGE", "PERCENTAGE LUT:CARRY4=1*LUT", "PERCENTAGE LUT:CARRY4=5*LUT"]
+    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
     init_columns(metric_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
     extract_run_log()
     calc_vivado_luts()
-    calc_percentage(percentage_list)
-    reorder_columns()
+    if args.base:
+        calc_percentage(percentage_list)
+        reorder_columns()
     metrics_to_csv()
 
 if __name__ == "__main__":
