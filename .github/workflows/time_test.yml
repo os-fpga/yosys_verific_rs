@@ -2,7 +2,7 @@ name: Weekly Regression tests
 
 on:
   schedule:
-    - cron: "30 9 * * *"
+    - cron: "20 10 * * *"
 
 jobs:
   build:
@@ -45,9 +45,14 @@ jobs:
           name: logs
           path: result*/
 
+      - name: Create run.log
+        run: |
+          cp result*/run.log ./
+          cat .github/logs/All_lut_vivado/All_lut_vivado_run.log >> run.log
+
       - name: Execute metrics extraction
         run:
-          python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/test_yosys.json --output_file test.csv --run_log result*/run.log 
+          python3 scripts/log_automation/run_metrics_extractor.py --vivado .github/logs/All_lut_vivado/ --yosys result*/test_yosys.json --output_file test.csv --run_log run.log --base .github/logs/All_lut_vivado/
         
       - name: Upload csv file
         uses: actions/upload-artifact@v2
