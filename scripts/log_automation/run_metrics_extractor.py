@@ -157,7 +157,8 @@ def extract_yosys_metrics():
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
-                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", f.read(), re.DOTALL)
+                    log = f.read()
+                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", log, re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
@@ -168,6 +169,12 @@ def extract_yosys_metrics():
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "DFF", tool, label)
+                    results = re.findall("ABC: Mapping \(K=.*\).*(lev =.*\)).*MB", log)
+                    if not results:
+                        logger.error("No information found in : " + task_name + " log file")
+                        continue
+                    results = results[-1].split()
+                    logger.info(results)
             except OSError as e:
                 error_exit(e.strerror)
    
