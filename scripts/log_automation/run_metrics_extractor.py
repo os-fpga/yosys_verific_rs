@@ -124,7 +124,7 @@ def init_columns(metric_list):
     global output_yosys_dirs
     global output_vivado_dirs
     for metric in metric_list:
-        if not (metric == metric_list[0]):
+        if not (metric == metric_list[0] or metric == metric_list[8] or metric == metric_list[9]):
             for output_vivado_dir in output_vivado_dirs:
                 label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
                 metrics[extract_column_name(metric,"Vivado",label)] = '-'
@@ -157,7 +157,8 @@ def extract_yosys_metrics():
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
-                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", f.read(), re.DOTALL)
+                    log = f.read()
+                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", log, re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
@@ -168,6 +169,14 @@ def extract_yosys_metrics():
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "DFF", tool, label)
+                    results = re.findall("ABC: Mapping \(K=.*\).*(lev =.*\)).*MB", log)
+                    if not results:
+                        logger.error("No information found in : " + task_name + " log file")
+                        continue
+                    results = results[-1].split()
+                    metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[2]
+                    metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[3][1:-1]
+                    logger.info(results)
             except OSError as e:
                 error_exit(e.strerror)
    
@@ -404,7 +413,7 @@ def main():
     global metrics
     validate_inputs()
     percentage_list = ["PERCENTAGE", "PERCENTAGE LUT:CARRY4=1*LUT", "PERCENTAGE LUT:CARRY4=5*LUT"]
-    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
+    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "MAX_LOGIC_LEVEL", "AVERAGE_LOGIC_LEVEL", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
     init_columns(metric_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
