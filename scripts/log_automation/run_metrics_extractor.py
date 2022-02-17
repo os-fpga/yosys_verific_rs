@@ -175,7 +175,7 @@ def extract_yosys_metrics():
                         continue
                     results = results[-1].split()
                     metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[2]
-                    metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[3]
+                    metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[3][1:-1]
                     logger.info(results)
             except OSError as e:
                 error_exit(e.strerror)
