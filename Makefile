@@ -9,31 +9,35 @@ all: co_benchmarks co_and_build_yosys_verific
 
 ##
 ## @ co_and_build_yosys_verific
-##     |---> info       :  Checkout and compile yosys with Verific enabled and yosys-plugins
+##     |---> info       :  Checkout and compile yosys with Verific enabled, yosys-rs-plugin and yosys-plugins
 ##     |---> usage      :  make build_yosys_verific
 co_and_build_yosys_verific: co_yosys co_verific build_yosys_verific
 
 ##
 ## @ build_yosys_verific
-##     |---> info       :  Compile yosys with Verific enabled and yosys-plugins
+##     |---> info       :  Compile yosys with Verific enabled, yosys-rs-plugin and yosys-plugins
 ##     |---> usage      :  make build_yosys_verific
 build_yosys_verific: build_verific
 	$(eval YOSYS_MK_ARGS  := CONFIG=gcc PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=$(CURRENT_SOURCE_DIR)/verific/verific-vJan22 -j 4)
 	$(eval YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install EXTRA_FLAGS="-DPASS_NAME=synth_ql")
+	$(eval YOSYS_RS_PLUGIN_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install)
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
 	cd yosys/abc/ && git apply ../../patches/giaDup.patch
 	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
+	cd yosys-rs-plugin && $(MAKE) install $(YOSYS_RS_PLUGIN_MK_ARGS)
 
 ##
 ## @ build_yosys
-##     |---> info       :  Compile yosys and yosys-plugins
+##     |---> info       :  Compile yosys, yosys-rs-plugin and yosys-plugins
 ##     |---> usage      :  make build_yosys
 build_yosys:
 	$(eval YOSYS_MK_ARGS := CONFIG=gcc PREFIX=$(CURRENT_SOURCE_DIR)/yosys/install -j 4)
 	$(eval YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install EXTRA_FLAGS="-DPASS_NAME=synth_ql")
+	$(eval YOSYS_RS_PLUGIN_MK_ARGS := YOSYS_PATH=$(CURRENT_SOURCE_DIR)/yosys/install)
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS)
 	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
+	cd yosys-rs-plugin && $(MAKE) install $(YOSYS_RS_PLUGIN_MK_ARGS)
 
 ##
 ## @ build_verific
@@ -44,12 +48,15 @@ build_verific:
 
 ##
 ## @ co_yosys
-##     |---> info       :  Checkout yosys and yosys-plugins submodules
+##     |---> info       :  Checkout yosys, yosys-rs-plugin and yosys-plugins submodules
 ##     |---> usage      :  make co_yosys
 co_yosys:
 	git submodule update --init yosys
 	cd yosys && git checkout master && git pull
 	git submodule update --init yosys-plugins
+	cd yosys-plugins && git checkout master && git pull
+	git submodule update --init yosys-rs-plugin
+	cd yosys-rs-plugin && git checkout main && git pull
 
 ##
 ## @ co_verific
@@ -139,11 +146,12 @@ clean_mixed_languages:
 
 ##
 ## @ clean_yosys
-##     |---> info       :  Clean yosys and yosys-plugins submodules generated files
+##     |---> info       :  Clean yosys, yosys-rs-plugin and yosys-plugins submodules generated files
 ##     |---> usage      :  make clean_yosys
 clean_yosys:
 	cd yosys && $(MAKE) clean
 	cd yosys-plugins && $(MAKE) clean
+	cd yosys-rs-plugin && $(MAKE) clean
 
 ##
 ## @ clean_verific
