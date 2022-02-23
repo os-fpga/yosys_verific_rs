@@ -11,7 +11,7 @@ all: co_benchmarks co_and_build_yosys_verific
 ## @ co_and_build_yosys_verific
 ##     |---> info       :  Checkout and compile yosys with Verific enabled, yosys-rs-plugin and yosys-plugins
 ##     |---> usage      :  make build_yosys_verific
-co_and_build_yosys_verific: co_yosys co_verific build_yosys_verific
+co_and_build_yosys_verific: clean_yosys clean_verific co_yosys co_verific build_yosys_verific
 
 ##
 ## @ build_yosys_verific
@@ -52,11 +52,11 @@ build_verific:
 ##     |---> usage      :  make co_yosys
 co_yosys:
 	git submodule update --init yosys
-	cd yosys && git checkout master && git pull
+	cd yosys && git fetch && git checkout master && git pull
 	git submodule update --init yosys-plugins
-	cd yosys-plugins && git checkout master && git pull
+	cd yosys-plugins && git fetch && git checkout master && git pull
 	git submodule update --init yosys-rs-plugin
-	cd yosys-rs-plugin && git checkout main && git pull
+	cd yosys-rs-plugin && git fetch && git checkout main && git pull
 
 ##
 ## @ co_verific
@@ -64,7 +64,7 @@ co_yosys:
 ##     |---> usage      :  make co_verific
 co_verific:
 	git submodule update --init verific
-	cd verific && git checkout vJan22-yosys && git pull
+	cd verific && git fetch && git checkout vJan22-yosys && git pull
 
 ##
 ## @ co_benchmarks
@@ -149,17 +149,25 @@ clean_mixed_languages:
 ##     |---> info       :  Clean yosys, yosys-rs-plugin and yosys-plugins submodules generated files
 ##     |---> usage      :  make clean_yosys
 clean_yosys:
+ifneq ("","$(wildcard yosys/Makefile)")
 	cd yosys && $(MAKE) clean
+endif	
+ifneq ("","$(wildcard yosys-plugins/Makefile)")
 	cd yosys-plugins && $(MAKE) clean
+endif
+ifneq ("","$(wildcard ./yosys-rs-plugin/Makefile)")
 	cd yosys-rs-plugin && $(MAKE) clean
+endif
 
 ##
 ## @ clean_verific
 ##     |---> info       :  Clean verific_rs submodule generated files
 ##     |---> usage      :  make clean_verific_rs
 clean_verific:
-	cd verific/verific-vJan22/tclmain && $(MAKE) clean
+ifneq ("","$(wildcard ./verific/verific-v*/tclmain/Makefile)")
+	cd verific/verific-v*/tclmain && $(MAKE) clean
 	cd verific && git restore .
+endif
 
 help: Makefile
 	@echo '   #############################################'
