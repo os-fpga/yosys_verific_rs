@@ -67,6 +67,14 @@ co_verific:
 	cd verific && git fetch && git checkout vJan22-yosys && git pull
 
 ##
+## @ co_rtl_benchmark
+##     |---> info       :  Checkout RTL_benchmark submodule
+##     |---> usage      :  make co_rtl_benchmark
+co_rtl_benchmark:
+	git submodule update --init --recursive RTL_Benchmark
+	cd RTL_Benchmark && git fetch && git checkout master && git pull
+
+##
 ## @ co_benchmarks
 ##     |---> info       :  Checkout all benchmark submodules
 ##     |---> usage      :  make co_benchmarks
