@@ -25,19 +25,18 @@ jobs:
         run:
           make co_and_build_yosys_verific
 
-      - name: Clone RTL benchmarks and itc99-poli 
+      - name: Clone RTL benchmarks
         run: |
-          make co_benchmark_name BENCHMARK_NAME=RTL_Benchmark
-          make co_benchmark_name BENCHMARK_NAME=itc99-poli
+          make co_rtl_benchmark
         
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip --user
-          python3 -m pip install pandas --user
+          python3 -m pip install pandas termcolor --user
           
       - name: Execute Python script
         run: |
-          python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_rs_abc_a21.json
+          python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_area.json
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
@@ -48,14 +47,18 @@ jobs:
       - name: Create run.log
         run: |
           cp result*/run.log ./
-          cat .github/logs/All_lut_vivado/All_lut_vivado_run.log >> run.log
+          cat .github/logs/All_lut_rs_abc_a21/All_lut_rs_abc_a21_run.log >> run.log
 
       - name: Execute metrics extraction
         run:
-          python3 scripts/log_automation/run_metrics_extractor.py --vivado .github/logs/All_lut_vivado/ --yosys result*/All_lut_rs_abc_a21.json/ --output_file All_lut.csv --run_log run.log --base .github/logs/All_lut_vivado/
+          python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_area.json .github/logs/All_lut_rs_abc_a21  --output_file All_lut.csv --run_log run.log --base .github/logs/All_lut_rs_abc_a21
         
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
           name: cvs
           path: All_lut.csv
+
+     - name: Compare QoR
+       run: |
+         python3 scripts/log_automation/result_comparision.py All_lut.csv
