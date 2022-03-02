@@ -24,6 +24,7 @@ build_yosys_verific: build_verific
 ifeq ("","$(wildcard yosys/abc/src/aig/gia/giaDup.c)")
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
 	cd yosys/abc/ && git apply ../../patches/giaDup.patch
+	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 else	
 	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 endif	
@@ -41,6 +42,7 @@ build_yosys:
 ifeq ("","$(wildcard yosys/abc/src/aig/gia/giaDup.c)")
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
 	cd yosys/abc/ && git apply ../../patches/giaDup.patch
+	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 else	
 	cd yosys && $(MAKE) ABCREV=default install $(YOSYS_MK_ARGS)
 endif	
