@@ -71,6 +71,7 @@ co_yosys:
 	git submodule update --init --remote --recursive yosys-rs-plugin
 	cd yosys-rs-plugin && git fetch && git checkout main && git pull
 	git submodule update --init --remote logic_synthesis-rs
+	cd logic_synthesis-rs && git submodule update --init --remote abc-rs
 	cd logic_synthesis-rs/abc-rs && git fetch && git checkout save_PIs_and_POs && git pull
 
 ##
