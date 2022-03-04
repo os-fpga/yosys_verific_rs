@@ -56,13 +56,13 @@ build_verific:
 ##     |---> info       :  Checkout yosys, yosys-rs-plugin and yosys-plugins submodules
 ##     |---> usage      :  make co_yosys
 co_yosys:
-	git submodule update --init yosys
+	git submodule update --init --remote --recursive yosys
 	cd yosys && git fetch && git checkout master && git pull
-	git submodule update --init yosys-plugins
+	git submodule update --init --remote --recursive yosys-plugins
 	cd yosys-plugins && git fetch && git checkout master && git pull
-	git submodule update --init yosys-rs-plugin
+	git submodule update --init --remote --recursive yosys-rs-plugin
 	cd yosys-rs-plugin && git fetch && git checkout main && git pull
-	git submodule update --init --recursive logic_synthesis-rs
+	git submodule update --init --remote --recursive logic_synthesis-rs
 	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout master && git pull
 	cd logic_synthesis-rs/abc-rs && git fetch && git checkout save_PIs_and_POs && git pull
 
@@ -71,7 +71,7 @@ co_yosys:
 ##     |---> info       :  Checkout verific submodule
 ##     |---> usage      :  make co_verific
 co_verific:
-	git submodule update --init verific
+	git submodule update --init --remote --recursive verific
 	cd verific && git fetch && git checkout vJan22-yosys && git pull
 
 ##
@@ -79,7 +79,7 @@ co_verific:
 ##     |---> info       :  Checkout RTL_benchmark submodule
 ##     |---> usage      :  make co_rtl_benchmark
 co_rtl_benchmark:
-	git submodule update --init --recursive RTL_Benchmark
+	git submodule update --init --remote --recursive RTL_Benchmark
 	cd RTL_Benchmark && git fetch && git checkout master && git pull
 
 ##
@@ -93,28 +93,28 @@ co_benchmarks: co_vhdl co_system_verilog co_mixed_languages
 ##     |---> info       :  Checkout all VHDL benchmark submodules
 ##     |---> usage      :  make co_vhdl
 co_vhdl:
-	git submodule update --init --recursive benchmarks/vhdl
+	git submodule update --init --remote --recursive benchmarks/vhdl
 
 ##
 ## @ co_system_verilog
 ##     |---> info       :  Checkout all SV benchmark submodules
 ##     |---> usage      :  make co_system_verilog
 co_system_verilog:
-	git submodule update --init --recursive benchmarks/system_verilog
+	git submodule update --init --remote --recursive benchmarks/system_verilog
 
 ##
 ## @ co_mixed_languages
 ##     |---> info       :  Checkout all mixed_languages benchmark submodules
 ##     |---> usage      :  make co_mixed_languages
 co_mixed_languages:
-	git submodule update --init --recursive benchmarks/mixed_languages
+	git submodule update --init --remote --recursive benchmarks/mixed_languages
 
 ##
 ## @ co_benchmark_name
 ##     |---> info       :  Checkout specified benchmark submodule
 ##     |---> usage      :  make co_benchmark_name BENCHMARK_NAME=VALUE
 co_benchmark_name:
-	git submodule update --init --recursive $(shell find ./benchmarks -name $(BENCHMARK_NAME))
+	git submodule update --init --remote --recursive $(shell find ./benchmarks -name $(BENCHMARK_NAME))
 
 ##
 ## @ clean
