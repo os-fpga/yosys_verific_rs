@@ -64,7 +64,7 @@ build_lsoracle:
 ##     |---> info       :  Checkout yosys, yosys-rs-plugin, yosys-plugins and logic_synthesis-rs/abc-rs submodules
 ##     |---> usage      :  make co_yosys
 co_yosys:
-	git submodule update --init --remote yosys
+	git submodule update --init --remote --recursive yosys
 	cd yosys && git fetch && git checkout master && git pull
 	git submodule update --init --remote --recursive yosys-plugins
 	cd yosys-plugins && git fetch && git checkout master && git pull
