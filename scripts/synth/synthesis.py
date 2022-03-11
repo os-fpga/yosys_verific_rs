@@ -233,10 +233,10 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
         run_command(benchmark["name"], cfg_name, "yosys_output.log", 
                 [yosys_path, "yosys.ys"], timeout)
 
-    except Exception as ex:
-        template = "An {0} exception occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        logger.error(message)
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def run_benchmark_with_vivado(benchmark, vivado_file_template, 
         config_run_dir_base, cfg_name, timeout):
@@ -254,10 +254,10 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template,
                 "-mode", "batch", "-source", vivado_file, 
                 "-tempDir", "tmp"], timeout)
 
-    except Exception as ex:
-        template = "An {0} exception occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        logger.error(message)
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def run_benchmark_with_diamond(benchmark, diamond_file_template, 
         config_run_dir_base, cfg_name, timeout):
@@ -275,10 +275,10 @@ def run_benchmark_with_diamond(benchmark, diamond_file_template,
         run_command(benchmark["name"], cfg_name, "diamond_output.log", 
                 ["diamondc", diamond_file], timeout)
     
-    except Exception as ex:
-        template = "An {0} exception occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        logger.error(message)
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def create_file_from_template(file_template, replacements, resulting_file):
     replacements = dict((re.escape(k), v) for k, v in replacements.items())
