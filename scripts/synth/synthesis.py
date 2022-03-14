@@ -190,81 +190,95 @@ def run_config_with_diamond(synthesis_settings, config_run_dir_base,
 
 def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template, 
         abc_script, run_dir_base, read_hdl_base, cfg_name, timeout):
-    abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
-    files_dict = {"v": [], "sv": [], "vhdl": []}
-    for filename in os.listdir(abs_rtl_path):
-        if filename.endswith(".svh"):
-            files_dict["sv"].append(filename)
-        elif filename.endswith(".vh"):
-            files_dict["v"].append(filename)
-    for filename in os.listdir(abs_rtl_path):
-        if filename.endswith(".vhd"):
-            files_dict["vhdl"].append(filename)
-        elif filename.endswith(".vhdl"):
-            files_dict["vhdl"].append(filename)
-        elif filename.endswith(".sv"):
-            files_dict["sv"].append(filename)
-        elif filename.endswith(".v"):
-            files_dict["v"].append(filename)
-        elif filename.endswith(".verilog"):
-            files_dict["v"].append(filename)
-        elif filename.endswith(".vlg"):
-            files_dict["v"].append(filename)
-    read_hdl = read_hdl_base
-    if files_dict["v"]:
-        read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
-        read_hdl += read_verilog
-    if files_dict["sv"]:
-        read_sv = "\nread -sv " + " ".join(files_dict["sv"])
-        read_hdl += read_sv
-    if files_dict["vhdl"]:
-        read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
-        read_hdl += read_vhdl
-    
-    benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
-    shutil.copytree(abs_rtl_path, benchmark_run_dir)
-    yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
-    
-    rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
-            "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
-    create_file_from_template(yosys_file_template, rep, yosys_file) 
-    
-    os.chdir(benchmark_run_dir)
-    run_command(benchmark["name"], cfg_name, "yosys_output.log", 
-            [yosys_path, "yosys.ys"], timeout)
+    try:
+        abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
+        files_dict = {"v": [], "sv": [], "vhdl": []}
+        for filename in os.listdir(abs_rtl_path):
+            if filename.endswith(".svh"):
+                files_dict["sv"].append(filename)
+            elif filename.endswith(".vh"):
+                files_dict["v"].append(filename)
+        for filename in os.listdir(abs_rtl_path):
+            if filename.endswith(".vhd"):
+                files_dict["vhdl"].append(filename)
+            elif filename.endswith(".vhdl"):
+                files_dict["vhdl"].append(filename)
+            elif filename.endswith(".sv"):
+                files_dict["sv"].append(filename)
+            elif filename.endswith(".v"):
+                files_dict["v"].append(filename)
+            elif filename.endswith(".verilog"):
+                files_dict["v"].append(filename)
+            elif filename.endswith(".vlg"):
+                files_dict["v"].append(filename)
+        read_hdl = read_hdl_base
+        if files_dict["v"]:
+            read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
+            read_hdl += read_verilog
+        if files_dict["sv"]:
+            read_sv = "\nread -sv " + " ".join(files_dict["sv"])
+            read_hdl += read_sv
+        if files_dict["vhdl"]:
+            read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
+            read_hdl += read_vhdl
+        
+        benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
+        shutil.copytree(abs_rtl_path, benchmark_run_dir)
+        yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
+        
+        rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
+                "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script}
+        create_file_from_template(yosys_file_template, rep, yosys_file) 
+        os.chdir(benchmark_run_dir)
+        run_command(benchmark["name"], cfg_name, "yosys_output.log", 
+                [yosys_path, "yosys.ys"], timeout)
 
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def run_benchmark_with_vivado(benchmark, vivado_file_template, 
         config_run_dir_base, cfg_name, timeout):
-    benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
-    abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
-    shutil.copytree(abs_rtl_path, benchmark_run_dir)
-    vivado_file = os.path.join(benchmark_run_dir, "vivado_script.tcl")
-    
-    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": 
-            benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
-    create_file_from_template(vivado_file_template, rep, vivado_file)
-    os.chdir(benchmark_run_dir)
-    run_command(benchmark["name"], cfg_name, "vivado_output.log", ["vivado", 
-            "-mode", "batch", "-source", vivado_file, 
-            "-tempDir", "tmp"], timeout)
+    try:
+        benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
+        abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
+        shutil.copytree(abs_rtl_path, benchmark_run_dir)
+        vivado_file = os.path.join(benchmark_run_dir, "vivado_script.tcl")
+        
+        rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": 
+                benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
+        create_file_from_template(vivado_file_template, rep, vivado_file)
+        os.chdir(benchmark_run_dir)
+        run_command(benchmark["name"], cfg_name, "vivado_output.log", ["vivado", 
+                "-mode", "batch", "-source", vivado_file, 
+                "-tempDir", "tmp"], timeout)
 
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def run_benchmark_with_diamond(benchmark, diamond_file_template, 
         config_run_dir_base, cfg_name, timeout):
-    benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
-    abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
-    shutil.copytree(abs_rtl_path, benchmark_run_dir)
-    diamond_file = os.path.join(benchmark_run_dir, "diamond_script.tcl")
-    top_module = os.path.join(benchmark_run_dir, benchmark["top_module"] + ".v")
-    rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, 
-            "${TOP_MODULE}": top_module, "${BENCHMARK_NAME}": benchmark["name"]}
-    create_file_from_template(diamond_file_template, rep, diamond_file)
+    try:
+        benchmark_run_dir = os.path.join(config_run_dir_base, benchmark["name"])
+        abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
+        shutil.copytree(abs_rtl_path, benchmark_run_dir)
+        diamond_file = os.path.join(benchmark_run_dir, "diamond_script.tcl")
+        top_module = os.path.join(benchmark_run_dir, benchmark["top_module"] + ".v")
 
-    os.chdir(benchmark_run_dir)
-    run_command(benchmark["name"], cfg_name, "diamond_output.log", 
-            ["diamondc", diamond_file], timeout)
+        rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, 
+                "${TOP_MODULE}": top_module, "${BENCHMARK_NAME}": benchmark["name"]}
+        create_file_from_template(diamond_file_template, rep, diamond_file)
+        os.chdir(benchmark_run_dir)
+        run_command(benchmark["name"], cfg_name, "diamond_output.log", 
+                ["diamondc", diamond_file], timeout)
     
+    except Exception as e:
+        logger.error('Failed to execute synthesis of {0} for configuration '
+                '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
+                traceback.format_exc()))
 
 def create_file_from_template(file_template, replacements, resulting_file):
     replacements = dict((re.escape(k), v) for k, v in replacements.items())

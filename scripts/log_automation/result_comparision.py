@@ -52,6 +52,10 @@ def flag_condition(min_val, average):
     elif min_val < -5 and average <= 0:
         print("The status of QoR is ", colored("RED.", "white", "on_red"))
         sys.exit(1)
+def check_status():
+    for i in df:
+        if "STATUS" in i:
+            if "Fail" in list(df[i]): sys.exit("Some benchmarks have failed.")
 
 def main():
      
@@ -65,6 +69,7 @@ def main():
     data.index=blankIndex
     print(data.fillna('-'))
     flag_condition(min_val, average)
+    check_status()
 
 if __name__ == "__main__":
         main()
