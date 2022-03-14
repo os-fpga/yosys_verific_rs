@@ -79,20 +79,18 @@ build_verific:
 ##     |---> info       :  Build LSOracle
 ##     |---> usage      :  make build_lsoracle
 build_lsoracle:
-ifneq (,$(CC))
-	export CC=$(CC)
-else
+ifeq (,$(CC))
 	$(error No compatible GCC version to build LSOracle)
 endif
-ifneq (,$(CXX))
-	export CXX=$(CXX)
-else
+ifeq (,$(CXX))
 	$(error No compatible G++ version to build LSOracle)
 endif
+
 ifeq (,$(wildcard logic_synthesis-rs/LSOracle-rs/build))
 	mkdir logic_synthesis-rs/LSOracle-rs/build
 endif
 	cd logic_synthesis-rs/LSOracle-rs/build &&\
+	export CC=$(CC) && export CXX=$(CXX) &&\
 	$(CMAKE_COMMAND) $(LSORACLE_CMAKE_ARGS) .. &&\
 	$(MAKE) $(LSORACLE_MK_ARGS)
 
@@ -127,6 +125,7 @@ co_lsoracle:
 	git submodule update --init --remote logic_synthesis-rs
 	cd logic_synthesis-rs && git submodule update --init --recursive LSOracle-rs
 	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout master && git pull
+	cd logic_synthesis-rs/LSOracle-rs && git submodule update --init --recursive
 
 ##
 ## @ co_benchmarks
