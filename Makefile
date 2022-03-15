@@ -11,7 +11,29 @@ YOSYS_MK_ARGS := CONFIG=gcc PREFIX=$(YOSYS_PATH) ABCEXTERNAL=$(ABCEXTERNAL) -j $
 YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) EXTRA_FLAGS="-DPASS_NAME=synth_ql" -j $(NUM_CPU)
 YOSYS_RS_PLUGIN_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) -j $(NUM_CPU)
 LSORACLE_MK_ARGS := -j $(NUM_CPU)
+CMAKE_COMMAND := cmake
+LSORACLE_CMAKE_ARGS := -DCMAKE_BUILD_TYPE=RELEASE
+LSORACLE_GCC_VERSION := (GCC) 8
+CC :=
+CXX :=
 
+CC_PATHS := $(shell which -a gcc)
+CXX_PATHS := $(shell which -a g++)
+
+define gcc_version =
+ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
+    CC := $(1)
+endif
+endef
+
+define g++_version =
+ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
+    CXX := $(1)
+endif
+endef
+
+$(foreach path,$(CC_PATHS),$(eval $(call gcc_version,$(path))))
+$(foreach path,$(CXX_PATHS),$(eval $(call g++_version,$(path))))
 
 ##
 ## @ co_and_build_yosys_verific
@@ -57,7 +79,20 @@ build_verific:
 ##     |---> info       :  Build LSOracle
 ##     |---> usage      :  make build_lsoracle
 build_lsoracle:
-	cd logic_synthesis-rs/LSOracle-rs && $(MAKE) $(LSORACLE_MK_ARGS)
+ifeq (,$(CC))
+	$(error No compatible GCC version to build LSOracle)
+endif
+ifeq (,$(CXX))
+	$(error No compatible G++ version to build LSOracle)
+endif
+
+ifeq (,$(wildcard logic_synthesis-rs/LSOracle-rs/build))
+	mkdir logic_synthesis-rs/LSOracle-rs/build
+endif
+	cd logic_synthesis-rs/LSOracle-rs/build &&\
+	export CC=$(CC) && export CXX=$(CXX) &&\
+	$(CMAKE_COMMAND) $(LSORACLE_CMAKE_ARGS) .. &&\
+	$(MAKE) $(LSORACLE_MK_ARGS)
 
 ##
 ## @ co_yosys
@@ -88,8 +123,9 @@ co_verific:
 ##     |---> usage      :  make co_lsoracle
 co_lsoracle:
 	git submodule update --init --remote logic_synthesis-rs
-	cd logic_synthesis-rs && git submodule update --init --remote LSOracle-rs
+	cd logic_synthesis-rs && git submodule update --init --recursive LSOracle-rs
 	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout master && git pull
+	cd logic_synthesis-rs/LSOracle-rs && git submodule update --init --recursive
 
 ##
 ## @ co_benchmarks
@@ -209,8 +245,8 @@ endif
 ##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
 ##     |---> usage      :  make clean_lsoracle
 clean_lsoracle:
-ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/Makefile)")
-	cd logic_synthesis-rs/LSOracle-rs && $(MAKE) clean
+ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
+	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
 endif
 
 ##
