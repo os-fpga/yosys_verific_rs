@@ -93,21 +93,25 @@ endif
 ##     |---> info       :  Initialize and update all submodules
 ##     |---> usage      :  make init_submodules
 init_submodules:
-	git submodule update --init --recursive
-	git submodule update --remote --recursive
+	git submodule update --init --recursive yosys yosys-plugins verific RTL_Benchmark yosys-rs-plugin
+	git submodule update --remote --recursive yosys yosys-plugins verific RTL_Benchmark yosys-rs-plugin
+	git submodule update --init --remote logic_synthesis-rs
+	cd logic_synthesis-rs && git submodule update --init --recursive
+	cd logic_synthesis-rs/abc-rs && git fetch && git checkout main && git pull
+	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout main && git pull
+	cd logic_synthesis-rs/LSOracle-rs && git submodule update --init --recursive
 
 ##
 ## @ clean
 ##     |---> info       :  Clean all generated files
 ##     |---> usage      :  make clean
-clean: clean_yosys clean_verific
+clean: clean_yosys_verific clean_lsoracle
 
 ##
-## @ deinit_rtl_benchmark
-##     |---> info       :  Remove RTL_Benchmark submodule 
-##     |---> usage      :  make deinit_rtl_benchmark
-deinit_rtl_benchmark:
-	git submodule deinit -f RTL_Benchmark
+## @ clean_yosys_verific
+##     |---> info       :  Clean Yosys and Verific generated files
+##     |---> usage      :  make clean_yosys_verific
+clean_yosys_verific: clean_yosys clean_verific
 
 ##
 ## @ clean_yosys
@@ -124,19 +128,10 @@ endif
 ifneq ("","$(wildcard ./yosys-rs-plugin/Makefile)")
 	cd yosys-rs-plugin && $(MAKE) clean
 endif
-	rm -rf $(YOSYS_PATH)
-endif
 ifneq ("","$(wildcard ./logic_synthesis-rs/abc-rs/Makefile)")
 	cd logic_synthesis-rs/abc-rs && $(MAKE) clean
 endif
-
-##
-## @ clean_lsoracle
-##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
-##     |---> usage      :  make clean_lsoracle
-clean_lsoracle:
-ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
-	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
+	rm -rf $(YOSYS_PATH)
 endif
 
 ##
@@ -147,6 +142,15 @@ clean_verific:
 ifneq ("","$(wildcard ./verific/verific-v*/tclmain/Makefile)")
 	cd verific/verific-v*/tclmain && $(MAKE) clean
 	cd verific && git restore .
+endif
+
+##
+## @ clean_lsoracle
+##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
+##     |---> usage      :  make clean_lsoracle
+clean_lsoracle:
+ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
+	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
 endif
 
 help: Makefile
