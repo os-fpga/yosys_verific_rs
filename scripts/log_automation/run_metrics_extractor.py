@@ -354,9 +354,15 @@ def calc_percentage(percentage_list):
                 continue
             for i in range(0, len(metrics['Benchmarks'])):
                 try:
+                    metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]) - \
+                    float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
+                    metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]) - \
+                    float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
                     metrics.at[i,extract_column_name(percentage_list[0],"Yosys",label)] = format((float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]) - \
                         float(metrics.at[i, extract_column_name("LUT", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]), '.1f')
                 except Exception:
+                    metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = "-"
+                    metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = "-"
                     metrics.at[i,extract_column_name(percentage_list[0],"Yosys",label)] = '-'
               
     if output_vivado_dirs and (args.base in output_vivado_dirs):
@@ -406,47 +412,24 @@ def reorder_columns():
                 temp = metrics.pop(column)
                 metrics.insert(ind + i, column, temp)
                 i += 1
-
-def percentage_logic():
-    global metrics
-    global output_yosys_dirs
-    
-    label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
+                
     title_columns = list(metrics.columns)
     title_max_logic = [column for column in title_columns if column.startswith("MAX_LOGIC_LEVEL")]
     title_average_logic = [column for column in title_columns if column.startswith("AVERAGE_LOGIC_LEVEL")]
     title_perc_max = [column for column in title_columns if column.startswith("PERCENTAGE MAX_LOGIC_LEVEL")]
-
-    for output_yosys_dir in output_yosys_dirs:
-        comparision_suit = output_yosys_dir.split(os.path.sep)[-1]
-        label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-        if comparision_suit in args.base:
-            print("comparision_suit", comparision_suit)
-            continue
-        for i in range(0, len(metrics['Benchmarks'])):
-            try:
-                metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]) - \
-                float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
-
-                metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]) - \
-                float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
-            except Exception:
-                metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = "-"
-                metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = "-"
-
-    ind = title_columns.index(title_max_logic[-1])
-    title_perc_max = [column for column in title_columns if column.startswith("PERCENTAGE MAX_LOGIC_LEVEL")]
     title_perc_average = [column for column in title_columns if column.startswith("PERCENTAGE AVERAGE_LOGIC_LEVEL")]
-    for i in title_perc_max:
-        temp = metrics.pop(i)
-        metrics.insert(ind, i, temp)
-    ind = title_columns.index(title_average_logic[-1])
-    for i in title_perc_average:
-        temp = metrics.pop(i)
-        metrics.insert(ind, i, temp)
 
-    metrics.pop(extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label_base))
-    metrics.pop(extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label_base))
+    if len(title_max_logic) != 0:
+        ind = title_columns.index(title_max_logic[-1])
+        print(ind, "inddd", title_columns)
+        for i in title_perc_max:
+            print(i, ind)
+            temp = metrics.pop(i)
+            metrics.insert(ind, i, temp)
+        ind = title_columns.index(title_average_logic[-1])
+        for i in title_perc_average:
+            temp = metrics.pop(i)
+            metrics.insert(ind, i, temp)
 
 def main():
     """Main function."""
@@ -454,17 +437,15 @@ def main():
     global metrics
     validate_inputs()
     percentage_list = ["PERCENTAGE", "PERCENTAGE LUT:CARRY4=1*LUT", "PERCENTAGE LUT:CARRY4=5*LUT"]
-    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "MAX_LOGIC_LEVEL", "AVERAGE_LOGIC_LEVEL", "PERCENTAGE MAX_LOGIC_LEVEL", "PERCENTAGE AVERAGE_LOGIC_LEVEL", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
+    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "CARRY4", "MUXF7", "MUXF8", "MAX_LOGIC_LEVEL", "AVERAGE_LOGIC_LEVEL", "DFF", "RUNTIME", "SRL", "DRAM", "BRAM", "DSP", "STATUS"]
     init_columns(metric_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
     extract_run_log()
     calc_vivado_luts()
-    #percentage_logic()
     if args.base:
         calc_percentage(percentage_list)
         reorder_columns()
-    percentage_logic()
     metrics_to_csv()
 
 if __name__ == "__main__":
