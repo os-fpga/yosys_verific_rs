@@ -296,6 +296,8 @@ def create_file_from_template(file_template, replacements, resulting_file):
 def run_command(bench_name, cfg_name, logfile, command, timeout_s):
     logger.info('Starting synthesis run of {0} for configuration {1}'.format(
             bench_name, cfg_name))
+    time_command = ["/usr/bin/time", "-p"]
+    command = time_command + command
     process = None
     timeout = False
     startTime = time.time()

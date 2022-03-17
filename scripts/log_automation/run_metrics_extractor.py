@@ -158,7 +158,15 @@ def extract_yosys_metrics():
             try:
                 with open(task_log, 'r') as f:
                     log = f.read()
-                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n", log, re.DOTALL)
+                    log_list = log.split("\n")
+                    for line in log_list:
+                        if line.startswith("real"):
+                            line = line.split()
+                            runtime = float(line[1])
+                            metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = runtime
+                            continue
+
+                    results = re.findall(r"Printing statistics.*\n\n===.*===\n\n(.*)\n\n\n", log, re.DOTALL)
                     if not results:
                         logger.error("No information found in : " + task_name + " log file")
                         continue
@@ -277,15 +285,12 @@ def extract_run_log():
                     value = line.split()
                     if ("Successfully" in value) and (output_vivado_dir.split(os.path.sep)[-1] in value):
                         design_index = get_design_index(value[7])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[12]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Pass"
                     elif ("Failed" in value) and (output_vivado_dir.split(os.path.sep)[-1] in value) :
                         design_index = get_design_index(value[6])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[11]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Fail"
                     elif ("Timeout" in value):
                         design_index = get_design_index(value[11])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[4]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Timeout"
 
     if args.yosys:
@@ -298,15 +303,12 @@ def extract_run_log():
                     value = line.split()
                     if ("Successfully" in value) and (output_yosys_dir.split(os.path.sep)[-1] in value):
                         design_index = get_design_index(value[7])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[12]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Pass"
                     elif ("Failed" in value) and (output_yosys_dir.split(os.path.sep)[-1] in value):
                         design_index = get_design_index(value[6])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[11]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Fail"
                     elif ("Timeout" in value):
                         design_index = get_design_index(value[11])
-                        metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = format(float(value[4]), '.1f')
                         metrics.at[design_index, extract_column_name("STATUS",tool,label)] = "Timeout"
 
 def calc_vivado_luts():
@@ -421,9 +423,7 @@ def reorder_columns():
 
     if len(title_max_logic) != 0:
         ind = title_columns.index(title_max_logic[-1])
-        print(ind, "inddd", title_columns)
         for i in title_perc_max:
-            print(i, ind)
             temp = metrics.pop(i)
             metrics.insert(ind, i, temp)
         ind = title_columns.index(title_average_logic[-1])
