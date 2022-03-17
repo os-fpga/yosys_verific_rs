@@ -8,49 +8,34 @@ The repository requires SSH key setup. Please see instructions at [connecting-to
 # Repository Structure
 ```
 .
+|-- RTL_Benchmark
 |-- benchmarks
-|   |-- verilog
-|   |-- mixed_languages
-|   |-- system_verilog
-|   `-- vhdl
-|-- suites
+|-- logic_synthesis-rs
+|   |-- LSOracle-rs
+|   `-- abc-rs
 |-- scripts
-|   |-- benchmarks
-|   |-- log_automation
-|   |-- synth
-|   |-- task_generator
-|   `-- yosys_templates
+|-- suites
 |-- verific
 |-- yosys
-`-- yosys-plugins
+|-- yosys-plugins
+`-- yosys-rs-plugin
     
 ```
 
 The repository has the following submodules:
  - [yosys](https://github.com/RapidSilicon/yosys_rs.git) 
- - [yosys-plugins](https://github.com/SymbiFlow/yosys-symbiflow-plugins.git) 
+ - [yosys-plugins](https://github.com/SymbiFlow/yosys-f4pga-plugins.git) 
+ - [yosys-rs-plugin](https://github.com/RapidSilicon/yosys-rs-plugin.git) 
  - [verific](https://github.com/RapidSilicon/verific_rs.git) 
- - [benchmarks/verilog/RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
- - [benchmarks/system_verilog/black-parrot](https://github.com/black-parrot/black-parrot.git)
- - [benchmarks/system_verilog/ariane](https://github.com/lowRISC/ariane.git)
- - [benchmarks/system_verilog/scm_design/scm](https://github.com/pulp-platform/scm.git)
- - [benchmarks/system_verilog/udma_core_design/udma_core](https://github.com/pulp-platform/udma_core.git)
- - [benchmarks/system_verilog/udma_core_design/common_cells](https://github.com/pulp-platform/common_cells.git)
- - [benchmarks/system_verilog/udma_core_design/tech_cells_generic](https://github.com/pulp-platform/tech_cells_generic.git)
- - [benchmarks/system_verilog/cva6](https://github.com/pulp-platform/cva6.git)
- - [benchmarks/vhdl/FPGA-FAST](https://github.com/PUTvision/FPGA-FAST.git)
- - [benchmarks/vhdl/PoC-Examples](https://github.com/VLSI-EDA/PoC-Examples.git)
- - [benchmarks/vhdl/Trivium_FPGA](https://github.com/yahniukov/Trivium_FPGA.git)
- - [benchmarks/vhdl/vhdl-hdmi-out](https://github.com/fcayci/vhdl-hdmi-out.git)
- - [benchmarks/vhdl/itc99-poli](https://github.com/squillero/itc99-poli.git)
+ - [logic_synthesis-rs](https://github.com/RapidSilicon/logic_synthesis-rs.git) 
+ - [RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
 
-`benchmarks` directory contains benchmark open-source designs written in Verilog, VHDL, SystemVerilog and mixed languages:
+`benchmarks` directory contains benchmark open-source designs - SHOULD BE REMOVED:
  - `verilog` holds Verilog language desings.
  - `mixed_languages` holds mixed language desings.
- - `system_verilog` holds SystemVerilog submodule designs.
  - `vhdl` holds VHDL submodule designs.
 `suites` directory contains benchmark suites which can be automatically run by the automation scripts available at `scripts/synth`.
-`scripts` directory contains the OpenFPGA task generator and OpenFPGA Yosys template scripts: 
+`scripts` directory contains automation scripts: 
  - `benchmarks` holds Yosys synthesis scripts for the available benchmarks.
  - `log_automation` holds the automation scripts to extract metrics from tools output log files.
  - `synth` holds the automation scripts to run synthesis on different tools.
@@ -59,13 +44,20 @@ The repository has the following submodules:
 `verific` directory contains Verific submodule.
 `yosys` directory contains Yosys submodule.
 `yosys-plugins` directory contains yosys-symbiflow-plugins submodule.
+`yosys-rs-plugin` directory contains yosys-rs-plugin submodule.
+`logic_synthesis-rs` directory contains logic_synthesis-rs submodule.
+`RTL_Benchmark` directory contains RTL_Benchmark submodule.
 
 ## Build
-After cloning the repo, run **co_and_build_yosys_verific** Makefile target to initialize/update required submodules and build Yosys with Verific enabled:
+After cloning the repo initialize/update submodules:
 ```bash
-make co_and_build_yosys_verific
+git submodule update --init --recursive
 ```
-Run **all** Makefile target to initialize/update all submodules and build Yosys with Verific enabled:
+Run **build_yosys_verific** Makefile target to build Yosys with Verific enabled:
+```bash
+make build_yosys_verific
+```
+Run **all** Makefile target to build Yosys with Verific enabled and LSOracle:
 ```bash
 make all
 ```

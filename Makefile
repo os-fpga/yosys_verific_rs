@@ -89,19 +89,6 @@ endif
 	$(MAKE) $(LSORACLE_MK_ARGS)
 
 ##
-## @ init_submodules
-##     |---> info       :  Initialize and update all submodules
-##     |---> usage      :  make init_submodules
-init_submodules:
-	git submodule update --init --recursive yosys yosys-plugins verific RTL_Benchmark yosys-rs-plugin
-	git submodule update --remote --recursive yosys yosys-plugins verific RTL_Benchmark yosys-rs-plugin
-	git submodule update --init --remote logic_synthesis-rs
-	cd logic_synthesis-rs && git submodule update --init --recursive
-	cd logic_synthesis-rs/abc-rs && git fetch && git checkout main && git pull
-	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout main && git pull
-	cd logic_synthesis-rs/LSOracle-rs && git submodule update --init --recursive
-
-##
 ## @ clean
 ##     |---> info       :  Clean all generated files
 ##     |---> usage      :  make clean
