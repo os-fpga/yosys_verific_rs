@@ -49,7 +49,7 @@ build_yosys_verific: build_verific
 ## @ all
 ##     |---> info       :  Build all
 ##     |---> usage      :  make all
-all: build_yosys_verific build_lsoracle
+all: build_yosys_verific build_lsoracle build_DE
 
 ##
 ## @ build_yosys
@@ -89,10 +89,29 @@ endif
 	$(MAKE) $(LSORACLE_MK_ARGS)
 
 ##
+## @ build_DE
+##     |---> info       :  Build DE
+##     |---> usage      :  make build_DE
+build_DE:
+ifeq (,$(CC))
+	$(error No compatible GCC version to build DE)
+endif
+ifeq (,$(CXX))
+	$(error No compatible G++ version to build DE)
+endif
+
+ifeq (,$(wildcard logic_synthesis-rs/build))
+	mkdir logic_synthesis-rs/build
+endif
+	cd logic_synthesis-rs/build &&\
+	export CC=$(CC) && export CXX=$(CXX) &&\
+	$(CMAKE_COMMAND) .. && $(MAKE)
+
+##
 ## @ clean
 ##     |---> info       :  Clean all generated files
 ##     |---> usage      :  make clean
-clean: clean_yosys_verific clean_lsoracle
+clean: clean_yosys_verific clean_lsoracle clean_DE
 
 ##
 ## @ clean_yosys_verific
@@ -138,6 +157,15 @@ endif
 clean_lsoracle:
 ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
 	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
+endif
+
+##
+## @ clean_DE
+##     |---> info       :  Clean logic_synthesis-rs/DE submodule generated files
+##     |---> usage      :  make clean_DE
+clean_DE:
+ifneq ("","$(wildcard ./logic_synthesis-rs/build/Makefile)")
+	cd logic_synthesis-rs/build && $(MAKE) clean
 endif
 
 help: Makefile
