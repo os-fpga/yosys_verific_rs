@@ -11,19 +11,29 @@ YOSYS_MK_ARGS := CONFIG=gcc PREFIX=$(YOSYS_PATH) ABCEXTERNAL=$(ABCEXTERNAL) -j $
 YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) EXTRA_FLAGS="-DPASS_NAME=synth_ql" -j $(NUM_CPU)
 YOSYS_RS_PLUGIN_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) -j $(NUM_CPU)
 LSORACLE_MK_ARGS := -j $(NUM_CPU)
+CMAKE_COMMAND := cmake
+LSORACLE_CMAKE_ARGS := -DCMAKE_BUILD_TYPE=RELEASE
+LSORACLE_GCC_VERSION := (GCC) 8
+CC :=
+CXX :=
 
+CC_PATHS := $(shell which -a gcc)
+CXX_PATHS := $(shell which -a g++)
 
-##
-## @ co_and_build_yosys_verific
-##     |---> info       :  Checkout and build abc-rs, yosys with Verific enabled, yosys-rs-plugin and yosys-plugins
-##     |---> usage      :  make build_yosys_verific
-co_and_build_yosys_verific: clean_yosys clean_verific co_yosys co_verific build_yosys_verific
+define gcc_version =
+ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
+    CC := $(1)
+endif
+endef
 
-##
-## @ all
-##     |---> info       :  Checkout all submodules and build all
-##     |---> usage      :  make all
-all: co_benchmarks co_lsoracle co_and_build_yosys_verific build_lsoracle
+define g++_version =
+ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
+    CXX := $(1)
+endif
+endef
+
+$(foreach path,$(CC_PATHS),$(eval $(call gcc_version,$(path))))
+$(foreach path,$(CXX_PATHS),$(eval $(call g++_version,$(path))))
 
 ##
 ## @ build_yosys_verific
@@ -34,6 +44,12 @@ build_yosys_verific: build_verific
 	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) $(YOSYS_MK_VERIFIC_ARGS)
 	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
 	cd yosys-rs-plugin && $(MAKE) install $(YOSYS_RS_PLUGIN_MK_ARGS)
+
+##
+## @ all
+##     |---> info       :  Build all
+##     |---> usage      :  make all
+all: build_yosys_verific build_lsoracle build_DE
 
 ##
 ## @ build_yosys
@@ -57,131 +73,51 @@ build_verific:
 ##     |---> info       :  Build LSOracle
 ##     |---> usage      :  make build_lsoracle
 build_lsoracle:
-	cd logic_synthesis-rs/LSOracle-rs && $(MAKE) $(LSORACLE_MK_ARGS)
+ifeq (,$(CC))
+	$(error No compatible GCC version to build LSOracle)
+endif
+ifeq (,$(CXX))
+	$(error No compatible G++ version to build LSOracle)
+endif
+
+ifeq (,$(wildcard logic_synthesis-rs/LSOracle-rs/build))
+	mkdir logic_synthesis-rs/LSOracle-rs/build
+endif
+	cd logic_synthesis-rs/LSOracle-rs/build &&\
+	export CC=$(CC) && export CXX=$(CXX) &&\
+	$(CMAKE_COMMAND) $(LSORACLE_CMAKE_ARGS) .. &&\
+	$(MAKE) $(LSORACLE_MK_ARGS)
 
 ##
-## @ co_yosys
-##     |---> info       :  Checkout yosys, yosys-rs-plugin, yosys-plugins and logic_synthesis-rs/abc-rs submodules
-##     |---> usage      :  make co_yosys
-co_yosys:
-	git submodule update --init --remote --recursive yosys
-	cd yosys && git fetch && git checkout master && git pull
-	git submodule update --init --remote --recursive yosys-plugins
-	cd yosys-plugins && git fetch && git checkout master && git pull
-	git submodule update --init --remote --recursive yosys-rs-plugin
-	cd yosys-rs-plugin && git fetch && git checkout main && git pull
-	git submodule update --init --remote logic_synthesis-rs
-	cd logic_synthesis-rs && git submodule update --init --remote abc-rs
-	cd logic_synthesis-rs/abc-rs && git fetch && git checkout save_PIs_and_POs && git pull
+## @ build_DE
+##     |---> info       :  Build DE
+##     |---> usage      :  make build_DE
+build_DE:
+ifeq (,$(CC))
+	$(error No compatible GCC version to build DE)
+endif
+ifeq (,$(CXX))
+	$(error No compatible G++ version to build DE)
+endif
 
-##
-## @ co_verific
-##     |---> info       :  Checkout verific submodule
-##     |---> usage      :  make co_verific
-co_verific:
-	git submodule update --init --remote --recursive verific
-	cd verific && git fetch && git checkout vJan22-yosys && git pull
-
-##
-## @ co_lsoracle:
-##     |---> info       :  Checkout logic_synthesis-rs/LSOracle-rs submodule
-##     |---> usage      :  make co_lsoracle
-co_lsoracle:
-	git submodule update --init --remote logic_synthesis-rs
-	cd logic_synthesis-rs && git submodule update --init --remote LSOracle-rs
-	cd logic_synthesis-rs/LSOracle-rs && git fetch && git checkout master && git pull
-
-##
-## @ co_benchmarks
-##     |---> info       :  Checkout all benchmark submodules
-##     |---> usage      :  make co_benchmarks
-co_benchmarks: co_rtl_benchmark co_vhdl co_system_verilog co_mixed_languages
-
-##
-## @ co_rtl_benchmark
-##     |---> info       :  Checkout RTL_benchmark submodule
-##     |---> usage      :  make co_rtl_benchmark
-co_rtl_benchmark:
-	git submodule update --init --remote --recursive RTL_Benchmark
-	cd RTL_Benchmark && git fetch && git checkout master && git pull
-
-##
-## @ co_vhdl
-##     |---> info       :  Checkout all VHDL benchmark submodules
-##     |---> usage      :  make co_vhdl
-co_vhdl:
-	git submodule update --init --remote --recursive benchmarks/vhdl
-
-##
-## @ co_system_verilog
-##     |---> info       :  Checkout all SV benchmark submodules
-##     |---> usage      :  make co_system_verilog
-co_system_verilog:
-	git submodule update --init --remote --recursive benchmarks/system_verilog
-
-##
-## @ co_mixed_languages
-##     |---> info       :  Checkout all mixed_languages benchmark submodules
-##     |---> usage      :  make co_mixed_languages
-co_mixed_languages:
-	git submodule update --init --remote --recursive benchmarks/mixed_languages
-
-##
-## @ co_benchmark_name
-##     |---> info       :  Checkout specified benchmark submodule
-##     |---> usage      :  make co_benchmark_name BENCHMARK_NAME=VALUE
-co_benchmark_name:
-	git submodule update --init --remote --recursive $(shell find ./benchmarks -name $(BENCHMARK_NAME))
-
-##
-## @ clean_all
-##     |---> info       :  Clean all generated files and remove all benchmark submodules
-##     |---> usage      :  make clean_all
-clean_all: clean clean_benchmarks
+ifeq (,$(wildcard logic_synthesis-rs/build))
+	mkdir logic_synthesis-rs/build
+endif
+	cd logic_synthesis-rs/build &&\
+	export CC=$(CC) && export CXX=$(CXX) &&\
+	$(CMAKE_COMMAND) .. && $(MAKE)
 
 ##
 ## @ clean
 ##     |---> info       :  Clean all generated files
 ##     |---> usage      :  make clean
-clean: clean_yosys clean_verific
+clean: clean_yosys_verific clean_lsoracle clean_DE
 
 ##
-## @ clean_benchmarks
-##     |---> info       :  Remove all benchmark submodules
-##     |---> usage      :  make clean_benchmarks
-clean_benchmarks: clean_rtl_benchmark clean_vhdl clean_mixed_languages clean_system_verilog
-
-##
-## @ clean_rtl_benchmark
-##     |---> info       :  Remove RTL_Benchmark submodule 
-##     |---> usage      :  make clean_rtl_benchmark
-clean_rtl_benchmark:
-	grep 'path = RTL_Benchmark' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-	grep 'path = RTL_Benchmark' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-
-##
-## @ clean_vhdl
-##     |---> info       :  Remove all VHDL benchmark submodules 
-##     |---> usage      :  make clean_vhdl
-clean_vhdl:
-	grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-	grep 'path = benchmarks/vhdl' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-
-##
-## @ clean_system_verilog
-##     |---> info       :  Remove all SV benchmark submodules
-##     |---> usage      :  make clean_system_verilog
-clean_system_verilog:
-	grep 'path = benchmarks/system_verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-	grep 'path = benchmarks/system_verilog' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-
-##
-## @ clean_mixed_languages
-##     |---> info       :  Clean all mixed_languages benchmark submodules
-##     |---> usage      :  make clean_mixed_languages
-clean_mixed_languages:
-	grep 'path = benchmarks/mixed_languages' .gitmodules | sed 's/.*= //' | sed 's/$$/\/*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
-	grep 'path = benchmarks/mixed_languages' .gitmodules | sed 's/.*= //' | sed 's/$$/\/.??*/' | sed 's/^/.\//'| xargs echo rm -rf | bash
+## @ clean_yosys_verific
+##     |---> info       :  Clean Yosys and Verific generated files
+##     |---> usage      :  make clean_yosys_verific
+clean_yosys_verific: clean_yosys clean_verific
 
 ##
 ## @ clean_yosys
@@ -189,8 +125,6 @@ clean_mixed_languages:
 ##     |---> usage      :  make clean_yosys
 clean_yosys:
 ifneq ("","$(wildcard $(YOSYS_PATH))")
-	rm -rf $(YOSYS_PATH)
-endif
 ifneq ("","$(wildcard yosys/Makefile)")
 	cd yosys && $(MAKE) clean
 endif	
@@ -203,14 +137,7 @@ endif
 ifneq ("","$(wildcard ./logic_synthesis-rs/abc-rs/Makefile)")
 	cd logic_synthesis-rs/abc-rs && $(MAKE) clean
 endif
-
-##
-## @ clean_lsoracle
-##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
-##     |---> usage      :  make clean_lsoracle
-clean_lsoracle:
-ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/Makefile)")
-	cd logic_synthesis-rs/LSOracle-rs && $(MAKE) clean
+	rm -rf $(YOSYS_PATH)
 endif
 
 ##
@@ -221,6 +148,24 @@ clean_verific:
 ifneq ("","$(wildcard ./verific/verific-v*/tclmain/Makefile)")
 	cd verific/verific-v*/tclmain && $(MAKE) clean
 	cd verific && git restore .
+endif
+
+##
+## @ clean_lsoracle
+##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
+##     |---> usage      :  make clean_lsoracle
+clean_lsoracle:
+ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
+	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
+endif
+
+##
+## @ clean_DE
+##     |---> info       :  Clean logic_synthesis-rs/DE submodule generated files
+##     |---> usage      :  make clean_DE
+clean_DE:
+ifneq ("","$(wildcard ./logic_synthesis-rs/build/Makefile)")
+	cd logic_synthesis-rs/build && $(MAKE) clean
 endif
 
 help: Makefile
