@@ -19,7 +19,7 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys 0.14+36 (git sha1 15a4e900b, gcc 7.1.0 -fPIC -Os)
+ Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -55,13 +55,37 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ro_cnt.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'timescale.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ud_cnt.v'
 
-yosys> synth_rs -top atahost_top -tech generic -goal area -no_dsp -no_bram -verilog atahost_top.verilog
+yosys> synth_rs -top atahost_top -tech genesis -goal area -no_dsp -no_bram -verilog atahost_top.verilog
 
 3. Executing synth_rs pass.
 
+yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
+
+3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\inv'.
+Generating RTLIL representation for module `\buff'.
+Generating RTLIL representation for module `\logic_0'.
+Generating RTLIL representation for module `\logic_1'.
+Generating RTLIL representation for module `\gclkbuff'.
+Successfully finished Verilog frontend.
+
+3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\dff'.
+Generating RTLIL representation for module `\dffn'.
+Generating RTLIL representation for module `\dffsre'.
+Generating RTLIL representation for module `\dffnsre'.
+Generating RTLIL representation for module `\latchsre'.
+Generating RTLIL representation for module `\latchnsre'.
+Generating RTLIL representation for module `\io_scff'.
+Generating RTLIL representation for module `\scff'.
+Generating RTLIL representation for module `\sh_dff'.
+Successfully finished Verilog frontend.
+
 yosys> hierarchy -check -top atahost_top
 
-3.1. Executing HIERARCHY pass (managing design hierarchy).
+3.3. Executing HIERARCHY pass (managing design hierarchy).
 VERIFIC-INFO [VERI-1018] atahost_top.v:83: compiling module 'atahost_top'
 VERIFIC-INFO [VERI-1018] atahost_wb_slave.v:52: compiling module 'atahost_wb_slave(DeviceId=4'b01,DMA_mode0_Tm=0,DMA_mode0_Td=0,DMA_mode0_Teoc=0)'
 VERIFIC-WARNING [VERI-2371] atahost_wb_slave.v:241: delay control is not supported for synthesis
@@ -227,16 +251,16 @@ Importing module atahost_top.
 Importing module atahost_wb_slave(DeviceId=4'b01,DMA_mode0_Tm=0,DMA_mode0_Td=0,DMA_mode0_Teoc=0).
 Importing module atahost_controller.
 Importing module atahost_pio_tctrl.
-Importing module ro_cnt(ID=2).
 Importing module ro_cnt(ID=6).
 Importing module ud_cnt(RESD=6).
 Importing module ro_cnt(ID=28).
 Importing module ud_cnt(RESD=28).
+Importing module ro_cnt(ID=2).
 Importing module ud_cnt(RESD=2).
 Importing module ro_cnt(ID=23).
 Importing module ud_cnt(RESD=23).
 
-3.1.1. Analyzing design hierarchy..
+3.3.1. Analyzing design hierarchy..
 Top module:  \atahost_top
 Used module:     \atahost_controller
 Used module:         \atahost_pio_tctrl
@@ -250,7 +274,7 @@ Used module:             \ro_cnt(ID=6)
 Used module:                 \ud_cnt(RESD=6)
 Used module:     \atahost_wb_slave(DeviceId=4'b01,DMA_mode0_Tm=0,DMA_mode0_Td=0,DMA_mode0_Teoc=0)
 
-3.1.2. Analyzing design hierarchy..
+3.3.2. Analyzing design hierarchy..
 Top module:  \atahost_top
 Used module:     \atahost_controller
 Used module:         \atahost_pio_tctrl
@@ -267,62 +291,64 @@ Removed 0 unused modules.
 
 yosys> proc
 
-3.2. Executing PROC pass (convert processes to netlists).
+3.4. Executing PROC pass (convert processes to netlists).
 
 yosys> proc_clean
 
-3.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+3.4.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
 Cleaned up 0 empty switches.
 
 yosys> proc_rmdead
 
-3.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+3.4.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
 Removed a total of 0 dead cases.
 
 yosys> proc_prune
 
-3.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+3.4.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
 Removed 0 redundant assignments.
 Promoted 0 assignments to connections.
 
 yosys> proc_init
 
-3.2.4. Executing PROC_INIT pass (extract init attributes).
+3.4.4. Executing PROC_INIT pass (extract init attributes).
 
 yosys> proc_arst
 
-3.2.5. Executing PROC_ARST pass (detect async resets in processes).
+3.4.5. Executing PROC_ARST pass (detect async resets in processes).
 
 yosys> proc_mux
 
-3.2.6. Executing PROC_MUX pass (convert decision trees to multiplexers).
+3.4.6. Executing PROC_MUX pass (convert decision trees to multiplexers).
 
 yosys> proc_dlatch
 
-3.2.7. Executing PROC_DLATCH pass (convert process syncs to latches).
+3.4.7. Executing PROC_DLATCH pass (convert process syncs to latches).
 
 yosys> proc_dff
 
-3.2.8. Executing PROC_DFF pass (convert process syncs to FFs).
+3.4.8. Executing PROC_DFF pass (convert process syncs to FFs).
 
 yosys> proc_memwr
 
-3.2.9. Executing PROC_MEMWR pass (convert process memory writes to cells).
+3.4.9. Executing PROC_MEMWR pass (convert process memory writes to cells).
 
 yosys> proc_clean
 
-3.2.10. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+3.4.10. Executing PROC_CLEAN pass (remove empty switches from decision trees).
 Cleaned up 0 empty switches.
 
 yosys> opt_expr -keepdc
 
-3.2.11. Executing OPT_EXPR pass (perform const folding).
+3.4.11. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ud_cnt(RESD=23).
 <suppressed ~2 debug messages>
 Optimizing module ro_cnt(ID=23).
 <suppressed ~1 debug messages>
 Optimizing module ud_cnt(RESD=2).
 <suppressed ~2 debug messages>
+Optimizing module ro_cnt(ID=2).
+<suppressed ~1 debug messages>
 Optimizing module ud_cnt(RESD=28).
 <suppressed ~2 debug messages>
 Optimizing module ro_cnt(ID=28).
@@ -330,8 +356,6 @@ Optimizing module ro_cnt(ID=28).
 Optimizing module ud_cnt(RESD=6).
 <suppressed ~2 debug messages>
 Optimizing module ro_cnt(ID=6).
-<suppressed ~1 debug messages>
-Optimizing module ro_cnt(ID=2).
 <suppressed ~1 debug messages>
 Optimizing module atahost_pio_tctrl.
 <suppressed ~10 debug messages>
@@ -343,15 +367,15 @@ Optimizing module atahost_top.
 
 yosys> flatten
 
-3.3. Executing FLATTEN pass (flatten design).
+3.5. Executing FLATTEN pass (flatten design).
 Deleting now unused module ud_cnt(RESD=23).
 Deleting now unused module ro_cnt(ID=23).
 Deleting now unused module ud_cnt(RESD=2).
+Deleting now unused module ro_cnt(ID=2).
 Deleting now unused module ud_cnt(RESD=28).
 Deleting now unused module ro_cnt(ID=28).
 Deleting now unused module ud_cnt(RESD=6).
 Deleting now unused module ro_cnt(ID=6).
-Deleting now unused module ro_cnt(ID=2).
 Deleting now unused module atahost_pio_tctrl.
 Deleting now unused module atahost_controller.
 Deleting now unused module atahost_wb_slave(DeviceId=4'b01,DMA_mode0_Tm=0,DMA_mode0_Td=0,DMA_mode0_Teoc=0).
@@ -359,51 +383,51 @@ Deleting now unused module atahost_wb_slave(DeviceId=4'b01,DMA_mode0_Tm=0,DMA_mo
 
 yosys> tribuf -logic
 
-3.4. Executing TRIBUF pass.
+3.6. Executing TRIBUF pass.
+
+yosys> deminout
+
+3.7. Executing DEMINOUT pass (demote inout ports to input or output).
 
 yosys> opt_expr
 
-3.5. Executing OPT_EXPR pass (perform const folding).
+3.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 <suppressed ~9 debug messages>
 
 yosys> opt_clean
 
-3.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 19 unused cells and 694 unused wires.
 <suppressed ~136 debug messages>
 
 yosys> check
 
-3.7. Executing CHECK pass (checking for obvious problems).
+3.10. Executing CHECK pass (checking for obvious problems).
 Checking module atahost_top...
 Found and reported 0 problems.
 
-yosys> deminout
-
-3.8. Executing DEMINOUT pass (demote inout ports to input or output).
-
 yosys> opt -nodffe -nosdff
 
-3.9. Executing OPT pass (performing simple optimizations).
+3.11. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.9.1. Executing OPT_EXPR pass (perform const folding).
+3.11.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 <suppressed ~4 debug messages>
 
 yosys> opt_merge -nomux
 
-3.9.2. Executing OPT_MERGE pass (detect identical cells).
+3.11.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 <suppressed ~18 debug messages>
 Removed a total of 6 cells.
 
 yosys> opt_muxtree
 
-3.9.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -413,7 +437,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.9.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
     New ctrl vector for $pmux cell $flatten\u0.$verific$select_313$atahost_wb_slave.v:476$620: { $flatten\u0.$verific$n37$324 $flatten\u0.$verific$n41$326 $flatten\u0.$verific$n45$328 $flatten\u0.$verific$n49$330 $flatten\u0.$verific$n53$332 $flatten\u0.$verific$n57$334 $flatten\u0.$verific$n61$336 }
   Optimizing cells in module \atahost_top.
@@ -421,25 +445,25 @@ Performed a total of 1 changes.
 
 yosys> opt_merge
 
-3.9.5. Executing OPT_MERGE pass (detect identical cells).
+3.11.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.9.6. Executing OPT_DFF pass (perform DFF optimizations).
-Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1142 ($aldff) from module atahost_top.
-Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t2_cnt.$verific$rci_reg$ro_cnt.v:89$1088 ($aldff) from module atahost_top.
+3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1097 ($aldff) from module atahost_top.
+Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t2_cnt.$verific$rci_reg$ro_cnt.v:89$1043 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev1_Teoc_reg$atahost_wb_slave.v:438$609 ($aldff) from module atahost_top.
-Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1068 ($aldff) from module atahost_top.
-Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t1_cnt.$verific$rci_reg$ro_cnt.v:89$1014 ($aldff) from module atahost_top.
+Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1023 ($aldff) from module atahost_top.
+Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\t1_cnt.$verific$rci_reg$ro_cnt.v:89$969 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev1_Td_reg$atahost_wb_slave.v:438$608 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\eoc_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1245 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\eoc_cnt.$verific$rci_reg$ro_cnt.v:89$1191 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev0_Tm_reg$atahost_wb_slave.v:417$598 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev0_Teoc_reg$atahost_wb_slave.v:417$600 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\dhold_cnt.\cnt.$verific$Qi_reg$ud_cnt.v:91$1171 ($aldff) from module atahost_top.
-Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\dhold_cnt.$verific$rci_reg$ro_cnt.v:89$969 ($aldff) from module atahost_top.
+Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.\dhold_cnt.$verific$rci_reg$ro_cnt.v:89$1117 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev0_Td_reg$atahost_wb_slave.v:417$599 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u0.$verific$CtrlReg_reg$atahost_wb_slave.v:274$519 ($aldff) from module atahost_top.
 Changing const-value async load to async reset on $flatten\u1.\PIO_timing_controller.$verific$oe_reg$atahost_pio_tctrl.v:204$897 ($aldff) from module atahost_top.
@@ -477,21 +501,21 @@ Changing const-value async load to async reset on $flatten\u0.$verific$DMA_dev1_
 
 yosys> opt_clean
 
-3.9.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 3 unused cells and 8 unused wires.
 <suppressed ~4 debug messages>
 
 yosys> opt_expr
 
-3.9.8. Executing OPT_EXPR pass (perform const folding).
+3.11.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.9.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.9.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -501,87 +525,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.9.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.9.12. Executing OPT_MERGE pass (detect identical cells).
+3.11.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.9.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.9.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> opt_expr
 
-3.9.15. Executing OPT_EXPR pass (perform const folding).
+3.11.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.9.16. Finished OPT passes. (There is nothing left to do.)
+3.11.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> fsm
 
-3.10. Executing FSM pass (extract and optimize FSM).
+3.12. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.10.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
 
 yosys> fsm_extract
 
-3.10.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 
 yosys> fsm_opt
 
-3.10.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> opt_clean
 
-3.10.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> fsm_opt
 
-3.10.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> fsm_recode
 
-3.10.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
 yosys> fsm_info
 
-3.10.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 yosys> fsm_map
 
-3.10.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 
 yosys> opt -sat
 
-3.11. Executing OPT pass (performing simple optimizations).
+3.13. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.11.1. Executing OPT_EXPR pass (perform const folding).
+3.13.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
 yosys> opt_merge -nomux
 
-3.11.2. Executing OPT_MERGE pass (detect identical cells).
+3.13.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -591,19 +615,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.5. Executing OPT_MERGE pass (detect identical cells).
+3.13.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $flatten\u1.$verific$PIOq_reg$atahost_controller.v:214$725 ($dff) from module atahost_top (D = \dd_pad_i, Q = \u1.PIOq).
 Adding EN signal on $flatten\u0.$verific$store_pp_full_reg$atahost_wb_slave.v:241$487 ($dff) from module atahost_top (D = 1'0, Q = \u0.store_pp_full).
 Adding EN signal on $flatten\u0.$verific$PIO_dport1_Teoc_reg$atahost_wb_slave.v:396$590 ($adff) from module atahost_top (D = $flatten\u0.$verific$n946$439, Q = \u0.PIO_dport1_Teoc).
@@ -629,22 +653,22 @@ Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$1249 ($dffe) from 
 
 yosys> opt_clean
 
-3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 2 unused cells and 2 unused wires.
 <suppressed ~3 debug messages>
 
 yosys> opt_expr
 
-3.11.8. Executing OPT_EXPR pass (perform const folding).
+3.13.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 <suppressed ~21 debug messages>
 
-3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -654,38 +678,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.12. Executing OPT_MERGE pass (detect identical cells).
+3.13.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 <suppressed ~39 debug messages>
 Removed a total of 13 cells.
 
 yosys> opt_dff -sat
 
-3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 0 unused cells and 15 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.11.15. Executing OPT_EXPR pass (perform const folding).
+3.13.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.11.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.13.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.11.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.13.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -695,35 +719,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.11.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.13.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.19. Executing OPT_MERGE pass (detect identical cells).
+3.13.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.11.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.13.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.11.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> opt_expr
 
-3.11.22. Executing OPT_EXPR pass (perform const folding).
+3.13.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.11.23. Finished OPT passes. (There is nothing left to do.)
+3.13.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> wreduce -keepdc
 
-3.12. Executing WREDUCE pass (reducing word size of cells).
+3.14. Executing WREDUCE pass (reducing word size of cells).
 Removed top 1 bits (of 4) from port B of cell atahost_top.$flatten\u0.$verific$equal_60$atahost_wb_slave.v:256$510 ($eq).
 Removed top 1 bits (of 4) from port B of cell atahost_top.$flatten\u0.$verific$equal_56$atahost_wb_slave.v:255$507 ($eq).
 Removed top 1 bits (of 4) from port B of cell atahost_top.$flatten\u0.$verific$equal_52$atahost_wb_slave.v:254$504 ($eq).
@@ -734,32 +758,32 @@ Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timin
 Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\eoc_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1235 ($sub).
 Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timing_controller.\dhold_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1161 ($sub).
 Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\dhold_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1161 ($sub).
-Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1058 ($sub).
-Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1058 ($sub).
-Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1132 ($sub).
-Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1132 ($sub).
+Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1013 ($sub).
+Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t1_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1013 ($sub).
+Removed top 1 bits (of 9) from port A of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1087 ($sub).
+Removed top 8 bits (of 9) from port B of cell atahost_top.$flatten\u1.\PIO_timing_controller.\t2_cnt.\cnt.$verific$sub_4$ud_cnt.v:80$1087 ($sub).
 
 yosys> peepopt
 
-3.13. Executing PEEPOPT pass (run peephole optimizers).
+3.15. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> pmuxtree
 
-3.14. Executing PMUXTREE pass.
+3.16. Executing PMUXTREE pass.
 
 yosys> opt_clean
 
-3.15. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 2 unused cells and 3 unused wires.
 <suppressed ~3 debug messages>
 
 yosys> techmap
 
-3.16. Executing TECHMAP pass (map to technology primitives).
+3.18. Executing TECHMAP pass (map to technology primitives).
 
-3.16.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.18.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -786,7 +810,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.16.2. Continuing TECHMAP pass.
+3.18.2. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $dffe.
 Using extmapper simplemap for cells of type $reduce_bool.
 Using extmapper simplemap for cells of type $mux.
@@ -811,30 +835,30 @@ No more expansions possible.
 
 yosys> alumacc
 
-3.17. Executing ALUMACC pass (create $alu and $macc cells).
+3.19. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module atahost_top:
   created 0 $alu and 0 $macc cells.
 
 yosys> opt
 
-3.18. Executing OPT pass (performing simple optimizations).
+3.20. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.18.1. Executing OPT_EXPR pass (perform const folding).
+3.20.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 <suppressed ~328 debug messages>
 
 yosys> opt_merge -nomux
 
-3.18.2. Executing OPT_MERGE pass (detect identical cells).
+3.20.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 <suppressed ~45 debug messages>
 Removed a total of 15 cells.
 
 yosys> opt_muxtree
 
-3.18.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.20.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -842,37 +866,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.18.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.20.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.18.5. Executing OPT_MERGE pass (detect identical cells).
+3.20.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.18.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.20.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.18.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.20.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 1 unused cells and 185 unused wires.
 <suppressed ~6 debug messages>
 
 yosys> opt_expr
 
-3.18.8. Executing OPT_EXPR pass (perform const folding).
+3.20.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.18.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.20.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.18.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.20.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -880,258 +904,151 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.18.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.20.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.18.12. Executing OPT_MERGE pass (detect identical cells).
+3.20.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.18.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.20.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.18.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.20.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> opt_expr
 
-3.18.15. Executing OPT_EXPR pass (perform const folding).
+3.20.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.18.16. Finished OPT passes. (There is nothing left to do.)
+3.20.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> memory -nomap
 
-3.19. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.19.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.19.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.19.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.19.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.19.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> memory_share
 
-3.19.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.19.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.19.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> memory_collect
 
-3.19.9. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> opt_clean
 
-3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
-yosys> opt_expr -mux_undef
-
-3.21. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-<suppressed ~176 debug messages>
-
-yosys> simplemap
-
-3.22. Executing SIMPLEMAP pass (map simple cells to gate primitives).
-
-yosys> opt_expr
-
-3.23. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-yosys> opt_merge
-
-3.24. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-<suppressed ~447 debug messages>
-Removed a total of 149 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.25. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \atahost_top..
-Removed 0 unused cells and 31 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt -nodffe -nosdff
-
-3.27. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.27.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-yosys> opt_merge -nomux
-
-3.27.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \atahost_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \atahost_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \atahost_top..
-
-yosys> opt_expr
-
-3.27.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-3.27.9. Finished OPT passes. (There is nothing left to do.)
-
-yosys> opt -fast -full
-
-3.28. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.28.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-<suppressed ~27 debug messages>
-
-yosys> opt_merge
-
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \atahost_top..
-
-3.28.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
-
-3.30. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.30.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-yosys> opt_merge -nomux
-
-3.30.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \atahost_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \atahost_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.6. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \atahost_top..
-
-yosys> opt_expr -full
-
-3.30.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-3.30.10. Finished OPT passes. (There is nothing left to do.)
-
-yosys> techmap
-
-3.31. Executing TECHMAP pass (map to technology primitives).
-
-3.31.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+yosys> stat
+
+3.23. Printing statistics.
+
+=== atahost_top ===
+
+   Number of wires:                525
+   Number of wire bits:           2058
+   Number of public wires:         268
+   Number of public wire bits:    1095
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1266
+     $_AND_                        106
+     $_DFFE_PN0P_                  145
+     $_DFFE_PN1P_                   31
+     $_DFFE_PP_                     16
+     $_DFF_PN0_                     57
+     $_DFF_PN1_                     14
+     $_DFF_P_                        6
+     $_MUX_                        704
+     $_NOT_                         69
+     $_OR_                          86
+     $_XOR_                         32
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.24. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.25. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.26. Printing statistics.
+
+=== atahost_top ===
+
+   Number of wires:                525
+   Number of wire bits:           2058
+   Number of public wires:         268
+   Number of public wire bits:    1095
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1266
+     $_AND_                        106
+     $_DFFE_PN0P_                  145
+     $_DFFE_PN1P_                   31
+     $_DFFE_PP0P_                   16
+     $_DFF_PN0_                     57
+     $_DFF_PN1_                     14
+     $_DFF_P_                        6
+     $_MUX_                        704
+     $_NOT_                         69
+     $_OR_                          86
+     $_XOR_                         32
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
+
+3.27. Executing TECHMAP pass (map to technology primitives).
+
+3.27.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1158,118 +1075,112 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.31.2. Continuing TECHMAP pass.
+3.27.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+Generating RTLIL representation for module `\$_DFF_P_'.
+Generating RTLIL representation for module `\$_DFF_PP0_'.
+Generating RTLIL representation for module `\$_DFF_PN0_'.
+Generating RTLIL representation for module `\$_DFF_PP1_'.
+Generating RTLIL representation for module `\$_DFF_PN1_'.
+Generating RTLIL representation for module `\$_DFFE_PP_'.
+Generating RTLIL representation for module `\$_DFFE_PN_'.
+Generating RTLIL representation for module `\$_DFFE_PP0P_'.
+Generating RTLIL representation for module `\$_DFFE_PP0N_'.
+Generating RTLIL representation for module `\$_DFFE_PN0P_'.
+Generating RTLIL representation for module `\$_DFFE_PN0N_'.
+Generating RTLIL representation for module `\$_DFFE_PP1P_'.
+Generating RTLIL representation for module `\$_DFFE_PP1N_'.
+Generating RTLIL representation for module `\$_DFFE_PN1P_'.
+Generating RTLIL representation for module `\$_DFFE_PN1N_'.
+Generating RTLIL representation for module `\$_DFFSR_PPP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNN_'.
+Generating RTLIL representation for module `\$_DFFSR_PPN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNN_'.
+Generating RTLIL representation for module `\$_DLATCHSR_PPP_'.
+Generating RTLIL representation for module `\$_DLATCHSR_NPP_'.
+Generating RTLIL representation for module `\$_DFF_N_'.
+Generating RTLIL representation for module `\$_DFF_NP0_'.
+Generating RTLIL representation for module `\$_DFF_NN0_'.
+Generating RTLIL representation for module `\$_DFF_NP1_'.
+Generating RTLIL representation for module `\$_DFF_NN1_'.
+Generating RTLIL representation for module `\$_DFFE_NP_'.
+Generating RTLIL representation for module `\$_DFFE_NN_'.
+Generating RTLIL representation for module `\$_DFFE_NP0P_'.
+Generating RTLIL representation for module `\$_DFFE_NP0N_'.
+Generating RTLIL representation for module `\$_DFFE_NN0P_'.
+Generating RTLIL representation for module `\$_DFFE_NN0N_'.
+Generating RTLIL representation for module `\$_DFFE_NP1P_'.
+Generating RTLIL representation for module `\$_DFFE_NP1N_'.
+Generating RTLIL representation for module `\$_DFFE_NN1P_'.
+Generating RTLIL representation for module `\$_DFFE_NN1N_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
+Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Successfully finished Verilog frontend.
+
+3.27.3. Continuing TECHMAP pass.
+Using template \$_DFF_PN0_ for cells of type $_DFF_PN0_.
+Using template \$_DFF_PN1_ for cells of type $_DFF_PN1_.
+Using template \$_DFFE_PN0P_ for cells of type $_DFFE_PN0P_.
+Using template \$_DFFE_PN1P_ for cells of type $_DFFE_PN1P_.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
+Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~71 debug messages>
+<suppressed ~413 debug messages>
 
-yosys> opt
+yosys> opt_expr -mux_undef
 
-3.32. Executing OPT pass (performing simple optimizations).
+3.28. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+<suppressed ~192 debug messages>
+
+yosys> simplemap
+
+3.29. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.32.1. Executing OPT_EXPR pass (perform const folding).
+3.30. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
-
-yosys> opt_merge -nomux
-
-3.32.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.32.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \atahost_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.32.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \atahost_top.
-Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.32.5. Executing OPT_MERGE pass (detect identical cells).
+3.31. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
-Removed a total of 0 cells.
+<suppressed ~447 debug messages>
+Removed a total of 149 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
-3.32.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.32. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.32.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
+Removed 0 unused cells and 1309 unused wires.
+<suppressed ~1 debug messages>
 
-yosys> opt_expr
-
-3.32.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module atahost_top.
-
-3.32.9. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.33. Executing ABC pass (technology mapping using ABC).
-
-3.33.1. Extracting gate netlist of module `\atahost_top' to `<abc-temp-dir>/input.blif'..
-Extracted 672 gates and 959 wires to a netlist network with 286 inputs and 140 outputs.
-
-3.33.1.1. Executing ABC.
-Running ABC command: /home/users/aram/Workspace/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_09-03-2022T20-36-44/All_lut_synth_rs_area.json/ata_ocidec-1/abc_tmp.scr 
-ABC: netlist  : i/o =    286/    140  and =     961  lev =   10 (5.79)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    240  edge =     965  lev =    6 (3.10)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =     981  lev =   11 (6.05)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    240  edge =     969  lev =    6 (3.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =     987  lev =   11 (6.16)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    239  edge =     972  lev =    6 (2.97)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =     995  lev =   11 (5.74)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    239  edge =     974  lev =    6 (2.94)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1039  lev =   11 (5.67)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    239  edge =     967  lev =    6 (2.90)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     967  lev =    6 (2.86)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1053  lev =   10 (5.34)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    237  edge =     971  lev =    5 (2.54)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1055  lev =   10 (5.47)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    238  edge =     974  lev =    5 (2.54)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.03 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
-ABC: netlist  : i/o =    286/    140  and =    1045  lev =   10 (5.46)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.33.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      236
-ABC RESULTS:        internal signals:      533
-ABC RESULTS:           input signals:      286
-ABC RESULTS:          output signals:      140
-Removing temp directory.
-
-yosys> opt
+yosys> opt -nodffe -nosdff
 
 3.34. Executing OPT pass (performing simple optimizations).
 
@@ -1304,7 +1215,7 @@ yosys> opt_merge
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.34.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -1312,19 +1223,154 @@ yosys> opt_clean
 
 3.34.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
-Removed 0 unused cells and 587 unused wires.
-<suppressed ~41 debug messages>
 
 yosys> opt_expr
 
 3.34.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.34.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.34.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt -fast -full
+
+3.35. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.35.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+<suppressed ~27 debug messages>
+
+yosys> opt_merge
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.35.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \atahost_top..
+
+3.35.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+3.36. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.37. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.37.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+yosys> opt_merge -nomux
+
+3.37.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.34.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.37.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \atahost_top..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce -full
+
+3.37.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \atahost_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.37.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.37.6. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.37.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.37.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \atahost_top..
+
+yosys> opt_expr -full
+
+3.37.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+3.37.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> techmap
+
+3.38. Executing TECHMAP pass (map to technology primitives).
+
+3.38.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.38.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~71 debug messages>
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \atahost_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1332,46 +1378,191 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.34.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \atahost_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.34.12. Executing OPT_MERGE pass (detect identical cells).
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\atahost_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.34.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.34.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 
 yosys> opt_expr
 
-3.34.15. Executing OPT_EXPR pass (perform const folding).
+3.39.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module atahost_top.
 
-3.34.16. Finished OPT passes. (There is nothing left to do.)
+3.39.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -script abc_tmp.scr
+
+3.40. Executing ABC pass (technology mapping using ABC).
+
+3.40.1. Extracting gate netlist of module `\atahost_top' to `<abc-temp-dir>/input.blif'..
+Extracted 672 gates and 959 wires to a netlist network with 286 inputs and 140 outputs.
+
+3.40.1.1. Executing ABC.
+Running ABC command: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/meri/Documents/workspace/clean/yosys_verific_rs/result_18-03-2022T17-26-14/All_lut_synth_rs_area.json/ata_ocidec-1/abc_tmp.scr 
+ABC: netlist  : i/o =    286/    140  and =     961  lev =   10 (5.79)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    240  edge =     965  lev =    6 (3.10)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =     981  lev =   11 (6.05)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    240  edge =     969  lev =    6 (3.24)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =     987  lev =   11 (6.16)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    239  edge =     972  lev =    6 (2.97)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =     995  lev =   11 (5.74)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    239  edge =     974  lev =    6 (2.94)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1039  lev =   11 (5.67)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    239  edge =     967  lev =    6 (2.90)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     967  lev =    6 (2.86)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1043  lev =   11 (5.66)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    6 (2.86)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1053  lev =   10 (5.34)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    237  edge =     971  lev =    5 (2.54)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1055  lev =   10 (5.47)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    238  edge =     974  lev =    5 (2.54)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1060  lev =   11 (5.71)  mem = 0.03 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
+ABC: netlist  : i/o =    286/    140  and =    1045  lev =   10 (5.46)  mem = 0.02 MB
+ABC: Mapping (K=6)  :  lut =    236  edge =     966  lev =    5 (2.65)  mem = 0.01 MB
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.40.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      236
+ABC RESULTS:        internal signals:      533
+ABC RESULTS:           input signals:      286
+ABC RESULTS:          output signals:      140
+Removing temp directory.
+
+yosys> opt
+
+3.41. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.41.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+yosys> opt_merge -nomux
+
+3.41.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.41.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \atahost_top..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.41.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \atahost_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.41.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.41.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.41.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \atahost_top..
+Removed 0 unused cells and 587 unused wires.
+<suppressed ~41 debug messages>
+
+yosys> opt_expr
+
+3.41.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+3.41.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.41.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \atahost_top..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.41.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \atahost_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.41.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\atahost_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.41.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.41.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \atahost_top..
+
+yosys> opt_expr
+
+3.41.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module atahost_top.
+
+3.41.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.35. Executing HIERARCHY pass (managing design hierarchy).
+3.42. Executing HIERARCHY pass (managing design hierarchy).
 
-3.35.1. Analyzing design hierarchy..
+3.42.1. Analyzing design hierarchy..
 Top module:  \atahost_top
 
-3.35.2. Analyzing design hierarchy..
+3.42.2. Analyzing design hierarchy..
 Top module:  \atahost_top
 Removed 0 unused modules.
 
 yosys> stat
 
-3.36. Printing statistics.
+3.43. Printing statistics.
 
 === atahost_top ===
 
@@ -1383,38 +1574,37 @@ yosys> stat
    Number of memory bits:            0
    Number of processes:              0
    Number of cells:                505
-     $_DFFE_PN0P_                  145
-     $_DFFE_PN1P_                   31
-     $_DFFE_PP_                     16
-     $_DFF_PN0_                     57
-     $_DFF_PN1_                     14
-     $_DFF_P_                        6
      $lut                          236
+     dff                             6
+     dffsre                        263
 
 
 yosys> opt_clean -purge
 
-3.37. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \atahost_top..
 Removed 0 unused cells and 148 unused wires.
 <suppressed ~148 debug messages>
 
 yosys> write_verilog -noattr -nohex atahost_top.verilog
 
-3.38. Executing Verilog backend.
+3.45. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.38.1. Executing BMUXMAP pass.
+3.45.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.38.2. Executing DEMUXMAP pass.
+3.45.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\atahost_top'.
 
 Warnings: 128 unique messages, 149 total
-End of script. Logfile hash: 7e0a85fd16, CPU: user 1.89s system 0.02s, MEM: 21.49 MB peak
-Yosys 0.14+36 (git sha1 15a4e900b, gcc 7.1.0 -fPIC -Os)
-Time spent: 52% 1x abc (2 sec), 15% 26x opt_expr (0 sec), ...
+End of script. Logfile hash: 1dea18e12a, CPU: user 2.02s system 0.03s, MEM: 25.46 MB peak
+Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+Time spent: 50% 1x abc (2 sec), 13% 26x opt_expr (0 sec), ...
+real 4.08
+user 3.74
+sys 0.33

@@ -2,7 +2,7 @@ name: Weekly Regression tests
 
 on:
   schedule:
-    - cron: "30 19 * * Fri"
+    - cron: "30 19 * * 1,2,3,4"
   workflow_dispatch:
 
 jobs:
@@ -22,14 +22,14 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Checkout and build yosys+verific
-        run:
-          make co_and_build_yosys_verific
-
-      - name: Clone RTL benchmarks
+      - name: Checkout submodules
         run: |
-          make co_rtl_benchmark
-        
+          git submodule update --init --recursive --progress
+
+      - name: Build yosys+verific
+        run:
+          make build_yosys_verific
+
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip --user
@@ -53,7 +53,7 @@ jobs:
       - name: Execute metrics extraction
         run:
           python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_area.json .github/logs/All_lut_Golden  --output_file All_lut.csv --run_log run.log --base .github/logs/All_lut_Golden
-        
+
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
