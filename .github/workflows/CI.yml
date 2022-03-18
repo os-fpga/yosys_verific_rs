@@ -1,0 +1,34 @@
+name: CI regression tests
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: verific-builder
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Runner workspace path
+        run: |
+          echo "Cleaning up previous run"
+          rm -rf "${{ github.workspace }}"
+          mkdir -p "${{ github.workspace }}"
+
+      - uses: actions/checkout@v2
+      
+      - name: Checkout submodules
+        run: |
+          git submodule update --init --recursive --progress
+
+      - name: Build yosys+verific
+        run:
+          make build_yosys_verific
+
+      - name: Run tests
+        run: |
+          cd yosys-rs-plugin
+          make test YOSYS_PATH=$(realpath ../yosys/install)
