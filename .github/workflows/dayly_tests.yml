@@ -1,0 +1,65 @@
+name: Daily tests
+
+on:
+  schedule:
+    - cron: "30 19 * * 1,2,3,4"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: verific-builder
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Runner workspace path
+        run: |
+          echo "Cleaning up previous run"
+          rm -rf "${{ github.workspace }}"
+          mkdir -p "${{ github.workspace }}"
+
+      - uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        run: |
+          git submodule update --init --recursive --progress
+
+      - name: Build yosys+verific
+        run:
+          make build_yosys_verific
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip --user
+          python3 -m pip install pandas termcolor --user
+          
+      - name: Execute Python script
+        run: |
+          python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_area.json
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: result*/
+
+      - name: Create run.log
+        run: |
+          cp result*/run.log ./
+          cat .github/logs/All_lut_Golden/All_lut_Golden_run.log >> run.log
+
+      - name: Execute metrics extraction
+        run:
+          python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_area.json .github/logs/All_lut_Golden  --output_file All_lut.csv --run_log run.log --base .github/logs/All_lut_Golden
+
+      - name: Upload csv file
+        uses: actions/upload-artifact@v2
+        with:
+          name: cvs
+          path: All_lut.csv
+
+      - name: Compare QoR
+        run: |
+          python3 scripts/log_automation/result_comparision.py All_lut.csv

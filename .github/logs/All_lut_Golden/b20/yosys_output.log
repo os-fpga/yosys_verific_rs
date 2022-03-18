@@ -1,0 +1,2573 @@
+
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2020  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+
+
+-- Executing script file `yosys.ys' --
+echo on
+
+yosys> plugin -i synth-rs
+
+yosys> read -verific
+
+yosys> read -incdir .
+
+yosys> verific -vlog-incdir .
+
+1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
+Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+
+yosys> verilog_defaults -add -I.
+
+yosys> read -vhdl b20.vhd
+
+yosys> verific -vhdl b20.vhd
+
+2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
+Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+VERIFIC-INFO [VHDL-1504] default VHDL library search path is now "/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/share/yosys/verific/vhdl_vdbs_2008"
+VERIFIC-COMMENT [VHDL-1481] Analyzing VHDL file 'b20.vhd'
+VERIFIC-COMMENT [VHDL-1493] Restoring VHDL unit 'std.standard' from file '/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/share/yosys/verific/vhdl_vdbs_2008/std/standard.vdb'
+VERIFIC-INFO [VHDL-1012] b20.vhd:1: analyzing entity 'b14'
+VERIFIC-INFO [VHDL-1010] b20.vhd:11: analyzing architecture 'behav'
+VERIFIC-INFO [VHDL-1012] b20.vhd:511: analyzing entity 'b14rev'
+VERIFIC-INFO [VHDL-1010] b20.vhd:521: analyzing architecture 'behav'
+VERIFIC-INFO [VHDL-1012] b20.vhd:1021: analyzing entity 'b20'
+VERIFIC-INFO [VHDL-1010] b20.vhd:1029: analyzing architecture 'behav'
+
+yosys> synth_rs -top b20 -tech genesis -goal area -no_dsp -no_bram -verilog b20.verilog
+
+3. Executing synth_rs pass.
+
+yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
+
+3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\inv'.
+Generating RTLIL representation for module `\buff'.
+Generating RTLIL representation for module `\logic_0'.
+Generating RTLIL representation for module `\logic_1'.
+Generating RTLIL representation for module `\gclkbuff'.
+Successfully finished Verilog frontend.
+
+3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\dff'.
+Generating RTLIL representation for module `\dffn'.
+Generating RTLIL representation for module `\dffsre'.
+Generating RTLIL representation for module `\dffnsre'.
+Generating RTLIL representation for module `\latchsre'.
+Generating RTLIL representation for module `\latchnsre'.
+Generating RTLIL representation for module `\io_scff'.
+Generating RTLIL representation for module `\scff'.
+Generating RTLIL representation for module `\sh_dff'.
+Successfully finished Verilog frontend.
+
+yosys> hierarchy -check -top b20
+
+3.3. Executing HIERARCHY pass (managing design hierarchy).
+VERIFIC-INFO [VHDL-1067] b20.vhd:1021: processing 'b20(BEHAV)'
+VERIFIC-INFO [VHDL-1067] b20.vhd:1: processing 'b14(BEHAV)'
+VERIFIC-INFO [VHDL-1172] b20.vhd:478: 'others' clause is never selected
+VERIFIC-INFO [VHDL-1067] b20.vhd:511: processing 'b14rev(BEHAV)'
+VERIFIC-INFO [VHDL-1172] b20.vhd:988: 'others' clause is never selected
+Importing module b20.
+Importing module b14(BEHAV).
+Importing module standard.
+Importing module b14rev(BEHAV).
+
+3.3.1. Analyzing design hierarchy..
+Top module:  \b20
+Used module:     \b14rev(BEHAV)
+Used module:     \b14(BEHAV)
+
+3.3.2. Analyzing design hierarchy..
+Top module:  \b20
+Used module:     \b14rev(BEHAV)
+Used module:     \b14(BEHAV)
+Removing unused module `\standard'.
+Removed 1 unused modules.
+
+yosys> proc
+
+3.4. Executing PROC pass (convert processes to netlists).
+
+yosys> proc_clean
+
+3.4.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+yosys> proc_rmdead
+
+3.4.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Removed a total of 0 dead cases.
+
+yosys> proc_prune
+
+3.4.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 0 assignments to connections.
+
+yosys> proc_init
+
+3.4.4. Executing PROC_INIT pass (extract init attributes).
+
+yosys> proc_arst
+
+3.4.5. Executing PROC_ARST pass (detect async resets in processes).
+
+yosys> proc_mux
+
+3.4.6. Executing PROC_MUX pass (convert decision trees to multiplexers).
+
+yosys> proc_dlatch
+
+3.4.7. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+yosys> proc_dff
+
+3.4.8. Executing PROC_DFF pass (convert process syncs to FFs).
+
+yosys> proc_memwr
+
+3.4.9. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+yosys> proc_clean
+
+3.4.10. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+yosys> opt_expr -keepdc
+
+3.4.11. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b14rev(BEHAV).
+<suppressed ~26 debug messages>
+Optimizing module b14(BEHAV).
+<suppressed ~26 debug messages>
+Optimizing module b20.
+
+yosys> flatten
+
+3.5. Executing FLATTEN pass (flatten design).
+Deleting now unused module b14rev(BEHAV).
+Deleting now unused module b14(BEHAV).
+<suppressed ~2 debug messages>
+
+yosys> tribuf -logic
+
+3.6. Executing TRIBUF pass.
+
+yosys> deminout
+
+3.7. Executing DEMINOUT pass (demote inout ports to input or output).
+
+yosys> opt_expr
+
+3.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~13 debug messages>
+
+yosys> opt_clean
+
+3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 14 unused cells and 343 unused wires.
+<suppressed ~117 debug messages>
+
+yosys> check
+
+3.10. Executing CHECK pass (checking for obvious problems).
+Checking module b20...
+Found and reported 0 problems.
+
+yosys> opt -nodffe -nosdff
+
+3.11. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.11.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge -nomux
+
+3.11.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+yosys> opt_muxtree
+
+3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 2/2 on $mux $flatten\P1.$verific$i684$b20.vhd:501$524.
+    dead port 2/2 on $mux $flatten\P1.$verific$mux_672$b20.vhd:501$515.
+    dead port 2/2 on $mux $flatten\P1.$verific$mux_685$b20.vhd:501$526.
+    dead port 2/2 on $mux $flatten\P2.$verific$i653$b20.vhd:1011$1052.
+    dead port 2/2 on $mux $flatten\P2.$verific$mux_641$b20.vhd:1011$1043.
+    dead port 2/2 on $mux $flatten\P2.$verific$mux_654$b20.vhd:1011$1054.
+Removed 6 multiplexer ports.
+<suppressed ~52 debug messages>
+
+yosys> opt_reduce
+
+3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+    New ctrl vector for $pmux cell $flatten\P1.$verific$select_746$b20.vhd:486$477: { $flatten\P1.$verific$n2255$108 $auto$opt_reduce.cc:134:opt_pmux$1096 }
+    New ctrl vector for $pmux cell $flatten\P1.$verific$select_750$b20.vhd:486$418: { $flatten\P1.$verific$n2256$109 $auto$opt_reduce.cc:134:opt_pmux$1098 }
+    New ctrl vector for $pmux cell $flatten\P1.$verific$select_751$b20.vhd:486$495: { $flatten\P1.$verific$n2257$110 $auto$opt_reduce.cc:134:opt_pmux$1100 }
+    New ctrl vector for $pmux cell $flatten\P1.$verific$select_752$b20.vhd:486$496: { $flatten\P1.$verific$n2258$111 $auto$opt_reduce.cc:134:opt_pmux$1102 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_494$b20.vhd:953$999: { $flatten\P2.$verific$n2118$618 $auto$opt_reduce.cc:134:opt_pmux$1104 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_495$b20.vhd:953$1000: { $flatten\P2.$verific$n2120$620 $auto$opt_reduce.cc:134:opt_pmux$1106 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_496$b20.vhd:953$1001: { $flatten\P2.$verific$n2119$619 $auto$opt_reduce.cc:134:opt_pmux$1108 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_497$b20.vhd:953$1002: { $flatten\P2.$verific$n2121$621 $auto$opt_reduce.cc:134:opt_pmux$1110 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_534$b20.vhd:973$1005: { $flatten\P2.$verific$n2121$621 $auto$opt_reduce.cc:134:opt_pmux$1112 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_535$b20.vhd:973$1006: { $flatten\P2.$verific$n2119$619 $auto$opt_reduce.cc:134:opt_pmux$1114 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_536$b20.vhd:973$1007: { $flatten\P2.$verific$n2120$620 $auto$opt_reduce.cc:134:opt_pmux$1116 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_537$b20.vhd:973$1008: { $flatten\P2.$verific$n2118$618 $auto$opt_reduce.cc:134:opt_pmux$1118 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_617$b20.vhd:996$1019: { $flatten\P2.$verific$n2121$621 $auto$opt_reduce.cc:134:opt_pmux$1120 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_618$b20.vhd:996$1020: { $flatten\P2.$verific$n2120$620 $auto$opt_reduce.cc:134:opt_pmux$1122 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_619$b20.vhd:996$1021: { $flatten\P2.$verific$n2119$619 $auto$opt_reduce.cc:134:opt_pmux$1124 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_620$b20.vhd:996$1022: { $flatten\P2.$verific$n2118$618 $auto$opt_reduce.cc:134:opt_pmux$1126 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_717$b20.vhd:873$990: { $flatten\P2.$verific$n2118$618 $auto$opt_reduce.cc:134:opt_pmux$1128 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_718$b20.vhd:873$996: { $flatten\P2.$verific$n2119$619 $auto$opt_reduce.cc:134:opt_pmux$1130 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_719$b20.vhd:873$997: { $flatten\P2.$verific$n2120$620 $auto$opt_reduce.cc:134:opt_pmux$1132 }
+    New ctrl vector for $pmux cell $flatten\P2.$verific$select_720$b20.vhd:873$998: { $flatten\P2.$verific$n2121$621 $auto$opt_reduce.cc:134:opt_pmux$1134 }
+  Optimizing cells in module \b20.
+Performed a total of 20 changes.
+
+yosys> opt_merge
+
+3.11.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~36 debug messages>
+Removed a total of 12 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+Changing const-value async load to async reset on $flatten\P2.$verific$wr_reg$b20.vhd:1015$1089 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$state_reg$b20.vhd:1015$1091 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$reg3_reg$b20.vhd:1015$1086 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$reg2_reg$b20.vhd:1015$1085 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$reg1_reg$b20.vhd:1015$1084 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$reg0_reg$b20.vhd:1015$1083 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$rd_reg$b20.vhd:1015$1088 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$B_reg$b20.vhd:505$554 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$datao_reg$b20.vhd:1015$1090 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$addr_reg$b20.vhd:1015$1087 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$IR_reg$b20.vhd:1015$1080 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P2.$verific$B_reg$b20.vhd:1015$1082 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$wr_reg$b20.vhd:505$561 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$state_reg$b20.vhd:505$563 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$reg3_reg$b20.vhd:505$558 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$reg2_reg$b20.vhd:505$557 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$reg1_reg$b20.vhd:505$556 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$reg0_reg$b20.vhd:505$555 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$rd_reg$b20.vhd:505$560 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$IR_reg$b20.vhd:505$552 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$datao_reg$b20.vhd:505$562 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($aldff) from module b20.
+Changing const-value async load to async reset on $flatten\P1.$verific$addr_reg$b20.vhd:505$559 ($aldff) from module b20.
+
+yosys> opt_clean
+
+3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 20 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.11.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~52 debug messages>
+
+yosys> opt_reduce
+
+3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.11.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.11.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.11.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> fsm
+
+3.12. Executing FSM pass (extract and optimize FSM).
+
+yosys> fsm_detect
+
+3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+Found FSM state register b20.P1.d.
+Found FSM state register b20.P2.d.
+
+yosys> fsm_extract
+
+3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\P1.d' from module `\b20'.
+  found $adff cell for state register: $flatten\P1.$verific$d_reg$b20.vhd:505$553
+  root of input selection tree: $flatten\P1.$verific$n11472$358
+  found reset state: 0 (from async reset)
+  found ctrl input: \P1.state
+  found ctrl input: $flatten\P1.$verific$n341$204 [0]
+  found ctrl input: $flatten\P1.$verific$n10346$175
+  found ctrl input: $flatten\P1.$verific$n1405$102
+  found ctrl input: $flatten\P1.$verific$n1440$103
+  found ctrl input: $flatten\P1.$verific$n1474$104
+  found ctrl input: $flatten\P1.$verific$n1475$105
+  found ctrl input: $flatten\P1.$verific$n1476$106
+  found ctrl input: $flatten\P1.$verific$n1477$107
+  found state code: 1
+  found state code: 2
+  found state code: 3
+  found ctrl input: \P1.B
+  ctrl inputs: { \P1.B \P1.state $flatten\P1.$verific$n1405$102 $flatten\P1.$verific$n1440$103 $flatten\P1.$verific$n1474$104 $flatten\P1.$verific$n1475$105 $flatten\P1.$verific$n1476$106 $flatten\P1.$verific$n1477$107 $flatten\P1.$verific$n10346$175 $flatten\P1.$verific$n341$204 [0] }
+  ctrl outputs: $flatten\P1.$verific$n11472$358
+  transition:          0 10'-0-------- ->          0 0
+  transition:          0 10'-100000000 ->          0 0
+  transition:          0 10'-100000100 ->          0 0
+  transition:          0 10'-100001-00 ->          1 1
+  transition:          0 10'-10001--00 ->          2 2
+  transition:          0 10'-1001---00 ->          3 3
+  transition:          0 10'0101----00 ->          0 0
+  transition:          0 10'1101----00 ->          3 3
+  transition:          0 10'011-----00 ->          3 3
+  transition:          0 10'111-----00 ->          0 0
+  transition:          0 10'-1------10 ->          0 0
+  transition:          0 10'-1-------1 ->          0 0
+  transition:          2 10'-0-------- ->          2 2
+  transition:          2 10'-100000000 ->          2 2
+  transition:          2 10'-100000100 ->          0 0
+  transition:          2 10'-100001-00 ->          1 1
+  transition:          2 10'-10001--00 ->          2 2
+  transition:          2 10'-1001---00 ->          3 3
+  transition:          2 10'0101----00 ->          2 2
+  transition:          2 10'1101----00 ->          3 3
+  transition:          2 10'011-----00 ->          3 3
+  transition:          2 10'111-----00 ->          2 2
+  transition:          2 10'-1------10 ->          2 2
+  transition:          2 10'-1-------1 ->          2 2
+  transition:          1 10'-0-------- ->          1 1
+  transition:          1 10'-100000000 ->          1 1
+  transition:          1 10'-100000100 ->          0 0
+  transition:          1 10'-100001-00 ->          1 1
+  transition:          1 10'-10001--00 ->          2 2
+  transition:          1 10'-1001---00 ->          3 3
+  transition:          1 10'0101----00 ->          1 1
+  transition:          1 10'1101----00 ->          3 3
+  transition:          1 10'011-----00 ->          3 3
+  transition:          1 10'111-----00 ->          1 1
+  transition:          1 10'-1------10 ->          1 1
+  transition:          1 10'-1-------1 ->          1 1
+  transition:          3 10'-0-------- ->          3 3
+  transition:          3 10'-100000000 ->          3 3
+  transition:          3 10'-100000100 ->          0 0
+  transition:          3 10'-100001-00 ->          1 1
+  transition:          3 10'-10001--00 ->          2 2
+  transition:          3 10'-1001---00 ->          3 3
+  transition:          3 10'0101----00 ->          3 3
+  transition:          3 10'1101----00 ->          3 3
+  transition:          3 10'011-----00 ->          3 3
+  transition:          3 10'111-----00 ->          3 3
+  transition:          3 10'-1------10 ->          3 3
+  transition:          3 10'-1-------1 ->          3 3
+Extracting FSM `\P2.d' from module `\b20'.
+  found $adff cell for state register: $flatten\P2.$verific$d_reg$b20.vhd:1015$1081
+  root of input selection tree: $flatten\P2.$verific$n11328$869
+  found reset state: 0 (from async reset)
+  found ctrl input: \P2.state
+  found ctrl input: $flatten\P2.$verific$n341$712 [0]
+  found ctrl input: $flatten\P2.$verific$n10195$685
+  found ctrl input: $flatten\P2.$verific$n1406$612
+  found ctrl input: $flatten\P2.$verific$n1441$613
+  found ctrl input: $flatten\P2.$verific$n1475$614
+  found ctrl input: $flatten\P2.$verific$n1476$615
+  found ctrl input: $flatten\P2.$verific$n1477$616
+  found ctrl input: $flatten\P2.$verific$n1478$617
+  found state code: 1
+  found state code: 2
+  found state code: 3
+  found ctrl input: \P2.B
+  ctrl inputs: { \P2.B \P2.state $flatten\P2.$verific$n1406$612 $flatten\P2.$verific$n1441$613 $flatten\P2.$verific$n1475$614 $flatten\P2.$verific$n1476$615 $flatten\P2.$verific$n1477$616 $flatten\P2.$verific$n1478$617 $flatten\P2.$verific$n10195$685 $flatten\P2.$verific$n341$712 [0] }
+  ctrl outputs: $flatten\P2.$verific$n11328$869
+  transition:          0 10'-0-------- ->          0 0
+  transition:          0 10'-100000000 ->          0 0
+  transition:          0 10'-100000100 ->          0 0
+  transition:          0 10'-100001-00 ->          1 1
+  transition:          0 10'-10001--00 ->          2 2
+  transition:          0 10'-1001---00 ->          3 3
+  transition:          0 10'0101----00 ->          0 0
+  transition:          0 10'1101----00 ->          3 3
+  transition:          0 10'011-----00 ->          3 3
+  transition:          0 10'111-----00 ->          0 0
+  transition:          0 10'-1------10 ->          0 0
+  transition:          0 10'-1-------1 ->          0 0
+  transition:          2 10'-0-------- ->          2 2
+  transition:          2 10'-100000000 ->          2 2
+  transition:          2 10'-100000100 ->          0 0
+  transition:          2 10'-100001-00 ->          1 1
+  transition:          2 10'-10001--00 ->          2 2
+  transition:          2 10'-1001---00 ->          3 3
+  transition:          2 10'0101----00 ->          2 2
+  transition:          2 10'1101----00 ->          3 3
+  transition:          2 10'011-----00 ->          3 3
+  transition:          2 10'111-----00 ->          2 2
+  transition:          2 10'-1------10 ->          2 2
+  transition:          2 10'-1-------1 ->          2 2
+  transition:          1 10'-0-------- ->          1 1
+  transition:          1 10'-100000000 ->          1 1
+  transition:          1 10'-100000100 ->          0 0
+  transition:          1 10'-100001-00 ->          1 1
+  transition:          1 10'-10001--00 ->          2 2
+  transition:          1 10'-1001---00 ->          3 3
+  transition:          1 10'0101----00 ->          1 1
+  transition:          1 10'1101----00 ->          3 3
+  transition:          1 10'011-----00 ->          3 3
+  transition:          1 10'111-----00 ->          1 1
+  transition:          1 10'-1------10 ->          1 1
+  transition:          1 10'-1-------1 ->          1 1
+  transition:          3 10'-0-------- ->          3 3
+  transition:          3 10'-100000000 ->          3 3
+  transition:          3 10'-100000100 ->          0 0
+  transition:          3 10'-100001-00 ->          1 1
+  transition:          3 10'-10001--00 ->          2 2
+  transition:          3 10'-1001---00 ->          3 3
+  transition:          3 10'0101----00 ->          3 3
+  transition:          3 10'1101----00 ->          3 3
+  transition:          3 10'011-----00 ->          3 3
+  transition:          3 10'111-----00 ->          3 3
+  transition:          3 10'-1------10 ->          3 3
+  transition:          3 10'-1-------1 ->          3 3
+
+yosys> fsm_opt
+
+3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\P2.d$1137' from module `\b20'.
+  Merging pattern 10'-100000000 and 10'-100000100 from group (0 0 0).
+  Merging pattern 10'-100000100 and 10'-100000000 from group (0 0 0).
+  Merging pattern 10'0101----00 and 10'1101----00 from group (3 3 3).
+  Merging pattern 10'1101----00 and 10'0101----00 from group (3 3 3).
+  Merging pattern 10'011-----00 and 10'111-----00 from group (3 3 3).
+  Merging pattern 10'111-----00 and 10'011-----00 from group (3 3 3).
+Optimizing FSM `$fsm$\P1.d$1135' from module `\b20'.
+  Merging pattern 10'-100000000 and 10'-100000100 from group (0 0 0).
+  Merging pattern 10'-100000100 and 10'-100000000 from group (0 0 0).
+  Merging pattern 10'0101----00 and 10'1101----00 from group (3 3 3).
+  Merging pattern 10'1101----00 and 10'0101----00 from group (3 3 3).
+  Merging pattern 10'011-----00 and 10'111-----00 from group (3 3 3).
+  Merging pattern 10'111-----00 and 10'011-----00 from group (3 3 3).
+
+yosys> opt_clean
+
+3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 6 unused cells and 6 unused wires.
+<suppressed ~7 debug messages>
+
+yosys> fsm_opt
+
+3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\P1.d$1135' from module `\b20'.
+Optimizing FSM `$fsm$\P2.d$1137' from module `\b20'.
+
+yosys> fsm_recode
+
+3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+Recoding FSM `$fsm$\P1.d$1135' from module `\b20' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  00000000000000000000000000000000 -> ---1
+  00000000000000000000000000000010 -> --1-
+  00000000000000000000000000000001 -> -1--
+  00000000000000000000000000000011 -> 1---
+Recoding FSM `$fsm$\P2.d$1137' from module `\b20' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  00000000000000000000000000000000 -> ---1
+  00000000000000000000000000000010 -> --1-
+  00000000000000000000000000000001 -> -1--
+  00000000000000000000000000000011 -> 1---
+
+yosys> fsm_info
+
+3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+FSM `$fsm$\P1.d$1135' from module `b20':
+-------------------------------------
+
+  Information on FSM $fsm$\P1.d$1135 (\P1.d):
+
+  Number of input signals:   10
+  Number of output signals:  32
+  Number of state bits:       4
+
+  Input signals:
+    0: $flatten\P1.$verific$n341$204 [0]
+    1: $flatten\P1.$verific$n10346$175
+    2: $flatten\P1.$verific$n1477$107
+    3: $flatten\P1.$verific$n1476$106
+    4: $flatten\P1.$verific$n1475$105
+    5: $flatten\P1.$verific$n1474$104
+    6: $flatten\P1.$verific$n1440$103
+    7: $flatten\P1.$verific$n1405$102
+    8: \P1.state
+    9: \P1.B
+
+  Output signals:
+    0: $flatten\P1.$verific$n11472$358 [0]
+    1: $flatten\P1.$verific$n11472$358 [1]
+    2: $flatten\P1.$verific$n11472$358 [2]
+    3: $flatten\P1.$verific$n11472$358 [3]
+    4: $flatten\P1.$verific$n11472$358 [4]
+    5: $flatten\P1.$verific$n11472$358 [5]
+    6: $flatten\P1.$verific$n11472$358 [6]
+    7: $flatten\P1.$verific$n11472$358 [7]
+    8: $flatten\P1.$verific$n11472$358 [8]
+    9: $flatten\P1.$verific$n11472$358 [9]
+   10: $flatten\P1.$verific$n11472$358 [10]
+   11: $flatten\P1.$verific$n11472$358 [11]
+   12: $flatten\P1.$verific$n11472$358 [12]
+   13: $flatten\P1.$verific$n11472$358 [13]
+   14: $flatten\P1.$verific$n11472$358 [14]
+   15: $flatten\P1.$verific$n11472$358 [15]
+   16: $flatten\P1.$verific$n11472$358 [16]
+   17: $flatten\P1.$verific$n11472$358 [17]
+   18: $flatten\P1.$verific$n11472$358 [18]
+   19: $flatten\P1.$verific$n11472$358 [19]
+   20: $flatten\P1.$verific$n11472$358 [20]
+   21: $flatten\P1.$verific$n11472$358 [21]
+   22: $flatten\P1.$verific$n11472$358 [22]
+   23: $flatten\P1.$verific$n11472$358 [23]
+   24: $flatten\P1.$verific$n11472$358 [24]
+   25: $flatten\P1.$verific$n11472$358 [25]
+   26: $flatten\P1.$verific$n11472$358 [26]
+   27: $flatten\P1.$verific$n11472$358 [27]
+   28: $flatten\P1.$verific$n11472$358 [28]
+   29: $flatten\P1.$verific$n11472$358 [29]
+   30: $flatten\P1.$verific$n11472$358 [30]
+   31: $flatten\P1.$verific$n11472$358 [31]
+
+  State encoding:
+    0:     4'---1  <RESET STATE>
+    1:     4'--1-
+    2:     4'-1--
+    3:     4'1---
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 10'-100000-00   ->     0 0
+      1:     0 10'0101----00   ->     0 0
+      2:     0 10'111-----00   ->     0 0
+      3:     0 10'-1------10   ->     0 0
+      4:     0 10'-1-------1   ->     0 0
+      5:     0 10'-0--------   ->     0 0
+      6:     0 10'-10001--00   ->     1 2
+      7:     0 10'-100001-00   ->     2 1
+      8:     0 10'-1001---00   ->     3 3
+      9:     0 10'1101----00   ->     3 3
+     10:     0 10'011-----00   ->     3 3
+     11:     1 10'-100000100   ->     0 0
+     12:     1 10'-100000000   ->     1 2
+     13:     1 10'-10001--00   ->     1 2
+     14:     1 10'0101----00   ->     1 2
+     15:     1 10'111-----00   ->     1 2
+     16:     1 10'-1------10   ->     1 2
+     17:     1 10'-1-------1   ->     1 2
+     18:     1 10'-0--------   ->     1 2
+     19:     1 10'-100001-00   ->     2 1
+     20:     1 10'-1001---00   ->     3 3
+     21:     1 10'1101----00   ->     3 3
+     22:     1 10'011-----00   ->     3 3
+     23:     2 10'-100000100   ->     0 0
+     24:     2 10'-10001--00   ->     1 2
+     25:     2 10'-100000000   ->     2 1
+     26:     2 10'-100001-00   ->     2 1
+     27:     2 10'0101----00   ->     2 1
+     28:     2 10'111-----00   ->     2 1
+     29:     2 10'-1------10   ->     2 1
+     30:     2 10'-1-------1   ->     2 1
+     31:     2 10'-0--------   ->     2 1
+     32:     2 10'-1001---00   ->     3 3
+     33:     2 10'1101----00   ->     3 3
+     34:     2 10'011-----00   ->     3 3
+     35:     3 10'-100000100   ->     0 0
+     36:     3 10'-10001--00   ->     1 2
+     37:     3 10'-100001-00   ->     2 1
+     38:     3 10'-100000000   ->     3 3
+     39:     3 10'-1001---00   ->     3 3
+     40:     3 10'-101----00   ->     3 3
+     41:     3 10'-11-----00   ->     3 3
+     42:     3 10'-1------10   ->     3 3
+     43:     3 10'-1-------1   ->     3 3
+     44:     3 10'-0--------   ->     3 3
+
+-------------------------------------
+
+FSM `$fsm$\P2.d$1137' from module `b20':
+-------------------------------------
+
+  Information on FSM $fsm$\P2.d$1137 (\P2.d):
+
+  Number of input signals:   10
+  Number of output signals:  32
+  Number of state bits:       4
+
+  Input signals:
+    0: $flatten\P2.$verific$n341$712 [0]
+    1: $flatten\P2.$verific$n10195$685
+    2: $flatten\P2.$verific$n1478$617
+    3: $flatten\P2.$verific$n1477$616
+    4: $flatten\P2.$verific$n1476$615
+    5: $flatten\P2.$verific$n1475$614
+    6: $flatten\P2.$verific$n1441$613
+    7: $flatten\P2.$verific$n1406$612
+    8: \P2.state
+    9: \P2.B
+
+  Output signals:
+    0: $flatten\P2.$verific$n11328$869 [0]
+    1: $flatten\P2.$verific$n11328$869 [1]
+    2: $flatten\P2.$verific$n11328$869 [2]
+    3: $flatten\P2.$verific$n11328$869 [3]
+    4: $flatten\P2.$verific$n11328$869 [4]
+    5: $flatten\P2.$verific$n11328$869 [5]
+    6: $flatten\P2.$verific$n11328$869 [6]
+    7: $flatten\P2.$verific$n11328$869 [7]
+    8: $flatten\P2.$verific$n11328$869 [8]
+    9: $flatten\P2.$verific$n11328$869 [9]
+   10: $flatten\P2.$verific$n11328$869 [10]
+   11: $flatten\P2.$verific$n11328$869 [11]
+   12: $flatten\P2.$verific$n11328$869 [12]
+   13: $flatten\P2.$verific$n11328$869 [13]
+   14: $flatten\P2.$verific$n11328$869 [14]
+   15: $flatten\P2.$verific$n11328$869 [15]
+   16: $flatten\P2.$verific$n11328$869 [16]
+   17: $flatten\P2.$verific$n11328$869 [17]
+   18: $flatten\P2.$verific$n11328$869 [18]
+   19: $flatten\P2.$verific$n11328$869 [19]
+   20: $flatten\P2.$verific$n11328$869 [20]
+   21: $flatten\P2.$verific$n11328$869 [21]
+   22: $flatten\P2.$verific$n11328$869 [22]
+   23: $flatten\P2.$verific$n11328$869 [23]
+   24: $flatten\P2.$verific$n11328$869 [24]
+   25: $flatten\P2.$verific$n11328$869 [25]
+   26: $flatten\P2.$verific$n11328$869 [26]
+   27: $flatten\P2.$verific$n11328$869 [27]
+   28: $flatten\P2.$verific$n11328$869 [28]
+   29: $flatten\P2.$verific$n11328$869 [29]
+   30: $flatten\P2.$verific$n11328$869 [30]
+   31: $flatten\P2.$verific$n11328$869 [31]
+
+  State encoding:
+    0:     4'---1  <RESET STATE>
+    1:     4'--1-
+    2:     4'-1--
+    3:     4'1---
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 10'-100000-00   ->     0 0
+      1:     0 10'0101----00   ->     0 0
+      2:     0 10'111-----00   ->     0 0
+      3:     0 10'-1------10   ->     0 0
+      4:     0 10'-1-------1   ->     0 0
+      5:     0 10'-0--------   ->     0 0
+      6:     0 10'-10001--00   ->     1 2
+      7:     0 10'-100001-00   ->     2 1
+      8:     0 10'-1001---00   ->     3 3
+      9:     0 10'1101----00   ->     3 3
+     10:     0 10'011-----00   ->     3 3
+     11:     1 10'-100000100   ->     0 0
+     12:     1 10'-100000000   ->     1 2
+     13:     1 10'-10001--00   ->     1 2
+     14:     1 10'0101----00   ->     1 2
+     15:     1 10'111-----00   ->     1 2
+     16:     1 10'-1------10   ->     1 2
+     17:     1 10'-1-------1   ->     1 2
+     18:     1 10'-0--------   ->     1 2
+     19:     1 10'-100001-00   ->     2 1
+     20:     1 10'-1001---00   ->     3 3
+     21:     1 10'1101----00   ->     3 3
+     22:     1 10'011-----00   ->     3 3
+     23:     2 10'-100000100   ->     0 0
+     24:     2 10'-10001--00   ->     1 2
+     25:     2 10'-100000000   ->     2 1
+     26:     2 10'-100001-00   ->     2 1
+     27:     2 10'0101----00   ->     2 1
+     28:     2 10'111-----00   ->     2 1
+     29:     2 10'-1------10   ->     2 1
+     30:     2 10'-1-------1   ->     2 1
+     31:     2 10'-0--------   ->     2 1
+     32:     2 10'-1001---00   ->     3 3
+     33:     2 10'1101----00   ->     3 3
+     34:     2 10'011-----00   ->     3 3
+     35:     3 10'-100000100   ->     0 0
+     36:     3 10'-10001--00   ->     1 2
+     37:     3 10'-100001-00   ->     2 1
+     38:     3 10'-100000000   ->     3 3
+     39:     3 10'-1001---00   ->     3 3
+     40:     3 10'-101----00   ->     3 3
+     41:     3 10'-11-----00   ->     3 3
+     42:     3 10'-1------10   ->     3 3
+     43:     3 10'-1-------1   ->     3 3
+     44:     3 10'-0--------   ->     3 3
+
+-------------------------------------
+
+yosys> fsm_map
+
+3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+Mapping FSM `$fsm$\P1.d$1135' from module `\b20'.
+Mapping FSM `$fsm$\P2.d$1137' from module `\b20'.
+
+yosys> opt -sat
+
+3.13. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.13.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~12 debug messages>
+
+yosys> opt_merge -nomux
+
+3.13.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~324 debug messages>
+Removed a total of 108 cells.
+
+yosys> opt_muxtree
+
+3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~50 debug messages>
+
+yosys> opt_reduce
+
+3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $flatten\P2.$verific$reg3_reg$b20.vhd:1015$1086 ($adff) from module b20 (D = $flatten\P2.$verific$n11034$864, Q = \P2.reg3).
+Adding EN signal on $flatten\P2.$verific$reg2_reg$b20.vhd:1015$1085 ($adff) from module b20 (D = $flatten\P2.$verific$n10128$837, Q = \P2.reg2).
+Adding EN signal on $flatten\P2.$verific$reg1_reg$b20.vhd:1015$1084 ($adff) from module b20 (D = $flatten\P2.$verific$n10095$836, Q = \P2.reg1).
+Adding EN signal on $flatten\P2.$verific$reg0_reg$b20.vhd:1015$1083 ($adff) from module b20 (D = $flatten\P2.$verific$n10062$835, Q = \P2.reg0).
+Adding EN signal on $flatten\P2.$verific$datao_reg$b20.vhd:1015$1090 ($adff) from module b20 (D = { $flatten\P2.$verific$add_540$b20.vhd:976$1011 $flatten\P2.$verific$n10370$847 [0] }, Q = \P2.datao).
+Adding EN signal on $flatten\P2.$verific$B_reg$b20.vhd:1015$1082 ($adff) from module b20 (D = $flatten\P2.$verific$n10835$691, Q = \P2.B).
+Adding EN signal on $flatten\P1.$verific$reg3_reg$b20.vhd:505$558 ($adff) from module b20 (D = $flatten\P1.$verific$n10312$328 [2:0], Q = \P1.reg3 [2:0]).
+Adding EN signal on $flatten\P1.$verific$reg3_reg$b20.vhd:505$558 ($adff) from module b20 (D = $flatten\P1.$verific$n11178$353 [31:3], Q = \P1.reg3 [31:3]).
+Adding EN signal on $flatten\P1.$verific$reg2_reg$b20.vhd:505$557 ($adff) from module b20 (D = $flatten\P1.$verific$n10279$327, Q = \P1.reg2).
+Adding EN signal on $flatten\P1.$verific$reg1_reg$b20.vhd:505$556 ($adff) from module b20 (D = $flatten\P1.$verific$n10246$326, Q = \P1.reg1).
+Adding EN signal on $flatten\P1.$verific$reg0_reg$b20.vhd:505$555 ($adff) from module b20 (D = $flatten\P1.$verific$n10213$325, Q = \P1.reg0).
+Adding EN signal on $flatten\P1.$verific$datao_reg$b20.vhd:505$562 ($adff) from module b20 (D = { $flatten\P1.$verific$add_570$b20.vhd:466$486 $flatten\P1.$verific$n10514$336 [0] }, Q = \P1.datao).
+Adding EN signal on $flatten\P1.$verific$B_reg$b20.vhd:505$554 ($adff) from module b20 (D = $flatten\P1.$verific$n10979$183, Q = \P1.B).
+
+yosys> opt_clean
+
+3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 28 unused cells and 140 unused wires.
+<suppressed ~29 debug messages>
+
+yosys> opt_expr
+
+3.13.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~42 debug messages>
+
+yosys> opt_reduce
+
+3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~51 debug messages>
+Removed a total of 17 cells.
+
+yosys> opt_dff -sat
+
+3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+Setting constant 0-bit at position 2 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 3 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 4 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 5 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 6 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 7 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 8 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 9 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 10 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 11 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 12 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 13 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 14 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 15 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 16 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 17 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 18 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 19 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 20 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 21 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 22 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 23 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 24 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 25 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 26 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 27 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 28 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 29 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 30 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 31 on $flatten\P1.$verific$d_reg$b20.vhd:505$553 ($adff) from module b20.
+Setting constant 0-bit at position 2 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 3 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 4 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 5 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 6 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 7 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 8 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 9 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 10 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 11 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 12 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 13 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 14 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 15 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 16 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 17 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 18 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 19 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 20 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 21 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 22 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 23 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 24 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 25 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 26 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 27 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 28 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 29 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 30 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+Setting constant 0-bit at position 31 on $flatten\P2.$verific$d_reg$b20.vhd:1015$1081 ($adff) from module b20.
+
+yosys> opt_clean
+
+3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 17 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.13.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.13.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.13.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~42 debug messages>
+
+yosys> opt_reduce
+
+3.13.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.13.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.13.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.13.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.13.23. Finished OPT passes. (There is nothing left to do.)
+
+yosys> wreduce -keepdc
+
+3.14. Executing WREDUCE pass (reducing word size of cells).
+Removed top 1 bits (of 20) from port A of cell b20.$verific$LessThan_16$b20.vhd:1076$53 ($lt).
+Removed top 1 bits (of 20) from port A of cell b20.$verific$LessThan_17$b20.vhd:1076$54 ($lt).
+Removed top 1 bits (of 5) from port B of cell b20.$auto$fsm_map.cc:77:implement_pattern_cache$1325 ($eq).
+Removed top 1 bits (of 6) from port B of cell b20.$auto$fsm_map.cc:77:implement_pattern_cache$1315 ($eq).
+Removed top 3 bits (of 33) from port Y of cell b20.$flatten\P1.$verific$sub_365$b20.vhd:358$480 ($sub).
+Removed top 3 bits (of 33) from port A of cell b20.$flatten\P1.$verific$sub_365$b20.vhd:358$480 ($sub).
+Removed top 3 bits (of 33) from port B of cell b20.$flatten\P1.$verific$sub_365$b20.vhd:358$480 ($sub).
+Removed top 2 bits (of 32) from port Y of cell b20.$flatten\P1.$verific$add_283$b20.vhd:318$478 ($add).
+Removed top 2 bits (of 32) from port A of cell b20.$flatten\P1.$verific$add_283$b20.vhd:318$478 ($add).
+Removed top 2 bits (of 32) from port B of cell b20.$flatten\P1.$verific$add_283$b20.vhd:318$478 ($add).
+Removed top 30 bits (of 32) from port A of cell b20.$flatten\P1.$verific$equal_179$b20.vhd:246$472 ($eq).
+Removed top 30 bits (of 32) from port A of cell b20.$flatten\P1.$verific$equal_178$b20.vhd:245$471 ($eq).
+Removed top 31 bits (of 32) from port A of cell b20.$flatten\P1.$verific$equal_177$b20.vhd:244$470 ($eq).
+Removed top 32 bits (of 33) from port A of cell b20.$flatten\P1.$verific$sub_168$b20.vhd:243$467 ($sub).
+Removed top 1 bits (of 33) from port Y of cell b20.$flatten\P1.$verific$sub_168$b20.vhd:243$467 ($sub).
+Removed top 1 bits (of 33) from port B of cell b20.$flatten\P1.$verific$sub_168$b20.vhd:243$467 ($sub).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P1.$verific$mux_145$b20.vhd:226$461 ($mux).
+Removed top 2 bits (of 3) from port A of cell b20.$flatten\P1.$verific$equal_143$b20.vhd:224$459 ($eq).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P1.$verific$equal_142$b20.vhd:223$458 ($eq).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P1.$verific$equal_141$b20.vhd:221$457 ($eq).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P1.$verific$mux_140$b20.vhd:220$456 ($mux).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P1.$verific$mux_138$b20.vhd:216$454 ($mux).
+Removed top 2 bits (of 33) from port B of cell b20.$flatten\P1.$verific$sub_84$b20.vhd:149$436 ($sub).
+Removed top 1 bits (of 33) from port Y of cell b20.$flatten\P1.$verific$sub_84$b20.vhd:149$436 ($sub).
+Removed top 1 bits (of 33) from port A of cell b20.$flatten\P1.$verific$sub_84$b20.vhd:149$436 ($sub).
+Removed top 1 bits (of 32) from port B of cell b20.$flatten\P1.$verific$LessThan_83$b20.vhd:148$435 ($lt).
+Removed top 12 bits (of 32) from port A of cell b20.$flatten\P1.$verific$add_61$b20.vhd:113$423 ($add).
+Removed top 12 bits (of 32) from port Y of cell b20.$flatten\P1.$verific$add_61$b20.vhd:113$423 ($add).
+Removed top 12 bits (of 32) from port B of cell b20.$flatten\P1.$verific$add_61$b20.vhd:113$423 ($add).
+Removed top 12 bits (of 32) from port A of cell b20.$flatten\P1.$verific$add_56$b20.vhd:110$421 ($add).
+Removed top 12 bits (of 32) from port Y of cell b20.$flatten\P1.$verific$add_56$b20.vhd:110$421 ($add).
+Removed top 12 bits (of 32) from port B of cell b20.$flatten\P1.$verific$add_56$b20.vhd:110$421 ($add).
+Removed top 1 bits (of 3) from port Y of cell b20.$flatten\P1.$verific$add_44$b20.vhd:96$413 ($add).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P1.$verific$add_44$b20.vhd:96$413 ($add).
+Removed top 25 bits (of 26) from port B of cell b20.$flatten\P1.$verific$add_39$b20.vhd:95$409 ($add).
+Removed top 8 bits (of 9) from port Y of cell b20.$flatten\P1.$verific$add_36$b20.vhd:92$403 ($add).
+Removed top 8 bits (of 9) from port A of cell b20.$flatten\P1.$verific$add_36$b20.vhd:92$403 ($add).
+Removed top 1 bits (of 6) from port B of cell b20.$auto$fsm_map.cc:77:implement_pattern_cache$1529 ($eq).
+Removed top 9 bits (of 13) from port Y of cell b20.$flatten\P1.$verific$add_31$b20.vhd:90$396 ($add).
+Removed top 9 bits (of 13) from port A of cell b20.$flatten\P1.$verific$add_31$b20.vhd:90$396 ($add).
+Removed top 5 bits (of 8) from port Y of cell b20.$flatten\P1.$verific$add_26$b20.vhd:88$389 ($add).
+Removed top 5 bits (of 8) from port A of cell b20.$flatten\P1.$verific$add_26$b20.vhd:88$389 ($add).
+Removed top 3 bits (of 5) from port Y of cell b20.$flatten\P1.$verific$add_21$b20.vhd:86$382 ($add).
+Removed top 3 bits (of 5) from port A of cell b20.$flatten\P1.$verific$add_21$b20.vhd:86$382 ($add).
+Removed top 1 bits (of 33) from port Y of cell b20.$flatten\P1.$verific$unary_minus_15$b20.vhd:84$376 ($neg).
+Removed top 1 bits (of 33) from port A of cell b20.$flatten\P1.$verific$unary_minus_15$b20.vhd:84$376 ($neg).
+Removed top 1 bits (of 32) from port A of cell b20.$flatten\P1.$verific$LessThan_14$b20.vhd:83$375 ($lt).
+Removed top 1 bits (of 5) from port B of cell b20.$auto$fsm_map.cc:77:implement_pattern_cache$1539 ($eq).
+Removed top 3 bits (of 29) from FF cell b20.$auto$ff.cc:262:slice$1606 ($adffe).
+Removed top 1 bits (of 21) from port A of cell b20.$flatten\P2.$verific$sub_634$b20.vhd:1004$1035 ($sub).
+Removed top 1 bits (of 21) from port B of cell b20.$flatten\P2.$verific$sub_634$b20.vhd:1004$1035 ($sub).
+Removed top 1 bits (of 21) from port A of cell b20.$flatten\P2.$verific$sub_632$b20.vhd:1003$1032 ($sub).
+Removed top 1 bits (of 21) from port B of cell b20.$flatten\P2.$verific$sub_632$b20.vhd:1003$1032 ($sub).
+Removed top 3 bits (of 32) from FF cell b20.$auto$ff.cc:262:slice$1567 ($adffe).
+Removed top 2 bits (of 32) from port Y of cell b20.$flatten\P2.$verific$add_331$b20.vhd:868$993 ($add).
+Removed top 2 bits (of 32) from port A of cell b20.$flatten\P2.$verific$add_331$b20.vhd:868$993 ($add).
+Removed top 2 bits (of 32) from port B of cell b20.$flatten\P2.$verific$add_331$b20.vhd:868$993 ($add).
+Removed top 3 bits (of 33) from port Y of cell b20.$flatten\P2.$verific$sub_297$b20.vhd:848$991 ($sub).
+Removed top 3 bits (of 33) from port A of cell b20.$flatten\P2.$verific$sub_297$b20.vhd:848$991 ($sub).
+Removed top 3 bits (of 33) from port B of cell b20.$flatten\P2.$verific$sub_297$b20.vhd:848$991 ($sub).
+Removed top 30 bits (of 32) from port A of cell b20.$flatten\P2.$verific$equal_171$b20.vhd:756$983 ($eq).
+Removed top 30 bits (of 32) from port A of cell b20.$flatten\P2.$verific$equal_170$b20.vhd:755$982 ($eq).
+Removed top 31 bits (of 32) from port A of cell b20.$flatten\P2.$verific$equal_169$b20.vhd:754$981 ($eq).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P2.$verific$mux_143$b20.vhd:736$972 ($mux).
+Removed top 2 bits (of 3) from port A of cell b20.$flatten\P2.$verific$equal_141$b20.vhd:734$970 ($eq).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P2.$verific$equal_140$b20.vhd:733$969 ($eq).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P2.$verific$equal_139$b20.vhd:731$968 ($eq).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P2.$verific$mux_138$b20.vhd:730$967 ($mux).
+Removed top 30 bits (of 32) from mux cell b20.$flatten\P2.$verific$mux_136$b20.vhd:726$965 ($mux).
+Removed top 2 bits (of 33) from port B of cell b20.$flatten\P2.$verific$sub_82$b20.vhd:659$947 ($sub).
+Removed top 1 bits (of 33) from port Y of cell b20.$flatten\P2.$verific$sub_82$b20.vhd:659$947 ($sub).
+Removed top 1 bits (of 33) from port A of cell b20.$flatten\P2.$verific$sub_82$b20.vhd:659$947 ($sub).
+Removed top 1 bits (of 32) from port B of cell b20.$flatten\P2.$verific$LessThan_81$b20.vhd:658$946 ($lt).
+Removed top 13 bits (of 33) from port A of cell b20.$flatten\P2.$verific$sub_59$b20.vhd:623$934 ($sub).
+Removed top 13 bits (of 33) from port Y of cell b20.$flatten\P2.$verific$sub_59$b20.vhd:623$934 ($sub).
+Removed top 13 bits (of 33) from port B of cell b20.$flatten\P2.$verific$sub_59$b20.vhd:623$934 ($sub).
+Removed top 13 bits (of 33) from port A of cell b20.$flatten\P2.$verific$sub_55$b20.vhd:620$932 ($sub).
+Removed top 13 bits (of 33) from port Y of cell b20.$flatten\P2.$verific$sub_55$b20.vhd:620$932 ($sub).
+Removed top 13 bits (of 33) from port B of cell b20.$flatten\P2.$verific$sub_55$b20.vhd:620$932 ($sub).
+Removed top 1 bits (of 3) from port Y of cell b20.$flatten\P2.$verific$add_44$b20.vhd:606$924 ($add).
+Removed top 1 bits (of 3) from port A of cell b20.$flatten\P2.$verific$add_44$b20.vhd:606$924 ($add).
+Removed top 1 bits (of 30) from port A of cell b20.$flatten\P2.$verific$sub_39$b20.vhd:605$920 ($sub).
+Removed top 26 bits (of 30) from port B of cell b20.$flatten\P2.$verific$sub_39$b20.vhd:605$920 ($sub).
+Removed top 8 bits (of 9) from port Y of cell b20.$flatten\P2.$verific$add_36$b20.vhd:602$914 ($add).
+Removed top 8 bits (of 9) from port A of cell b20.$flatten\P2.$verific$add_36$b20.vhd:602$914 ($add).
+Removed top 9 bits (of 13) from port Y of cell b20.$flatten\P2.$verific$add_31$b20.vhd:600$907 ($add).
+Removed top 9 bits (of 13) from port A of cell b20.$flatten\P2.$verific$add_31$b20.vhd:600$907 ($add).
+Removed top 5 bits (of 8) from port Y of cell b20.$flatten\P2.$verific$add_26$b20.vhd:598$900 ($add).
+Removed top 5 bits (of 8) from port A of cell b20.$flatten\P2.$verific$add_26$b20.vhd:598$900 ($add).
+Removed top 3 bits (of 5) from port Y of cell b20.$flatten\P2.$verific$add_21$b20.vhd:596$893 ($add).
+Removed top 3 bits (of 5) from port A of cell b20.$flatten\P2.$verific$add_21$b20.vhd:596$893 ($add).
+Removed top 1 bits (of 33) from port Y of cell b20.$flatten\P2.$verific$unary_minus_15$b20.vhd:594$887 ($neg).
+Removed top 1 bits (of 33) from port A of cell b20.$flatten\P2.$verific$unary_minus_15$b20.vhd:594$887 ($neg).
+Removed top 1 bits (of 32) from port A of cell b20.$flatten\P2.$verific$LessThan_14$b20.vhd:593$886 ($lt).
+Removed top 3 bits (of 32) from mux cell b20.$flatten\P1.$verific$mux_698$b20.vhd:502$536 ($mux).
+Removed top 3 bits (of 32) from mux cell b20.$flatten\P2.$verific$mux_667$b20.vhd:1012$1064 ($mux).
+Removed top 3 bits (of 32) from mux cell b20.$flatten\P1.$verific$mux_679$b20.vhd:501$522 ($mux).
+Removed top 3 bits (of 32) from mux cell b20.$flatten\P2.$verific$mux_648$b20.vhd:1011$1050 ($mux).
+Removed top 20 bits (of 21) from wire b20.$flatten\P1.$verific$n10477$333.
+Removed top 3 bits (of 32) from wire b20.$flatten\P1.$verific$n10755$344.
+Removed top 3 bits (of 32) from wire b20.$flatten\P1.$verific$n11178$353.
+Removed top 30 bits (of 32) from wire b20.$flatten\P1.$verific$n11472$358.
+Removed top 30 bits (of 32) from wire b20.$flatten\P1.$verific$n1407$226.
+Removed top 30 bits (of 32) from wire b20.$flatten\P1.$verific$n1441$227.
+Removed top 30 bits (of 32) from wire b20.$flatten\P1.$verific$n1478$228.
+Removed top 1 bits (of 33) from wire b20.$flatten\P1.$verific$n184$195.
+Removed top 1 bits (of 33) from wire b20.$flatten\P1.$verific$n1987$239.
+Removed top 3 bits (of 5) from wire b20.$flatten\P1.$verific$n288$198.
+Removed top 6 bits (of 8) from wire b20.$flatten\P1.$verific$n301$200.
+Removed top 9 bits (of 13) from wire b20.$flatten\P1.$verific$n318$202.
+Removed top 8 bits (of 9) from wire b20.$flatten\P1.$verific$n341$204.
+Removed top 2 bits (of 32) from wire b20.$flatten\P1.$verific$n4241$272.
+Removed top 1 bits (of 3) from wire b20.$flatten\P1.$verific$n436$208.
+Removed top 3 bits (of 33) from wire b20.$flatten\P1.$verific$n5666$286.
+Removed top 1 bits (of 32) from wire b20.$flatten\P1.$verific$n862$221.
+Removed top 1 bits (of 33) from wire b20.$flatten\P1.$verific$n933$223.
+Removed top 1 bits (of 21) from wire b20.$flatten\P2.$verific$n10326$845.
+Removed top 3 bits (of 32) from wire b20.$flatten\P2.$verific$n10611$855.
+Removed top 3 bits (of 32) from wire b20.$flatten\P2.$verific$n11034$864.
+Removed top 30 bits (of 32) from wire b20.$flatten\P2.$verific$n11328$869.
+Removed top 30 bits (of 32) from wire b20.$flatten\P2.$verific$n1408$734.
+Removed top 31 bits (of 32) from wire b20.$flatten\P2.$verific$n1442$735.
+Removed top 30 bits (of 32) from wire b20.$flatten\P2.$verific$n1479$736.
+Removed top 1 bits (of 33) from wire b20.$flatten\P2.$verific$n184$703.
+Removed top 1 bits (of 3) from wire b20.$flatten\P2.$verific$n439$716.
+Removed top 3 bits (of 33) from wire b20.$flatten\P2.$verific$n4798$778.
+Removed top 2 bits (of 32) from wire b20.$flatten\P2.$verific$n5506$788.
+Removed top 1 bits (of 33) from wire b20.$flatten\P2.$verific$n934$731.
+
+yosys> peepopt
+
+3.15. Executing PEEPOPT pass (run peephole optimizers).
+
+yosys> pmuxtree
+
+3.16. Executing PMUXTREE pass.
+
+yosys> opt_clean
+
+3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 40 unused cells and 137 unused wires.
+<suppressed ~41 debug messages>
+
+yosys> techmap
+
+3.18. Executing TECHMAP pass (map to technology primitives).
+
+3.18.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.18.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $reduce_or.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $xor.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=19:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $or.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $adff.
+Using extmapper simplemap for cells of type $adffe.
+Running "alumacc" on wrapper $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=3:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=3:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$mul:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=3:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $bmux.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=31:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=31:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=31:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=30:B_SIGNED=0:B_WIDTH=30:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $logic_not.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=32:B_SIGNED=0:B_WIDTH=31:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=2:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=2:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=2:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=2:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=26:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=27:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=26:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=27:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=26:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=27:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=1:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=4:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=4:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$neg:A_SIGNED=0:A_WIDTH=32:Y_WIDTH=32:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$lt:A_SIGNED=0:A_WIDTH=31:B_SIGNED=0:B_WIDTH=32:Y_WIDTH=1:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $ne.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=21:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=20:B_SIGNED=0:B_WIDTH=20:Y_WIDTH=20:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=29:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=29:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:A_SIGNED=0:A_WIDTH=29:B_SIGNED=0:B_WIDTH=4:Y_WIDTH=30:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod$fbc7873bff55778c0b3173955b7e4bce1d9d6834\_90_alu for cells of type $alu.
+Using template $paramod$51c80ded93a30cabdd6a720b4f0ed1d8c51829dd\_90_alu for cells of type $alu.
+Using template $paramod$6fc37af1c109ae54e8aed83fcd995c12d378ce93\_90_alu for cells of type $alu.
+Using extmapper maccmap for cells of type $macc.
+  add 3'101 * $auto$wreduce.cc:454:run$1640 [0] (3x1 bits, unsigned)
+Using template $paramod$a7926d38756e33b5022e02ebfd484599309272c7\_90_alu for cells of type $alu.
+Using template $paramod$788c3d57e5abb3a3f89aea6d4acd665be37f4e9b\_90_alu for cells of type $alu.
+Using template $paramod$403d07c18de10cda2ac652a859c56aea81aaf9b5\_90_alu for cells of type $alu.
+Using template $paramod$6a42b6fefed750f8a1c58eab59479d960557103c\_90_alu for cells of type $alu.
+Using template $paramod$c32aaa9fd758c6ea2b382f4327253b21b576e597\_90_alu for cells of type $alu.
+Using template $paramod$e891e6b399cf52748460a311fafe476815d24bd7\_90_alu for cells of type $alu.
+Using template $paramod$175e67c02b86e96b1288b9dc100122520d7240d8\_90_alu for cells of type $alu.
+Using template $paramod$83784888def4f70dbbded37c6d05d2ea1157c936\_90_alu for cells of type $alu.
+Using template $paramod$fc972a7a46956c1788f3cb5257b53c8f1df2d0cc\_90_alu for cells of type $alu.
+Using template $paramod$32a7b7b86c07519b7537abc18e96f0331f97914d\_90_alu for cells of type $alu.
+Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
+Using template $paramod$c6baa65225090ac0a120feab1b920965244aa496\_90_alu for cells of type $alu.
+Using template $paramod$6dc2bc4e177433cbefea60fe94ff11f8a7c6abf8\_90_alu for cells of type $alu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000100000 for cells of type $lcu.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010100 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010101 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000011111 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000011110 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000011011 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000001 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000100 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000011 for cells of type $lcu.
+No more expansions possible.
+<suppressed ~7894 debug messages>
+
+yosys> alumacc
+
+3.19. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module b20:
+  created 0 $alu and 0 $macc cells.
+
+yosys> opt
+
+3.20. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.20.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~7772 debug messages>
+
+yosys> opt_merge -nomux
+
+3.20.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~12150 debug messages>
+Removed a total of 4050 cells.
+
+yosys> opt_muxtree
+
+3.20.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.20.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.20.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.20.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:262:slice$9848 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [19], Q = \P2.addr [19]).
+Adding EN signal on $auto$ff.cc:262:slice$3505 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [19], Q = \P1.addr [19]).
+Adding EN signal on $auto$ff.cc:262:slice$3483 ($_DFFE_PP0P_) from module b20 (D = $flatten\P1.$verific$n10979$183, Q = \P1.B).
+Adding EN signal on $auto$ff.cc:262:slice$9826 ($_DFFE_PP0P_) from module b20 (D = $flatten\P2.$verific$n10835$691, Q = \P2.B).
+Adding EN signal on $auto$ff.cc:262:slice$3486 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [0], Q = \P1.addr [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3487 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [1], Q = \P1.addr [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3488 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [2], Q = \P1.addr [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3489 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [3], Q = \P1.addr [3]).
+Adding EN signal on $auto$ff.cc:262:slice$3490 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [4], Q = \P1.addr [4]).
+Adding EN signal on $auto$ff.cc:262:slice$3491 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [5], Q = \P1.addr [5]).
+Adding EN signal on $auto$ff.cc:262:slice$3492 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [6], Q = \P1.addr [6]).
+Adding EN signal on $auto$ff.cc:262:slice$3493 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [7], Q = \P1.addr [7]).
+Adding EN signal on $auto$ff.cc:262:slice$3494 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [8], Q = \P1.addr [8]).
+Adding EN signal on $auto$ff.cc:262:slice$3495 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [9], Q = \P1.addr [9]).
+Adding EN signal on $auto$ff.cc:262:slice$3496 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [10], Q = \P1.addr [10]).
+Adding EN signal on $auto$ff.cc:262:slice$3497 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [11], Q = \P1.addr [11]).
+Adding EN signal on $auto$ff.cc:262:slice$3498 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [12], Q = \P1.addr [12]).
+Adding EN signal on $auto$ff.cc:262:slice$3499 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [13], Q = \P1.addr [13]).
+Adding EN signal on $auto$ff.cc:262:slice$3500 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [14], Q = \P1.addr [14]).
+Adding EN signal on $auto$ff.cc:262:slice$3501 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [15], Q = \P1.addr [15]).
+Adding EN signal on $auto$ff.cc:262:slice$3502 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [16], Q = \P1.addr [16]).
+Adding EN signal on $auto$ff.cc:262:slice$3503 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [17], Q = \P1.addr [17]).
+Adding EN signal on $auto$ff.cc:262:slice$3504 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11246$355 [18], Q = \P1.addr [18]).
+Adding EN signal on $auto$ff.cc:262:slice$3636 ($_DFF_PP0_) from module b20 (D = $flatten\P1.$verific$n11301$356 [0], Q = \P1.IR [0]).
+Adding EN signal on $auto$ff.cc:262:slice$9829 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [0], Q = \P2.addr [0]).
+Adding EN signal on $auto$ff.cc:262:slice$9830 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [1], Q = \P2.addr [1]).
+Adding EN signal on $auto$ff.cc:262:slice$9831 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [2], Q = \P2.addr [2]).
+Adding EN signal on $auto$ff.cc:262:slice$9832 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [3], Q = \P2.addr [3]).
+Adding EN signal on $auto$ff.cc:262:slice$9833 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [4], Q = \P2.addr [4]).
+Adding EN signal on $auto$ff.cc:262:slice$9834 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [5], Q = \P2.addr [5]).
+Adding EN signal on $auto$ff.cc:262:slice$9835 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [6], Q = \P2.addr [6]).
+Adding EN signal on $auto$ff.cc:262:slice$9836 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [7], Q = \P2.addr [7]).
+Adding EN signal on $auto$ff.cc:262:slice$9837 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [8], Q = \P2.addr [8]).
+Adding EN signal on $auto$ff.cc:262:slice$9838 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [9], Q = \P2.addr [9]).
+Adding EN signal on $auto$ff.cc:262:slice$9839 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [10], Q = \P2.addr [10]).
+Adding EN signal on $auto$ff.cc:262:slice$9840 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [11], Q = \P2.addr [11]).
+Adding EN signal on $auto$ff.cc:262:slice$9841 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [12], Q = \P2.addr [12]).
+Adding EN signal on $auto$ff.cc:262:slice$9842 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [13], Q = \P2.addr [13]).
+Adding EN signal on $auto$ff.cc:262:slice$9843 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [14], Q = \P2.addr [14]).
+Adding EN signal on $auto$ff.cc:262:slice$9844 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [15], Q = \P2.addr [15]).
+Adding EN signal on $auto$ff.cc:262:slice$9845 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [16], Q = \P2.addr [16]).
+Adding EN signal on $auto$ff.cc:262:slice$9846 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [17], Q = \P2.addr [17]).
+Adding EN signal on $auto$ff.cc:262:slice$9847 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11102$866 [18], Q = \P2.addr [18]).
+Adding EN signal on $auto$ff.cc:262:slice$9980 ($_DFF_PP0_) from module b20 (D = $flatten\P2.$verific$n11157$867 [0], Q = \P2.IR [0]).
+Adding EN signal on $auto$ff.cc:262:slice$13638 ($_DFFE_PP0P_) from module b20 (D = $auto$wreduce.cc:454:run$1660 [0], Q = \P2.reg3 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$13639 ($_DFFE_PP0P_) from module b20 (D = $auto$wreduce.cc:454:run$1660 [1], Q = \P2.reg3 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$13640 ($_DFFE_PP0P_) from module b20 (D = $auto$wreduce.cc:454:run$1660 [2], Q = \P2.reg3 [2]).
+
+yosys> opt_clean
+
+3.20.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 1230 unused cells and 3615 unused wires.
+<suppressed ~1231 debug messages>
+
+yosys> opt_expr
+
+3.20.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~623 debug messages>
+
+3.20.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.20.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.20.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.20.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~1443 debug messages>
+Removed a total of 481 cells.
+
+yosys> opt_dff
+
+3.20.13. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:262:slice$3511 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [5], Q = \P1.reg2 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$9906 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [25], Q = \P2.reg1 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$9899 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [18], Q = \P2.reg1 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$9898 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [17], Q = \P2.reg1 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$9897 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [16], Q = \P2.reg1 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$9896 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [15], Q = \P2.reg1 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$9895 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [14], Q = \P2.reg1 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$9894 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [13], Q = \P2.reg1 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$9893 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [12], Q = \P2.reg1 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$9892 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [11], Q = \P2.reg1 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$9925 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [12], Q = \P2.reg0 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$9926 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [13], Q = \P2.reg0 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$9930 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [17], Q = \P2.reg0 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$9919 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [6], Q = \P2.reg0 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$9914 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [1], Q = \P2.reg0 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$9909 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [28], Q = \P2.reg1 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$9907 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [26], Q = \P2.reg1 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$9902 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [21], Q = \P2.reg1 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$9901 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [20], Q = \P2.reg1 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$9900 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [19], Q = \P2.reg1 [19]).
+Adding EN signal on $auto$ff.cc:262:slice$9923 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [10], Q = \P2.reg0 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$9928 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [15], Q = \P2.reg0 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$9915 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [2], Q = \P2.reg0 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3513 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [7], Q = \P1.reg2 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$9910 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [29], Q = \P2.reg1 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$9903 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [22], Q = \P2.reg1 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$9927 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [14], Q = \P2.reg0 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$9916 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [3], Q = \P2.reg0 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$9979 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4372 [2], Q = \P1.reg3 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$9978 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4372 [1], Q = \P1.reg3 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$9977 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4372 [0], Q = \P1.reg3 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3512 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [6], Q = \P1.reg2 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$9924 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [11], Q = \P2.reg0 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$9918 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [5], Q = \P2.reg0 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$9917 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [4], Q = \P2.reg0 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$3515 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [9], Q = \P1.reg2 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$3514 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [8], Q = \P1.reg2 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$9904 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [23], Q = \P2.reg1 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$9921 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [8], Q = \P2.reg0 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$9920 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [7], Q = \P2.reg0 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$9911 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [30], Q = \P2.reg1 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$3516 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [10], Q = \P1.reg2 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$3517 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [11], Q = \P1.reg2 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$9908 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [27], Q = \P2.reg1 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$9905 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [24], Q = \P2.reg1 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$9913 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [0], Q = \P2.reg0 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$9912 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [31], Q = \P2.reg1 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$3531 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [25], Q = \P1.reg2 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$3532 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [26], Q = \P1.reg2 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$3530 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [24], Q = \P1.reg2 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$3529 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [23], Q = \P1.reg2 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$3526 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [20], Q = \P1.reg2 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$3528 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [22], Q = \P1.reg2 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$3527 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [21], Q = \P1.reg2 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$3524 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [18], Q = \P1.reg2 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$3525 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [19], Q = \P1.reg2 [19]).
+Adding EN signal on $auto$ff.cc:262:slice$3523 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [17], Q = \P1.reg2 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$3522 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [16], Q = \P1.reg2 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$9944 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [31], Q = \P2.reg0 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$3521 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [15], Q = \P1.reg2 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$3520 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [14], Q = \P1.reg2 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$9943 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [30], Q = \P2.reg0 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$9942 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [29], Q = \P2.reg0 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$3519 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [13], Q = \P1.reg2 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$3518 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [12], Q = \P1.reg2 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$9941 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [28], Q = \P2.reg0 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$9922 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [9], Q = \P2.reg0 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$9940 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [27], Q = \P2.reg0 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$9939 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [26], Q = \P2.reg0 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$9929 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [16], Q = \P2.reg0 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$9938 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [25], Q = \P2.reg0 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$9937 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [24], Q = \P2.reg0 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$3601 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [31], Q = \P1.reg0 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$3600 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [30], Q = \P1.reg0 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$3599 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [29], Q = \P1.reg0 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$3598 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [28], Q = \P1.reg0 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$3597 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [27], Q = \P1.reg0 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$3596 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [26], Q = \P1.reg0 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$3595 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [25], Q = \P1.reg0 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$3594 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [24], Q = \P1.reg0 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$3593 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [23], Q = \P1.reg0 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$3592 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [22], Q = \P1.reg0 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$3591 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [21], Q = \P1.reg0 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$3590 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [20], Q = \P1.reg0 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$3589 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [19], Q = \P1.reg0 [19]).
+Adding EN signal on $auto$ff.cc:262:slice$3588 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [18], Q = \P1.reg0 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$3587 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [17], Q = \P1.reg0 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$3586 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [16], Q = \P1.reg0 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$3585 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [15], Q = \P1.reg0 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$3584 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [14], Q = \P1.reg0 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$3583 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [13], Q = \P1.reg0 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$3582 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [12], Q = \P1.reg0 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$3581 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [11], Q = \P1.reg0 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$3580 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [10], Q = \P1.reg0 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$3579 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [9], Q = \P1.reg0 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$3578 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [8], Q = \P1.reg0 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$3577 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [7], Q = \P1.reg0 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$3576 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [6], Q = \P1.reg0 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$3575 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [5], Q = \P1.reg0 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$3574 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [4], Q = \P1.reg0 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$3573 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [3], Q = \P1.reg0 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$3572 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [2], Q = \P1.reg0 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3571 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [1], Q = \P1.reg0 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3570 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5824 [0], Q = \P1.reg0 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3569 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [31], Q = \P1.reg1 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$3568 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [30], Q = \P1.reg1 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$3567 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [29], Q = \P1.reg1 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$3566 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [28], Q = \P1.reg1 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$3565 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [27], Q = \P1.reg1 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$3564 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [26], Q = \P1.reg1 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$3563 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [25], Q = \P1.reg1 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$3562 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [24], Q = \P1.reg1 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$3561 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [23], Q = \P1.reg1 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$3560 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [22], Q = \P1.reg1 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$3559 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [21], Q = \P1.reg1 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$3558 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [20], Q = \P1.reg1 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$3557 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [19], Q = \P1.reg1 [19]).
+Adding EN signal on $auto$ff.cc:262:slice$3556 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [18], Q = \P1.reg1 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$3555 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [17], Q = \P1.reg1 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$3554 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [16], Q = \P1.reg1 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$3553 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [15], Q = \P1.reg1 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$3552 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [14], Q = \P1.reg1 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$3551 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [13], Q = \P1.reg1 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$3550 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [12], Q = \P1.reg1 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$3549 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [11], Q = \P1.reg1 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$3548 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [10], Q = \P1.reg1 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$3547 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [9], Q = \P1.reg1 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$3546 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [8], Q = \P1.reg1 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$3545 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [7], Q = \P1.reg1 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$3544 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [6], Q = \P1.reg1 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$3543 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [5], Q = \P1.reg1 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$3542 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [4], Q = \P1.reg1 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$3541 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [3], Q = \P1.reg1 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$3540 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [2], Q = \P1.reg1 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3539 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [1], Q = \P1.reg1 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3538 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$5340 [0], Q = \P1.reg1 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3537 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [31], Q = \P1.reg2 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$3536 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [30], Q = \P1.reg2 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$3510 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [4], Q = \P1.reg2 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$3509 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [3], Q = \P1.reg2 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$3508 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [2], Q = \P1.reg2 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3507 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [1], Q = \P1.reg2 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3506 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [0], Q = \P1.reg2 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3535 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [29], Q = \P1.reg2 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$3534 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [28], Q = \P1.reg2 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$3533 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$4856 [27], Q = \P1.reg2 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$9879 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [30], Q = \P2.reg2 [30]).
+Adding EN signal on $auto$ff.cc:262:slice$9876 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [27], Q = \P2.reg2 [27]).
+Adding EN signal on $auto$ff.cc:262:slice$9873 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [24], Q = \P2.reg2 [24]).
+Adding EN signal on $auto$ff.cc:262:slice$9870 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [21], Q = \P2.reg2 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$9867 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [18], Q = \P2.reg2 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$9864 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [15], Q = \P2.reg2 [15]).
+Adding EN signal on $auto$ff.cc:262:slice$9861 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [12], Q = \P2.reg2 [12]).
+Adding EN signal on $auto$ff.cc:262:slice$9858 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [9], Q = \P2.reg2 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$9855 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [6], Q = \P2.reg2 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$9852 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [3], Q = \P2.reg2 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$9849 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [0], Q = \P2.reg2 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$9878 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [29], Q = \P2.reg2 [29]).
+Adding EN signal on $auto$ff.cc:262:slice$9875 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [26], Q = \P2.reg2 [26]).
+Adding EN signal on $auto$ff.cc:262:slice$9872 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [23], Q = \P2.reg2 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$9869 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [20], Q = \P2.reg2 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$9866 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [17], Q = \P2.reg2 [17]).
+Adding EN signal on $auto$ff.cc:262:slice$9863 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [14], Q = \P2.reg2 [14]).
+Adding EN signal on $auto$ff.cc:262:slice$9860 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [11], Q = \P2.reg2 [11]).
+Adding EN signal on $auto$ff.cc:262:slice$9857 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [8], Q = \P2.reg2 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$9854 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [5], Q = \P2.reg2 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$9851 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [2], Q = \P2.reg2 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$9877 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [28], Q = \P2.reg2 [28]).
+Adding EN signal on $auto$ff.cc:262:slice$9874 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [25], Q = \P2.reg2 [25]).
+Adding EN signal on $auto$ff.cc:262:slice$9871 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [22], Q = \P2.reg2 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$9868 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [19], Q = \P2.reg2 [19]).
+Adding EN signal on $auto$ff.cc:262:slice$9865 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [16], Q = \P2.reg2 [16]).
+Adding EN signal on $auto$ff.cc:262:slice$9862 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [13], Q = \P2.reg2 [13]).
+Adding EN signal on $auto$ff.cc:262:slice$9859 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [10], Q = \P2.reg2 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$9856 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [7], Q = \P2.reg2 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$9853 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [4], Q = \P2.reg2 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$9850 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [1], Q = \P2.reg2 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$9891 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [10], Q = \P2.reg1 [10]).
+Adding EN signal on $auto$ff.cc:262:slice$9890 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [9], Q = \P2.reg1 [9]).
+Adding EN signal on $auto$ff.cc:262:slice$9889 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [8], Q = \P2.reg1 [8]).
+Adding EN signal on $auto$ff.cc:262:slice$9888 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [7], Q = \P2.reg1 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$9887 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [6], Q = \P2.reg1 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$9886 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [5], Q = \P2.reg1 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$9885 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [4], Q = \P2.reg1 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$9884 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [3], Q = \P2.reg1 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$9883 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [2], Q = \P2.reg1 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$9882 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [1], Q = \P2.reg1 [1]).
+Adding EN signal on $auto$ff.cc:262:slice$9881 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12667 [0], Q = \P2.reg1 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$9880 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$12183 [31], Q = \P2.reg2 [31]).
+Adding EN signal on $auto$ff.cc:262:slice$9936 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [23], Q = \P2.reg0 [23]).
+Adding EN signal on $auto$ff.cc:262:slice$9931 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [18], Q = \P2.reg0 [18]).
+Adding EN signal on $auto$ff.cc:262:slice$9935 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [22], Q = \P2.reg0 [22]).
+Adding EN signal on $auto$ff.cc:262:slice$9934 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [21], Q = \P2.reg0 [21]).
+Adding EN signal on $auto$ff.cc:262:slice$9933 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [20], Q = \P2.reg0 [20]).
+Adding EN signal on $auto$ff.cc:262:slice$9932 ($_DFFE_PP0P_) from module b20 (D = $auto$simplemap.cc:309:simplemap_bmux$13151 [19], Q = \P2.reg0 [19]).
+
+yosys> opt_clean
+
+3.20.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 1668 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.20.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~4187 debug messages>
+
+3.20.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.20.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.20.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.20.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~19767 debug messages>
+Removed a total of 6589 cells.
+
+yosys> opt_dff
+
+3.20.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.20.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 6360 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.20.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.20.23. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.20.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.20.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.20.26. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.20.27. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.20.28. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.20.29. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.20.30. Finished OPT passes. (There is nothing left to do.)
+
+yosys> memory -nomap
+
+3.21. Executing MEMORY pass.
+
+yosys> opt_mem
+
+3.21.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_priority
+
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_feedback
+
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+yosys> memory_dff
+
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+yosys> opt_clean
+
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> memory_share
+
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+yosys> opt_mem_widen
+
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+yosys> opt_clean
+
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> memory_collect
+
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+yosys> opt_clean
+
+3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> stat
+
+3.23. Printing statistics.
+
+=== b20 ===
+
+   Number of wires:               2878
+   Number of wire bits:          16717
+   Number of public wires:          46
+   Number of public wire bits:     736
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              11714
+     $_AND_                       2319
+     $_DFFE_PP0N_                    2
+     $_DFFE_PP0P_                  356
+     $_DFF_PP0_                     78
+     $_MUX_                       6042
+     $_NOT_                        424
+     $_OR_                        1443
+     $_XOR_                       1050
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.24. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.25. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.26. Printing statistics.
+
+=== b20 ===
+
+   Number of wires:               2878
+   Number of wire bits:          16717
+   Number of public wires:          46
+   Number of public wire bits:     736
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              11714
+     $_AND_                       2319
+     $_DFFE_PP0N_                    2
+     $_DFFE_PP0P_                  356
+     $_DFF_PP0_                     78
+     $_MUX_                       6042
+     $_NOT_                        424
+     $_OR_                        1443
+     $_XOR_                       1050
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
+
+3.27. Executing TECHMAP pass (map to technology primitives).
+
+3.27.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.27.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+Generating RTLIL representation for module `\$_DFF_P_'.
+Generating RTLIL representation for module `\$_DFF_PP0_'.
+Generating RTLIL representation for module `\$_DFF_PN0_'.
+Generating RTLIL representation for module `\$_DFF_PP1_'.
+Generating RTLIL representation for module `\$_DFF_PN1_'.
+Generating RTLIL representation for module `\$_DFFE_PP_'.
+Generating RTLIL representation for module `\$_DFFE_PN_'.
+Generating RTLIL representation for module `\$_DFFE_PP0P_'.
+Generating RTLIL representation for module `\$_DFFE_PP0N_'.
+Generating RTLIL representation for module `\$_DFFE_PN0P_'.
+Generating RTLIL representation for module `\$_DFFE_PN0N_'.
+Generating RTLIL representation for module `\$_DFFE_PP1P_'.
+Generating RTLIL representation for module `\$_DFFE_PP1N_'.
+Generating RTLIL representation for module `\$_DFFE_PN1P_'.
+Generating RTLIL representation for module `\$_DFFE_PN1N_'.
+Generating RTLIL representation for module `\$_DFFSR_PPP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNN_'.
+Generating RTLIL representation for module `\$_DFFSR_PPN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNN_'.
+Generating RTLIL representation for module `\$_DLATCHSR_PPP_'.
+Generating RTLIL representation for module `\$_DLATCHSR_NPP_'.
+Generating RTLIL representation for module `\$_DFF_N_'.
+Generating RTLIL representation for module `\$_DFF_NP0_'.
+Generating RTLIL representation for module `\$_DFF_NN0_'.
+Generating RTLIL representation for module `\$_DFF_NP1_'.
+Generating RTLIL representation for module `\$_DFF_NN1_'.
+Generating RTLIL representation for module `\$_DFFE_NP_'.
+Generating RTLIL representation for module `\$_DFFE_NN_'.
+Generating RTLIL representation for module `\$_DFFE_NP0P_'.
+Generating RTLIL representation for module `\$_DFFE_NP0N_'.
+Generating RTLIL representation for module `\$_DFFE_NN0P_'.
+Generating RTLIL representation for module `\$_DFFE_NN0N_'.
+Generating RTLIL representation for module `\$_DFFE_NP1P_'.
+Generating RTLIL representation for module `\$_DFFE_NP1N_'.
+Generating RTLIL representation for module `\$_DFFE_NN1P_'.
+Generating RTLIL representation for module `\$_DFFE_NN1N_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
+Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Successfully finished Verilog frontend.
+
+3.27.3. Continuing TECHMAP pass.
+Using template \$_DFF_PP0_ for cells of type $_DFF_PP0_.
+Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
+Using template \$_DFFE_PP0N_ for cells of type $_DFFE_PP0N_.
+Using extmapper simplemap for cells of type $logic_not.
+No more expansions possible.
+<suppressed ~1002 debug messages>
+
+yosys> opt_expr -mux_undef
+
+3.28. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~1158 debug messages>
+
+yosys> simplemap
+
+3.29. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+
+yosys> opt_expr
+
+3.30. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge
+
+3.31. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~1311 debug messages>
+Removed a total of 437 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.32. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.33. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 2563 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt -nodffe -nosdff
+
+3.34. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.34.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge -nomux
+
+3.34.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.34.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.34.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.34.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.34.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.34.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.34.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.34.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt -fast -full
+
+3.35. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.35.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~88 debug messages>
+
+yosys> opt_merge
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.35.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+3.35.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+3.36. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.37. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.37.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge -nomux
+
+3.37.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.37.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce -full
+
+3.37.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.37.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.37.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14470 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14490
+        $auto$simplemap.cc:86:simplemap_bitop$14491
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14471 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14488
+        $auto$simplemap.cc:86:simplemap_bitop$14489
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14472 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14486
+        $auto$simplemap.cc:86:simplemap_bitop$14487
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14473 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14484
+        $auto$simplemap.cc:86:simplemap_bitop$14485
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6984 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$7004
+        $auto$simplemap.cc:86:simplemap_bitop$7005
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6985 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$7002
+        $auto$simplemap.cc:86:simplemap_bitop$7003
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6986 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$7000
+        $auto$simplemap.cc:86:simplemap_bitop$7001
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6987 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$6998
+        $auto$simplemap.cc:86:simplemap_bitop$6999
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$8682 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$16438
+        $auto$simplemap.cc:86:simplemap_bitop$16649
+
+
+yosys> opt_dff
+
+3.37.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.37.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 16 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr -full
+
+3.37.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~9 debug messages>
+
+3.37.10. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.37.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~9 debug messages>
+
+yosys> opt_reduce -full
+
+3.37.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.37.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.37.14. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14477 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14488
+        $auto$simplemap.cc:86:simplemap_bitop$14490
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14478 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14484
+        $auto$simplemap.cc:86:simplemap_bitop$14486
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6991 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$7002
+        $auto$simplemap.cc:86:simplemap_bitop$7004
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6992 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$6998
+        $auto$simplemap.cc:86:simplemap_bitop$7000
+
+
+yosys> opt_dff
+
+3.37.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.37.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 8 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr -full
+
+3.37.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~4 debug messages>
+
+3.37.18. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.37.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~5 debug messages>
+
+yosys> opt_reduce -full
+
+3.37.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.37.21. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.37.22. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$14481 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$14484
+        $auto$simplemap.cc:86:simplemap_bitop$14488
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$6995 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$6998
+        $auto$simplemap.cc:86:simplemap_bitop$7002
+
+
+yosys> opt_dff
+
+3.37.23. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.37.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr -full
+
+3.37.25. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+<suppressed ~2 debug messages>
+
+3.37.26. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.37.27. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~3 debug messages>
+
+yosys> opt_reduce -full
+
+3.37.28. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.37.29. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.37.30. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.37.31. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.37.32. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr -full
+
+3.37.33. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.37.34. Finished OPT passes. (There is nothing left to do.)
+
+yosys> techmap
+
+3.38. Executing TECHMAP pass (map to technology primitives).
+
+3.38.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.38.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $mux.
+No more expansions possible.
+<suppressed ~86 debug messages>
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+<suppressed ~42 debug messages>
+Removed a total of 14 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 6 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.39.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -script abc_tmp.scr
+
+3.40. Executing ABC pass (technology mapping using ABC).
+
+3.40.1. Extracting gate netlist of module `\b20' to `<abc-temp-dir>/input.blif'..
+Extracted 10092 gates and 10563 wires to a netlist network with 469 inputs and 477 outputs.
+
+3.40.1.1. Executing ABC.
+Running ABC command: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/meri/Documents/workspace/clean/yosys_verific_rs/result_18-03-2022T17-26-14/All_lut_synth_rs_area.json/b20/abc_tmp.scr 
+ABC: netlist  : i/o =    469/    477  and =   15301  lev =   88 (41.25)  mem = 0.20 MB
+ABC: Mapping (K=6)  :  lut =   2557  edge =   11255  lev =   37 (16.82)  mem = 0.12 MB
+ABC: netlist  : i/o =    469/    477  and =   14703  lev =   84 (41.95)  mem = 0.20 MB
+ABC: Mapping (K=6)  :  lut =   2228  edge =   10140  lev =   39 (19.25)  mem = 0.12 MB
+ABC: netlist  : i/o =    469/    477  and =   14564  lev =   88 (41.94)  mem = 0.19 MB
+ABC: Mapping (K=6)  :  lut =   2201  edge =   10048  lev =   41 (18.86)  mem = 0.11 MB
+ABC: netlist  : i/o =    469/    477  and =   14832  lev =   90 (44.09)  mem = 0.20 MB
+ABC: Mapping (K=6)  :  lut =   2170  edge =    9867  lev =   39 (18.52)  mem = 0.11 MB
+ABC: netlist  : i/o =    469/    477  and =   13047  lev =   86 (42.82)  mem = 0.18 MB
+ABC: Mapping (K=6)  :  lut =   2166  edge =    9475  lev =   41 (19.48)  mem = 0.11 MB
+ABC: netlist  : i/o =    469/    477  and =   13287  lev =   87 (42.97)  mem = 0.23 MB
+ABC: Mapping (K=6)  :  lut =   1995  edge =    9373  lev =   36 (17.07)  mem = 0.11 MB
+ABC: netlist  : i/o =    469/    477  and =   13370  lev =   86 (42.40)  mem = 0.24 MB
+ABC: Mapping (K=6)  :  lut =   1970  edge =    9301  lev =   35 (16.68)  mem = 0.11 MB
+ABC: netlist  : i/o =    469/    477  and =   13350  lev =   87 (42.31)  mem = 0.24 MB
+ABC: Mapping (K=6)  :  lut =   1966  edge =    9274  lev =   36 (16.92)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   13124  lev =   89 (44.46)  mem = 0.23 MB
+ABC: Mapping (K=6)  :  lut =   1945  edge =    9149  lev =   36 (17.03)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   13094  lev =   96 (48.44)  mem = 0.23 MB
+ABC: Mapping (K=6)  :  lut =   1893  edge =    8868  lev =   36 (16.76)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   12579  lev =   91 (42.08)  mem = 0.22 MB
+ABC: Mapping (K=6)  :  lut =   1873  edge =    8773  lev =   36 (17.17)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   13034  lev =  100 (48.87)  mem = 0.23 MB
+ABC: Mapping (K=6)  :  lut =   1858  edge =    8720  lev =   36 (17.11)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   12671  lev =   92 (42.40)  mem = 0.22 MB
+ABC: Mapping (K=6)  :  lut =   1848  edge =    8704  lev =   36 (17.09)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   12671  lev =   92 (42.40)  mem = 0.17 MB
+ABC: Mapping (K=6)  :  lut =   1848  edge =    8704  lev =   36 (17.09)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   12671  lev =   92 (42.40)  mem = 0.22 MB
+ABC: Mapping (K=6)  :  lut =   1847  edge =    8704  lev =   36 (17.09)  mem = 0.10 MB
+ABC: netlist  : i/o =    469/    477  and =   12909  lev =   94 (43.43)  mem = 0.18 MB
+ABC: Mapping (K=6)  :  lut =   1847  edge =    8704  lev =   36 (17.09)  mem = 0.10 MB
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.40.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     1852
+ABC RESULTS:        internal signals:     9617
+ABC RESULTS:           input signals:      469
+ABC RESULTS:          output signals:      477
+Removing temp directory.
+
+yosys> opt
+
+3.41. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.41.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+yosys> opt_merge -nomux
+
+3.41.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.41.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.41.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.41.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.41.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.41.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 3358 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.41.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.41.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.41.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \b20..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.41.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \b20.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.41.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\b20'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.41.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.41.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+
+yosys> opt_expr
+
+3.41.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module b20.
+
+3.41.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> hierarchy -check
+
+3.42. Executing HIERARCHY pass (managing design hierarchy).
+
+3.42.1. Analyzing design hierarchy..
+Top module:  \b20
+
+3.42.2. Analyzing design hierarchy..
+Top module:  \b20
+Removed 0 unused modules.
+
+yosys> stat
+
+3.43. Printing statistics.
+
+=== b20 ===
+
+   Number of wires:               1814
+   Number of wire bits:           2690
+   Number of public wires:          46
+   Number of public wire bits:     736
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               2286
+     $lut                         1850
+     dffsre                        436
+
+
+yosys> opt_clean -purge
+
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \b20..
+Removed 0 unused cells and 14 unused wires.
+<suppressed ~14 debug messages>
+
+yosys> write_verilog -noattr -nohex b20.verilog
+
+3.45. Executing Verilog backend.
+
+yosys> bmuxmap
+
+3.45.1. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.45.2. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+Dumping module `\b20'.
+
+End of script. Logfile hash: 24be3f21c5, CPU: user 34.61s system 0.25s, MEM: 97.26 MB peak
+Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+Time spent: 61% 1x abc (56 sec), 12% 50x opt_expr (11 sec), ...
+real 90.91
+user 87.88
+sys 3.02
