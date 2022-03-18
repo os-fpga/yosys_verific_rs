@@ -51,7 +51,7 @@ The repository has the following submodules:
 ## Build
 After cloning the repo initialize/update submodules:
 ```bash
-git submodule update --init --recursive
+git submodule update --init --recursive --progress
 ```
 Run **build_yosys_verific** Makefile target to build Yosys with Verific enabled:
 ```bash
