@@ -61,6 +61,7 @@ metrics = pd.DataFrame(metrics,columns=["Benchmarks"])
 metrics = metrics.fillna(0)
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 yosys_log = "yosys_output.log" 
+vivado_log = "vivado_output.log"
 
 def error_exit(msg):
     """Exit with error message"""
@@ -116,9 +117,12 @@ def validate_inputs():
         run_log_files.append(os.path.abspath(run_log))
 
 def metrics_to_csv():
+    global metrics
     logger.info("Saving into : " + args.output_file)
-    metrics.replace(to_replace='nan', value='',inplace=True)
-    metrics.to_csv(args.output_file, encoding="utf-8-sig")
+    metrics.fillna('-', inplace=True)
+    metrics.replace(to_replace='nan', value='-',inplace=True)
+    metrics.iloc[-4] = ["" for col in metrics.columns]
+    metrics.to_csv(args.output_file, encoding="utf-8-sig", index=False)
 
 def get_design_index(design_name):
     return metrics[metrics['Benchmarks'] == design_name].index.item()
@@ -130,16 +134,20 @@ def init_columns(metric_list):
     global metrics
     global output_yosys_dirs
     global output_vivado_dirs
+    temp = None
+    if args.base:
+        temp = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
     for metric in metric_list:
-        if not (metric == metric_list[0] or metric == metric_list[9 : 15] or metric == metric_list[17 :-1]):
+        if not (metric == metric_list[0]):
             for output_vivado_dir in output_vivado_dirs:
                 label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                if (temp == label or not temp) and "PERCENTAGE" in metric:
+                    continue
                 metrics[extract_column_name(metric,"Vivado",label)] = '-'
         if metric not in metric_list[1 : 7]:
-            temp = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
             for output_yosys_dir in output_yosys_dirs:
                 label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-                if temp == label and "PERCENTAGE" in metric:
+                if (temp == label or not temp) and "PERCENTAGE" in metric:
                     continue
                 metrics[extract_column_name(metric,"Yosys",label)] = '-'
 
@@ -195,7 +203,7 @@ def extract_yosys_metrics():
                         metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[2]
                         metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[3][1:-1]
                     else:
-                        results = re.findall("ABC:   #Luts =\s+[0-9]+\s+Max Lvl =\s+[0-9]+\s+Avg Lvl =\s+[0-9]+", log)
+                        results = re.findall("ABC:   #Luts =\s+[0-9]+\s+Max Lvl =\s+[0-9]+\s+Avg Lvl =\s+[0-9\.]+", log)
                         if results:
                             results = results[-1].split()
                             metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[7]
@@ -231,10 +239,10 @@ def extract_vivado_metrics():
             metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DRAM",tool,label)] = 0
             metrics.at[design_index, extract_column_name("BRAM",tool,label)] = 0
-            vivado_log = "util_temp_\w+_vivado_synth.log" 
+            vivado_util_log = "util_temp_\w+_vivado_synth.log" 
             try:
                 for filename in os.listdir(os.path.join(task_dir)):
-                    if re.match(vivado_log, filename):
+                    if re.match(vivado_util_log, filename):
                         logger.info("Processing Vivado log : " + os.path.join(task_dir, filename))
                         with open(os.path.join(task_dir, filename), 'r') as f:
                             primitives = re.findall(r"Primitives\n?.*Ref Name.*Used.*Functional Category(.*?)\n\n", f.read(), re.DOTALL)
@@ -287,6 +295,18 @@ def extract_vivado_metrics():
                                         lut_count = line.split()[5]
                                         if lut_count:
                                             metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = int(lut_count)
+                        task_log = os.path.join(output_vivado_dir, task_name, vivado_log)
+                        with open(task_log, 'r') as f:
+                            
+                            log = f.read()
+                            log_list = log.split("\n")
+                            for line in log_list:
+                                if line.startswith("real"):
+                                    line = line.split()
+                                    runtime = float(line[1])
+                                    metrics.at[design_index, extract_column_name("RUNTIME",tool,label)] = runtime
+                                    continue
+
             except OSError as e:
                 logger.error(e.strerror)
 
@@ -453,7 +473,7 @@ def reorder_columns():
     if len(title_luts) != 0:
         ind = title_columns.index(title_luts[0])
         for column in title_columns:
-            if 'PERCENTAGE Yosys' in column or 'PERCENTAGE Vivado' in column:
+            if 'PERCENTAGE Yosys' in column or 'PERCENTAGE LUT' in column:
                 temp = metrics.pop(column)
                 metrics.insert(ind + i, column, temp)
                 i += 1
@@ -467,7 +487,7 @@ def reorder_columns():
                 metrics.insert(ind + i, column, temp)
                 i += 1
                 
-def max_min_average():
+def add_max_min_average():
     global metrics
     comparision_list = ["", "AVERAGE", "MAX", "MIN"]
     percentage_list = [column for column in metrics.columns if "PERCENTAGE" in column]
@@ -481,13 +501,11 @@ def max_min_average():
             temp = [float(x) for x in temp if isinstance(x, str)]
             average = sum(temp) / len_temp
             if metrics['Benchmarks'][ind] == "AVERAGE":
-                metrics.at[ind,m] = average
+                metrics.at[ind,m] = format(average, '.1f')
             if metrics['Benchmarks'][ind] == "MAX":
-                metrics.at[ind,m] = max(temp)
+                metrics.at[ind,m] = format(max(temp), '.1f')
             if metrics['Benchmarks'][ind] == "MIN":
-                metrics.at[ind,m] = min(temp)
-
-
+                metrics.at[ind,m] = format(min(temp), '.1f')
 
 def main():
     """Main function."""
@@ -504,7 +522,7 @@ def main():
     if args.base:
         calc_percentage(percentage_list)
         reorder_columns()
-    max_min_average()
+    add_max_min_average()
     metrics_to_csv()
 
 if __name__ == "__main__":
