@@ -15,7 +15,6 @@ import argparse
 import time
 import logging
 import pandas as pd
-import numpy as np
 import glob
 from configparser import ConfigParser, ExtendedInterpolation
 
@@ -468,6 +467,27 @@ def reorder_columns():
                 metrics.insert(ind + i, column, temp)
                 i += 1
                 
+def max_min_average():
+    global metrics
+    comparision_list = ["", "AVERAGE", "MAX", "MIN"]
+    percentage_list = [column for column in metrics.columns if "PERCENTAGE" in column]
+    for i in comparision_list:
+        metrics=metrics.append({'Benchmarks':i}, ignore_index=True)
+    for m in percentage_list:
+        for k in comparision_list:
+            ind = metrics[metrics['Benchmarks'] == k].index.item()
+            temp = list(metrics[m])
+            len_temp = len(temp) - 4
+            temp = [float(x) for x in temp if isinstance(x, str)]
+            average = sum(temp) / len_temp
+            if metrics['Benchmarks'][ind] == "AVERAGE":
+                metrics.at[ind,m] = average
+            if metrics['Benchmarks'][ind] == "MAX":
+                metrics.at[ind,m] = max(temp)
+            if metrics['Benchmarks'][ind] == "MIN":
+                metrics.at[ind,m] = min(temp)
+
+
 
 def main():
     """Main function."""
@@ -484,6 +504,7 @@ def main():
     if args.base:
         calc_percentage(percentage_list)
         reorder_columns()
+    max_min_average()
     metrics_to_csv()
 
 if __name__ == "__main__":
