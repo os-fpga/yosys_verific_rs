@@ -172,6 +172,7 @@ def extract_yosys_metrics():
             design_index = get_design_index(task_name)
             metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("CARRY4",tool,label)] = 0
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
