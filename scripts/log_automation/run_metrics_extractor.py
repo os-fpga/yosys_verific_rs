@@ -158,7 +158,7 @@ def init_columns(metric_list):
         if not args.base:
             continue
         if metric in metric_list[ : 3]:
-            if args.base and args.base in output_vivado_dir: 
+            if args.base and args.base in output_vivado_dirs: 
                 if metric == metric_list[0]:
                     continue
                 for output_yosys_dir in output_yosys_dirs:
