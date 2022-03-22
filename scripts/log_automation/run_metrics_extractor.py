@@ -134,22 +134,68 @@ def init_columns(metric_list):
     global metrics
     global output_yosys_dirs
     global output_vivado_dirs
-    temp = None
-    if args.base:
-        temp = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
-    for metric in metric_list:
+
+    for metric in metric_list[ : 3]:
         if not (metric == metric_list[0]):
             for output_vivado_dir in output_vivado_dirs:
                 label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
-                if (temp == label or not temp) and "PERCENTAGE" in metric:
-                    continue
                 metrics[extract_column_name(metric,"Vivado",label)] = '-'
-        if metric not in metric_list[1 : 7]:
+        else:
             for output_yosys_dir in output_yosys_dirs:
                 label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-                if (temp == label or not temp) and "PERCENTAGE" in metric:
-                    continue
                 metrics[extract_column_name(metric,"Yosys",label)] = '-'
+
+    for metric in metric_list:
+        if not metric in  metric_list[ : 3]:
+            if metric not in metric_list[3 : 7]:
+                for output_yosys_dir in output_yosys_dirs:
+                    label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+                    metrics[extract_column_name(metric,"Yosys",label)] = '-'
+            for output_vivado_dir in output_vivado_dirs:
+                label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                metrics[extract_column_name(metric,"Vivado",label)] = '-'
+
+        if not args.base:
+            continue
+        if metric in metric_list[ : 3]:
+            if args.base and args.base in output_vivado_dir: 
+                if metric == metric_list[0]:
+                    continue
+                for output_yosys_dir in output_yosys_dirs:
+                    label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+                    metrics[extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = '-'
+                for output_vivado_dir in output_vivado_dirs:
+                    if args.base == output_vivado_dir:
+                        continue
+                    label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                    metrics[extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = '-'
+            else:
+                if metric == metric_list[0]:
+                    for output_yosys_dir in output_yosys_dirs:
+                        if args.base == output_yosys_dir:
+                            continue
+                        label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+                        metrics[extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = '-'
+                else:
+                    for output_vivado_dir in output_vivado_dirs:
+                        label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                        metrics[extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = '-'
+        else:        
+            if metric == metric_list[-1]:
+                continue
+            if metric not in metric_list[3 : 7]:
+                for output_yosys_dir in output_yosys_dirs:
+                    if args.base == output_yosys_dir:
+                        continue
+                    label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+                    metrics[extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = '-'
+            for output_vivado_dir in output_vivado_dirs:
+                if args.base == output_vivado_dir:
+                    continue
+                if metric in metric_list[3 : 7] and args.base not in output_vivado_dirs:
+                    continue
+                label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                metrics[extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = '-'
 
 def add_value(count, design_index, metric, tool, label):
     if count:
@@ -323,6 +369,8 @@ def extract_run_log():
             for run_log in run_log_files:
                 with open(run_log, "r") as f:
                     for line in f:
+                        if "Output directory" in line and output_vivado_dir.split(os.path.sep)[-2] not in line:
+                            break
                         value = line.split()
                         if ("Successfully" in value) and (output_vivado_dir.split(os.path.sep)[-1] in value):
                             design_index = get_design_index(value[7])
@@ -362,168 +410,134 @@ def calc_vivado_luts():
             label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
             tool = "Vivado"
             for i in range(0, len(metrics['Benchmarks'])):
-                if metrics.at[i, extract_column_name("STATUS",tool,label)] == "Pass":
+                try:
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = \
                         int(metrics.at[i, extract_column_name("LUT:CARRY4=1*LUT",tool,label)]) - \
                         int(metrics.at[i, extract_column_name("CARRY4",tool,label)]) + \
                         5 * int(metrics.at[i, extract_column_name("CARRY4",tool,label)])
-                else:
+                except:
                     metrics.at[i, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = '-'
                     metrics.at[i, extract_column_name("LUT:CARRY4=5*LUT",tool,label)] = '-'
 
-                ind = title_columns.index(extract_column_name("LUT:CARRY4=1*LUT",tool,label))
-                temp = metrics.pop(extract_column_name("LUT:CARRY4=5*LUT",tool,label))
-                metrics.insert(ind + 1, extract_column_name("LUT:CARRY4=5*LUT",tool,label), temp)
 
-def calc_percentage(percentage_list):
+def calc_percentage(metrics_list):
     global output_yosys_dirs
     global output_vivado_dirs
-    label_base = None
-    temp = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
+    yosys_metrics = [metrics_list[0]] + metrics_list[7:-1]
+    vivado_metrics = metrics_list[1:3] + metrics_list[7:-1]
+    label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
+    lut_label = metrics_list[0]
     if output_yosys_dirs and (args.base in output_yosys_dirs):
-        label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
-        for metric in percentage_list[1::]:
-            var_carry = metric.split()[1]
-            for output_vivado_dir in output_vivado_dirs:
-                label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
-                for i in range(0, len(metrics['Benchmarks'])):
+        for output_vivado_dir in output_vivado_dirs:
+            label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+            for i in range(0, len(metrics['Benchmarks'])):
+                for metric in vivado_metrics:
                     try:
-                        metrics.at[i, extract_column_name(metric,"Vivado",label)] = format((float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]) - \
-                            float(metrics.at[i, extract_column_name(var_carry, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]), '.1f')
+                        if metric in metrics_list[1:3]:
+                            metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Vivado", label)] = format((float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]) - \
+                                float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]), '.1f')
+                        else:
+                            metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = format((float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]) - \
+                            float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]), '.1f')
+
                     except Exception:
-                        metrics.at[i, extract_column_name(metric,"Vivado",label)] = '-'
+                        metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Vivado", label)] = '-'
         for output_yosys_dir in output_yosys_dirs:
             label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
-            if temp == label:
+            if label_base == label:
                 continue
             for i in range(0, len(metrics['Benchmarks'])):
-                try:
+                for metric in yosys_metrics:
+                    try:
+                        metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]) - \
+                        float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]), '.1f')
 
-                    metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("MAX_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("AVERAGE_LOGIC_LEVEL", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name(percentage_list[0],"Yosys",label)] = format((float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("LUT", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("LUT", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE DFF", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("DFF", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("DFF", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("DFF", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE CARRY4", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("CARRY4", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("CARRY4", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("CARRY4", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE RUNTIME", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("RUNTIME", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("RUNTIME", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("RUNTIME", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE SRL", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("SRL", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("SRL", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("SRL", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE DRAM", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("DRAM", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("DRAM", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("DRAM", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE BRAM", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("BRAM", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("BRAM", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("BRAM", 'Yosys', label_base)]), '.1f')
-
-                    metrics.at[i,extract_column_name("PERCENTAGE DSP", "Yosys",label)] = format((float(metrics.at[i, extract_column_name("DSP", 'Yosys', label_base)]) - \
-                    float(metrics.at[i, extract_column_name("DSP", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name("DSP", 'Yosys', label_base)]), '.1f')
-
-                except Exception:
-                    metrics.at[i,extract_column_name("PERCENTAGE MAX_LOGIC_LEVEL", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE AVERAGE_LOGIC_LEVEL", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE DFF", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE CARRY4", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE RUNTIME", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE SRL", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE DRAM", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE BRAM", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name("PERCENTAGE DSP", "Yosys",label)] = "-"
-                    metrics.at[i,extract_column_name(percentage_list[0],"Yosys",label)] = '-'
+                    except Exception:
+                        metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Yosys",label)] = "-"
               
     if output_vivado_dirs and (args.base in output_vivado_dirs):
         label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
-        for metric in percentage_list[1::]:
-            var_carry = metric.split()[1]
-            #if one suite provided for vivado and that one is base , it cannot be compared with itself
-            if len(args.vivado) > 1:
-                for output_vivado_dir in output_vivado_dirs:
-                    label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
-                    if label == label_base:
-                        continue
-                    for i in range(0, len(metrics['Benchmarks'])):
-                        try:
-                            metrics.at[i, extract_column_name(metric,"Vivado",label)] = format(((metrics.at[i, extract_column_name(var_carry,"Vivado",label_base)]) - \
-                                float(metrics.at[i, extract_column_name(var_carry,"Vivado",label)])) * 100 / float(metrics.at[i, extract_column_name(var_carry,"Vivado",label_base)]), '.1f')
-                        except Exception:
-                            metrics.at[i, extract_column_name(metric,"Vivado",label)] = '-'
-            for output_yosys_dir in output_yosys_dirs:
-                label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+        if len(output_vivado_dirs) > 1:
+            vivado_metrics = metrics_list[1:-1]
+            for output_vivado_dir in output_vivado_dirs:
+                label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
+                if label == label_base:
+                    continue
                 for i in range(0, len(metrics['Benchmarks'])):
+                    for metric in vivado_metrics:
+                        try:
+                            metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = format(((metrics.at[i, extract_column_name(metric, "Vivado", label_base)]) - \
+                                float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, "Vivado", label_base)]), '.1f')
+                        except Exception:
+                            metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = '-'
+        vivado_metrics = metrics_list[1:3] + metrics_list[7:-1]
+        for output_yosys_dir in output_yosys_dirs:
+            label = output_yosys_dir.split(os.path.sep)[-2] + "_" + output_yosys_dir.split(os.path.sep)[-1]
+            for i in range(0, len(metrics['Benchmarks'])):
+                for metric in vivado_metrics:
                     try:
-                        metrics.at[i, extract_column_name(metric,"Yosys",label)] = format((float(metrics.at[i, extract_column_name(var_carry, 'Vivado', label_base)]) - \
-                            float(metrics.at[i, extract_column_name("LUT", "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(var_carry, 'Vivado', label_base)]), '.1f')
+                        if metric in metrics_list[1:3]:
+                            metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
+                                float(metrics.at[i, extract_column_name(lut_label, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
+                        else:
+                            metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
+                                float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
                     except Exception:
-                        metrics.at[i, extract_column_name(metric,"Yosys",label)] = '-'
-
-def reorder_columns():
-    global metrics
-    title_columns = list(metrics.columns)
-    title_luts = [column for column in title_columns if column.startswith("LUT_AS_LOGIC")]
-    i = 0
-    if len(title_luts) != 0:
-        ind = title_columns.index(title_luts[0])
-        for column in title_columns:
-            if 'PERCENTAGE Yosys' in column or 'PERCENTAGE LUT' in column:
-                temp = metrics.pop(column)
-                metrics.insert(ind + i, column, temp)
-                i += 1
-    else:
-        title_luts = [column for column in title_columns if column.startswith("LUT ")]
-        ind = title_columns.index(title_luts[-1])
-        i = 1
-        for column in title_columns:
-            if 'PERCENTAGE Yosys' in column or 'PERCENTAGE Vivado' in column:
-                temp = metrics.pop(column)
-                metrics.insert(ind + i, column, temp)
-                i += 1
+                        metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Yosys",label)] = '-'
                 
 def add_max_min_average():
     global metrics
     comparision_list = ["", "AVERAGE", "MAX", "MIN"]
     percentage_list = [column for column in metrics.columns if "PERCENTAGE" in column]
     for i in comparision_list:
-        metrics=metrics.append({'Benchmarks':i}, ignore_index=True)
+        metrics = metrics.append({'Benchmarks':i}, ignore_index=True)
+    metrics.fillna('-', inplace=True)
+    metrics.replace(to_replace='nan', value='-',inplace=True)
     for m in percentage_list:
-        for k in comparision_list:
-            ind = metrics[metrics['Benchmarks'] == k].index.item()
-            temp = list(metrics[m])
-            len_temp = len(temp) - 4
-            temp = [float(x) for x in temp if isinstance(x, str)]
-            average = sum(temp) / len_temp
-            if metrics['Benchmarks'][ind] == "AVERAGE":
-                metrics.at[ind,m] = format(average, '.1f')
-            if metrics['Benchmarks'][ind] == "MAX":
-                metrics.at[ind,m] = format(max(temp), '.1f')
-            if metrics['Benchmarks'][ind] == "MIN":
-                metrics.at[ind,m] = format(min(temp), '.1f')
+        temp = []
+        for x in metrics[m]:
+            try:
+                temp.append(float(x))
+            except:
+                pass
+        if temp:
+            average = sum(temp) / len(temp)
+            metrics.at[get_design_index("AVERAGE"),m] = format(average, '.1f')
+            metrics.at[get_design_index("MAX"),m] = format(max(temp), '.1f')
+            metrics.at[get_design_index("MIN"),m] = format(min(temp), '.1f')
 
 def main():
     """Main function."""
     logger.info("Starting metrics extraction . . . . .")
     global metrics
     validate_inputs()
-    percentage_list = ["PERCENTAGE", "PERCENTAGE LUT:CARRY4=1*LUT", "PERCENTAGE LUT:CARRY4=5*LUT"]
-    metric_list = ["LUT", "LUT:CARRY4=1*LUT", "LUT:CARRY4=5*LUT", "LUT_AS_LOGIC", "LUT_AS_MEMORY", "MUXF7", "MUXF8", "CARRY4", "PERCENTAGE CARRY4", "MAX_LOGIC_LEVEL", "PERCENTAGE MAX_LOGIC_LEVEL","AVERAGE_LOGIC_LEVEL", "PERCENTAGE AVERAGE_LOGIC_LEVEL", "DFF", "PERCENTAGE DFF", "RUNTIME", "PERCENTAGE RUNTIME","SRL", "PERCENTAGE SRL","DRAM", "PERCENTAGE DRAM", "BRAM", "PERCENTAGE BRAM", "DSP","PERCENTAGE DSP", "STATUS"]
-    init_columns(metric_list)
+    base_metrics_list = [
+        "LUT", 
+        "LUT:CARRY4=1*LUT", 
+        "LUT:CARRY4=5*LUT", 
+        "LUT_AS_LOGIC", 
+        "LUT_AS_MEMORY", 
+        "MUXF7", 
+        "MUXF8", 
+        "CARRY4", 
+        "MAX_LOGIC_LEVEL", 
+        "AVERAGE_LOGIC_LEVEL", 
+        "DFF", 
+        "RUNTIME", 
+        "SRL", 
+        "DRAM", 
+        "BRAM", 
+        "DSP",
+        "STATUS"
+    ]
+    init_columns(base_metrics_list)
     extract_yosys_metrics()
     extract_vivado_metrics()
     extract_run_log()
     calc_vivado_luts()
     if args.base:
-        calc_percentage(percentage_list)
-        reorder_columns()
-    add_max_min_average()
+        calc_percentage(base_metrics_list)
+        add_max_min_average()
     metrics_to_csv()
 
 if __name__ == "__main__":
