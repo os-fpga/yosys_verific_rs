@@ -51,14 +51,14 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'registers.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'serializer_deserializer.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'spi_master_top.v'
 
-yosys> synth_rs -top spi_master_top -tech genesis -goal area -no_dsp -no_bram -verilog spi_master_top.verilog
+yosys> synth_rs -top spi_master_top -tech genesis -goal area -de -no_dsp -no_bram -verilog spi_master_top.verilog
 
 3. Executing synth_rs pass.
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -66,8 +66,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dff'.
 Generating RTLIL representation for module `\dffn'.
 Generating RTLIL representation for module `\dffsre'.
@@ -577,12 +577,127 @@ Finding unused cells or wires in module \spi_master_top..
 Removed 0 unused cells and 2 unused wires.
 <suppressed ~1 debug messages>
 
+yosys> alumacc
+
+3.18. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module spi_master_top:
+  creating $macc model for $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556 ($add).
+  creating $macc model for $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$697 ($add).
+  creating $alu model for $macc $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$697.
+  creating $alu model for $macc $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556.
+  creating $alu cell for $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556: $auto$alumacc.cc:485:replace_alu$776
+  creating $alu cell for $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$697: $auto$alumacc.cc:485:replace_alu$779
+  created 2 $alu and 0 $macc cells.
+
+yosys> opt
+
+3.19. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.19.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+yosys> opt_merge -nomux
+
+3.19.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.19.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \spi_master_top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~36 debug messages>
+
+yosys> opt_reduce
+
+3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \spi_master_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.19.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.19.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.19.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
+yosys> opt_expr
+
+3.19.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+3.19.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> memory -nomap
+
+3.20. Executing MEMORY pass.
+
+yosys> opt_mem
+
+3.20.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_priority
+
+3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_feedback
+
+3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+yosys> memory_dff
+
+3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+yosys> opt_clean
+
+3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
+yosys> memory_share
+
+3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+yosys> opt_mem_widen
+
+3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+yosys> opt_clean
+
+3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
+yosys> memory_collect
+
+3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+yosys> opt_clean
+
+3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
 yosys> techmap
 
-3.18. Executing TECHMAP pass (map to technology primitives).
+3.22. Executing TECHMAP pass (map to technology primitives).
 
-3.18.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.22.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -609,7 +724,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.18.2. Continuing TECHMAP pass.
+3.22.2. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $mux.
@@ -620,48 +735,38 @@ Using extmapper simplemap for cells of type $eq.
 Using extmapper simplemap for cells of type $bmux.
 Using extmapper simplemap for cells of type $dff.
 Using extmapper simplemap for cells of type $reduce_bool.
+Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $reduce_and.
 Using extmapper simplemap for cells of type $ne.
-Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
-Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=17:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=17:394426c56d1a028ba8fdd5469b163e04011def47.
 Using extmapper simplemap for cells of type $xor.
 Using extmapper simplemap for cells of type $logic_not.
-Running "alumacc" on wrapper $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47.
-Using template $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$add:A_SIGNED=0:A_WIDTH=3:B_SIGNED=0:B_WIDTH=1:Y_WIDTH=3:394426c56d1a028ba8fdd5469b163e04011def47.
 Using template $paramod$18205a5da979f93ffab44671dcc4a48cf14e25e2\_90_alu for cells of type $alu.
-Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010001 for cells of type $lcu.
 Using extmapper simplemap for cells of type $pos.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000011 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010001 for cells of type $lcu.
 No more expansions possible.
-<suppressed ~753 debug messages>
-
-yosys> alumacc
-
-3.19. Executing ALUMACC pass (create $alu and $macc cells).
-Extracting $alu and $macc cells in module spi_master_top:
-  created 0 $alu and 0 $macc cells.
+<suppressed ~715 debug messages>
 
 yosys> opt
 
-3.20. Executing OPT pass (performing simple optimizations).
+3.23. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.20.1. Executing OPT_EXPR pass (perform const folding).
+3.23.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 <suppressed ~416 debug messages>
 
 yosys> opt_merge -nomux
 
-3.20.2. Executing OPT_MERGE pass (detect identical cells).
+3.23.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 <suppressed ~96 debug messages>
 Removed a total of 32 cells.
 
 yosys> opt_muxtree
 
-3.20.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.23.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -669,84 +774,84 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.20.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.23.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.20.5. Executing OPT_MERGE pass (detect identical cells).
+3.23.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.20.6. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $auto$ff.cc:262:slice$885 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [7], Q = \spi_register.spi_clk_cnt_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$1824 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [7], Q = \spi_register.SPICR1 [7]).
-Adding EN signal on $auto$ff.cc:262:slice$932 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [15], Q = \spi_register.SPIBR [15]).
-Adding EN signal on $auto$ff.cc:262:slice$908 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [2], Q = \spi_register.spi_ctrl_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$916 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [7], Q = \spi_register.ss_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$1560 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [7], Q = \spi_register.tx_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$882 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [0], Q = \spi_register.spi_clk_cnt_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$883 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [1], Q = \spi_register.spi_clk_cnt_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$884 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [2], Q = \spi_register.spi_clk_cnt_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$906 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [0], Q = \spi_register.spi_ctrl_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$907 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [1], Q = \spi_register.spi_ctrl_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$909 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [0], Q = \spi_register.ss_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$910 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [1], Q = \spi_register.ss_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$911 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [2], Q = \spi_register.ss_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$912 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [3], Q = \spi_register.ss_reg [3]).
-Adding EN signal on $auto$ff.cc:262:slice$913 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [4], Q = \spi_register.ss_reg [4]).
-Adding EN signal on $auto$ff.cc:262:slice$914 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [5], Q = \spi_register.ss_reg [5]).
-Adding EN signal on $auto$ff.cc:262:slice$915 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [6], Q = \spi_register.ss_reg [6]).
-Adding EN signal on $auto$ff.cc:262:slice$917 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [0], Q = \spi_register.SPIBR [0]).
-Adding EN signal on $auto$ff.cc:262:slice$918 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [1], Q = \spi_register.SPIBR [1]).
-Adding EN signal on $auto$ff.cc:262:slice$919 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [2], Q = \spi_register.SPIBR [2]).
-Adding EN signal on $auto$ff.cc:262:slice$920 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [3], Q = \spi_register.SPIBR [3]).
-Adding EN signal on $auto$ff.cc:262:slice$921 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [4], Q = \spi_register.SPIBR [4]).
-Adding EN signal on $auto$ff.cc:262:slice$922 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [5], Q = \spi_register.SPIBR [5]).
-Adding EN signal on $auto$ff.cc:262:slice$923 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [6], Q = \spi_register.SPIBR [6]).
-Adding EN signal on $auto$ff.cc:262:slice$924 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [7], Q = \spi_register.SPIBR [7]).
-Adding EN signal on $auto$ff.cc:262:slice$925 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [8], Q = \spi_register.SPIBR [8]).
-Adding EN signal on $auto$ff.cc:262:slice$926 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [9], Q = \spi_register.SPIBR [9]).
-Adding EN signal on $auto$ff.cc:262:slice$927 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [10], Q = \spi_register.SPIBR [10]).
-Adding EN signal on $auto$ff.cc:262:slice$928 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [11], Q = \spi_register.SPIBR [11]).
-Adding EN signal on $auto$ff.cc:262:slice$929 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [12], Q = \spi_register.SPIBR [12]).
-Adding EN signal on $auto$ff.cc:262:slice$930 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [13], Q = \spi_register.SPIBR [13]).
-Adding EN signal on $auto$ff.cc:262:slice$931 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [14], Q = \spi_register.SPIBR [14]).
-Adding EN signal on $auto$ff.cc:262:slice$1821 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [4], Q = \spi_register.SPICR1 [4]).
-Adding EN signal on $auto$ff.cc:262:slice$1819 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [2], Q = \spi_register.SPICR1 [2]).
-Adding EN signal on $auto$ff.cc:262:slice$1822 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [5], Q = \spi_register.SPICR1 [5]).
-Adding EN signal on $auto$ff.cc:262:slice$1820 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [3], Q = \spi_register.SPICR1 [3]).
-Adding EN signal on $auto$ff.cc:262:slice$1818 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [0], Q = \spi_register.SPICR1 [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1823 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [6], Q = \spi_register.SPICR1 [6]).
-Adding EN signal on $auto$ff.cc:262:slice$1553 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [0], Q = \spi_register.tx_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1554 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [1], Q = \spi_register.tx_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$1555 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [2], Q = \spi_register.tx_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$1556 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [3], Q = \spi_register.tx_reg [3]).
-Adding EN signal on $auto$ff.cc:262:slice$1557 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [4], Q = \spi_register.tx_reg [4]).
-Adding EN signal on $auto$ff.cc:262:slice$1558 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [5], Q = \spi_register.tx_reg [5]).
-Adding EN signal on $auto$ff.cc:262:slice$1559 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [6], Q = \spi_register.tx_reg [6]).
+3.23.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:262:slice$891 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [7], Q = \spi_register.spi_clk_cnt_reg [7]).
+Adding EN signal on $auto$ff.cc:262:slice$1832 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [7], Q = \spi_register.SPICR1 [7]).
+Adding EN signal on $auto$ff.cc:262:slice$938 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [15], Q = \spi_register.SPIBR [15]).
+Adding EN signal on $auto$ff.cc:262:slice$914 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [2], Q = \spi_register.spi_ctrl_reg [2]).
+Adding EN signal on $auto$ff.cc:262:slice$922 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [7], Q = \spi_register.ss_reg [7]).
+Adding EN signal on $auto$ff.cc:262:slice$1571 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [7], Q = \spi_register.tx_reg [7]).
+Adding EN signal on $auto$ff.cc:262:slice$888 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [0], Q = \spi_register.spi_clk_cnt_reg [0]).
+Adding EN signal on $auto$ff.cc:262:slice$889 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [1], Q = \spi_register.spi_clk_cnt_reg [1]).
+Adding EN signal on $auto$ff.cc:262:slice$890 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [2], Q = \spi_register.spi_clk_cnt_reg [2]).
+Adding EN signal on $auto$ff.cc:262:slice$912 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [0], Q = \spi_register.spi_ctrl_reg [0]).
+Adding EN signal on $auto$ff.cc:262:slice$913 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [1], Q = \spi_register.spi_ctrl_reg [1]).
+Adding EN signal on $auto$ff.cc:262:slice$915 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [0], Q = \spi_register.ss_reg [0]).
+Adding EN signal on $auto$ff.cc:262:slice$916 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [1], Q = \spi_register.ss_reg [1]).
+Adding EN signal on $auto$ff.cc:262:slice$917 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [2], Q = \spi_register.ss_reg [2]).
+Adding EN signal on $auto$ff.cc:262:slice$918 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [3], Q = \spi_register.ss_reg [3]).
+Adding EN signal on $auto$ff.cc:262:slice$919 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [4], Q = \spi_register.ss_reg [4]).
+Adding EN signal on $auto$ff.cc:262:slice$920 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [5], Q = \spi_register.ss_reg [5]).
+Adding EN signal on $auto$ff.cc:262:slice$921 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [6], Q = \spi_register.ss_reg [6]).
+Adding EN signal on $auto$ff.cc:262:slice$923 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [0], Q = \spi_register.SPIBR [0]).
+Adding EN signal on $auto$ff.cc:262:slice$924 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [1], Q = \spi_register.SPIBR [1]).
+Adding EN signal on $auto$ff.cc:262:slice$925 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [2], Q = \spi_register.SPIBR [2]).
+Adding EN signal on $auto$ff.cc:262:slice$926 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [3], Q = \spi_register.SPIBR [3]).
+Adding EN signal on $auto$ff.cc:262:slice$927 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [4], Q = \spi_register.SPIBR [4]).
+Adding EN signal on $auto$ff.cc:262:slice$928 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [5], Q = \spi_register.SPIBR [5]).
+Adding EN signal on $auto$ff.cc:262:slice$929 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [6], Q = \spi_register.SPIBR [6]).
+Adding EN signal on $auto$ff.cc:262:slice$930 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [7], Q = \spi_register.SPIBR [7]).
+Adding EN signal on $auto$ff.cc:262:slice$931 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [8], Q = \spi_register.SPIBR [8]).
+Adding EN signal on $auto$ff.cc:262:slice$932 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [9], Q = \spi_register.SPIBR [9]).
+Adding EN signal on $auto$ff.cc:262:slice$933 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [10], Q = \spi_register.SPIBR [10]).
+Adding EN signal on $auto$ff.cc:262:slice$934 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [11], Q = \spi_register.SPIBR [11]).
+Adding EN signal on $auto$ff.cc:262:slice$935 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [12], Q = \spi_register.SPIBR [12]).
+Adding EN signal on $auto$ff.cc:262:slice$936 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [13], Q = \spi_register.SPIBR [13]).
+Adding EN signal on $auto$ff.cc:262:slice$937 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [14], Q = \spi_register.SPIBR [14]).
+Adding EN signal on $auto$ff.cc:262:slice$1829 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [4], Q = \spi_register.SPICR1 [4]).
+Adding EN signal on $auto$ff.cc:262:slice$1831 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [6], Q = \spi_register.SPICR1 [6]).
+Adding EN signal on $auto$ff.cc:262:slice$1827 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [2], Q = \spi_register.SPICR1 [2]).
+Adding EN signal on $auto$ff.cc:262:slice$1828 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [3], Q = \spi_register.SPICR1 [3]).
+Adding EN signal on $auto$ff.cc:262:slice$1826 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [0], Q = \spi_register.SPICR1 [0]).
+Adding EN signal on $auto$ff.cc:262:slice$1830 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [5], Q = \spi_register.SPICR1 [5]).
+Adding EN signal on $auto$ff.cc:262:slice$1564 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [0], Q = \spi_register.tx_reg [0]).
+Adding EN signal on $auto$ff.cc:262:slice$1565 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [1], Q = \spi_register.tx_reg [1]).
+Adding EN signal on $auto$ff.cc:262:slice$1566 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [2], Q = \spi_register.tx_reg [2]).
+Adding EN signal on $auto$ff.cc:262:slice$1567 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [3], Q = \spi_register.tx_reg [3]).
+Adding EN signal on $auto$ff.cc:262:slice$1568 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [4], Q = \spi_register.tx_reg [4]).
+Adding EN signal on $auto$ff.cc:262:slice$1569 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [5], Q = \spi_register.tx_reg [5]).
+Adding EN signal on $auto$ff.cc:262:slice$1570 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [6], Q = \spi_register.tx_reg [6]).
 
 yosys> opt_clean
 
-3.20.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.23.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 24 unused cells and 352 unused wires.
+Removed 24 unused cells and 346 unused wires.
 <suppressed ~25 debug messages>
 
 yosys> opt_expr
 
-3.20.8. Executing OPT_EXPR pass (perform const folding).
+3.23.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 <suppressed ~552 debug messages>
 
-3.20.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.23.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.20.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.23.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -754,38 +859,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.20.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.23.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.20.12. Executing OPT_MERGE pass (detect identical cells).
+3.23.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 <suppressed ~2427 debug messages>
 Removed a total of 809 cells.
 
 yosys> opt_dff
 
-3.20.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.23.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.20.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.23.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 Removed 0 unused cells and 777 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.20.15. Executing OPT_EXPR pass (perform const folding).
+3.23.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.20.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.23.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.20.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.23.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -793,147 +898,357 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.20.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.23.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.20.19. Executing OPT_MERGE pass (detect identical cells).
+3.23.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.20.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.23.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.20.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.23.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.20.22. Executing OPT_EXPR pass (perform const folding).
+3.23.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.20.23. Finished OPT passes. (There is nothing left to do.)
+3.23.23. Finished OPT passes. (There is nothing left to do.)
 
-yosys> memory -nomap
+yosys> opt -fast -full
 
-3.21. Executing MEMORY pass.
+3.24. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_mem
+yosys> opt_expr -full
 
-3.21.1. Executing OPT_MEM pass (optimize memories).
-Performed a total of 0 transformations.
+3.24.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+<suppressed ~198 debug messages>
 
-yosys> opt_mem_priority
+yosys> opt_merge
 
-3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
-Performed a total of 0 transformations.
+3.24.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+<suppressed ~108 debug messages>
+Removed a total of 36 cells.
 
-yosys> opt_mem_feedback
+yosys> opt_dff
 
-3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
-
-yosys> memory_dff
-
-3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
-
-yosys> opt_clean
-
-3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> memory_share
-
-3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
-
-yosys> opt_mem_widen
-
-3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
-Performed a total of 0 transformations.
+3.24.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
+Removed 0 unused cells and 38 unused wires.
+<suppressed ~1 debug messages>
 
-yosys> memory_collect
+3.24.5. Finished fast OPT passes.
 
-3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
+yosys> memory_map
+
+3.25. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.26. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.26.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+<suppressed ~8 debug messages>
+
+yosys> opt_merge -nomux
+
+3.26.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.26.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \spi_master_top..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce -full
+
+3.26.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \spi_master_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.26.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.26.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1466 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1449
+        $auto$simplemap.cc:312:simplemap_bmux$1441
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1764 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1757
+        $auto$simplemap.cc:312:simplemap_bmux$1754
+
+
+yosys> opt_dff
+
+3.26.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.26.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
+
+yosys> opt_expr -full
+
+3.26.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+<suppressed ~2 debug messages>
+
+3.26.10. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.26.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \spi_master_top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~2 debug messages>
+
+yosys> opt_reduce -full
+
+3.26.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \spi_master_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.26.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.26.14. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.26.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.26.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
+yosys> opt_expr -full
+
+3.26.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+3.26.18. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -script abc_tmp.scr
+
+3.27. Executing ABC pass (technology mapping using ABC).
+
+3.27.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Extracted 466 gates and 591 wires to a netlist network with 123 inputs and 106 outputs.
+
+3.27.1.1. Executing ABC.
+Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/spi_master_top/abc_tmp.scr 
+ABC:   #Luts =   158  Max Lvl =   6  Avg Lvl =   2.42  [   0.28 sec. at Pass 0]
+ABC:   #Luts =   151  Max Lvl =   5  Avg Lvl =   2.23  [   1.33 sec. at Pass 1]
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.23  [   0.53 sec. at Pass 2]
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.23  [   1.03 sec. at Pass 3]
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.23  [   0.77 sec. at Pass 4]
+ABC:   #Luts =   146  Max Lvl =   5  Avg Lvl =   2.22  [   1.76 sec. at Pass 5]
+ABC:   #Luts =   146  Max Lvl =   5  Avg Lvl =   2.22  [   1.21 sec. at Pass 6]
+ABC:   #Luts =   146  Max Lvl =   5  Avg Lvl =   2.22  [   1.35 sec. at Pass 7]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.27.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      147
+ABC RESULTS:        internal signals:      362
+ABC RESULTS:           input signals:      123
+ABC RESULTS:          output signals:      106
+Removing temp directory.
+
+yosys> opt
+
+3.28. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.28.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+yosys> opt_merge -nomux
+
+3.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \spi_master_top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~2 debug messages>
+
+yosys> opt_reduce
+
+3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \spi_master_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.28.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+Removed 0 unused cells and 363 unused wires.
+<suppressed ~15 debug messages>
+
+yosys> opt_expr
+
+3.28.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+3.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \spi_master_top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~2 debug messages>
+
+yosys> opt_reduce
+
+3.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \spi_master_top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.28.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\spi_master_top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \spi_master_top..
+
+yosys> opt_expr
+
+3.28.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module spi_master_top.
+
+3.28.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-3.23. Printing statistics.
+3.29. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                419
-   Number of wire bits:           1261
-   Number of public wires:         170
-   Number of public wire bits:     463
+   Number of wires:                292
+   Number of wire bits:            585
+   Number of public wires:         156
+   Number of public wire bits:     449
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                780
-     $_AND_                         71
+   Number of cells:                259
      $_DFFE_PP0P_                   62
      $_DFFE_PP1P_                    4
      $_DFF_PP0_                     36
      $_DFF_P_                        8
-     $_MUX_                        378
-     $_NOT_                         36
-     $_OR_                         128
-     $_XOR_                         57
+     $lut                          147
+     $mux                            2
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.24. Executing SHREGMAP pass (map shift registers).
+3.30. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.25. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.31. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.26. Printing statistics.
+3.32. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                419
-   Number of wire bits:           1261
-   Number of public wires:         170
-   Number of public wire bits:     463
+   Number of wires:                292
+   Number of wire bits:            585
+   Number of public wires:         156
+   Number of public wire bits:     449
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                780
-     $_AND_                         71
+   Number of cells:                259
      $_DFFE_PP0P_                   62
      $_DFFE_PP1P_                    4
      $_DFF_PP0_                     36
      $_DFF_P_                        8
-     $_MUX_                        378
-     $_NOT_                         36
-     $_OR_                         128
-     $_XOR_                         57
+     $lut                          147
+     $mux                            2
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.27. Executing TECHMAP pass (map to technology primitives).
+3.33. Executing TECHMAP pass (map to technology primitives).
 
-3.27.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.33.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -960,8 +1275,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.27.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.33.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1021,66 +1336,69 @@ Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
 Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
 Successfully finished Verilog frontend.
 
-3.27.3. Continuing TECHMAP pass.
+3.33.3. Continuing TECHMAP pass.
 Using template \$_DFF_PP0_ for cells of type $_DFF_PP0_.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using template \$_DFFE_PP1P_ for cells of type $_DFFE_PP1P_.
+Using extmapper simplemap for cells of type $mux.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~340 debug messages>
+<suppressed ~489 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.28. Executing OPT_EXPR pass (perform const folding).
+3.34. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~164 debug messages>
+<suppressed ~3650 debug messages>
 
 yosys> simplemap
 
-3.29. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.35. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.30. Executing OPT_EXPR pass (perform const folding).
+3.36. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge
 
-3.31. Executing OPT_MERGE pass (detect identical cells).
+3.37. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-<suppressed ~408 debug messages>
-Removed a total of 136 cells.
+<suppressed ~1065 debug messages>
+Removed a total of 355 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.32. Executing OPT_DFF pass (perform DFF optimizations).
+3.38. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.33. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 636 unused wires.
+Removed 0 unused cells and 913 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.34. Executing OPT pass (performing simple optimizations).
+3.40. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.34.1. Executing OPT_EXPR pass (perform const folding).
+3.40.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
+<suppressed ~26 debug messages>
 
 yosys> opt_merge -nomux
 
-3.34.2. Executing OPT_MERGE pass (detect identical cells).
+3.40.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.34.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1088,227 +1406,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.34.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.34.5. Executing OPT_MERGE pass (detect identical cells).
+3.40.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.34.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.34.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr
-
-3.34.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.34.9. Finished OPT passes. (There is nothing left to do.)
-
-yosys> opt -fast -full
-
-3.35. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.35.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-<suppressed ~41 debug messages>
-
-yosys> opt_merge
-
-3.35.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
-
-yosys> opt_dff
-
-3.35.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.35.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 1 unused wires.
+Removed 0 unused cells and 12 unused wires.
 <suppressed ~1 debug messages>
 
-3.35.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.36. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
-
-3.37. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.37.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-yosys> opt_merge -nomux
-
-3.37.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.37.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.37.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.37.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.37.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1460 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1443
-        $auto$simplemap.cc:312:simplemap_bmux$1435
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1756 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1749
-        $auto$simplemap.cc:312:simplemap_bmux$1746
-
-
-yosys> opt_dff
-
-3.37.7. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.37.8. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr -full
-
-3.37.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-<suppressed ~2 debug messages>
-
-3.37.10. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.37.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~2 debug messages>
-
-yosys> opt_reduce -full
-
-3.37.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.37.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.37.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.37.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.37.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr -full
-
-3.37.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.37.18. Finished OPT passes. (There is nothing left to do.)
-
-yosys> techmap
-
-3.38. Executing TECHMAP pass (map to technology primitives).
-
-3.38.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
-Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
-Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
-Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
-Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
-Generating RTLIL representation for module `\_90_simplemap_various'.
-Generating RTLIL representation for module `\_90_simplemap_registers'.
-Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
-Generating RTLIL representation for module `\_90_shift_shiftx'.
-Generating RTLIL representation for module `\_90_fa'.
-Generating RTLIL representation for module `\_90_lcu'.
-Generating RTLIL representation for module `\_90_alu'.
-Generating RTLIL representation for module `\_90_macc'.
-Generating RTLIL representation for module `\_90_alumacc'.
-Generating RTLIL representation for module `\$__div_mod_u'.
-Generating RTLIL representation for module `\$__div_mod_trunc'.
-Generating RTLIL representation for module `\_90_div'.
-Generating RTLIL representation for module `\_90_mod'.
-Generating RTLIL representation for module `\$__div_mod_floor'.
-Generating RTLIL representation for module `\_90_divfloor'.
-Generating RTLIL representation for module `\_90_modfloor'.
-Generating RTLIL representation for module `\_90_pow'.
-Generating RTLIL representation for module `\_90_pmux'.
-Generating RTLIL representation for module `\_90_demux'.
-Generating RTLIL representation for module `\_90_lut'.
-Successfully finished Verilog frontend.
-
-3.38.2. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $mux.
-No more expansions possible.
-<suppressed ~73 debug messages>
-
-yosys> opt
-
-3.39. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.39.1. Executing OPT_EXPR pass (perform const folding).
+3.40.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-yosys> opt_merge -nomux
-
-3.39.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
+3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1316,106 +1444,82 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.39.5. Executing OPT_MERGE pass (detect identical cells).
+3.40.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
-3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.39.8. Executing OPT_EXPR pass (perform const folding).
+3.40.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.39.9. Finished OPT passes. (There is nothing left to do.)
+3.40.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -script abc_tmp.scr
 
-3.40. Executing ABC pass (technology mapping using ABC).
+3.41. Executing ABC pass (technology mapping using ABC).
 
-3.40.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Extracted 469 gates and 593 wires to a netlist network with 122 inputs and 105 outputs.
+3.41.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Extracted 540 gates and 664 wires to a netlist network with 122 inputs and 105 outputs.
 
-3.40.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+3.41.1.1. Executing ABC.
+Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/yosys_verific_rs/result_18-03-2022T17-26-14/All_lut_synth_rs_area.json/spi_master_top/abc_tmp.scr 
-ABC: netlist  : i/o =    122/    105  and =     763  lev =   16 (5.11)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    156  edge =     663  lev =    5 (2.10)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     742  lev =   16 (5.07)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    154  edge =     642  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     736  lev =   16 (5.04)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    154  edge =     640  lev =    5 (2.25)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     706  lev =   12 (4.53)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    154  edge =     640  lev =    5 (2.25)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     728  lev =   17 (5.13)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    150  edge =     634  lev =    5 (2.11)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     724  lev =   17 (5.14)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     632  lev =    5 (2.12)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     732  lev =   17 (5.12)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     636  lev =    5 (2.09)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     732  lev =   17 (5.12)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     636  lev =    5 (2.09)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     710  lev =   17 (5.02)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    148  edge =     635  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     721  lev =   17 (5.18)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     632  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     736  lev =   17 (5.27)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    150  edge =     639  lev =    4 (2.07)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     736  lev =   17 (5.27)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     637  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     736  lev =   17 (5.27)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    149  edge =     637  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     710  lev =   17 (5.02)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    148  edge =     635  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     710  lev =   17 (5.02)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    148  edge =     635  lev =    5 (2.24)  mem = 0.01 MB
-ABC: netlist  : i/o =    122/    105  and =     733  lev =   17 (5.25)  mem = 0.02 MB
-ABC: Mapping (K=6)  :  lut =    148  edge =     635  lev =    5 (2.24)  mem = 0.01 MB
+ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/spi_master_top/abc_tmp.scr 
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.24  [   0.20 sec. at Pass 0]
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.24  [   1.54 sec. at Pass 1]
+ABC:   #Luts =   147  Max Lvl =   5  Avg Lvl =   2.24  [   0.56 sec. at Pass 2]
+ABC:   #Luts =   146  Max Lvl =   5  Avg Lvl =   2.26  [   0.89 sec. at Pass 3]
+ABC:   #Luts =   145  Max Lvl =   5  Avg Lvl =   2.26  [   0.61 sec. at Pass 4]
+ABC:   #Luts =   145  Max Lvl =   4  Avg Lvl =   2.09  [   1.52 sec. at Pass 5]
+ABC:   #Luts =   145  Max Lvl =   4  Avg Lvl =   2.09  [   1.04 sec. at Pass 6]
+ABC:   #Luts =   145  Max Lvl =   4  Avg Lvl =   2.09  [   1.44 sec. at Pass 7]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.40.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      150
-ABC RESULTS:        internal signals:      366
+3.41.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      147
+ABC RESULTS:        internal signals:      437
 ABC RESULTS:           input signals:      122
 ABC RESULTS:          output signals:      105
 Removing temp directory.
 
 yosys> opt
 
-3.41. Executing OPT pass (performing simple optimizations).
+3.42. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.41.1. Executing OPT_EXPR pass (perform const folding).
+3.42.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.41.2. Executing OPT_MERGE pass (detect identical cells).
+3.42.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.41.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1423,37 +1527,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.41.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.41.5. Executing OPT_MERGE pass (detect identical cells).
+3.42.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.41.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 365 unused wires.
-<suppressed ~15 debug messages>
+Removed 0 unused cells and 575 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.41.8. Executing OPT_EXPR pass (perform const folding).
+3.42.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.41.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.41.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1461,88 +1565,88 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.41.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.41.12. Executing OPT_MERGE pass (detect identical cells).
+3.42.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.41.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.41.15. Executing OPT_EXPR pass (perform const folding).
+3.42.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.41.16. Finished OPT passes. (There is nothing left to do.)
+3.42.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.42. Executing HIERARCHY pass (managing design hierarchy).
+3.43. Executing HIERARCHY pass (managing design hierarchy).
 
-3.42.1. Analyzing design hierarchy..
+3.43.1. Analyzing design hierarchy..
 Top module:  \spi_master_top
 
-3.42.2. Analyzing design hierarchy..
+3.43.2. Analyzing design hierarchy..
 Top module:  \spi_master_top
 Removed 0 unused modules.
 
 yosys> stat
 
-3.43. Printing statistics.
+3.44. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                293
-   Number of wire bits:            586
+   Number of wires:                290
+   Number of wire bits:            583
    Number of public wires:         156
    Number of public wire bits:     449
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                260
-     $lut                          150
+   Number of cells:                257
+     $lut                          147
      dff                             8
      dffsre                        102
 
 
 yosys> opt_clean -purge
 
-3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 Removed 0 unused cells and 96 unused wires.
 <suppressed ~96 debug messages>
 
 yosys> write_verilog -noattr -nohex spi_master_top.verilog
 
-3.45. Executing Verilog backend.
+3.46. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.45.1. Executing BMUXMAP pass.
+3.46.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.45.2. Executing DEMUXMAP pass.
+3.46.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\spi_master_top'.
 
 Warnings: 27 unique messages, 27 total
-End of script. Logfile hash: bd0b6e1e04, CPU: user 1.61s system 0.02s, MEM: 22.32 MB peak
+End of script. Logfile hash: cac9ace44d, CPU: user 3.54s system 0.05s, MEM: 27.38 MB peak
 Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
-Time spent: 45% 1x abc (1 sec), 16% 30x opt_expr (0 sec), ...
-real 2.93
-user 2.64
-sys 0.28
+Time spent: 93% 2x abc (51 sec), 2% 34x opt_expr (1 sec), ...
+real 27.34
+user 47.35
+sys 8.10
