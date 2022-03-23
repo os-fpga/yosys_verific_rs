@@ -36,6 +36,18 @@ The `run_metrics_extractor.py` script has the following command line arguments:
 - `--run_log` - list of `synthesis.py` log files
 - `--base` - [optional] path to Vivado or Yosys run output which will be used as a base in comparision
 - `--debug` - run script in debug mode
+- `--exclude_metrics` - exclude specified metrics. The default list is:
+  - `LUT_AS_LOGIC`,
+  - `LUT_AS_MEMORY`,
+  - `MUXF7`,
+  - `MUXF8`,
+  - `MAX_LOGIC_LEVEL`,
+  - `AVERAGE_LOGIC_LEVEL`,
+  - `SRL`,
+  - `DRAM`,
+  - `BRAM`,
+  - `DSP`
+- `--viv_carry_as_lut` - include CARRY4 cells in Vivado LUT calculation
 
 The `result_comparision.py` script has the following command line arguments:
 - `file` - CSV file to analyze
