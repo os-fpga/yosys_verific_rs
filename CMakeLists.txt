@@ -73,7 +73,7 @@ add_custom_target(
 add_custom_target(
     yosys_clean
     COMMAND $(MAKE) clean
-	COMMAND rm -rf ${YOSYS_PATH}
+    COMMAND rm -rf ${YOSYS_PATH}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
@@ -98,7 +98,6 @@ add_custom_target(
     yosys-plugins ALL 
     COMMAND $(MAKE) install_ql-qlf ${YOSYS_PLUGINS_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
-    DEPENDS ${YOSYS_PATH}/bin/yosys
     COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
 )
 add_custom_target(
@@ -113,7 +112,6 @@ add_custom_target(
     yosys-rs-plugin ALL 
     COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    DEPENDS ${YOSYS_PATH}/bin/yosys
     COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
 )
 add_custom_target(
