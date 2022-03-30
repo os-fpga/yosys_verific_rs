@@ -19,7 +19,7 @@ add_subdirectory(logic_synthesis-rs)
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 
-set(ABCEXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/logic_synthesis-rs/build/bin/abc)
+set(ABCEXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vJan22)
 
