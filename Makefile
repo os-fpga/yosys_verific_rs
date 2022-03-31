@@ -11,6 +11,7 @@ ifeq ($(CPU_CORES),)
 endif
 
 ADDITIONAL_CMAKE_OPTIONS ?=
+PREFIX ?= /usr/local
 RULE_MESSAGES ?= off
 
 ##
@@ -28,10 +29,10 @@ debug: run-cmake-debug
 	cmake --build dbuild -j $(CPU_CORES)
 
 run-cmake-release:
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B build
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B build
 
 run-cmake-debug:
-	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
+	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 
 ##
 ## @ clean
@@ -45,6 +46,13 @@ ifneq ("","$(wildcard dbuild/Makefile)")
 	cmake --build dbuild --target clean_all
 endif	
 	$(RM) -r build dbuild
+
+##
+## @ install
+##     |---> info       :  Install binaries and libraries
+##     |---> usage      :  make install
+install: release
+	cmake --install build
 
 help: Makefile
 	@echo '   #############################################'

@@ -144,5 +144,13 @@ else()
     )
 endif()    
 
+# Installation target
+install(
+    DIRECTORY ${YOSYS_PATH}/bin
+    DESTINATION yosys)
+install(
+    DIRECTORY ${YOSYS_PATH}/share
+    DESTINATION yosys)
+
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
