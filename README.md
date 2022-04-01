@@ -53,13 +53,13 @@ After cloning the repo initialize/update submodules:
 ```bash
 git submodule update --init --recursive --progress
 ```
-Run **build_yosys_verific** Makefile target to build Yosys with Verific enabled:
+Run **release** Makefile target to build Yosys with Verific enabled:
 ```bash
-make build_yosys_verific
+make release
 ```
-Run **all** Makefile target to build Yosys with Verific enabled and LSOracle:
+Run **install** Makefile target to build and install Yosys with Verific enabled:
 ```bash
-make all
+make install PREFIX=<INSTALL_DIR>
 ```
 All available Makefile targets can be seen running **help** target:
 ```bash
