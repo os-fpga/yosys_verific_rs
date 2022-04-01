@@ -1,7 +1,7 @@
-name: CI 
+name: Test
 
 on:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,17 +18,7 @@ jobs:
           rm -rf "${{ github.workspace }}"
           mkdir -p "${{ github.workspace }}"
 
-      - uses: actions/checkout@v2
-      
-      - name: Checkout submodules
+      - name: Get os version
         run: |
-          git submodule update --init --recursive --progress
+          cat /etc/os-release
 
-      - name: Build yosys+verific
-        run:
-          make release
-
-      - name: Run tests
-        run: |
-          cd yosys-rs-plugin
-          make test YOSYS_PATH=$(realpath ../yosys/install)

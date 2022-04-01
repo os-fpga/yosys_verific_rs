@@ -1,172 +1,58 @@
-## Set variables
-CURRENT_SOURCE_DIR := $(shell pwd)
-NUM_CPU := 16
-ABCEXTERNAL := $(CURRENT_SOURCE_DIR)/logic_synthesis-rs/abc-rs/abc
-YOSYS_PATH := $(CURRENT_SOURCE_DIR)/yosys/install
-VERIFIC_DIR := $(CURRENT_SOURCE_DIR)/verific/verific-vJan22
-ABC_MK_ARGS := -j $(NUM_CPU)
-VERIFIC_MK_ARGS := VERSION="-O3" TOPFLAGS="-I/usr/include/tcl -fPIC -std=c++11" -j $(NUM_CPU)
-YOSYS_MK_VERIFIC_ARGS := ENABLE_VERIFIC=1 DISABLE_VERIFIC_EXTENSIONS=1 VERIFIC_DIR=$(VERIFIC_DIR)
-YOSYS_MK_ARGS := CONFIG=gcc PREFIX=$(YOSYS_PATH) ABCEXTERNAL=$(ABCEXTERNAL) -j $(NUM_CPU)
-YOSYS_PLUGINS_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) EXTRA_FLAGS="-DPASS_NAME=synth_ql" -j $(NUM_CPU)
-YOSYS_RS_PLUGIN_MK_ARGS := YOSYS_PATH=$(YOSYS_PATH) -j $(NUM_CPU)
-LSORACLE_MK_ARGS := -j $(NUM_CPU)
-CMAKE_COMMAND := cmake
-LSORACLE_CMAKE_ARGS := -DCMAKE_BUILD_TYPE=RELEASE
-LSORACLE_GCC_VERSION := (GCC) 8
-CC :=
-CXX :=
+SHELL := /bin/bash
 
-CC_PATHS := $(shell which -a gcc)
-CXX_PATHS := $(shell which -a g++)
-
-define gcc_version =
-ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
-    CC := $(1)
+ifeq ($(CPU_CORES),)
+	CPU_CORES := $(shell nproc)
+	ifeq ($(CPU_CORES),)
+		CPU_CORES := $(shell sysctl -n hw.physicalcpu)
+	endif
+	ifeq ($(CPU_CORES),)
+		CPU_CORES := 2  # Good minimum assumption
+	endif
 endif
-endef
 
-define g++_version =
-ifneq (,$(findstring $(LSORACLE_GCC_VERSION),$(shell $(1) --version)))
-    CXX := $(1)
-endif
-endef
-
-$(foreach path,$(CC_PATHS),$(eval $(call gcc_version,$(path))))
-$(foreach path,$(CXX_PATHS),$(eval $(call g++_version,$(path))))
+ADDITIONAL_CMAKE_OPTIONS ?=
+PREFIX ?= /usr/local
+RULE_MESSAGES ?= off
 
 ##
-## @ build_yosys_verific
-##     |---> info       :  Build abc-rs, yosys with Verific enabled, yosys-rs-plugin and yosys-plugins
-##     |---> usage      :  make build_yosys_verific
-build_yosys_verific: build_verific
-	cd logic_synthesis-rs/abc-rs && $(MAKE) $(ABC_MK_ARGS)
-	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) $(YOSYS_MK_VERIFIC_ARGS)
-	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
-	cd yosys-rs-plugin && $(MAKE) install $(YOSYS_RS_PLUGIN_MK_ARGS)
+## @ release
+##     |---> info       :  Release build
+##     |---> usage      :  make release
+release: run-cmake-release
+	cmake --build build -j $(CPU_CORES)
 
 ##
-## @ all
-##     |---> info       :  Build all
-##     |---> usage      :  make all
-all: build_yosys_verific build_lsoracle build_DE
+## @ debug
+##     |---> info       :  Debug build
+##     |---> usage      :  make debug
+debug: run-cmake-debug
+	cmake --build dbuild -j $(CPU_CORES)
 
-##
-## @ build_yosys
-##     |---> info       :  Build abc-rs, yosys, yosys-rs-plugin and yosys-plugins
-##     |---> usage      :  make build_yosys
-build_yosys:
-	cd logic_synthesis-rs/abc-rs && $(MAKE) $(ABC_MK_ARGS)
-	cd yosys && $(MAKE) install $(YOSYS_MK_ARGS) 
-	cd yosys-plugins && $(MAKE) install_ql-qlf $(YOSYS_PLUGINS_MK_ARGS)
-	cd yosys-rs-plugin && $(MAKE) install $(YOSYS_RS_PLUGIN_MK_ARGS)
+run-cmake-release:
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B build
 
-##
-## @ build_verific
-##     |---> info       :  Build Verific
-##     |---> usage      :  make build_verific
-build_verific: 
-	cd verific/verific-vJan22/tclmain && $(MAKE) $(VERIFIC_MK_ARGS)
-
-##
-## @ build_lsoracle
-##     |---> info       :  Build LSOracle
-##     |---> usage      :  make build_lsoracle
-build_lsoracle:
-ifeq (,$(CC))
-	$(error No compatible GCC version to build LSOracle)
-endif
-ifeq (,$(CXX))
-	$(error No compatible G++ version to build LSOracle)
-endif
-
-ifeq (,$(wildcard logic_synthesis-rs/LSOracle-rs/build))
-	mkdir logic_synthesis-rs/LSOracle-rs/build
-endif
-	cd logic_synthesis-rs/LSOracle-rs/build &&\
-	export CC=$(CC) && export CXX=$(CXX) &&\
-	$(CMAKE_COMMAND) $(LSORACLE_CMAKE_ARGS) .. &&\
-	$(MAKE) $(LSORACLE_MK_ARGS)
-
-##
-## @ build_DE
-##     |---> info       :  Build DE
-##     |---> usage      :  make build_DE
-build_DE:
-ifeq (,$(CC))
-	$(error No compatible GCC version to build DE)
-endif
-ifeq (,$(CXX))
-	$(error No compatible G++ version to build DE)
-endif
-
-ifeq (,$(wildcard logic_synthesis-rs/build))
-	mkdir logic_synthesis-rs/build
-endif
-	cd logic_synthesis-rs/build &&\
-	export CC=$(CC) && export CXX=$(CXX) &&\
-	$(CMAKE_COMMAND) .. && $(MAKE)
+run-cmake-debug:
+	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 
 ##
 ## @ clean
-##     |---> info       :  Clean all generated files
+##     |---> info       :  Clean all
 ##     |---> usage      :  make clean
-clean: clean_yosys_verific clean_lsoracle clean_DE
-
-##
-## @ clean_yosys_verific
-##     |---> info       :  Clean Yosys and Verific generated files
-##     |---> usage      :  make clean_yosys_verific
-clean_yosys_verific: clean_yosys clean_verific
-
-##
-## @ clean_yosys
-##     |---> info       :  Clean yosys, abc-rs, yosys-rs-plugin and yosys-plugins submodules generated files
-##     |---> usage      :  make clean_yosys
-clean_yosys:
-ifneq ("","$(wildcard $(YOSYS_PATH))")
-ifneq ("","$(wildcard yosys/Makefile)")
-	cd yosys && $(MAKE) clean
+clean:
+ifneq ("","$(wildcard build/Makefile)")
+	cmake --build build --target clean_all
 endif	
-ifneq ("","$(wildcard yosys-plugins/Makefile)")
-	cd yosys-plugins && $(MAKE) clean
-endif
-ifneq ("","$(wildcard ./yosys-rs-plugin/Makefile)")
-	cd yosys-rs-plugin && $(MAKE) clean
-endif
-ifneq ("","$(wildcard ./logic_synthesis-rs/abc-rs/Makefile)")
-	cd logic_synthesis-rs/abc-rs && $(MAKE) clean
-endif
-	rm -rf $(YOSYS_PATH)
-endif
+ifneq ("","$(wildcard dbuild/Makefile)")
+	cmake --build dbuild --target clean_all
+endif	
+	$(RM) -r build dbuild
 
 ##
-## @ clean_verific
-##     |---> info       :  Clean verific_rs submodule generated files
-##     |---> usage      :  make clean_verific
-clean_verific:
-ifneq ("","$(wildcard ./verific/verific-v*/tclmain/Makefile)")
-	cd verific/verific-v*/tclmain && $(MAKE) clean
-	cd verific && git restore .
-endif
-
-##
-## @ clean_lsoracle
-##     |---> info       :  Clean logic_synthesis-rs/LSOracle-rs submodule generated files
-##     |---> usage      :  make clean_lsoracle
-clean_lsoracle:
-ifneq ("","$(wildcard ./logic_synthesis-rs/LSOracle-rs/build/Makefile)")
-	cd logic_synthesis-rs/LSOracle-rs/build && $(MAKE) clean
-endif
-
-##
-## @ clean_DE
-##     |---> info       :  Clean logic_synthesis-rs/DE submodule generated files
-##     |---> usage      :  make clean_DE
-clean_DE:
-ifneq ("","$(wildcard ./logic_synthesis-rs/build/Makefile)")
-	cd logic_synthesis-rs/build && $(MAKE) clean
-endif
+## @ install
+##     |---> info       :  Install binaries and libraries
+##     |---> usage      :  make install
+install: release
+	cmake --install build
 
 help: Makefile
 	@echo '   #############################################'
