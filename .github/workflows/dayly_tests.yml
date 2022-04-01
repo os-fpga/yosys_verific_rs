@@ -30,15 +30,20 @@ jobs:
         run:
           make release
 
-      - name: Install dependencies and export environment variables
+      - name: Install dependencies.
         run: |
           python3 -m pip install --upgrade pip --user
           python3 -m pip install pandas termcolor --user
-          source scripts/export_env.sh
+
+      - name: Export environment variables
+        run: |
+          echo "ABC=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/abc)" >> $GITHUB_ENV
+          echo "DE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin//de)" >> $GITHUB_ENV
+          echo "LSORACLE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/lsoracle)" >> $GITHUB_ENV
           
       - name: Execute Python script
         run: |
-          python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_ade.json
+          python3 scripts/synth/synthesis.py --config_files workflow_test.json
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
