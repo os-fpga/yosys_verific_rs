@@ -142,63 +142,130 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
 
 def run_config_with_yosys(synthesis_settings, config_run_dir_base, 
         cfg_name, pool):
-    read_hdl_base = "read"
     options = ""
     abc_script = ""
-
-    if (synthesis_settings["yosys"]["verific"]):
-        read_hdl_base += " -verific"
-    else:
-        read_hdl_base += " -noverific"
-    read_hdl_base += "\nread -incdir ."
-    yosys_file_template = os.path.join(abs_root_dir, 
-            synthesis_settings["yosys"]["yosys_template_script"])
-    yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys"]["yosys_path"])
     benchmarks = synthesis_settings["benchmarks"]
     TIMEOUT = synthesis_settings["timeout"]
 
-    if "abc_script" in synthesis_settings["yosys"]:
-        abc_script = os.path.abspath( os.path.join(abs_root_dir,
-            synthesis_settings["yosys"]["abc_script"]) )
-
-    if synthesis_settings["yosys"]["synth_rs"]:
+    if "synth_rs" in synthesis_settings["yosys"]:
         for k, v in synthesis_settings["yosys"]["synth_rs"].items():
-            if k and v == "True":
-                options += k + " "
-                continue
-            if k and v == "False":
-                continue
             if k == "-abc":
                 v = os.path.abspath( os.path.join(abs_root_dir, v))
-            options += k + " " + v + " "
-
-    results = [(pool.apply_async(run_benchmark_with_yosys, 
-            args=(benchmark, yosys_abs, yosys_file_template, abc_script, options, 
-            config_run_dir_base, read_hdl_base, cfg_name, TIMEOUT)), benchmark) 
-            for benchmark in benchmarks]
-    return results
+            if v:
+                if isinstance(v, bool): 
+                    options += k + " "
+                    continue
+                else:
+                    options += k + " " + v + " "
+                    continue
+            else:
+                continue
  
+    temp = options
+    results = []
+    for benchmark in benchmarks:
+        read_hdl_base = "read"
+        if (synthesis_settings["yosys"]["verific"]):
+            read_hdl_base += " -verific"
+        else:
+            read_hdl_base += " -noverific"
+        read_hdl_base += "\nread -incdir ."
+
+        yosys_file_template = os.path.join(abs_root_dir, 
+                synthesis_settings["yosys"]["yosys_template_script"])
+        yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys"]["yosys_path"])
+
+        if "abc_script" in synthesis_settings["yosys"]:
+            abc_script = os.path.abspath( os.path.join(abs_root_dir,
+                synthesis_settings["yosys"]["abc_script"]) )
+
+        options = temp
+        if "yosys" in benchmark:
+            if "yosys_template_script" in benchmark["yosys"]:
+                yosys_file_template = os.path.join(abs_root_dir, 
+                        benchmark["yosys"]["yosys_template_script"])
+            if "yosys_path" in benchmark["yosys"]:
+                yosys_abs = os.path.join(abs_root_dir, benchmark["yosys"]["yosys_path"])
+            if "verific" in benchmark["yosys"] and benchmark["yosys"]["verific"]:
+                read_hdl_base = "read"
+                read_hdl_base += " -verific"
+                read_hdl_base += "\nread -incdir ."
+            elif "verific" in benchmark["yosys"] and not benchmark["yosys"]["verific"]:
+                read_hdl_base = "read"
+                read_hdl_base += " -noverific"
+                read_hdl_base += "\nread -incdir ."
+
+            options = options.split() 
+            if "synth_rs" in benchmark["yosys"]:
+                for k, v in benchmark["yosys"]["synth_rs"].items():
+                    if k == "-abc" and (k in options):
+                        v = os.path.abspath( os.path.join(abs_root_dir, v))
+                        options[options.index(k) + 1] = v
+                        continue
+                    elif k == "-abc" and (k not in options):
+                        options.append(k)
+                        v = os.path.abspath( os.path.join(abs_root_dir, v))
+                        options.append(v)
+                        continue
+                    if k in options:
+                        if v:
+                            if isinstance(v, bool): 
+                                continue
+                            else:
+                                options[options.index(k) + 1] = v
+                                continue
+                        else:
+                            options.remove(k)
+                            continue
+                    if k not in options:
+                        if v:
+                            if isinstance(v, bool): 
+                                options.append(k)
+                                continue
+                            else:
+                                options.append(k)
+                                options.append(v)
+                                continue
+                        else:
+                            continue
+            options = ' '.join(options)
+        results.append((pool.apply_async(run_benchmark_with_yosys,args=(benchmark, 
+            yosys_abs, yosys_file_template, abc_script, options,
+            config_run_dir_base, read_hdl_base, cfg_name, TIMEOUT)), benchmark))
+    return results
 
 def run_config_with_vivado(synthesis_settings, config_run_dir_base, 
         cfg_name, pool):
+    results = []
     benchmarks = synthesis_settings["benchmarks"]
-    vivado_file_template = os.path.join(abs_root_dir, 
-            synthesis_settings["vivado"]["vivado_template_script"])
     TIMEOUT = synthesis_settings["timeout"]
-    results = [(pool.apply_async(run_benchmark_with_vivado, 
+    for benchmark in benchmarks:
+        vivado_file_template = os.path.join(abs_root_dir, 
+                synthesis_settings["vivado"]["vivado_template_script"])
+        if "vivado" in benchmark:
+            if "vivado_template_script" in benchmark["vivado"]:
+                vivado_file_template = os.path.join(abs_root_dir, 
+                        benchmark["vivado"]["vivado_template_script"])
+        results.append((pool.apply_async(run_benchmark_with_vivado, 
             args=(benchmark, vivado_file_template, config_run_dir_base, 
-            cfg_name, TIMEOUT)), benchmark) for benchmark in benchmarks]
+            cfg_name, TIMEOUT)), benchmark))
     return results
 
 def run_config_with_diamond(synthesis_settings, config_run_dir_base, 
         cfg_name, pool):
+    results = []
     benchmarks = synthesis_settings["benchmarks"]
-    diamond_file_template = os.path.join(abs_root_dir, 
-            synthesis_settings["diamond"]["diamond_template_script"])
     TIMEOUT = synthesis_settings["timeout"]
-    results = [(pool.apply_async(run_benchmark_with_diamond, 
+    for benchmark in benchmarks:
+        diamond_file_template = os.path.join(abs_root_dir, 
+                synthesis_settings["diamond"]["diamond_template_script"])
+        if "diamond" in benchmark:
+            if "diamond_template_script" in benchmark["diamond"]:
+                diamond_file_template = os.path.join(abs_root_dir, 
+                        benchmark["diamond"]["diamond_template_script"])
+        results.append((pool.apply_async(run_benchmark_with_diamond, 
             args=(benchmark, diamond_file_template, config_run_dir_base, 
-            cfg_name, TIMEOUT)), benchmark) for benchmark in benchmarks]
+            cfg_name, TIMEOUT)), benchmark))
     return results
     
 
@@ -240,7 +307,7 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
         shutil.copytree(abs_rtl_path, benchmark_run_dir)
         yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
         
-        options = options + "-verilog " + benchmark["top_module"] + ".verilog"
+        options = options + " -verilog " + benchmark["top_module"] + ".verilog"
         options = "-top " + benchmark["top_module"] + " " + options
 
         rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
