@@ -6,12 +6,14 @@ This directory contains scripts which will run sysnthesis for the list of benchm
 .
 |-- abc
 |-- vivado
+|-- diamond
 `-- yosys
     
 ```
 
 `abc` directory contains ABC scripts.
 `vivado` directory contains Vivado template TCL scripts.
+`diamond` directory contains Diamond template TCL scripts.
 `yosys` directory contains Yosys template synthesis scirpts.
 
 # Command line arguments
@@ -20,14 +22,16 @@ This directory contains scripts which will run sysnthesis for the list of benchm
 # Input JSON configuration format
 The input JSON file contains list of benchmarks with synthesis run configurations. 
 
-- tool - The tool to run the synthesis with (vivado/yosys),
+- tool - The tool to run the synthesis with (vivado/yosys/diamond),
 - yosys_path - yosys installation path,
 - abc_script - The path to 'abc' script,
 - yosys_template_script - The path to yosys template script,
 - vivado_template_script - The path to vivado template script,
+- diamond_template_script - The path to diamond template script,
 - num_process - Max number of parallel runs,
 - timeout - Upper limit for synthesis run duration,
-- verific - Use verific or not (thrue/false),
+- verific - Use verific or not (true/false),
+- synth_rs - Yosys commands dictionary,
 - benchmarks - The list of designs
 	- name - Design name,
 	- rtl_path - The path to design directory,
@@ -36,14 +40,23 @@ The input JSON file contains list of benchmarks with synthesis run configuration
 An example input JSON configuration:
 ```bash
 {
-    "tool": "vivado",
-    "yosys_path": "yosys/install/bin/yosys",
-    "abc_script": "scripts/synth/abc_scripts/abc_base6.v1.scr",
-    "yosys_template_script": "scripts/synth/yosys_template.ys",
+    "tool": "yosys",
+    "yosys": {
+
+        "yosys_path": "yosys/install/bin/yosys",
+        "abc_script": "scripts/synth/abc_scripts/abc_base6.v1.scr",
+        "yosys_template_script": "scripts/synth/yosys/yosys_template_synth_rs_optional.ys",
+        "verific": true,
+        "synth_rs" : {
+
+            "-tech": "genesis",
+            "-goal": "area",
+            "-no_dsp": true,
+        }
+    },
     "vivado_template_script": "scripts/synth/vivado_v1_template.tcl",
     "num_process": 4,
     "timeout": 10800,
-    "verific": true,
     "benchmarks": [
         {
             "name": "cavlc",
@@ -52,14 +65,24 @@ An example input JSON configuration:
         },
         {
             "name": "des_ao",
+            "yosys": {
+                "synth_rs" : {
+
+                    "-goal": "delay"
+                },
+            },
             "rtl_path": "../Gap-Analysis/RTL_Benchmark/des_area_opt",
             "top_module": "des_top"
         }
     ]
 }
 ```
-
 # How to run
+Before running the automation script with Yosys if `'-de': true` specified the following command should be executed:
+```bash
+source export_env.sh
+```
+
 Before running the automation script for comercial tools on **kyber** server the following command should be executed:
 ```bash
 load_vivado

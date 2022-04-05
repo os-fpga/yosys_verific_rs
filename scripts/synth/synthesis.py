@@ -142,96 +142,75 @@ def run_benchmarks_for_config(synthesis_settings, run_dir_base, cfg_name):
 
 def run_config_with_yosys(synthesis_settings, config_run_dir_base, 
         cfg_name, pool):
-    options = ""
-    abc_script = ""
     benchmarks = synthesis_settings["benchmarks"]
     TIMEOUT = synthesis_settings["timeout"]
-
-    if "synth_rs" in synthesis_settings["yosys"]:
-        for k, v in synthesis_settings["yosys"]["synth_rs"].items():
-            if k == "-abc":
-                v = os.path.abspath( os.path.join(abs_root_dir, v))
-            if v:
-                if isinstance(v, bool): 
-                    options += k + " "
-                    continue
-                else:
-                    options += k + " " + v + " "
-                    continue
-            else:
-                continue
- 
-    temp = options
+    global_settings = {}
     results = []
+    
+    def collect_settings(row_settings, proccesed_settings):
+        yosys_settings_names = ["yosys_template_script", "yosys_path", "abc_script"]
+        if "yosys" in row_settings:
+            yosys_settings = row_settings["yosys"]
+            for setting in yosys_settings_names:
+                if setting in yosys_settings:
+                    proccesed_settings[setting] = os.path.join(abs_root_dir,
+                        yosys_settings[setting])
+            if "verific" in yosys_settings:
+                proccesed_settings["verific"] = yosys_settings["verific"]
+            if "synth_rs" in yosys_settings:
+                if "synth_rs" in proccesed_settings:
+                    for k, v in yosys_settings["synth_rs"].items():
+                        proccesed_settings["synth_rs"][k] = v
+                else:
+                    proccesed_settings["synth_rs"] = copy.deepcopy(yosys_settings["synth_rs"])
+
+    collect_settings(synthesis_settings, global_settings)
+
     for benchmark in benchmarks:
-        read_hdl_base = "read"
-        if (synthesis_settings["yosys"]["verific"]):
-            read_hdl_base += " -verific"
-        else:
-            read_hdl_base += " -noverific"
-        read_hdl_base += "\nread -incdir ."
+        benchmark_settings = copy.deepcopy(global_settings)
+        collect_settings(benchmark, benchmark_settings)
 
-        yosys_file_template = os.path.join(abs_root_dir, 
-                synthesis_settings["yosys"]["yosys_template_script"])
-        yosys_abs = os.path.join(abs_root_dir, synthesis_settings["yosys"]["yosys_path"])
-
-        if "abc_script" in synthesis_settings["yosys"]:
-            abc_script = os.path.abspath( os.path.join(abs_root_dir,
-                synthesis_settings["yosys"]["abc_script"]) )
-
-        options = temp
-        if "yosys" in benchmark:
-            if "yosys_template_script" in benchmark["yosys"]:
-                yosys_file_template = os.path.join(abs_root_dir, 
-                        benchmark["yosys"]["yosys_template_script"])
-            if "yosys_path" in benchmark["yosys"]:
-                yosys_abs = os.path.join(abs_root_dir, benchmark["yosys"]["yosys_path"])
-            if "verific" in benchmark["yosys"] and benchmark["yosys"]["verific"]:
-                read_hdl_base = "read"
+        error_flag = True        
+        try:
+            mandatory_settings_names = ["yosys_template_script", "yosys_path", "verific"]
+            for setting in mandatory_settings_names:
+                if setting not in benchmark_settings:
+                    error_flag = False
+                    logger.error('Missing {0} for {1} in configuration {2}.'.format(
+                            setting, benchmark["name"], cfg_name))
+        except:
+            logger.error('Incorrect settings in configuration {}.'.format(
+                        cfg_name))
+        if error_flag:
+            if "abc_script" not in benchmark_settings:
+                benchmark_settings["abc_script"] = ""
+            read_hdl_base = "read"
+            if (benchmark_settings["verific"]):
                 read_hdl_base += " -verific"
-                read_hdl_base += "\nread -incdir ."
-            elif "verific" in benchmark["yosys"] and not benchmark["yosys"]["verific"]:
-                read_hdl_base = "read"
+            else:
                 read_hdl_base += " -noverific"
-                read_hdl_base += "\nread -incdir ."
-
-            options = options.split() 
-            if "synth_rs" in benchmark["yosys"]:
-                for k, v in benchmark["yosys"]["synth_rs"].items():
-                    if k == "-abc" and (k in options):
+            read_hdl_base += "\nread -incdir ."
+            options = ""
+            if "synth_rs" in benchmark_settings:
+                for k, v in benchmark_settings["synth_rs"].items():
+                    if k == "-abc":
                         v = os.path.abspath( os.path.join(abs_root_dir, v))
-                        options[options.index(k) + 1] = v
-                        continue
-                    elif k == "-abc" and (k not in options):
-                        options.append(k)
-                        v = os.path.abspath( os.path.join(abs_root_dir, v))
-                        options.append(v)
-                        continue
-                    if k in options:
-                        if v:
-                            if isinstance(v, bool): 
-                                continue
-                            else:
-                                options[options.index(k) + 1] = v
-                                continue
+                    if v:
+                        if isinstance(v, bool): 
+                            options += k + " "
                         else:
-                            options.remove(k)
-                            continue
-                    if k not in options:
-                        if v:
-                            if isinstance(v, bool): 
-                                options.append(k)
-                                continue
-                            else:
-                                options.append(k)
-                                options.append(v)
-                                continue
-                        else:
-                            continue
-            options = ' '.join(options)
-        results.append((pool.apply_async(run_benchmark_with_yosys,args=(benchmark, 
-            yosys_abs, yosys_file_template, abc_script, options,
-            config_run_dir_base, read_hdl_base, cfg_name, TIMEOUT)), benchmark))
+                            options += k + " " + v + " "
+        results.append((pool.apply_async(run_benchmark_with_yosys,args=(
+                benchmark, 
+                benchmark_settings["yosys_path"], 
+                benchmark_settings["yosys_template_script"],
+                benchmark_settings["abc_script"], 
+                options,
+                config_run_dir_base, 
+                read_hdl_base, 
+                cfg_name, 
+                TIMEOUT)), 
+            benchmark))
     return results
 
 def run_config_with_vivado(synthesis_settings, config_run_dir_base, 
