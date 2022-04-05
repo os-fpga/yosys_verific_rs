@@ -112,13 +112,13 @@ add_custom_target(
     yosys-rs-plugin ALL 
     COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
+    COMMENT "Compile Yosys RS plugin with given Makefile"
 )
 add_custom_target(
     yosys-rs-plugin_clean
     COMMAND $(MAKE) clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
+    COMMENT "Clean Yosys RS plugin with given Makefile"
 )
 add_dependencies(yosys-rs-plugin yosys)
 if (ENABLE_VERIFIC)
