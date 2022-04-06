@@ -22,36 +22,36 @@ This directory contains scripts which will run sysnthesis for the list of benchm
 # Input JSON configuration format
 The input JSON file contains list of benchmarks with synthesis run configurations. 
 
-- tool - The tool to run the synthesis with (vivado/yosys/diamond),
-- vivado - Vivado commands dictionary,
-    - vivado_template_script - The path to vivado template script,
-- yosys - Yosys commands dictionary,
-    - yosys_path - yosys installation path,
-    - yosys_template_script - The path to yosys template script,
-    - abc_script - The path to 'abc' script,
-    - verific - Use verific or not (true/false),
-    - synth_rs - Supported options for synthesis plugin
-        - tech
-        - blif
-        - verilog
-        - goal
-        - effort
-        - de
-        - abc(DEV_BUILD)
-        - cec(DEV_BUILD)
-        - carry(DEV_BUILD)
-        - sdff(DEV_BUILD)
-        - no_dsp(DEV_BUILD)
-        - no_bram(DEV_BUILD)
+- `tool` - The tool to run the synthesis with (vivado/yosys/diamond),
+- `vivado` - Vivado commands dictionary,
+    - `vivado_template_script` - The path to vivado template script,
+- `yosys` - Yosys commands dictionary,
+    - `yosys_path` - yosys installation path,
+    - `yosys_template_script` - The path to yosys template script,
+    - `abc_script` - The path to 'abc' script,
+    - `verific` - Use verific or not (true/false),
+    - `synth_rs` - Supported options for synthesis plugin
+        - `-tech`
+        - `-blif`
+        - `-verilog`
+        - `-goal`
+        - `-effort`
+        - `-de`
+        - `-abc` (DEV_BUILD)
+        - `-cec` (DEV_BUILD)
+        - `-carry`
+        - `-sdff` (DEV_BUILD)
+        - `-no_dsp`
+        - `-no_bram`
 
-- diamond - Diamond commands dictionary,
-    - diamond_template_script - The path to diamond template script,
-- num_process - Max number of parallel runs,
-- timeout - Upper limit for synthesis run duration,
-- benchmarks - The list of designs
-	- name - Design name,
-	- rtl_path - The path to design directory,
-	- top_module - The design's top module.
+- `diamond` - Diamond commands dictionary,
+    - `diamond_template_script` - The path to diamond template script,
+- `num_process` - Max number of parallel runs,
+- `timeout` - Upper limit for synthesis run duration,
+- `benchmarks` - The list of designs
+	- `name` - Design name,
+	- `rtl_path` - The path to design directory,
+	- `top_module` - The design's top module.
 
 An example input JSON configuration:
 ```bash
