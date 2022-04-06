@@ -21,7 +21,7 @@ option(YOSYS_LIB "Build Yosys also as library" OFF)
 
 set(ABCEXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
-set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vJan22)
+set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
 
 list(APPEND VERIFIC_MK_ARGS 
     "VERSION=-O3"
