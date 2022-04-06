@@ -193,8 +193,6 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
             options = ""
             if "synth_rs" in benchmark_settings:
                 for k, v in benchmark_settings["synth_rs"].items():
-                    if k == "-verilog":
-                        v = benchmark["top_module"] + ".verilog"
                     if k == "-abc":
                         v = os.path.abspath( os.path.join(abs_root_dir, v))
                     if v:
