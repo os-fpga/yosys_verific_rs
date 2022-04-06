@@ -23,15 +23,31 @@ This directory contains scripts which will run sysnthesis for the list of benchm
 The input JSON file contains list of benchmarks with synthesis run configurations. 
 
 - tool - The tool to run the synthesis with (vivado/yosys/diamond),
-- yosys_path - yosys installation path,
-- abc_script - The path to 'abc' script,
-- yosys_template_script - The path to yosys template script,
-- vivado_template_script - The path to vivado template script,
-- diamond_template_script - The path to diamond template script,
+- vivado - Vivado commands dictionary,
+    - vivado_template_script - The path to vivado template script,
+- yosys - Yosys commands dictionary,
+    - yosys_path - yosys installation path,
+    - yosys_template_script - The path to yosys template script,
+    - abc_script - The path to 'abc' script,
+    - verific - Use verific or not (true/false),
+    - synth_rs - Supported options for synthesis plugin
+        - tech
+        - blif
+        - verilog
+        - goal
+        - effort
+        - de
+        - abc(DEV_BUILD)
+        - cec(DEV_BUILD)
+        - carry(DEV_BUILD)
+        - sdff(DEV_BUILD)
+        - no_dsp(DEV_BUILD)
+        - no_bram(DEV_BUILD)
+
+- diamond - Diamond commands dictionary,
+    - diamond_template_script - The path to diamond template script,
 - num_process - Max number of parallel runs,
 - timeout - Upper limit for synthesis run duration,
-- verific - Use verific or not (true/false),
-- synth_rs - Yosys commands dictionary,
 - benchmarks - The list of designs
 	- name - Design name,
 	- rtl_path - The path to design directory,
@@ -67,7 +83,6 @@ An example input JSON configuration:
             "name": "des_ao",
             "yosys": {
                 "synth_rs" : {
-
                     "-goal": "delay"
                 },
             },
@@ -82,7 +97,6 @@ Before running the automation script with Yosys if `'-de': true` specified the f
 ```bash
 source export_env.sh
 ```
-
 Before running the automation script for comercial tools on **kyber** server the following command should be executed:
 ```bash
 load_vivado

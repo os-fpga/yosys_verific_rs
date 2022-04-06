@@ -169,8 +169,8 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
     for benchmark in benchmarks:
         benchmark_settings = copy.deepcopy(global_settings)
         collect_settings(benchmark, benchmark_settings)
-
         error_flag = True        
+
         try:
             mandatory_settings_names = ["yosys_template_script", "yosys_path", "verific"]
             for setting in mandatory_settings_names:
@@ -193,6 +193,8 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
             options = ""
             if "synth_rs" in benchmark_settings:
                 for k, v in benchmark_settings["synth_rs"].items():
+                    if k == "-verilog":
+                        v = benchmark["top_module"] + ".verilog"
                     if k == "-abc":
                         v = os.path.abspath( os.path.join(abs_root_dir, v))
                     if v:
@@ -218,16 +220,25 @@ def run_config_with_vivado(synthesis_settings, config_run_dir_base,
     results = []
     benchmarks = synthesis_settings["benchmarks"]
     TIMEOUT = synthesis_settings["timeout"]
+    vivado_settings = {}   
+    if "vivado" in synthesis_settings:
+        if "vivado_template_script" in synthesis_settings["vivado"]:
+            vivado_settings["vivado_template_script"] = synthesis_settings["vivado"]["vivado_template_script"]
     for benchmark in benchmarks:
-        vivado_file_template = os.path.join(abs_root_dir, 
-                synthesis_settings["vivado"]["vivado_template_script"])
+        benchmark_settings = copy.deepcopy(vivado_settings)
         if "vivado" in benchmark:
             if "vivado_template_script" in benchmark["vivado"]:
-                vivado_file_template = os.path.join(abs_root_dir, 
-                        benchmark["vivado"]["vivado_template_script"])
-        results.append((pool.apply_async(run_benchmark_with_vivado, 
-            args=(benchmark, vivado_file_template, config_run_dir_base, 
-            cfg_name, TIMEOUT)), benchmark))
+                benchmark_settings["vivado_template_script"] = benchmark["vivado"]["vivado_template_script"]
+        if benchmark_settings:
+            results.append((pool.apply_async(run_benchmark_with_vivado,args=(
+                    benchmark, 
+                    benchmark_settings["vivado_template_script"], 
+                    config_run_dir_base, 
+                    cfg_name, 
+                    TIMEOUT)), 
+                 benchmark))
+        else:
+            logger.error('Please provide Vivado template script')
     return results
 
 def run_config_with_diamond(synthesis_settings, config_run_dir_base, 
@@ -235,16 +246,25 @@ def run_config_with_diamond(synthesis_settings, config_run_dir_base,
     results = []
     benchmarks = synthesis_settings["benchmarks"]
     TIMEOUT = synthesis_settings["timeout"]
+    diamond_settings = {}   
+    if "diamond" in synthesis_settings:
+        if "diamond_template_script" in synthesis_settings["diamond"]:
+            diamond_settings["diamond_template_script"] = synthesis_settings["diamond"]["diamond_template_script"]
     for benchmark in benchmarks:
-        diamond_file_template = os.path.join(abs_root_dir, 
-                synthesis_settings["diamond"]["diamond_template_script"])
+        benchmark_settings = copy.deepcopy(diamond_settings)
         if "diamond" in benchmark:
             if "diamond_template_script" in benchmark["diamond"]:
-                diamond_file_template = os.path.join(abs_root_dir, 
-                        benchmark["diamond"]["diamond_template_script"])
-        results.append((pool.apply_async(run_benchmark_with_diamond, 
-            args=(benchmark, diamond_file_template, config_run_dir_base, 
-            cfg_name, TIMEOUT)), benchmark))
+                benchmark_settings["diamond_template_script"] = benchmark["diamond"]["diamond_template_script"]
+        if benchmark_settings:
+            results.append((pool.apply_async(run_benchmark_with_diamond,args=(
+                    benchmark, 
+                    benchmark_settings["diamond_template_script"], 
+                    config_run_dir_base, 
+                    cfg_name, 
+                    TIMEOUT)), 
+                 benchmark))
+        else:
+            logger.error('Please provide diamond template script')
     return results
     
 
@@ -286,7 +306,6 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
         shutil.copytree(abs_rtl_path, benchmark_run_dir)
         yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
         
-        options = options + " -verilog " + benchmark["top_module"] + ".verilog"
         options = "-top " + benchmark["top_module"] + " " + options
 
         rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
