@@ -18,6 +18,7 @@ add_subdirectory(logic_synthesis-rs)
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
+option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 
 set(ABCEXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
@@ -47,10 +48,6 @@ if (YOSYS_LIB)
     )
 endif()
 
-list(APPEND YOSYS_PLUGINS_MK_ARGS
-    "YOSYS_PATH=${YOSYS_PATH}"
-    "EXTRA_FLAGS=-DPASS_NAME=synth_ql"
-)
 list(APPEND YOSYS_RS_PLUGIN_MK_ARGS
     "YOSYS_PATH=${YOSYS_PATH}"
 )
@@ -77,6 +74,9 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
+list(APPEND CLEAN_TARGETS
+    "yosys_clean"
+)
 
 if (ENABLE_VERIFIC)
     add_custom_target(
@@ -92,65 +92,76 @@ if (ENABLE_VERIFIC)
         COMMENT "Clean Verific with given Makefile"
     )
     add_dependencies(yosys verific)
+    list(APPEND CLEAN_TARGETS
+        "verific_clean"
+    )
 endif()
 
-add_custom_target(
-    yosys-plugins ALL 
-    COMMAND $(MAKE) install_ql-qlf ${YOSYS_PLUGINS_MK_ARGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
-    COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
-)
-add_custom_target(
-    yosys-plugins_clean
-    COMMAND $(MAKE) clean
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
-    COMMENT "Clean Yosys ql-qlf plugin with given Makefile"
-)
-add_dependencies(yosys-plugins yosys)
+if (BUILD_YOSYS_PLUGINS)
+    list(APPEND YOSYS_PLUGINS_MK_ARGS
+        "YOSYS_PATH=${YOSYS_PATH}"
+        "EXTRA_FLAGS=\"-DPASS_NAME=synth_ql\""
+    )
+    add_custom_target(
+        yosys-plugins ALL
+        COMMAND $(MAKE) install_ql-qlf ${YOSYS_PLUGINS_MK_ARGS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
+        COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
+    )
+    add_custom_target(
+        yosys-plugins_clean
+        COMMAND $(MAKE) clean
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
+        COMMENT "Clean Yosys ql-qlf plugin with given Makefile"
+    )
+    add_dependencies(yosys-plugins yosys)
+    list(APPEND CLEAN_TARGETS
+        "yosys-plugins_clean"
+    )
+endif()
 
 add_custom_target(
     yosys-rs-plugin ALL 
     COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
+    COMMENT "Compile Yosys RS plugin with given Makefile"
 )
 add_custom_target(
     yosys-rs-plugin_clean
     COMMAND $(MAKE) clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    COMMENT "Compile Yosys ql-qlf plugin with given Makefile"
+    COMMENT "Clean Yosys RS plugin with given Makefile"
 )
 add_dependencies(yosys-rs-plugin yosys)
-if (ENABLE_VERIFIC)
-    add_custom_target(
-        clean_all
-        COMMAND $(MAKE) clean
-        COMMAND $(MAKE) verific_clean
-        COMMAND $(MAKE) yosys_clean
-        COMMAND $(MAKE) yosys-plugins_clean
-        COMMAND $(MAKE) yosys-rs-plugin_clean
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Clean All"
-    )
-else()
-    add_custom_target(
-        clean_all
-        COMMAND $(MAKE) clean
-        COMMAND $(MAKE) yosys_clean
-        COMMAND $(MAKE) yosys-plugins_clean
-        COMMAND $(MAKE) yosys-rs-plugin_clean
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Clean All"
-    )
-endif()    
+list(APPEND CLEAN_TARGETS
+    "yosys-rs-plugin_clean"
+)
+
+add_custom_target(
+    clean_all
+    COMMAND $(MAKE) ${CLEAN_TARGETS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Clean All"
+)
 
 # Installation target
 install(
     DIRECTORY ${YOSYS_PATH}/bin
-    DESTINATION yosys)
+    DESTINATION .
+    PATTERN "*"
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                GROUP_EXECUTE GROUP_READ)
 install(
-    DIRECTORY ${YOSYS_PATH}/share
-    DESTINATION yosys)
+    DIRECTORY ${YOSYS_PATH}/share 
+    DESTINATION .
+    PATTERN "*.so"
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                GROUP_EXECUTE GROUP_READ)
+install(
+    DIRECTORY ${YOSYS_PATH}/share 
+    DESTINATION .
+    PATTERN "*.so" EXCLUDE
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ)
 
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
