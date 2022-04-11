@@ -146,22 +146,15 @@ add_custom_target(
 
 # Installation target
 install(
-    DIRECTORY ${YOSYS_PATH}/bin
-    DESTINATION .
-    PATTERN "*"
-    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-                GROUP_EXECUTE GROUP_READ)
+    PROGRAMS ${YOSYS_PATH}/bin/yosys
+             ${YOSYS_PATH}/bin/yosys-config
+             ${YOSYS_PATH}/bin/yosys-filterlib
+             ${YOSYS_PATH}/bin/yosys-smtbmc
+    DESTINATION bin)
 install(
-    DIRECTORY ${YOSYS_PATH}/share 
-    DESTINATION .
-    PATTERN "*.so"
-    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-                GROUP_EXECUTE GROUP_READ)
-install(
-    DIRECTORY ${YOSYS_PATH}/share 
-    DESTINATION .
-    PATTERN "*.so" EXCLUDE
-    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ)
+    DIRECTORY ${YOSYS_PATH}/share/yosys
+    DESTINATION share
+    USE_SOURCE_PERMISSIONS)
 
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
