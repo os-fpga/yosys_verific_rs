@@ -20,7 +20,9 @@ option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 
-set(ABCEXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
+set(ABC ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
+set(DE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/de)
+set(LSORACLE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/lsoracle)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
 
@@ -31,7 +33,7 @@ list(APPEND VERIFIC_MK_ARGS
 list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
-    "ABCEXTERNAL=${ABCEXTERNAL}"
+    "ABCEXTERNAL=${ABC}"
 )
 
 if (ENABLE_VERIFIC)
@@ -158,3 +160,12 @@ install(
 
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+
+enable_testing()
+add_test(
+    NAME yosys_verific_rs-smoke-test
+    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
+    )
+set_property(TEST yosys_verific_rs-smoke-test
+    PROPERTY ENVIRONMENT ABC=${ABC} DE=${DE} LSORACLE=${LSORACLE})
