@@ -14,10 +14,6 @@ ADDITIONAL_CMAKE_OPTIONS ?=
 PREFIX ?= /usr/local
 RULE_MESSAGES ?= off
 
-ABC=$(PREFIX)/bin/abc
-DE=$(PREFIX)/bin/de
-LSORACLE=$(PREFIX)/bin/lsoracle
-
 ##
 ## @ release
 ##     |---> info       :  Release build
@@ -72,15 +68,11 @@ endif
 install: release
 	cmake --install build
 
-# exports should not be used when https://github.com/RapidSilicon/yosys_verific_rs/issues/168 is fixed
 ##
 ## @ test_install
 ##     |---> info       :  Test if everything is installed properly
 ##     |---> usage      :  make test_install
 test_install:
-	export ABC=$(ABC) &&\
-	export DE=$(DE) &&\
-	export LSORACLE=$(LSORACLE) &&\
 	cd yosys-rs-plugin && $(MAKE) test YOSYS_PATH=$(PREFIX)
 
 ##
