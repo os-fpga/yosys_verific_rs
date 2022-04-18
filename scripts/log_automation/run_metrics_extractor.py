@@ -58,8 +58,7 @@ parser.add_argument("--exclude_metrics", type=str, nargs="*",
             "AVERAGE_LOGIC_LEVEL", 
             "SRL", 
             "DRAM", 
-            "BRAM", 
-            "DSP"
+            "BRAM"
         ],
         help="exclude specified metrics")
 parser.add_argument("--viv_carry_as_lut", action="store_false",
@@ -235,6 +234,7 @@ def extract_yosys_metrics():
             metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
             metrics.at[design_index, extract_column_name("CARRY4",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
@@ -260,6 +260,8 @@ def extract_yosys_metrics():
                             add_value(line.split()[1], design_index, "DFF", tool, label)
                         if re.search(r"adder_carry", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "CARRY4", tool, label)
+                        if re.search('RS_DSP', line, re.IGNORECASE):
+                            add_value(line.split()[1], design_index, "DSP", tool, label)
                     results = re.findall("ABC: Mapping \(K=.*\).*(lev =.*\)).*MB", log)
                     if results:
                         results = results[-1].split()
