@@ -77,8 +77,8 @@ python3 scripts/task_generator/run_task_generator.py PATH_TO_OPENFPGA_ROOT --set
 ```
 Detailed information regarding OpenFPGA tasks generation can be found [here](https://github.com/RapidSilicon/yosys_verific_rs/blob/main/scripts/task_generator/README.md).
 
-## Using DE
-In order to use DE in Yosys flow some environment variables should be exported. To do so run the following command:
+## Running yosys without installing it
+Some environment variables should be exported in order to use Yosys without installing it:
 ```bash
-source export_env.sh
+source scripts/export_env.sh
 ```
