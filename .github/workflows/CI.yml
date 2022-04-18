@@ -1,44 +1,344 @@
-name: CI 
+name: 'yosys-verific CI'
 
 on:
+  workflow_dispatch:
   pull_request:
+  schedule:
+    - cron: "30 19 * * 1,2,3,4"
 
 jobs:
-  build:
-    runs-on: verific-builder
+  linux-gcc:
+    name: ${{ matrix.mode }}
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+        - test
+        - regression
+        - install
+#        - valgrind
+    env:
+      MODE: ${{ matrix.mode }}
+
     steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
 
-      - name: Runner workspace path
-        run: |
-          echo "Cleaning up previous run"
-          rm -rf "${{ github.workspace }}"
-          mkdir -p "${{ github.workspace }}"
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
 
-      - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
-      - name: Checkout submodules
-        run: |
-          git submodule update --init --recursive
+    - name: ssh-agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with: 
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+          ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+          ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+          ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+          ${{ secrets.SSH_PRIVATE_KEY_LSORACLE }}
 
-      - name: Configure shell
-        run: |
-          echo "/usr/local/bin" >> $GITHUB_PATH
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
-      - name: Build yosys+verific
-        run:
-          make release
+    - name: Install dependencies
+      run: |
+        bash .github/workflows/scripts/install_ubuntu_dependencies_build.sh
+        python3 -m pip install --upgrade pip --user
+        python3 -m pip install pandas termcolor --user
 
-      - name: Export environment variables
-        run: |
-          echo "ABC=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/abc" >> $GITHUB_ENV
-          echo "DE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/de" >> $GITHUB_ENV
-          echo "LSORACLE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/lsoracle" >> $GITHUB_ENV
+    - name: Use ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: linux-${{ matrix.mode }}
 
-      - name: Run tests
-        run: |
-          cd yosys-rs-plugin
-          make test YOSYS_PATH=$(realpath ../yosys/install)
+    - name: Configure shell
+      run: |
+        echo 'CC=gcc-9' >> $GITHUB_ENV
+        echo 'CXX=g++-9' >> $GITHUB_ENV
+        echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
+        echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
+        echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
+        echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
+
+    - name: Show shell configuration
+      run: |
+        env
+        which cmake && cmake --version
+        which make && make --version
+        which python && python --version
+        which ninja && ninja --version
+        which $CC && $CC --version
+        which $CXX && $CXX --version
+
+    - name: Test
+      if: matrix.mode == 'test'
+      run: |
+        make release
+        make test
+        make debug
+        make dtest
+
+    - name: Regression
+      if: matrix.mode == 'regression' && ${{ github.event.schedule }}
+      run: |
+        make release
+        echo "ABC=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/abc" >> $GITHUB_ENV
+        echo "DE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/de" >> $GITHUB_ENV
+        echo "LSORACLE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/lsoracle" >> $GITHUB_ENV
+        python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_ade.json
+        python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_ade.json .github/logs/All_lut_Golden  --output_file All_lut.csv --run_log result*/run.log .github/logs/All_lut_Golden/All_lut_Golden_run.log --base .github/logs/All_lut_Golden
+        python3 scripts/log_automation/result_comparision.py All_lut.csv
+
+    - name: Valgrind
+      if: matrix.mode == 'valgrind'
+      run: |
+        make debug
+        make test/valgrind
+
+    - name: Install Test
+      if: matrix.mode == 'install'
+      run: |
+        make release
+        make install
+        make clean   # make sure we only see installation artifacts
+        make test_install
+
+    - name: Archive regression artifacts
+      if: matrix.mode == 'regression' && ${{ github.event.schedule }} && always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: regression_results
+        path: |
+          result*/
+          All_lut.csv
+
+# Reference: https://github.com/OPM/ResInsight/blob/dev/.github/workflows/centos7.yml
+  centos7-gcc:
+    name:  ${{ matrix.mode }}
+
+    runs-on: ubuntu-latest
+    container:
+      image: centos:7
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+        - test
+
+    env:
+      MODE: ${{ matrix.mode }}
+
+    steps:
+
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
+        
+    - name: Install ssh-agent
+      run: |
+        yum install -y openssh-server openssh-clients
+        yum-config-manager --enable rhel-server-rhscl-7-rpms
+        yum install -y https://repo.ius.io/ius-release-el7.rpm
+        yum install -y centos-release-scl
+        yum install -y devtoolset-9
+        yum install -y devtoolset-9-toolchain
+        yum install -y git222
+
+    - name: ssh-agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with: 
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+          ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+          ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+          ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+          ${{ secrets.SSH_PRIVATE_KEY_LSORACLE }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
+        
+    - name: Install dependencies
+      run: |
+        bash .github/workflows/scripts/install_centos_dependencies_build.sh
+
+    - name: Show shell configuration
+      run: |
+        env
+        source /opt/rh/devtoolset-9/enable
+        which gcc 
+        which g++ 
+
+    - name: Configure shell
+      run: |
+        source /opt/rh/devtoolset-9/enable
+        echo 'CC=/opt/rh/devtoolset-9/root/usr/bin/gcc' >> $GITHUB_ENV
+        echo 'CXX=/opt/rh/devtoolset-9/root/usr/bin/g++' >> $GITHUB_ENV
+        echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
+        echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
+        echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
+
+    - name: Test
+      if: matrix.mode == 'test'
+      run: |
+        make release
+        make test
+        make debug
+        make dtest
+
+  macos-gcc:
+    runs-on: macos-latest
+
+    steps:
+
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: ssh-agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with: 
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+          ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+          ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+          ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+          ${{ secrets.SSH_PRIVATE_KEY_LSORACLE }}
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Use ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: macos-gcc
+
+    - name: Install dependencies
+      run: |
+        bash .github/workflows/scripts/install_macos_dependencies_build.sh
+
+    - name: Configure shell
+      run: |
+        echo 'CC=gcc-9' >> $GITHUB_ENV
+        echo 'CXX=g++-9' >> $GITHUB_ENV
+        echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
+        echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
+        echo 'PREFIX=${GITHUB_WORKSPACE}/install' >> $GITHUB_ENV
+
+    - name: Show shell configuration
+      run: |
+        env
+        which cmake && cmake --version
+        which make && make --version
+        which python && python --version
+        which $CC && $CC --version
+        which $CXX && $CXX --version
+        which bison && bison --version
+        which install && install --version
+
+    - name: Build
+      run: |
+        make release
+        make install
+
+    - name: Unit tests
+      run: |
+        make clean
+        make test_install
+
+  macos-clang:
+    runs-on: macos-latest
+
+    steps:
+
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+        
+    - name: ssh-agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with: 
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+          ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+          ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+          ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+          ${{ secrets.SSH_PRIVATE_KEY_LSORACLE }}
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Use ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: macos-clang
+
+    - name: Install dependencies
+      run: |
+        bash .github/workflows/scripts/install_macos_dependencies_build.sh
+
+    - name: Configure shell
+      run: |
+        echo 'PREFIX=${GITHUB_WORKSPACE}/install' >> $GITHUB_ENV
+        echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
+        echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
+
+    - name: Show shell configuration
+      run: |
+        env
+        which cmake && cmake --version
+        which make && make --version
+        which python && python --version
+        which -a bison && bison --version
+
+    - name: Build
+      run: |
+        make release
+        make install
+
+    - name: Unit tests
+      run: |
+        make clean
+        make test_install
