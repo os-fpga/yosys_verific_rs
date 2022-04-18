@@ -80,5 +80,5 @@ Detailed information regarding OpenFPGA tasks generation can be found [here](htt
 ## Running yosys without installing it
 Some environment variables should be exported in order to use Yosys without installing it:
 ```bash
-source export_env.sh
+source scripts/export_env.sh
 ```
