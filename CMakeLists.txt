@@ -94,6 +94,7 @@ if (ENABLE_VERIFIC)
         COMMENT "Clean Verific with given Makefile"
     )
     add_dependencies(yosys verific)
+    add_dependencies(verific_clean yosys_clean)
     list(APPEND CLEAN_TARGETS
         "verific_clean"
     )
@@ -117,6 +118,7 @@ if (BUILD_YOSYS_PLUGINS)
         COMMENT "Clean Yosys ql-qlf plugin with given Makefile"
     )
     add_dependencies(yosys-plugins yosys)
+    add_dependencies(yosys_clean yosys-plugins_clean)
     list(APPEND CLEAN_TARGETS
         "yosys-plugins_clean"
     )
@@ -135,6 +137,7 @@ add_custom_target(
     COMMENT "Clean Yosys RS plugin with given Makefile"
 )
 add_dependencies(yosys-rs-plugin yosys)
+add_dependencies(yosys_clean yosys-rs-plugin_clean)
 list(APPEND CLEAN_TARGETS
     "yosys-rs-plugin_clean"
 )
