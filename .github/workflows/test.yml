@@ -5,7 +5,13 @@ on:
 
 jobs:
   build:
-    runs-on: verific-builder
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+        - build
+        - test
     steps:
       - name: Cancel previous
         uses: styfle/cancel-workflow-action@0.9.1
@@ -18,7 +24,12 @@ jobs:
           rm -rf "${{ github.workspace }}"
           mkdir -p "${{ github.workspace }}"
 
-      - name: Get os version
+      - name: os-release
+        if: matrix.mode == 'build'
         run: |
           cat /etc/os-release
 
+      - name: issue
+        if: matrix.mode == 'test' && !github.event.workflow_dispatch
+        run: |
+          cat /etc/issue
