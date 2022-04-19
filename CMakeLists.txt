@@ -76,9 +76,6 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
-list(APPEND CLEAN_TARGETS
-    "yosys_clean"
-)
 
 if (ENABLE_VERIFIC)
     add_custom_target(
@@ -95,9 +92,6 @@ if (ENABLE_VERIFIC)
     )
     add_dependencies(yosys verific)
     add_dependencies(verific_clean yosys_clean)
-    list(APPEND CLEAN_TARGETS
-        "verific_clean"
-    )
 endif()
 
 if (BUILD_YOSYS_PLUGINS)
@@ -119,9 +113,6 @@ if (BUILD_YOSYS_PLUGINS)
     )
     add_dependencies(yosys-plugins yosys)
     add_dependencies(yosys_clean yosys-plugins_clean)
-    list(APPEND CLEAN_TARGETS
-        "yosys-plugins_clean"
-    )
 endif()
 
 add_custom_target(
@@ -138,13 +129,10 @@ add_custom_target(
 )
 add_dependencies(yosys-rs-plugin yosys)
 add_dependencies(yosys_clean yosys-rs-plugin_clean)
-list(APPEND CLEAN_TARGETS
-    "yosys-rs-plugin_clean"
-)
 
 add_custom_target(
     clean_all
-    COMMAND $(MAKE) ${CLEAN_TARGETS}
+    COMMAND $(MAKE) verific_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Clean All"
 )
