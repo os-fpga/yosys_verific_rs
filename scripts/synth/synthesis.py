@@ -221,7 +221,7 @@ def run_config_with_vivado(synthesis_settings, config_run_dir_base,
     vivado_settings = {}   
     if "vivado" in synthesis_settings:
         if "vivado_template_script" in synthesis_settings["vivado"]:
-            vivado_settings["vivado_template_script"] = synthesis_settings["vivado"]["vivado_template_script"]
+            vivado_settings["vivado_template_script"] = os.path.join(abs_root_dir, synthesis_settings["vivado"]["vivado_template_script"])
     for benchmark in benchmarks:
         benchmark_settings = copy.deepcopy(vivado_settings)
         if "vivado" in benchmark:
@@ -247,7 +247,7 @@ def run_config_with_diamond(synthesis_settings, config_run_dir_base,
     diamond_settings = {}   
     if "diamond" in synthesis_settings:
         if "diamond_template_script" in synthesis_settings["diamond"]:
-            diamond_settings["diamond_template_script"] = synthesis_settings["diamond"]["diamond_template_script"]
+            diamond_settings["diamond_template_script"] = os.path.join(abs_root_dir, synthesis_settings["diamond"]["diamond_template_script"])
     for benchmark in benchmarks:
         benchmark_settings = copy.deepcopy(diamond_settings)
         if "diamond" in benchmark:
