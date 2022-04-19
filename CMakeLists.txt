@@ -113,7 +113,7 @@ if (BUILD_YOSYS_PLUGINS)
     )
     add_custom_target(
         yosys-plugins_clean
-        COMMAND $(MAKE) clean
+        COMMAND $(MAKE) clean ${YOSYS_PLUGINS_MK_ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
         COMMENT "Clean Yosys ql-qlf plugin with given Makefile"
     )
@@ -132,7 +132,7 @@ add_custom_target(
 )
 add_custom_target(
     yosys-rs-plugin_clean
-    COMMAND $(MAKE) clean
+    COMMAND $(MAKE) clean ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
     COMMENT "Clean Yosys RS plugin with given Makefile"
 )
