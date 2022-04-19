@@ -18,8 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         mode:
-#        - test
-#        - regression
+        - test
         - install
 #        - valgrind
     env:
@@ -58,8 +57,6 @@ jobs:
       working-directory: ./.github/scripts
       run: |
         bash install_ubuntu_dependencies_build.sh
-        python3 -m pip install --upgrade pip --user
-        python3 -m pip install pandas termcolor --user
 
     - name: Use ccache
       uses: hendrikmuhs/ccache-action@v1
@@ -93,19 +90,6 @@ jobs:
         make debug
         make dtest
 
-    - name: Regression
-      #if: matrix.mode == 'regression' && github.event.schedule
-      if: matrix.mode == 'regression'
-      continue-on-error: true
-      run: |
-        make release
-        echo "ABC=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/abc" >> $GITHUB_ENV
-        echo "DE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/de" >> $GITHUB_ENV
-        echo "LSORACLE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/lsoracle" >> $GITHUB_ENV
-        python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_ade.json
-        python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_ade.json .github/logs/All_lut_Golden  --output_file All_lut.csv --run_log result*/run.log .github/logs/All_lut_Golden/All_lut_Golden_run.log --base .github/logs/All_lut_Golden
-        python3 scripts/log_automation/result_comparision.py All_lut.csv
-
     - name: Valgrind
       if: matrix.mode == 'valgrind'
       run: |
@@ -120,18 +104,8 @@ jobs:
         make clean   # make sure we only see installation artifacts
         make test_install
 
-    - name: Archive regression artifacts
-      if: matrix.mode == 'regression'
-      uses: actions/upload-artifact@v2
-      with:
-        name: regression_results
-        path: |
-          result*/
-          All_lut.csv
-
   centos7-gcc:
     name: centos7-gcc
-    if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     container:
       image: centos:7
@@ -207,7 +181,6 @@ jobs:
 
   macos-gcc:
     name: macos-gcc
-    if: ${{ false }}  # disable for now
     runs-on: macos-latest
 
     steps:
@@ -280,7 +253,6 @@ jobs:
 
   macos-clang:
     name: macos-clang
-    if: ${{ false }}  # disable for now
     runs-on: macos-latest
 
     steps:

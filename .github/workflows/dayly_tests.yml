@@ -2,42 +2,74 @@ name: Daily tests
 
 on:
   schedule:
-    - cron: "30 19 * * 1,2,3,4"
+    - cron: "30 19 * * 1,2,3,4,5"
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: verific-builder
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel previous
         uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ github.token }}
 
-      - name: Runner workspace path
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: ssh-agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with: 
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+            ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+            ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+            ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+            ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+            ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+            ${{ secrets.SSH_PRIVATE_KEY_LSORACLE }}
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        working-directory: ./.github/scripts
         run: |
-          echo "Cleaning up previous run"
-          rm -rf "${{ github.workspace }}"
-          mkdir -p "${{ github.workspace }}"
+          bash install_ubuntu_dependencies_build.sh
+          python3 -m pip install --upgrade pip --user
+          python3 -m pip install pandas termcolor --user
 
-      - uses: actions/checkout@v2
-
-      - name: Checkout submodules
-        run: |
-          git submodule update --init --recursive
-
+      - name: Use ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: linux-gcc
+  
       - name: Configure shell
         run: |
-          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo 'CC=gcc-9' >> $GITHUB_ENV
+          echo 'CXX=g++-9' >> $GITHUB_ENV
+          echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
+          echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
+          echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
+          echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
+  
+      - name: Show shell configuration
+        run: |
+          env
+          which cmake && cmake --version
+          which make && make --version
+          which python && python --version
+          which ninja && ninja --version
+          which $CC && $CC --version
+          which $CXX && $CXX --version
 
       - name: Build yosys+verific
         run:
           make release
-
-      - name: Install dependencies.
-        run: |
-          python3 -m pip install --upgrade pip --user
-          python3 -m pip install pandas termcolor --user
 
       - name: Export environment variables
         run: |
@@ -46,6 +78,7 @@ jobs:
           echo "LSORACLE=$GITHUB_WORKSPACE/build/logic_synthesis-rs/bin/lsoracle" >> $GITHUB_ENV
           
       - name: Execute Python script
+        continue-on-error: true
         run: |
           python3 scripts/synth/synthesis.py --config_files suites/All/All_lut_synth_rs_ade.json
 
@@ -56,6 +89,7 @@ jobs:
           path: result*/
 
       - name: Execute metrics extraction
+        continue-on-error: true
         run:
           python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/All_lut_synth_rs_ade.json .github/logs/All_lut_Golden  --output_file All_lut.csv --run_log result*/run.log .github/logs/All_lut_Golden/All_lut_Golden_run.log --base .github/logs/All_lut_Golden
 
