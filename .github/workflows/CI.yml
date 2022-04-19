@@ -3,8 +3,6 @@ name: yosys-verific CI
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: "30 19 * * 1,2,3,4,5"
 
 jobs:
   linux-gcc:
@@ -153,21 +151,20 @@ jobs:
       run: |
         bash install_centos_dependencies_build.sh
 
-    - name: Show shell configuration
-      run: |
-        env
-        source /opt/rh/devtoolset-9/enable
-        which gcc 
-        which g++ 
-
     - name: Configure shell
       run: |
-        source /opt/rh/devtoolset-9/enable
         echo 'CC=/opt/rh/devtoolset-9/root/usr/bin/gcc' >> $GITHUB_ENV
         echo 'CXX=/opt/rh/devtoolset-9/root/usr/bin/g++' >> $GITHUB_ENV
+        echo "/opt/rh/devtoolset-9/root/usr/bin" >> $GITHUB_PATH
         echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
         echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
         echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
+
+    - name: Show shell configuration
+      run: |
+        env
+        which gcc
+        which g++
 
     - name: Build
       run: |
