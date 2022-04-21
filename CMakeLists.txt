@@ -20,9 +20,9 @@ option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 
-set(ABC ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
-set(DE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/de)
-set(LSORACLE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/lsoracle)
+set(ABC ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc)
+set(DE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de)
+set(LSORACLE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
 

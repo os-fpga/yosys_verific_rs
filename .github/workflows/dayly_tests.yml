@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: verific-builder
     steps:
       - name: Cancel previous
         uses: styfle/cancel-workflow-action@0.9.1
@@ -15,6 +15,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - uses: actions/setup-python@v2
+        if: ${{ false }} # We don't have permissions on 'verific-builder'
         with:
           python-version: 3.8
 
@@ -37,6 +38,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install dependencies
+        if: ${{ false }} # We don't have permissions on 'verific-builder'
         working-directory: ./.github/scripts
         run: |
           bash install_ubuntu_dependencies_build.sh
@@ -44,14 +46,15 @@ jobs:
           python3 -m pip install pandas termcolor --user
 
       - name: Use ccache
+        if: ${{ false }} # We don't have permissions on 'verific-builder'
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: linux-gcc
   
       - name: Configure shell
         run: |
-          echo 'CC=gcc-9' >> $GITHUB_ENV
-          echo 'CXX=g++-9' >> $GITHUB_ENV
+          echo 'CC=gcc' >> $GITHUB_ENV
+          echo 'CXX=g++' >> $GITHUB_ENV
           echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
           echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
           echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
