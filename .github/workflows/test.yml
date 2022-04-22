@@ -1,34 +1,31 @@
 name: Test
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "30 19 * * 1,2,3,4"
+  pull_request:
+    types: [opened]
 
 jobs:
-  build:
-    runs-on: verific-builder
+  increment-patch-version:
+    runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-  
-      - name: Configure shell
-        run: |
-          echo 'CC=gcc' >> $GITHUB_ENV
-          echo 'CXX=g++' >> $GITHUB_ENV
-          echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
-          echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
-          echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
-          echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
-  
-      - name: Show shell configuration
-        run: |
-          env
-          which cmake && cmake --version
-          which make && make --version
-          which python && python --version
-          which ninja && ninja --version
-          which $CC && $CC --version
-          which $CXX && $CXX --version
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+
+    - name: Increment patch version
+      run: |
+        bash scripts/increment_version.sh
+
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: 'Incremented patch version'
+        committer_name: GitHub Actions
+        add: 'CMakeLists.txt'
