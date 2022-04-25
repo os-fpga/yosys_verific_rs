@@ -12,7 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-project(yosys_verific_rs)
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 1)
+
+project(yosys_verific_rs VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 add_subdirectory(logic_synthesis-rs)
 
@@ -34,6 +38,8 @@ list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
     "ABCEXTERNAL=${ABC}"
+    "YOSYS_VERIFIC=1"
+    "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${CMAKE_PROJECT_VERSION}"
 )
 
 if (ENABLE_VERIFIC)
