@@ -56,9 +56,7 @@ parser.add_argument("--exclude_metrics", type=str, nargs="*",
             "MUXF8", 
             "MAX_LOGIC_LEVEL", 
             "AVERAGE_LOGIC_LEVEL", 
-            "SRL", 
-            "DRAM", 
-            "BRAM"
+            "DRAM" 
         ],
         help="exclude specified metrics")
 parser.add_argument("--viv_carry_as_lut", action="store_false",
@@ -235,6 +233,8 @@ def extract_yosys_metrics():
             metrics.at[design_index, extract_column_name("DFF",tool,label)] = 0
             metrics.at[design_index, extract_column_name("CARRY4",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("BRAM",tool,label)] = 0
+            metrics.at[design_index, extract_column_name("SRL",tool,label)] = 0
             logger.info("Processing Yosys log : " + task_log)
             try:
                 with open(task_log, 'r') as f:
@@ -257,11 +257,16 @@ def extract_yosys_metrics():
                         if re.search(r"lut", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "LUT", tool, label)
                         if re.search('dff', line, re.IGNORECASE) or re.search('latch', line, re.IGNORECASE):
-                            add_value(line.split()[1], design_index, "DFF", tool, label)
+                            if line.split()[0] == "sh_dff":
+                                add_value(line.split()[1], design_index, "SRL", tool, label)
+                            else:
+                                add_value(line.split()[1], design_index, "DFF", tool, label)
                         if re.search(r"adder_carry", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "CARRY4", tool, label)
                         if re.search('RS_DSP', line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "DSP", tool, label)
+                        if re.search('TDP', line, re.IGNORECASE):
+                            add_value(line.split()[1], design_index, "BRAM", tool, label)
                     results = re.findall("ABC: Mapping \(K=.*\).*(lev =.*\)).*MB", log)
                     if results:
                         results = results[-1].split()
