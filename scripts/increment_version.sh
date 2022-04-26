@@ -1,0 +1,6 @@
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+CMAKELISTS_FILE=$(realpath $SCRIPT_DIR/..)/CMakeLists.txt
+
+CURR_VERSION=$(grep "VERSION_PATCH" $CMAKELISTS_FILE | grep -Eo '[0-9]')
+let "NEW_VERSION=CURR_VERSION+1"
+sed -i "s/VERSION_PATCH $CURR_VERSION/VERSION_PATCH $NEW_VERSION/g" $CMAKELISTS_FILE

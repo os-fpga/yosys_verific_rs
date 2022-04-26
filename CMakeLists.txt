@@ -12,7 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-project(yosys_verific_rs)
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 1)
+
+project(yosys_verific_rs VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 add_subdirectory(logic_synthesis-rs)
 
@@ -20,9 +24,9 @@ option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 
-set(ABC ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/abc)
-set(DE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/de)
-set(LSORACLE ${CMAKE_CURRENT_SOURCE_DIR}/build/logic_synthesis-rs/bin/lsoracle)
+set(ABC ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc)
+set(DE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de)
+set(LSORACLE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle)
 set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
 
@@ -34,6 +38,8 @@ list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
     "ABCEXTERNAL=${ABC}"
+    "YOSYS_VERIFIC=1"
+    "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${CMAKE_PROJECT_VERSION}"
 )
 
 if (ENABLE_VERIFIC)
@@ -76,9 +82,6 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
-list(APPEND CLEAN_TARGETS
-    "yosys_clean"
-)
 
 if (ENABLE_VERIFIC)
     add_custom_target(
@@ -94,9 +97,7 @@ if (ENABLE_VERIFIC)
         COMMENT "Clean Verific with given Makefile"
     )
     add_dependencies(yosys verific)
-    list(APPEND CLEAN_TARGETS
-        "verific_clean"
-    )
+    add_dependencies(verific_clean yosys_clean)
 endif()
 
 if (BUILD_YOSYS_PLUGINS)
@@ -112,14 +113,12 @@ if (BUILD_YOSYS_PLUGINS)
     )
     add_custom_target(
         yosys-plugins_clean
-        COMMAND $(MAKE) clean
+        COMMAND $(MAKE) clean ${YOSYS_PLUGINS_MK_ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-plugins
         COMMENT "Clean Yosys ql-qlf plugin with given Makefile"
     )
     add_dependencies(yosys-plugins yosys)
-    list(APPEND CLEAN_TARGETS
-        "yosys-plugins_clean"
-    )
+    add_dependencies(yosys_clean yosys-plugins_clean)
 endif()
 
 add_custom_target(
@@ -130,18 +129,16 @@ add_custom_target(
 )
 add_custom_target(
     yosys-rs-plugin_clean
-    COMMAND $(MAKE) clean
+    COMMAND $(MAKE) clean ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
     COMMENT "Clean Yosys RS plugin with given Makefile"
 )
 add_dependencies(yosys-rs-plugin yosys)
-list(APPEND CLEAN_TARGETS
-    "yosys-rs-plugin_clean"
-)
+add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_custom_target(
     clean_all
-    COMMAND $(MAKE) ${CLEAN_TARGETS}
+    COMMAND $(MAKE) verific_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Clean All"
 )

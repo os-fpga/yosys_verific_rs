@@ -5,6 +5,11 @@ The repository contains yosys_rs, verific_rs and open-source HDL projects as sub
 # Requirements
 The repository requires SSH key setup. Please see instructions at [connecting-to-github-with-ssh](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
+The list of dependencies:
+ * [`Ubuntu`](.github/scripts/install_ubuntu_dependencies_build.sh)
+ * [`Centos`](.github/scripts/install_centos_dependencies_build.sh)
+ * [`MacOS`](.github/scripts/install_macos_dependencies_build.sh)
+
 # Repository Structure
 ```
 .

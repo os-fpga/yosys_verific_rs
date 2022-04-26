@@ -19,7 +19,7 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+ Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -34,7 +34,7 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
 
 yosys> verilog_defaults -add -I.
 
@@ -43,20 +43,20 @@ yosys> read -vlog2k decoder.v encoder.v multi_enc_decx2x4.v topenc_decx2.v
 yosys> verific -vlog2k decoder.v encoder.v multi_enc_decx2x4.v topenc_decx2.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'decoder.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'encoder.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'multi_enc_decx2x4.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'topenc_decx2.v'
 
-yosys> synth_rs -top top -tech genesis -goal area -de -no_dsp -no_bram -verilog top.verilog
+yosys> synth_rs -top top -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass.
+3. Executing synth_rs pass: v0.2.36
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -64,10 +64,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
-Generating RTLIL representation for module `\dff'.
-Generating RTLIL representation for module `\dffn'.
+3.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -75,6 +73,9 @@ Generating RTLIL representation for module `\latchnsre'.
 Generating RTLIL representation for module `\io_scff'.
 Generating RTLIL representation for module `\scff'.
 Generating RTLIL representation for module `\sh_dff'.
+Generating RTLIL representation for module `\adder_carry'.
+Generating RTLIL representation for module `\sdffr'.
+Generating RTLIL representation for module `\sdffs'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top top
@@ -84,8 +85,8 @@ VERIFIC-INFO [VERI-1018] topenc_decx2.v:2: compiling module 'top'
 VERIFIC-INFO [VERI-1018] encoder.v:1: compiling module 'encoder128'
 VERIFIC-INFO [VERI-1018] decoder.v:1: compiling module 'decoder128'
 Importing module top.
-Importing module encoder128.
 Importing module decoder128.
+Importing module encoder128.
 
 3.3.1. Analyzing design hierarchy..
 Top module:  \top
@@ -150,17 +151,17 @@ Cleaned up 0 empty switches.
 yosys> opt_expr -keepdc
 
 3.4.11. Executing OPT_EXPR pass (perform const folding).
-Optimizing module decoder128.
-<suppressed ~1 debug messages>
 Optimizing module encoder128.
+<suppressed ~1 debug messages>
+Optimizing module decoder128.
 <suppressed ~1 debug messages>
 Optimizing module top.
 
 yosys> flatten
 
 3.5. Executing FLATTEN pass (flatten design).
-Deleting now unused module decoder128.
 Deleting now unused module encoder128.
+Deleting now unused module decoder128.
 <suppressed ~4 debug messages>
 
 yosys> tribuf -logic
@@ -218,8 +219,8 @@ yosys> opt_reduce
 
 3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
-    New ctrl vector for $pmux cell $flatten\U01.$verific$select_261$encoder.v:147$962: { $flatten\U01.$verific$n1037$572 $flatten\U01.$verific$n1038$573 $flatten\U01.$verific$n1039$574 $flatten\U01.$verific$n1040$575 $flatten\U01.$verific$n1041$576 $flatten\U01.$verific$n1042$577 $flatten\U01.$verific$n1043$578 $flatten\U01.$verific$n1045$580 $flatten\U01.$verific$n1046$581 $flatten\U01.$verific$n1047$582 $auto$opt_reduce.cc:134:opt_pmux$1113 $flatten\U01.$verific$n1049$584 $flatten\U01.$verific$n1050$585 $flatten\U01.$verific$n1051$586 $flatten\U01.$verific$n1052$587 $flatten\U01.$verific$n1053$588 $flatten\U01.$verific$n1054$589 $flatten\U01.$verific$n1055$590 $flatten\U01.$verific$n1056$591 $flatten\U01.$verific$n1057$592 $flatten\U01.$verific$n1058$593 $flatten\U01.$verific$n1059$594 $flatten\U01.$verific$n1061$596 $flatten\U01.$verific$n1062$597 $flatten\U01.$verific$n1063$598 $auto$opt_reduce.cc:134:opt_pmux$1111 $flatten\U01.$verific$n1065$600 $flatten\U01.$verific$n1066$601 $flatten\U01.$verific$n1067$602 $flatten\U01.$verific$n1068$603 $flatten\U01.$verific$n1069$604 $flatten\U01.$verific$n1070$605 $flatten\U01.$verific$n1071$606 $flatten\U01.$verific$n1072$607 $flatten\U01.$verific$n1073$608 $flatten\U01.$verific$n1074$609 $flatten\U01.$verific$n1075$610 $flatten\U01.$verific$n1077$612 $flatten\U01.$verific$n1078$613 $flatten\U01.$verific$n1079$614 $auto$opt_reduce.cc:134:opt_pmux$1109 $flatten\U01.$verific$n1081$616 $flatten\U01.$verific$n1082$617 $flatten\U01.$verific$n1083$618 $flatten\U01.$verific$n1084$619 $flatten\U01.$verific$n1085$620 $flatten\U01.$verific$n1086$621 $flatten\U01.$verific$n1087$622 $flatten\U01.$verific$n1088$623 $flatten\U01.$verific$n1089$624 $flatten\U01.$verific$n1090$625 $flatten\U01.$verific$n1091$626 $flatten\U01.$verific$n1093$628 $flatten\U01.$verific$n1094$629 $flatten\U01.$verific$n1095$630 $auto$opt_reduce.cc:134:opt_pmux$1107 $flatten\U01.$verific$n1097$632 $flatten\U01.$verific$n1098$633 $flatten\U01.$verific$n1099$634 $flatten\U01.$verific$n1100$635 $flatten\U01.$verific$n1101$636 $flatten\U01.$verific$n1102$637 $flatten\U01.$verific$n1103$638 $flatten\U01.$verific$n1104$639 $flatten\U01.$verific$n1105$640 $flatten\U01.$verific$n1106$641 $flatten\U01.$verific$n1107$642 $flatten\U01.$verific$n1109$644 $flatten\U01.$verific$n1110$645 $flatten\U01.$verific$n1111$646 $auto$opt_reduce.cc:134:opt_pmux$1105 $flatten\U01.$verific$n1113$648 $flatten\U01.$verific$n1114$649 $flatten\U01.$verific$n1115$650 $flatten\U01.$verific$n1116$651 $flatten\U01.$verific$n1117$652 $flatten\U01.$verific$n1118$653 $flatten\U01.$verific$n1119$654 $flatten\U01.$verific$n1120$655 $flatten\U01.$verific$n1121$656 $flatten\U01.$verific$n1122$657 $flatten\U01.$verific$n1123$658 $flatten\U01.$verific$n1125$660 $flatten\U01.$verific$n1126$661 $flatten\U01.$verific$n1127$662 $auto$opt_reduce.cc:134:opt_pmux$1103 $flatten\U01.$verific$n1129$664 $flatten\U01.$verific$n1130$665 $flatten\U01.$verific$n1131$666 $flatten\U01.$verific$n1132$667 $flatten\U01.$verific$n1133$668 $flatten\U01.$verific$n1134$669 $flatten\U01.$verific$n1135$670 $flatten\U01.$verific$n1136$671 $flatten\U01.$verific$n1137$672 $flatten\U01.$verific$n1138$673 $flatten\U01.$verific$n1139$674 $flatten\U01.$verific$n1141$676 $flatten\U01.$verific$n1142$677 $flatten\U01.$verific$n1143$678 $auto$opt_reduce.cc:134:opt_pmux$1101 $flatten\U01.$verific$n1145$680 $flatten\U01.$verific$n1146$681 $flatten\U01.$verific$n1147$682 $flatten\U01.$verific$n1148$683 $flatten\U01.$verific$n1149$684 $flatten\U01.$verific$n1150$685 $flatten\U01.$verific$n1151$686 $flatten\U01.$verific$n1152$687 $flatten\U01.$verific$n1153$688 $flatten\U01.$verific$n1154$689 $flatten\U01.$verific$n1155$690 $flatten\U01.$verific$n1157$692 $flatten\U01.$verific$n1158$693 $flatten\U01.$verific$n1159$694 $auto$opt_reduce.cc:134:opt_pmux$1099 $flatten\U01.$verific$n1161$696 $flatten\U01.$verific$n1162$697 $flatten\U01.$verific$n1163$698 }
-    New ctrl vector for $pmux cell $flatten\U011.$verific$select_261$encoder.v:147$962: { $flatten\U011.$verific$n1037$572 $flatten\U011.$verific$n1038$573 $flatten\U011.$verific$n1039$574 $flatten\U011.$verific$n1040$575 $flatten\U011.$verific$n1041$576 $flatten\U011.$verific$n1042$577 $flatten\U011.$verific$n1043$578 $flatten\U011.$verific$n1045$580 $flatten\U011.$verific$n1046$581 $flatten\U011.$verific$n1047$582 $auto$opt_reduce.cc:134:opt_pmux$1129 $flatten\U011.$verific$n1049$584 $flatten\U011.$verific$n1050$585 $flatten\U011.$verific$n1051$586 $flatten\U011.$verific$n1052$587 $flatten\U011.$verific$n1053$588 $flatten\U011.$verific$n1054$589 $flatten\U011.$verific$n1055$590 $flatten\U011.$verific$n1056$591 $flatten\U011.$verific$n1057$592 $flatten\U011.$verific$n1058$593 $flatten\U011.$verific$n1059$594 $flatten\U011.$verific$n1061$596 $flatten\U011.$verific$n1062$597 $flatten\U011.$verific$n1063$598 $auto$opt_reduce.cc:134:opt_pmux$1127 $flatten\U011.$verific$n1065$600 $flatten\U011.$verific$n1066$601 $flatten\U011.$verific$n1067$602 $flatten\U011.$verific$n1068$603 $flatten\U011.$verific$n1069$604 $flatten\U011.$verific$n1070$605 $flatten\U011.$verific$n1071$606 $flatten\U011.$verific$n1072$607 $flatten\U011.$verific$n1073$608 $flatten\U011.$verific$n1074$609 $flatten\U011.$verific$n1075$610 $flatten\U011.$verific$n1077$612 $flatten\U011.$verific$n1078$613 $flatten\U011.$verific$n1079$614 $auto$opt_reduce.cc:134:opt_pmux$1125 $flatten\U011.$verific$n1081$616 $flatten\U011.$verific$n1082$617 $flatten\U011.$verific$n1083$618 $flatten\U011.$verific$n1084$619 $flatten\U011.$verific$n1085$620 $flatten\U011.$verific$n1086$621 $flatten\U011.$verific$n1087$622 $flatten\U011.$verific$n1088$623 $flatten\U011.$verific$n1089$624 $flatten\U011.$verific$n1090$625 $flatten\U011.$verific$n1091$626 $flatten\U011.$verific$n1093$628 $flatten\U011.$verific$n1094$629 $flatten\U011.$verific$n1095$630 $auto$opt_reduce.cc:134:opt_pmux$1123 $flatten\U011.$verific$n1097$632 $flatten\U011.$verific$n1098$633 $flatten\U011.$verific$n1099$634 $flatten\U011.$verific$n1100$635 $flatten\U011.$verific$n1101$636 $flatten\U011.$verific$n1102$637 $flatten\U011.$verific$n1103$638 $flatten\U011.$verific$n1104$639 $flatten\U011.$verific$n1105$640 $flatten\U011.$verific$n1106$641 $flatten\U011.$verific$n1107$642 $flatten\U011.$verific$n1109$644 $flatten\U011.$verific$n1110$645 $flatten\U011.$verific$n1111$646 $auto$opt_reduce.cc:134:opt_pmux$1121 $flatten\U011.$verific$n1113$648 $flatten\U011.$verific$n1114$649 $flatten\U011.$verific$n1115$650 $flatten\U011.$verific$n1116$651 $flatten\U011.$verific$n1117$652 $flatten\U011.$verific$n1118$653 $flatten\U011.$verific$n1119$654 $flatten\U011.$verific$n1120$655 $flatten\U011.$verific$n1121$656 $flatten\U011.$verific$n1122$657 $flatten\U011.$verific$n1123$658 $flatten\U011.$verific$n1125$660 $flatten\U011.$verific$n1126$661 $flatten\U011.$verific$n1127$662 $auto$opt_reduce.cc:134:opt_pmux$1119 $flatten\U011.$verific$n1129$664 $flatten\U011.$verific$n1130$665 $flatten\U011.$verific$n1131$666 $flatten\U011.$verific$n1132$667 $flatten\U011.$verific$n1133$668 $flatten\U011.$verific$n1134$669 $flatten\U011.$verific$n1135$670 $flatten\U011.$verific$n1136$671 $flatten\U011.$verific$n1137$672 $flatten\U011.$verific$n1138$673 $flatten\U011.$verific$n1139$674 $flatten\U011.$verific$n1141$676 $flatten\U011.$verific$n1142$677 $flatten\U011.$verific$n1143$678 $auto$opt_reduce.cc:134:opt_pmux$1117 $flatten\U011.$verific$n1145$680 $flatten\U011.$verific$n1146$681 $flatten\U011.$verific$n1147$682 $flatten\U011.$verific$n1148$683 $flatten\U011.$verific$n1149$684 $flatten\U011.$verific$n1150$685 $flatten\U011.$verific$n1151$686 $flatten\U011.$verific$n1152$687 $flatten\U011.$verific$n1153$688 $flatten\U011.$verific$n1154$689 $flatten\U011.$verific$n1155$690 $flatten\U011.$verific$n1157$692 $flatten\U011.$verific$n1158$693 $flatten\U011.$verific$n1159$694 $auto$opt_reduce.cc:134:opt_pmux$1115 $flatten\U011.$verific$n1161$696 $flatten\U011.$verific$n1162$697 $flatten\U011.$verific$n1163$698 }
+    New ctrl vector for $pmux cell $flatten\U01.$verific$select_261$encoder.v:147$1096: { $flatten\U01.$verific$n1037$706 $flatten\U01.$verific$n1038$707 $flatten\U01.$verific$n1039$708 $flatten\U01.$verific$n1040$709 $flatten\U01.$verific$n1041$710 $flatten\U01.$verific$n1042$711 $flatten\U01.$verific$n1043$712 $flatten\U01.$verific$n1045$714 $flatten\U01.$verific$n1046$715 $flatten\U01.$verific$n1047$716 $auto$opt_reduce.cc:134:opt_pmux$1113 $flatten\U01.$verific$n1049$718 $flatten\U01.$verific$n1050$719 $flatten\U01.$verific$n1051$720 $flatten\U01.$verific$n1052$721 $flatten\U01.$verific$n1053$722 $flatten\U01.$verific$n1054$723 $flatten\U01.$verific$n1055$724 $flatten\U01.$verific$n1056$725 $flatten\U01.$verific$n1057$726 $flatten\U01.$verific$n1058$727 $flatten\U01.$verific$n1059$728 $flatten\U01.$verific$n1061$730 $flatten\U01.$verific$n1062$731 $flatten\U01.$verific$n1063$732 $auto$opt_reduce.cc:134:opt_pmux$1111 $flatten\U01.$verific$n1065$734 $flatten\U01.$verific$n1066$735 $flatten\U01.$verific$n1067$736 $flatten\U01.$verific$n1068$737 $flatten\U01.$verific$n1069$738 $flatten\U01.$verific$n1070$739 $flatten\U01.$verific$n1071$740 $flatten\U01.$verific$n1072$741 $flatten\U01.$verific$n1073$742 $flatten\U01.$verific$n1074$743 $flatten\U01.$verific$n1075$744 $flatten\U01.$verific$n1077$746 $flatten\U01.$verific$n1078$747 $flatten\U01.$verific$n1079$748 $auto$opt_reduce.cc:134:opt_pmux$1109 $flatten\U01.$verific$n1081$750 $flatten\U01.$verific$n1082$751 $flatten\U01.$verific$n1083$752 $flatten\U01.$verific$n1084$753 $flatten\U01.$verific$n1085$754 $flatten\U01.$verific$n1086$755 $flatten\U01.$verific$n1087$756 $flatten\U01.$verific$n1088$757 $flatten\U01.$verific$n1089$758 $flatten\U01.$verific$n1090$759 $flatten\U01.$verific$n1091$760 $flatten\U01.$verific$n1093$762 $flatten\U01.$verific$n1094$763 $flatten\U01.$verific$n1095$764 $auto$opt_reduce.cc:134:opt_pmux$1107 $flatten\U01.$verific$n1097$766 $flatten\U01.$verific$n1098$767 $flatten\U01.$verific$n1099$768 $flatten\U01.$verific$n1100$769 $flatten\U01.$verific$n1101$770 $flatten\U01.$verific$n1102$771 $flatten\U01.$verific$n1103$772 $flatten\U01.$verific$n1104$773 $flatten\U01.$verific$n1105$774 $flatten\U01.$verific$n1106$775 $flatten\U01.$verific$n1107$776 $flatten\U01.$verific$n1109$778 $flatten\U01.$verific$n1110$779 $flatten\U01.$verific$n1111$780 $auto$opt_reduce.cc:134:opt_pmux$1105 $flatten\U01.$verific$n1113$782 $flatten\U01.$verific$n1114$783 $flatten\U01.$verific$n1115$784 $flatten\U01.$verific$n1116$785 $flatten\U01.$verific$n1117$786 $flatten\U01.$verific$n1118$787 $flatten\U01.$verific$n1119$788 $flatten\U01.$verific$n1120$789 $flatten\U01.$verific$n1121$790 $flatten\U01.$verific$n1122$791 $flatten\U01.$verific$n1123$792 $flatten\U01.$verific$n1125$794 $flatten\U01.$verific$n1126$795 $flatten\U01.$verific$n1127$796 $auto$opt_reduce.cc:134:opt_pmux$1103 $flatten\U01.$verific$n1129$798 $flatten\U01.$verific$n1130$799 $flatten\U01.$verific$n1131$800 $flatten\U01.$verific$n1132$801 $flatten\U01.$verific$n1133$802 $flatten\U01.$verific$n1134$803 $flatten\U01.$verific$n1135$804 $flatten\U01.$verific$n1136$805 $flatten\U01.$verific$n1137$806 $flatten\U01.$verific$n1138$807 $flatten\U01.$verific$n1139$808 $flatten\U01.$verific$n1141$810 $flatten\U01.$verific$n1142$811 $flatten\U01.$verific$n1143$812 $auto$opt_reduce.cc:134:opt_pmux$1101 $flatten\U01.$verific$n1145$814 $flatten\U01.$verific$n1146$815 $flatten\U01.$verific$n1147$816 $flatten\U01.$verific$n1148$817 $flatten\U01.$verific$n1149$818 $flatten\U01.$verific$n1150$819 $flatten\U01.$verific$n1151$820 $flatten\U01.$verific$n1152$821 $flatten\U01.$verific$n1153$822 $flatten\U01.$verific$n1154$823 $flatten\U01.$verific$n1155$824 $flatten\U01.$verific$n1157$826 $flatten\U01.$verific$n1158$827 $flatten\U01.$verific$n1159$828 $auto$opt_reduce.cc:134:opt_pmux$1099 $flatten\U01.$verific$n1161$830 $flatten\U01.$verific$n1162$831 $flatten\U01.$verific$n1163$832 }
+    New ctrl vector for $pmux cell $flatten\U011.$verific$select_261$encoder.v:147$1096: { $flatten\U011.$verific$n1037$706 $flatten\U011.$verific$n1038$707 $flatten\U011.$verific$n1039$708 $flatten\U011.$verific$n1040$709 $flatten\U011.$verific$n1041$710 $flatten\U011.$verific$n1042$711 $flatten\U011.$verific$n1043$712 $flatten\U011.$verific$n1045$714 $flatten\U011.$verific$n1046$715 $flatten\U011.$verific$n1047$716 $auto$opt_reduce.cc:134:opt_pmux$1129 $flatten\U011.$verific$n1049$718 $flatten\U011.$verific$n1050$719 $flatten\U011.$verific$n1051$720 $flatten\U011.$verific$n1052$721 $flatten\U011.$verific$n1053$722 $flatten\U011.$verific$n1054$723 $flatten\U011.$verific$n1055$724 $flatten\U011.$verific$n1056$725 $flatten\U011.$verific$n1057$726 $flatten\U011.$verific$n1058$727 $flatten\U011.$verific$n1059$728 $flatten\U011.$verific$n1061$730 $flatten\U011.$verific$n1062$731 $flatten\U011.$verific$n1063$732 $auto$opt_reduce.cc:134:opt_pmux$1127 $flatten\U011.$verific$n1065$734 $flatten\U011.$verific$n1066$735 $flatten\U011.$verific$n1067$736 $flatten\U011.$verific$n1068$737 $flatten\U011.$verific$n1069$738 $flatten\U011.$verific$n1070$739 $flatten\U011.$verific$n1071$740 $flatten\U011.$verific$n1072$741 $flatten\U011.$verific$n1073$742 $flatten\U011.$verific$n1074$743 $flatten\U011.$verific$n1075$744 $flatten\U011.$verific$n1077$746 $flatten\U011.$verific$n1078$747 $flatten\U011.$verific$n1079$748 $auto$opt_reduce.cc:134:opt_pmux$1125 $flatten\U011.$verific$n1081$750 $flatten\U011.$verific$n1082$751 $flatten\U011.$verific$n1083$752 $flatten\U011.$verific$n1084$753 $flatten\U011.$verific$n1085$754 $flatten\U011.$verific$n1086$755 $flatten\U011.$verific$n1087$756 $flatten\U011.$verific$n1088$757 $flatten\U011.$verific$n1089$758 $flatten\U011.$verific$n1090$759 $flatten\U011.$verific$n1091$760 $flatten\U011.$verific$n1093$762 $flatten\U011.$verific$n1094$763 $flatten\U011.$verific$n1095$764 $auto$opt_reduce.cc:134:opt_pmux$1123 $flatten\U011.$verific$n1097$766 $flatten\U011.$verific$n1098$767 $flatten\U011.$verific$n1099$768 $flatten\U011.$verific$n1100$769 $flatten\U011.$verific$n1101$770 $flatten\U011.$verific$n1102$771 $flatten\U011.$verific$n1103$772 $flatten\U011.$verific$n1104$773 $flatten\U011.$verific$n1105$774 $flatten\U011.$verific$n1106$775 $flatten\U011.$verific$n1107$776 $flatten\U011.$verific$n1109$778 $flatten\U011.$verific$n1110$779 $flatten\U011.$verific$n1111$780 $auto$opt_reduce.cc:134:opt_pmux$1121 $flatten\U011.$verific$n1113$782 $flatten\U011.$verific$n1114$783 $flatten\U011.$verific$n1115$784 $flatten\U011.$verific$n1116$785 $flatten\U011.$verific$n1117$786 $flatten\U011.$verific$n1118$787 $flatten\U011.$verific$n1119$788 $flatten\U011.$verific$n1120$789 $flatten\U011.$verific$n1121$790 $flatten\U011.$verific$n1122$791 $flatten\U011.$verific$n1123$792 $flatten\U011.$verific$n1125$794 $flatten\U011.$verific$n1126$795 $flatten\U011.$verific$n1127$796 $auto$opt_reduce.cc:134:opt_pmux$1119 $flatten\U011.$verific$n1129$798 $flatten\U011.$verific$n1130$799 $flatten\U011.$verific$n1131$800 $flatten\U011.$verific$n1132$801 $flatten\U011.$verific$n1133$802 $flatten\U011.$verific$n1134$803 $flatten\U011.$verific$n1135$804 $flatten\U011.$verific$n1136$805 $flatten\U011.$verific$n1137$806 $flatten\U011.$verific$n1138$807 $flatten\U011.$verific$n1139$808 $flatten\U011.$verific$n1141$810 $flatten\U011.$verific$n1142$811 $flatten\U011.$verific$n1143$812 $auto$opt_reduce.cc:134:opt_pmux$1117 $flatten\U011.$verific$n1145$814 $flatten\U011.$verific$n1146$815 $flatten\U011.$verific$n1147$816 $flatten\U011.$verific$n1148$817 $flatten\U011.$verific$n1149$818 $flatten\U011.$verific$n1150$819 $flatten\U011.$verific$n1151$820 $flatten\U011.$verific$n1152$821 $flatten\U011.$verific$n1153$822 $flatten\U011.$verific$n1154$823 $flatten\U011.$verific$n1155$824 $flatten\U011.$verific$n1157$826 $flatten\U011.$verific$n1158$827 $flatten\U011.$verific$n1159$828 $auto$opt_reduce.cc:134:opt_pmux$1115 $flatten\U011.$verific$n1161$830 $flatten\U011.$verific$n1162$831 $flatten\U011.$verific$n1163$832 }
   Optimizing cells in module \top.
 Performed a total of 2 changes.
 
@@ -289,7 +290,7 @@ Optimizing module top.
 
 3.11.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> fsm
+yosys> fsm -encoding binary
 
 3.12. Executing FSM pass (extract and optimize FSM).
 
@@ -318,7 +319,7 @@ yosys> fsm_opt
 
 3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
-yosys> fsm_recode
+yosys> fsm_recode -encoding binary
 
 3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
@@ -430,258 +431,258 @@ Optimizing module top.
 yosys> wreduce -keepdc
 
 3.14. Executing WREDUCE pass (reducing word size of cells).
-Removed top 1 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_258$encoder.v:142$957 ($eq).
-Removed top 2 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_257$encoder.v:141$956 ($eq).
-Removed top 3 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_256$encoder.v:140$955 ($eq).
-Removed top 4 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_255$encoder.v:139$954 ($eq).
-Removed top 5 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_254$encoder.v:138$953 ($eq).
-Removed top 6 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_253$encoder.v:137$952 ($eq).
-Removed top 7 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_252$encoder.v:136$951 ($eq).
-Removed top 8 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_251$encoder.v:135$950 ($eq).
-Removed top 9 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_250$encoder.v:134$949 ($eq).
-Removed top 10 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_249$encoder.v:133$948 ($eq).
-Removed top 11 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_248$encoder.v:132$947 ($eq).
-Removed top 12 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_247$encoder.v:131$946 ($eq).
-Removed top 13 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_246$encoder.v:130$945 ($eq).
-Removed top 14 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_245$encoder.v:129$944 ($eq).
-Removed top 15 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_244$encoder.v:128$943 ($eq).
-Removed top 16 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_243$encoder.v:127$942 ($eq).
-Removed top 17 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_242$encoder.v:126$941 ($eq).
-Removed top 18 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_241$encoder.v:125$940 ($eq).
-Removed top 19 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_240$encoder.v:124$939 ($eq).
-Removed top 20 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_239$encoder.v:123$938 ($eq).
-Removed top 21 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_238$encoder.v:122$937 ($eq).
-Removed top 22 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_237$encoder.v:121$936 ($eq).
-Removed top 23 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_236$encoder.v:120$935 ($eq).
-Removed top 24 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_235$encoder.v:119$934 ($eq).
-Removed top 25 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_234$encoder.v:118$933 ($eq).
-Removed top 26 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_233$encoder.v:117$932 ($eq).
-Removed top 27 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_232$encoder.v:116$931 ($eq).
-Removed top 28 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_231$encoder.v:115$930 ($eq).
-Removed top 29 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_230$encoder.v:114$929 ($eq).
-Removed top 30 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_229$encoder.v:113$928 ($eq).
-Removed top 31 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_228$encoder.v:112$927 ($eq).
-Removed top 32 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_227$encoder.v:110$926 ($eq).
-Removed top 33 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_226$encoder.v:109$925 ($eq).
-Removed top 34 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_225$encoder.v:108$924 ($eq).
-Removed top 35 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_224$encoder.v:107$923 ($eq).
-Removed top 36 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_223$encoder.v:106$922 ($eq).
-Removed top 37 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_222$encoder.v:105$921 ($eq).
-Removed top 38 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_221$encoder.v:104$920 ($eq).
-Removed top 39 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_220$encoder.v:103$919 ($eq).
-Removed top 40 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_219$encoder.v:102$918 ($eq).
-Removed top 41 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_218$encoder.v:101$917 ($eq).
-Removed top 42 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_217$encoder.v:100$916 ($eq).
-Removed top 43 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_216$encoder.v:99$915 ($eq).
-Removed top 44 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_215$encoder.v:98$914 ($eq).
-Removed top 45 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_214$encoder.v:97$913 ($eq).
-Removed top 46 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_213$encoder.v:96$912 ($eq).
-Removed top 47 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_212$encoder.v:95$911 ($eq).
-Removed top 48 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_211$encoder.v:94$910 ($eq).
-Removed top 49 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_210$encoder.v:93$909 ($eq).
-Removed top 50 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_209$encoder.v:92$908 ($eq).
-Removed top 51 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_208$encoder.v:91$907 ($eq).
-Removed top 52 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_207$encoder.v:90$906 ($eq).
-Removed top 53 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_206$encoder.v:89$905 ($eq).
-Removed top 54 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_205$encoder.v:88$904 ($eq).
-Removed top 55 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_204$encoder.v:87$903 ($eq).
-Removed top 56 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_203$encoder.v:86$902 ($eq).
-Removed top 57 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_202$encoder.v:85$901 ($eq).
-Removed top 58 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_201$encoder.v:84$900 ($eq).
-Removed top 59 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_200$encoder.v:83$899 ($eq).
-Removed top 60 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_199$encoder.v:82$898 ($eq).
-Removed top 61 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_198$encoder.v:81$897 ($eq).
-Removed top 62 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_197$encoder.v:80$896 ($eq).
-Removed top 63 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_196$encoder.v:79$895 ($eq).
-Removed top 64 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_195$encoder.v:77$894 ($eq).
-Removed top 65 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_194$encoder.v:76$893 ($eq).
-Removed top 66 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_193$encoder.v:75$892 ($eq).
-Removed top 67 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_192$encoder.v:74$891 ($eq).
-Removed top 68 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_191$encoder.v:73$890 ($eq).
-Removed top 69 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_190$encoder.v:72$889 ($eq).
-Removed top 70 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_189$encoder.v:71$888 ($eq).
-Removed top 71 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_188$encoder.v:70$887 ($eq).
-Removed top 72 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_187$encoder.v:69$886 ($eq).
-Removed top 73 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_186$encoder.v:68$885 ($eq).
-Removed top 74 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_185$encoder.v:67$884 ($eq).
-Removed top 75 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_184$encoder.v:66$883 ($eq).
-Removed top 76 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_183$encoder.v:65$882 ($eq).
-Removed top 77 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_182$encoder.v:64$881 ($eq).
-Removed top 78 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_181$encoder.v:63$880 ($eq).
-Removed top 79 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_180$encoder.v:62$879 ($eq).
-Removed top 80 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_179$encoder.v:61$878 ($eq).
-Removed top 81 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_178$encoder.v:60$877 ($eq).
-Removed top 82 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_177$encoder.v:59$876 ($eq).
-Removed top 83 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_176$encoder.v:58$875 ($eq).
-Removed top 84 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_175$encoder.v:57$874 ($eq).
-Removed top 85 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_174$encoder.v:56$873 ($eq).
-Removed top 86 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_173$encoder.v:55$872 ($eq).
-Removed top 87 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_172$encoder.v:54$871 ($eq).
-Removed top 88 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_171$encoder.v:53$870 ($eq).
-Removed top 89 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_170$encoder.v:52$869 ($eq).
-Removed top 90 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_169$encoder.v:51$868 ($eq).
-Removed top 91 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_168$encoder.v:50$867 ($eq).
-Removed top 92 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_167$encoder.v:49$866 ($eq).
-Removed top 93 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_166$encoder.v:48$865 ($eq).
-Removed top 94 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_165$encoder.v:47$864 ($eq).
-Removed top 95 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_164$encoder.v:46$863 ($eq).
-Removed top 96 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_163$encoder.v:44$862 ($eq).
-Removed top 97 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_162$encoder.v:43$861 ($eq).
-Removed top 98 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_161$encoder.v:42$860 ($eq).
-Removed top 99 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_160$encoder.v:41$859 ($eq).
-Removed top 100 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_159$encoder.v:40$858 ($eq).
-Removed top 101 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_158$encoder.v:39$857 ($eq).
-Removed top 102 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_157$encoder.v:38$856 ($eq).
-Removed top 103 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_156$encoder.v:37$855 ($eq).
-Removed top 104 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_155$encoder.v:36$854 ($eq).
-Removed top 105 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_154$encoder.v:35$853 ($eq).
-Removed top 106 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_153$encoder.v:34$852 ($eq).
-Removed top 107 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_152$encoder.v:33$851 ($eq).
-Removed top 108 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_151$encoder.v:32$850 ($eq).
-Removed top 109 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_150$encoder.v:31$849 ($eq).
-Removed top 110 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_149$encoder.v:30$848 ($eq).
-Removed top 111 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_148$encoder.v:29$847 ($eq).
-Removed top 112 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_147$encoder.v:28$846 ($eq).
-Removed top 113 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_146$encoder.v:27$845 ($eq).
-Removed top 114 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_145$encoder.v:26$844 ($eq).
-Removed top 115 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_144$encoder.v:25$843 ($eq).
-Removed top 116 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_143$encoder.v:24$842 ($eq).
-Removed top 117 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_142$encoder.v:23$841 ($eq).
-Removed top 118 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_141$encoder.v:22$840 ($eq).
-Removed top 119 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_140$encoder.v:21$839 ($eq).
-Removed top 120 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_139$encoder.v:20$838 ($eq).
-Removed top 121 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_138$encoder.v:19$837 ($eq).
-Removed top 122 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_137$encoder.v:18$836 ($eq).
-Removed top 123 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_136$encoder.v:17$835 ($eq).
-Removed top 124 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_135$encoder.v:16$834 ($eq).
-Removed top 125 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_134$encoder.v:15$833 ($eq).
-Removed top 126 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_133$encoder.v:14$832 ($eq).
-Removed top 1 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_258$encoder.v:142$957 ($eq).
-Removed top 2 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_257$encoder.v:141$956 ($eq).
-Removed top 3 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_256$encoder.v:140$955 ($eq).
-Removed top 4 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_255$encoder.v:139$954 ($eq).
-Removed top 5 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_254$encoder.v:138$953 ($eq).
-Removed top 6 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_253$encoder.v:137$952 ($eq).
-Removed top 7 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_252$encoder.v:136$951 ($eq).
-Removed top 8 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_251$encoder.v:135$950 ($eq).
-Removed top 9 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_250$encoder.v:134$949 ($eq).
-Removed top 10 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_249$encoder.v:133$948 ($eq).
-Removed top 11 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_248$encoder.v:132$947 ($eq).
-Removed top 12 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_247$encoder.v:131$946 ($eq).
-Removed top 13 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_246$encoder.v:130$945 ($eq).
-Removed top 14 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_245$encoder.v:129$944 ($eq).
-Removed top 15 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_244$encoder.v:128$943 ($eq).
-Removed top 16 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_243$encoder.v:127$942 ($eq).
-Removed top 17 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_242$encoder.v:126$941 ($eq).
-Removed top 18 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_241$encoder.v:125$940 ($eq).
-Removed top 19 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_240$encoder.v:124$939 ($eq).
-Removed top 20 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_239$encoder.v:123$938 ($eq).
-Removed top 21 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_238$encoder.v:122$937 ($eq).
-Removed top 22 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_237$encoder.v:121$936 ($eq).
-Removed top 23 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_236$encoder.v:120$935 ($eq).
-Removed top 24 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_235$encoder.v:119$934 ($eq).
-Removed top 25 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_234$encoder.v:118$933 ($eq).
-Removed top 26 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_233$encoder.v:117$932 ($eq).
-Removed top 27 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_232$encoder.v:116$931 ($eq).
-Removed top 28 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_231$encoder.v:115$930 ($eq).
-Removed top 29 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_230$encoder.v:114$929 ($eq).
-Removed top 30 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_229$encoder.v:113$928 ($eq).
-Removed top 31 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_228$encoder.v:112$927 ($eq).
-Removed top 32 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_227$encoder.v:110$926 ($eq).
-Removed top 33 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_226$encoder.v:109$925 ($eq).
-Removed top 34 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_225$encoder.v:108$924 ($eq).
-Removed top 35 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_224$encoder.v:107$923 ($eq).
-Removed top 36 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_223$encoder.v:106$922 ($eq).
-Removed top 37 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_222$encoder.v:105$921 ($eq).
-Removed top 38 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_221$encoder.v:104$920 ($eq).
-Removed top 39 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_220$encoder.v:103$919 ($eq).
-Removed top 40 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_219$encoder.v:102$918 ($eq).
-Removed top 41 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_218$encoder.v:101$917 ($eq).
-Removed top 42 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_217$encoder.v:100$916 ($eq).
-Removed top 43 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_216$encoder.v:99$915 ($eq).
-Removed top 44 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_215$encoder.v:98$914 ($eq).
-Removed top 45 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_214$encoder.v:97$913 ($eq).
-Removed top 46 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_213$encoder.v:96$912 ($eq).
-Removed top 47 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_212$encoder.v:95$911 ($eq).
-Removed top 48 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_211$encoder.v:94$910 ($eq).
-Removed top 49 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_210$encoder.v:93$909 ($eq).
-Removed top 50 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_209$encoder.v:92$908 ($eq).
-Removed top 51 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_208$encoder.v:91$907 ($eq).
-Removed top 52 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_207$encoder.v:90$906 ($eq).
-Removed top 53 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_206$encoder.v:89$905 ($eq).
-Removed top 54 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_205$encoder.v:88$904 ($eq).
-Removed top 55 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_204$encoder.v:87$903 ($eq).
-Removed top 56 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_203$encoder.v:86$902 ($eq).
-Removed top 57 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_202$encoder.v:85$901 ($eq).
-Removed top 58 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_201$encoder.v:84$900 ($eq).
-Removed top 59 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_200$encoder.v:83$899 ($eq).
-Removed top 60 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_199$encoder.v:82$898 ($eq).
-Removed top 61 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_198$encoder.v:81$897 ($eq).
-Removed top 62 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_197$encoder.v:80$896 ($eq).
-Removed top 63 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_196$encoder.v:79$895 ($eq).
-Removed top 64 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_195$encoder.v:77$894 ($eq).
-Removed top 65 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_194$encoder.v:76$893 ($eq).
-Removed top 66 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_193$encoder.v:75$892 ($eq).
-Removed top 67 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_192$encoder.v:74$891 ($eq).
-Removed top 68 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_191$encoder.v:73$890 ($eq).
-Removed top 69 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_190$encoder.v:72$889 ($eq).
-Removed top 70 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_189$encoder.v:71$888 ($eq).
-Removed top 71 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_188$encoder.v:70$887 ($eq).
-Removed top 72 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_187$encoder.v:69$886 ($eq).
-Removed top 73 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_186$encoder.v:68$885 ($eq).
-Removed top 74 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_185$encoder.v:67$884 ($eq).
-Removed top 75 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_184$encoder.v:66$883 ($eq).
-Removed top 76 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_183$encoder.v:65$882 ($eq).
-Removed top 77 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_182$encoder.v:64$881 ($eq).
-Removed top 78 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_181$encoder.v:63$880 ($eq).
-Removed top 79 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_180$encoder.v:62$879 ($eq).
-Removed top 80 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_179$encoder.v:61$878 ($eq).
-Removed top 81 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_178$encoder.v:60$877 ($eq).
-Removed top 82 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_177$encoder.v:59$876 ($eq).
-Removed top 83 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_176$encoder.v:58$875 ($eq).
-Removed top 84 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_175$encoder.v:57$874 ($eq).
-Removed top 85 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_174$encoder.v:56$873 ($eq).
-Removed top 86 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_173$encoder.v:55$872 ($eq).
-Removed top 87 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_172$encoder.v:54$871 ($eq).
-Removed top 88 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_171$encoder.v:53$870 ($eq).
-Removed top 89 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_170$encoder.v:52$869 ($eq).
-Removed top 90 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_169$encoder.v:51$868 ($eq).
-Removed top 91 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_168$encoder.v:50$867 ($eq).
-Removed top 92 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_167$encoder.v:49$866 ($eq).
-Removed top 93 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_166$encoder.v:48$865 ($eq).
-Removed top 94 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_165$encoder.v:47$864 ($eq).
-Removed top 95 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_164$encoder.v:46$863 ($eq).
-Removed top 96 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_163$encoder.v:44$862 ($eq).
-Removed top 97 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_162$encoder.v:43$861 ($eq).
-Removed top 98 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_161$encoder.v:42$860 ($eq).
-Removed top 99 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_160$encoder.v:41$859 ($eq).
-Removed top 100 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_159$encoder.v:40$858 ($eq).
-Removed top 101 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_158$encoder.v:39$857 ($eq).
-Removed top 102 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_157$encoder.v:38$856 ($eq).
-Removed top 103 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_156$encoder.v:37$855 ($eq).
-Removed top 104 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_155$encoder.v:36$854 ($eq).
-Removed top 105 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_154$encoder.v:35$853 ($eq).
-Removed top 106 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_153$encoder.v:34$852 ($eq).
-Removed top 107 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_152$encoder.v:33$851 ($eq).
-Removed top 108 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_151$encoder.v:32$850 ($eq).
-Removed top 109 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_150$encoder.v:31$849 ($eq).
-Removed top 110 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_149$encoder.v:30$848 ($eq).
-Removed top 111 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_148$encoder.v:29$847 ($eq).
-Removed top 112 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_147$encoder.v:28$846 ($eq).
-Removed top 113 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_146$encoder.v:27$845 ($eq).
-Removed top 114 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_145$encoder.v:26$844 ($eq).
-Removed top 115 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_144$encoder.v:25$843 ($eq).
-Removed top 116 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_143$encoder.v:24$842 ($eq).
-Removed top 117 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_142$encoder.v:23$841 ($eq).
-Removed top 118 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_141$encoder.v:22$840 ($eq).
-Removed top 119 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_140$encoder.v:21$839 ($eq).
-Removed top 120 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_139$encoder.v:20$838 ($eq).
-Removed top 121 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_138$encoder.v:19$837 ($eq).
-Removed top 122 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_137$encoder.v:18$836 ($eq).
-Removed top 123 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_136$encoder.v:17$835 ($eq).
-Removed top 124 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_135$encoder.v:16$834 ($eq).
-Removed top 125 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_134$encoder.v:15$833 ($eq).
-Removed top 126 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_133$encoder.v:14$832 ($eq).
+Removed top 1 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_258$encoder.v:142$1091 ($eq).
+Removed top 2 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_257$encoder.v:141$1090 ($eq).
+Removed top 3 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_256$encoder.v:140$1089 ($eq).
+Removed top 4 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_255$encoder.v:139$1088 ($eq).
+Removed top 5 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_254$encoder.v:138$1087 ($eq).
+Removed top 6 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_253$encoder.v:137$1086 ($eq).
+Removed top 7 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_252$encoder.v:136$1085 ($eq).
+Removed top 8 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_251$encoder.v:135$1084 ($eq).
+Removed top 9 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_250$encoder.v:134$1083 ($eq).
+Removed top 10 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_249$encoder.v:133$1082 ($eq).
+Removed top 11 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_248$encoder.v:132$1081 ($eq).
+Removed top 12 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_247$encoder.v:131$1080 ($eq).
+Removed top 13 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_246$encoder.v:130$1079 ($eq).
+Removed top 14 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_245$encoder.v:129$1078 ($eq).
+Removed top 15 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_244$encoder.v:128$1077 ($eq).
+Removed top 16 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_243$encoder.v:127$1076 ($eq).
+Removed top 17 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_242$encoder.v:126$1075 ($eq).
+Removed top 18 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_241$encoder.v:125$1074 ($eq).
+Removed top 19 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_240$encoder.v:124$1073 ($eq).
+Removed top 20 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_239$encoder.v:123$1072 ($eq).
+Removed top 21 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_238$encoder.v:122$1071 ($eq).
+Removed top 22 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_237$encoder.v:121$1070 ($eq).
+Removed top 23 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_236$encoder.v:120$1069 ($eq).
+Removed top 24 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_235$encoder.v:119$1068 ($eq).
+Removed top 25 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_234$encoder.v:118$1067 ($eq).
+Removed top 26 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_233$encoder.v:117$1066 ($eq).
+Removed top 27 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_232$encoder.v:116$1065 ($eq).
+Removed top 28 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_231$encoder.v:115$1064 ($eq).
+Removed top 29 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_230$encoder.v:114$1063 ($eq).
+Removed top 30 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_229$encoder.v:113$1062 ($eq).
+Removed top 31 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_228$encoder.v:112$1061 ($eq).
+Removed top 32 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_227$encoder.v:110$1060 ($eq).
+Removed top 33 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_226$encoder.v:109$1059 ($eq).
+Removed top 34 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_225$encoder.v:108$1058 ($eq).
+Removed top 35 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_224$encoder.v:107$1057 ($eq).
+Removed top 36 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_223$encoder.v:106$1056 ($eq).
+Removed top 37 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_222$encoder.v:105$1055 ($eq).
+Removed top 38 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_221$encoder.v:104$1054 ($eq).
+Removed top 39 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_220$encoder.v:103$1053 ($eq).
+Removed top 40 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_219$encoder.v:102$1052 ($eq).
+Removed top 41 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_218$encoder.v:101$1051 ($eq).
+Removed top 42 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_217$encoder.v:100$1050 ($eq).
+Removed top 43 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_216$encoder.v:99$1049 ($eq).
+Removed top 44 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_215$encoder.v:98$1048 ($eq).
+Removed top 45 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_214$encoder.v:97$1047 ($eq).
+Removed top 46 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_213$encoder.v:96$1046 ($eq).
+Removed top 47 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_212$encoder.v:95$1045 ($eq).
+Removed top 48 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_211$encoder.v:94$1044 ($eq).
+Removed top 49 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_210$encoder.v:93$1043 ($eq).
+Removed top 50 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_209$encoder.v:92$1042 ($eq).
+Removed top 51 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_208$encoder.v:91$1041 ($eq).
+Removed top 52 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_207$encoder.v:90$1040 ($eq).
+Removed top 53 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_206$encoder.v:89$1039 ($eq).
+Removed top 54 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_205$encoder.v:88$1038 ($eq).
+Removed top 55 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_204$encoder.v:87$1037 ($eq).
+Removed top 56 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_203$encoder.v:86$1036 ($eq).
+Removed top 57 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_202$encoder.v:85$1035 ($eq).
+Removed top 58 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_201$encoder.v:84$1034 ($eq).
+Removed top 59 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_200$encoder.v:83$1033 ($eq).
+Removed top 60 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_199$encoder.v:82$1032 ($eq).
+Removed top 61 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_198$encoder.v:81$1031 ($eq).
+Removed top 62 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_197$encoder.v:80$1030 ($eq).
+Removed top 63 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_196$encoder.v:79$1029 ($eq).
+Removed top 64 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_195$encoder.v:77$1028 ($eq).
+Removed top 65 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_194$encoder.v:76$1027 ($eq).
+Removed top 66 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_193$encoder.v:75$1026 ($eq).
+Removed top 67 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_192$encoder.v:74$1025 ($eq).
+Removed top 68 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_191$encoder.v:73$1024 ($eq).
+Removed top 69 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_190$encoder.v:72$1023 ($eq).
+Removed top 70 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_189$encoder.v:71$1022 ($eq).
+Removed top 71 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_188$encoder.v:70$1021 ($eq).
+Removed top 72 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_187$encoder.v:69$1020 ($eq).
+Removed top 73 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_186$encoder.v:68$1019 ($eq).
+Removed top 74 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_185$encoder.v:67$1018 ($eq).
+Removed top 75 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_184$encoder.v:66$1017 ($eq).
+Removed top 76 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_183$encoder.v:65$1016 ($eq).
+Removed top 77 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_182$encoder.v:64$1015 ($eq).
+Removed top 78 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_181$encoder.v:63$1014 ($eq).
+Removed top 79 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_180$encoder.v:62$1013 ($eq).
+Removed top 80 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_179$encoder.v:61$1012 ($eq).
+Removed top 81 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_178$encoder.v:60$1011 ($eq).
+Removed top 82 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_177$encoder.v:59$1010 ($eq).
+Removed top 83 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_176$encoder.v:58$1009 ($eq).
+Removed top 84 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_175$encoder.v:57$1008 ($eq).
+Removed top 85 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_174$encoder.v:56$1007 ($eq).
+Removed top 86 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_173$encoder.v:55$1006 ($eq).
+Removed top 87 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_172$encoder.v:54$1005 ($eq).
+Removed top 88 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_171$encoder.v:53$1004 ($eq).
+Removed top 89 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_170$encoder.v:52$1003 ($eq).
+Removed top 90 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_169$encoder.v:51$1002 ($eq).
+Removed top 91 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_168$encoder.v:50$1001 ($eq).
+Removed top 92 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_167$encoder.v:49$1000 ($eq).
+Removed top 93 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_166$encoder.v:48$999 ($eq).
+Removed top 94 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_165$encoder.v:47$998 ($eq).
+Removed top 95 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_164$encoder.v:46$997 ($eq).
+Removed top 96 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_163$encoder.v:44$996 ($eq).
+Removed top 97 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_162$encoder.v:43$995 ($eq).
+Removed top 98 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_161$encoder.v:42$994 ($eq).
+Removed top 99 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_160$encoder.v:41$993 ($eq).
+Removed top 100 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_159$encoder.v:40$992 ($eq).
+Removed top 101 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_158$encoder.v:39$991 ($eq).
+Removed top 102 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_157$encoder.v:38$990 ($eq).
+Removed top 103 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_156$encoder.v:37$989 ($eq).
+Removed top 104 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_155$encoder.v:36$988 ($eq).
+Removed top 105 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_154$encoder.v:35$987 ($eq).
+Removed top 106 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_153$encoder.v:34$986 ($eq).
+Removed top 107 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_152$encoder.v:33$985 ($eq).
+Removed top 108 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_151$encoder.v:32$984 ($eq).
+Removed top 109 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_150$encoder.v:31$983 ($eq).
+Removed top 110 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_149$encoder.v:30$982 ($eq).
+Removed top 111 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_148$encoder.v:29$981 ($eq).
+Removed top 112 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_147$encoder.v:28$980 ($eq).
+Removed top 113 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_146$encoder.v:27$979 ($eq).
+Removed top 114 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_145$encoder.v:26$978 ($eq).
+Removed top 115 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_144$encoder.v:25$977 ($eq).
+Removed top 116 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_143$encoder.v:24$976 ($eq).
+Removed top 117 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_142$encoder.v:23$975 ($eq).
+Removed top 118 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_141$encoder.v:22$974 ($eq).
+Removed top 119 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_140$encoder.v:21$973 ($eq).
+Removed top 120 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_139$encoder.v:20$972 ($eq).
+Removed top 121 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_138$encoder.v:19$971 ($eq).
+Removed top 122 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_137$encoder.v:18$970 ($eq).
+Removed top 123 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_136$encoder.v:17$969 ($eq).
+Removed top 124 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_135$encoder.v:16$968 ($eq).
+Removed top 125 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_134$encoder.v:15$967 ($eq).
+Removed top 126 bits (of 128) from port B of cell top.$flatten\U01.$verific$equal_133$encoder.v:14$966 ($eq).
+Removed top 1 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_258$encoder.v:142$1091 ($eq).
+Removed top 2 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_257$encoder.v:141$1090 ($eq).
+Removed top 3 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_256$encoder.v:140$1089 ($eq).
+Removed top 4 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_255$encoder.v:139$1088 ($eq).
+Removed top 5 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_254$encoder.v:138$1087 ($eq).
+Removed top 6 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_253$encoder.v:137$1086 ($eq).
+Removed top 7 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_252$encoder.v:136$1085 ($eq).
+Removed top 8 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_251$encoder.v:135$1084 ($eq).
+Removed top 9 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_250$encoder.v:134$1083 ($eq).
+Removed top 10 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_249$encoder.v:133$1082 ($eq).
+Removed top 11 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_248$encoder.v:132$1081 ($eq).
+Removed top 12 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_247$encoder.v:131$1080 ($eq).
+Removed top 13 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_246$encoder.v:130$1079 ($eq).
+Removed top 14 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_245$encoder.v:129$1078 ($eq).
+Removed top 15 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_244$encoder.v:128$1077 ($eq).
+Removed top 16 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_243$encoder.v:127$1076 ($eq).
+Removed top 17 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_242$encoder.v:126$1075 ($eq).
+Removed top 18 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_241$encoder.v:125$1074 ($eq).
+Removed top 19 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_240$encoder.v:124$1073 ($eq).
+Removed top 20 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_239$encoder.v:123$1072 ($eq).
+Removed top 21 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_238$encoder.v:122$1071 ($eq).
+Removed top 22 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_237$encoder.v:121$1070 ($eq).
+Removed top 23 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_236$encoder.v:120$1069 ($eq).
+Removed top 24 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_235$encoder.v:119$1068 ($eq).
+Removed top 25 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_234$encoder.v:118$1067 ($eq).
+Removed top 26 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_233$encoder.v:117$1066 ($eq).
+Removed top 27 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_232$encoder.v:116$1065 ($eq).
+Removed top 28 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_231$encoder.v:115$1064 ($eq).
+Removed top 29 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_230$encoder.v:114$1063 ($eq).
+Removed top 30 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_229$encoder.v:113$1062 ($eq).
+Removed top 31 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_228$encoder.v:112$1061 ($eq).
+Removed top 32 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_227$encoder.v:110$1060 ($eq).
+Removed top 33 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_226$encoder.v:109$1059 ($eq).
+Removed top 34 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_225$encoder.v:108$1058 ($eq).
+Removed top 35 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_224$encoder.v:107$1057 ($eq).
+Removed top 36 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_223$encoder.v:106$1056 ($eq).
+Removed top 37 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_222$encoder.v:105$1055 ($eq).
+Removed top 38 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_221$encoder.v:104$1054 ($eq).
+Removed top 39 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_220$encoder.v:103$1053 ($eq).
+Removed top 40 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_219$encoder.v:102$1052 ($eq).
+Removed top 41 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_218$encoder.v:101$1051 ($eq).
+Removed top 42 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_217$encoder.v:100$1050 ($eq).
+Removed top 43 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_216$encoder.v:99$1049 ($eq).
+Removed top 44 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_215$encoder.v:98$1048 ($eq).
+Removed top 45 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_214$encoder.v:97$1047 ($eq).
+Removed top 46 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_213$encoder.v:96$1046 ($eq).
+Removed top 47 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_212$encoder.v:95$1045 ($eq).
+Removed top 48 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_211$encoder.v:94$1044 ($eq).
+Removed top 49 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_210$encoder.v:93$1043 ($eq).
+Removed top 50 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_209$encoder.v:92$1042 ($eq).
+Removed top 51 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_208$encoder.v:91$1041 ($eq).
+Removed top 52 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_207$encoder.v:90$1040 ($eq).
+Removed top 53 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_206$encoder.v:89$1039 ($eq).
+Removed top 54 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_205$encoder.v:88$1038 ($eq).
+Removed top 55 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_204$encoder.v:87$1037 ($eq).
+Removed top 56 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_203$encoder.v:86$1036 ($eq).
+Removed top 57 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_202$encoder.v:85$1035 ($eq).
+Removed top 58 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_201$encoder.v:84$1034 ($eq).
+Removed top 59 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_200$encoder.v:83$1033 ($eq).
+Removed top 60 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_199$encoder.v:82$1032 ($eq).
+Removed top 61 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_198$encoder.v:81$1031 ($eq).
+Removed top 62 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_197$encoder.v:80$1030 ($eq).
+Removed top 63 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_196$encoder.v:79$1029 ($eq).
+Removed top 64 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_195$encoder.v:77$1028 ($eq).
+Removed top 65 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_194$encoder.v:76$1027 ($eq).
+Removed top 66 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_193$encoder.v:75$1026 ($eq).
+Removed top 67 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_192$encoder.v:74$1025 ($eq).
+Removed top 68 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_191$encoder.v:73$1024 ($eq).
+Removed top 69 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_190$encoder.v:72$1023 ($eq).
+Removed top 70 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_189$encoder.v:71$1022 ($eq).
+Removed top 71 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_188$encoder.v:70$1021 ($eq).
+Removed top 72 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_187$encoder.v:69$1020 ($eq).
+Removed top 73 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_186$encoder.v:68$1019 ($eq).
+Removed top 74 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_185$encoder.v:67$1018 ($eq).
+Removed top 75 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_184$encoder.v:66$1017 ($eq).
+Removed top 76 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_183$encoder.v:65$1016 ($eq).
+Removed top 77 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_182$encoder.v:64$1015 ($eq).
+Removed top 78 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_181$encoder.v:63$1014 ($eq).
+Removed top 79 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_180$encoder.v:62$1013 ($eq).
+Removed top 80 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_179$encoder.v:61$1012 ($eq).
+Removed top 81 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_178$encoder.v:60$1011 ($eq).
+Removed top 82 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_177$encoder.v:59$1010 ($eq).
+Removed top 83 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_176$encoder.v:58$1009 ($eq).
+Removed top 84 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_175$encoder.v:57$1008 ($eq).
+Removed top 85 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_174$encoder.v:56$1007 ($eq).
+Removed top 86 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_173$encoder.v:55$1006 ($eq).
+Removed top 87 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_172$encoder.v:54$1005 ($eq).
+Removed top 88 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_171$encoder.v:53$1004 ($eq).
+Removed top 89 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_170$encoder.v:52$1003 ($eq).
+Removed top 90 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_169$encoder.v:51$1002 ($eq).
+Removed top 91 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_168$encoder.v:50$1001 ($eq).
+Removed top 92 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_167$encoder.v:49$1000 ($eq).
+Removed top 93 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_166$encoder.v:48$999 ($eq).
+Removed top 94 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_165$encoder.v:47$998 ($eq).
+Removed top 95 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_164$encoder.v:46$997 ($eq).
+Removed top 96 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_163$encoder.v:44$996 ($eq).
+Removed top 97 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_162$encoder.v:43$995 ($eq).
+Removed top 98 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_161$encoder.v:42$994 ($eq).
+Removed top 99 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_160$encoder.v:41$993 ($eq).
+Removed top 100 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_159$encoder.v:40$992 ($eq).
+Removed top 101 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_158$encoder.v:39$991 ($eq).
+Removed top 102 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_157$encoder.v:38$990 ($eq).
+Removed top 103 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_156$encoder.v:37$989 ($eq).
+Removed top 104 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_155$encoder.v:36$988 ($eq).
+Removed top 105 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_154$encoder.v:35$987 ($eq).
+Removed top 106 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_153$encoder.v:34$986 ($eq).
+Removed top 107 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_152$encoder.v:33$985 ($eq).
+Removed top 108 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_151$encoder.v:32$984 ($eq).
+Removed top 109 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_150$encoder.v:31$983 ($eq).
+Removed top 110 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_149$encoder.v:30$982 ($eq).
+Removed top 111 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_148$encoder.v:29$981 ($eq).
+Removed top 112 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_147$encoder.v:28$980 ($eq).
+Removed top 113 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_146$encoder.v:27$979 ($eq).
+Removed top 114 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_145$encoder.v:26$978 ($eq).
+Removed top 115 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_144$encoder.v:25$977 ($eq).
+Removed top 116 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_143$encoder.v:24$976 ($eq).
+Removed top 117 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_142$encoder.v:23$975 ($eq).
+Removed top 118 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_141$encoder.v:22$974 ($eq).
+Removed top 119 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_140$encoder.v:21$973 ($eq).
+Removed top 120 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_139$encoder.v:20$972 ($eq).
+Removed top 121 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_138$encoder.v:19$971 ($eq).
+Removed top 122 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_137$encoder.v:18$970 ($eq).
+Removed top 123 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_136$encoder.v:17$969 ($eq).
+Removed top 124 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_135$encoder.v:16$968 ($eq).
+Removed top 125 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_134$encoder.v:15$967 ($eq).
+Removed top 126 bits (of 128) from port B of cell top.$flatten\U011.$verific$equal_133$encoder.v:14$966 ($eq).
 
 yosys> peepopt
 
@@ -733,36 +734,36 @@ yosys> opt_reduce
 
 3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1526: { $flatten\U011.$verific$n1157$692 $flatten\U011.$verific$n1158$693 $flatten\U011.$verific$n1161$696 $flatten\U011.$verific$n1162$697 $flatten\U011.$verific$n1163$698 $auto$rtlil.cc:2393:Or$1499 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1570: { $flatten\U011.$verific$n1148$683 $flatten\U011.$verific$n1149$684 $flatten\U011.$verific$n1152$687 $flatten\U011.$verific$n1153$688 $flatten\U011.$verific$n1157$692 $flatten\U011.$verific$n1158$693 $flatten\U011.$verific$n1161$696 $flatten\U011.$verific$n1162$697 $flatten\U011.$verific$n1163$698 $auto$rtlil.cc:2393:Or$1499 $auto$rtlil.cc:2393:Or$1519 $auto$rtlil.cc:2393:Or$1511 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1566: { $flatten\U011.$verific$n1141$676 $flatten\U011.$verific$n1142$677 $flatten\U011.$verific$n1145$680 $flatten\U011.$verific$n1146$681 $flatten\U011.$verific$n1147$682 $auto$rtlil.cc:2393:Or$1539 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1658: { $flatten\U011.$verific$n1132$667 $flatten\U011.$verific$n1133$668 $flatten\U011.$verific$n1136$671 $flatten\U011.$verific$n1137$672 $flatten\U011.$verific$n1141$676 $flatten\U011.$verific$n1142$677 $flatten\U011.$verific$n1145$680 $flatten\U011.$verific$n1146$681 $flatten\U011.$verific$n1147$682 $flatten\U011.$verific$n1148$683 $flatten\U011.$verific$n1149$684 $flatten\U011.$verific$n1152$687 $flatten\U011.$verific$n1153$688 $flatten\U011.$verific$n1157$692 $flatten\U011.$verific$n1158$693 $flatten\U011.$verific$n1161$696 $flatten\U011.$verific$n1162$697 $flatten\U011.$verific$n1163$698 $auto$rtlil.cc:2393:Or$1499 $auto$rtlil.cc:2393:Or$1519 $auto$rtlil.cc:2393:Or$1539 $auto$rtlil.cc:2393:Or$1551 $auto$rtlil.cc:2393:Or$1559 $auto$rtlil.cc:2393:Or$1511 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1610: { $flatten\U011.$verific$n1125$660 $flatten\U011.$verific$n1126$661 $flatten\U011.$verific$n1129$664 $flatten\U011.$verific$n1130$665 $flatten\U011.$verific$n1131$666 $auto$rtlil.cc:2393:Or$1583 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1654: { $flatten\U011.$verific$n1116$651 $flatten\U011.$verific$n1117$652 $flatten\U011.$verific$n1120$655 $flatten\U011.$verific$n1121$656 $flatten\U011.$verific$n1125$660 $flatten\U011.$verific$n1126$661 $flatten\U011.$verific$n1129$664 $flatten\U011.$verific$n1130$665 $flatten\U011.$verific$n1131$666 $auto$rtlil.cc:2393:Or$1583 $auto$rtlil.cc:2393:Or$1595 $auto$rtlil.cc:2393:Or$1603 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1650: { $flatten\U011.$verific$n1109$644 $flatten\U011.$verific$n1110$645 $flatten\U011.$verific$n1113$648 $flatten\U011.$verific$n1114$649 $flatten\U011.$verific$n1115$650 $auto$rtlil.cc:2393:Or$1623 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1834: { $flatten\U011.$verific$n1100$635 $flatten\U011.$verific$n1101$636 $flatten\U011.$verific$n1104$639 $flatten\U011.$verific$n1105$640 $flatten\U011.$verific$n1109$644 $flatten\U011.$verific$n1110$645 $flatten\U011.$verific$n1113$648 $flatten\U011.$verific$n1114$649 $flatten\U011.$verific$n1115$650 $flatten\U011.$verific$n1116$651 $flatten\U011.$verific$n1117$652 $flatten\U011.$verific$n1120$655 $flatten\U011.$verific$n1121$656 $flatten\U011.$verific$n1125$660 $flatten\U011.$verific$n1126$661 $flatten\U011.$verific$n1129$664 $flatten\U011.$verific$n1130$665 $flatten\U011.$verific$n1131$666 $flatten\U011.$verific$n1132$667 $flatten\U011.$verific$n1133$668 $flatten\U011.$verific$n1136$671 $flatten\U011.$verific$n1137$672 $flatten\U011.$verific$n1141$676 $flatten\U011.$verific$n1142$677 $flatten\U011.$verific$n1145$680 $flatten\U011.$verific$n1146$681 $flatten\U011.$verific$n1147$682 $flatten\U011.$verific$n1148$683 $flatten\U011.$verific$n1149$684 $flatten\U011.$verific$n1152$687 $flatten\U011.$verific$n1153$688 $flatten\U011.$verific$n1157$692 $flatten\U011.$verific$n1158$693 $flatten\U011.$verific$n1161$696 $flatten\U011.$verific$n1162$697 $flatten\U011.$verific$n1163$698 $auto$rtlil.cc:2393:Or$1499 $auto$rtlil.cc:2393:Or$1519 $auto$rtlil.cc:2393:Or$1539 $auto$rtlil.cc:2393:Or$1551 $auto$rtlil.cc:2393:Or$1559 $auto$rtlil.cc:2393:Or$1583 $auto$rtlil.cc:2393:Or$1595 $auto$rtlil.cc:2393:Or$1603 $auto$rtlil.cc:2393:Or$1623 $auto$rtlil.cc:2393:Or$1635 $auto$rtlil.cc:2393:Or$1643 $auto$rtlil.cc:2393:Or$1511 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1698: { $flatten\U011.$verific$n1093$628 $flatten\U011.$verific$n1094$629 $flatten\U011.$verific$n1097$632 $flatten\U011.$verific$n1098$633 $flatten\U011.$verific$n1099$634 $auto$rtlil.cc:2393:Or$1671 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1742: { $flatten\U011.$verific$n1084$619 $flatten\U011.$verific$n1085$620 $flatten\U011.$verific$n1088$623 $flatten\U011.$verific$n1089$624 $flatten\U011.$verific$n1093$628 $flatten\U011.$verific$n1094$629 $flatten\U011.$verific$n1097$632 $flatten\U011.$verific$n1098$633 $flatten\U011.$verific$n1099$634 $auto$rtlil.cc:2393:Or$1671 $auto$rtlil.cc:2393:Or$1683 $auto$rtlil.cc:2393:Or$1691 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1738: { $flatten\U011.$verific$n1077$612 $flatten\U011.$verific$n1078$613 $flatten\U011.$verific$n1081$616 $flatten\U011.$verific$n1082$617 $flatten\U011.$verific$n1083$618 $auto$rtlil.cc:2393:Or$1711 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1830: { $flatten\U011.$verific$n1068$603 $flatten\U011.$verific$n1069$604 $flatten\U011.$verific$n1072$607 $flatten\U011.$verific$n1073$608 $flatten\U011.$verific$n1077$612 $flatten\U011.$verific$n1078$613 $flatten\U011.$verific$n1081$616 $flatten\U011.$verific$n1082$617 $flatten\U011.$verific$n1083$618 $flatten\U011.$verific$n1084$619 $flatten\U011.$verific$n1085$620 $flatten\U011.$verific$n1088$623 $flatten\U011.$verific$n1089$624 $flatten\U011.$verific$n1093$628 $flatten\U011.$verific$n1094$629 $flatten\U011.$verific$n1097$632 $flatten\U011.$verific$n1098$633 $flatten\U011.$verific$n1099$634 $auto$rtlil.cc:2393:Or$1671 $auto$rtlil.cc:2393:Or$1683 $auto$rtlil.cc:2393:Or$1691 $auto$rtlil.cc:2393:Or$1711 $auto$rtlil.cc:2393:Or$1723 $auto$rtlil.cc:2393:Or$1731 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1782: { $flatten\U011.$verific$n1061$596 $flatten\U011.$verific$n1062$597 $flatten\U011.$verific$n1065$600 $flatten\U011.$verific$n1066$601 $flatten\U011.$verific$n1067$602 $auto$rtlil.cc:2393:Or$1755 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1826: { $flatten\U011.$verific$n1052$587 $flatten\U011.$verific$n1053$588 $flatten\U011.$verific$n1056$591 $flatten\U011.$verific$n1057$592 $flatten\U011.$verific$n1061$596 $flatten\U011.$verific$n1062$597 $flatten\U011.$verific$n1065$600 $flatten\U011.$verific$n1066$601 $flatten\U011.$verific$n1067$602 $auto$rtlil.cc:2393:Or$1755 $auto$rtlil.cc:2393:Or$1767 $auto$rtlil.cc:2393:Or$1775 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1822: { $flatten\U011.$verific$n1045$580 $flatten\U011.$verific$n1046$581 $flatten\U011.$verific$n1049$584 $flatten\U011.$verific$n1050$585 $flatten\U011.$verific$n1051$586 $auto$rtlil.cc:2393:Or$1795 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1174: { $auto$rtlil.cc:2393:Or$1147 $flatten\U01.$verific$n1157$692 $flatten\U01.$verific$n1158$693 $flatten\U01.$verific$n1161$696 $flatten\U01.$verific$n1162$697 $flatten\U01.$verific$n1163$698 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1218: { $auto$rtlil.cc:2393:Or$1159 $auto$rtlil.cc:2393:Or$1167 $auto$rtlil.cc:2393:Or$1147 $flatten\U01.$verific$n1148$683 $flatten\U01.$verific$n1149$684 $flatten\U01.$verific$n1152$687 $flatten\U01.$verific$n1153$688 $flatten\U01.$verific$n1157$692 $flatten\U01.$verific$n1158$693 $flatten\U01.$verific$n1161$696 $flatten\U01.$verific$n1162$697 $flatten\U01.$verific$n1163$698 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1214: { $auto$rtlil.cc:2393:Or$1187 $flatten\U01.$verific$n1141$676 $flatten\U01.$verific$n1142$677 $flatten\U01.$verific$n1145$680 $flatten\U01.$verific$n1146$681 $flatten\U01.$verific$n1147$682 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1306: { $auto$rtlil.cc:2393:Or$1159 $auto$rtlil.cc:2393:Or$1167 $auto$rtlil.cc:2393:Or$1187 $auto$rtlil.cc:2393:Or$1199 $auto$rtlil.cc:2393:Or$1207 $auto$rtlil.cc:2393:Or$1147 $flatten\U01.$verific$n1132$667 $flatten\U01.$verific$n1133$668 $flatten\U01.$verific$n1136$671 $flatten\U01.$verific$n1137$672 $flatten\U01.$verific$n1141$676 $flatten\U01.$verific$n1142$677 $flatten\U01.$verific$n1145$680 $flatten\U01.$verific$n1146$681 $flatten\U01.$verific$n1147$682 $flatten\U01.$verific$n1148$683 $flatten\U01.$verific$n1149$684 $flatten\U01.$verific$n1152$687 $flatten\U01.$verific$n1153$688 $flatten\U01.$verific$n1157$692 $flatten\U01.$verific$n1158$693 $flatten\U01.$verific$n1161$696 $flatten\U01.$verific$n1162$697 $flatten\U01.$verific$n1163$698 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1258: { $auto$rtlil.cc:2393:Or$1231 $flatten\U01.$verific$n1125$660 $flatten\U01.$verific$n1126$661 $flatten\U01.$verific$n1129$664 $flatten\U01.$verific$n1130$665 $flatten\U01.$verific$n1131$666 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1302: { $auto$rtlil.cc:2393:Or$1231 $auto$rtlil.cc:2393:Or$1243 $auto$rtlil.cc:2393:Or$1251 $flatten\U01.$verific$n1116$651 $flatten\U01.$verific$n1117$652 $flatten\U01.$verific$n1120$655 $flatten\U01.$verific$n1121$656 $flatten\U01.$verific$n1125$660 $flatten\U01.$verific$n1126$661 $flatten\U01.$verific$n1129$664 $flatten\U01.$verific$n1130$665 $flatten\U01.$verific$n1131$666 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1298: { $auto$rtlil.cc:2393:Or$1271 $flatten\U01.$verific$n1109$644 $flatten\U01.$verific$n1110$645 $flatten\U01.$verific$n1113$648 $flatten\U01.$verific$n1114$649 $flatten\U01.$verific$n1115$650 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1482: { $auto$rtlil.cc:2393:Or$1159 $auto$rtlil.cc:2393:Or$1167 $auto$rtlil.cc:2393:Or$1187 $auto$rtlil.cc:2393:Or$1199 $auto$rtlil.cc:2393:Or$1207 $auto$rtlil.cc:2393:Or$1231 $auto$rtlil.cc:2393:Or$1243 $auto$rtlil.cc:2393:Or$1251 $auto$rtlil.cc:2393:Or$1147 $auto$rtlil.cc:2393:Or$1271 $auto$rtlil.cc:2393:Or$1283 $auto$rtlil.cc:2393:Or$1291 $flatten\U01.$verific$n1100$635 $flatten\U01.$verific$n1101$636 $flatten\U01.$verific$n1104$639 $flatten\U01.$verific$n1105$640 $flatten\U01.$verific$n1109$644 $flatten\U01.$verific$n1110$645 $flatten\U01.$verific$n1113$648 $flatten\U01.$verific$n1114$649 $flatten\U01.$verific$n1115$650 $flatten\U01.$verific$n1116$651 $flatten\U01.$verific$n1117$652 $flatten\U01.$verific$n1120$655 $flatten\U01.$verific$n1121$656 $flatten\U01.$verific$n1125$660 $flatten\U01.$verific$n1126$661 $flatten\U01.$verific$n1129$664 $flatten\U01.$verific$n1130$665 $flatten\U01.$verific$n1131$666 $flatten\U01.$verific$n1132$667 $flatten\U01.$verific$n1133$668 $flatten\U01.$verific$n1136$671 $flatten\U01.$verific$n1137$672 $flatten\U01.$verific$n1141$676 $flatten\U01.$verific$n1142$677 $flatten\U01.$verific$n1145$680 $flatten\U01.$verific$n1146$681 $flatten\U01.$verific$n1147$682 $flatten\U01.$verific$n1148$683 $flatten\U01.$verific$n1149$684 $flatten\U01.$verific$n1152$687 $flatten\U01.$verific$n1153$688 $flatten\U01.$verific$n1157$692 $flatten\U01.$verific$n1158$693 $flatten\U01.$verific$n1161$696 $flatten\U01.$verific$n1162$697 $flatten\U01.$verific$n1163$698 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1346: { $auto$rtlil.cc:2393:Or$1319 $flatten\U01.$verific$n1093$628 $flatten\U01.$verific$n1094$629 $flatten\U01.$verific$n1097$632 $flatten\U01.$verific$n1098$633 $flatten\U01.$verific$n1099$634 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1390: { $auto$rtlil.cc:2393:Or$1319 $auto$rtlil.cc:2393:Or$1331 $auto$rtlil.cc:2393:Or$1339 $flatten\U01.$verific$n1084$619 $flatten\U01.$verific$n1085$620 $flatten\U01.$verific$n1088$623 $flatten\U01.$verific$n1089$624 $flatten\U01.$verific$n1093$628 $flatten\U01.$verific$n1094$629 $flatten\U01.$verific$n1097$632 $flatten\U01.$verific$n1098$633 $flatten\U01.$verific$n1099$634 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1386: { $auto$rtlil.cc:2393:Or$1359 $flatten\U01.$verific$n1077$612 $flatten\U01.$verific$n1078$613 $flatten\U01.$verific$n1081$616 $flatten\U01.$verific$n1082$617 $flatten\U01.$verific$n1083$618 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1478: { $auto$rtlil.cc:2393:Or$1319 $auto$rtlil.cc:2393:Or$1331 $auto$rtlil.cc:2393:Or$1339 $auto$rtlil.cc:2393:Or$1359 $auto$rtlil.cc:2393:Or$1371 $auto$rtlil.cc:2393:Or$1379 $flatten\U01.$verific$n1068$603 $flatten\U01.$verific$n1069$604 $flatten\U01.$verific$n1072$607 $flatten\U01.$verific$n1073$608 $flatten\U01.$verific$n1077$612 $flatten\U01.$verific$n1078$613 $flatten\U01.$verific$n1081$616 $flatten\U01.$verific$n1082$617 $flatten\U01.$verific$n1083$618 $flatten\U01.$verific$n1084$619 $flatten\U01.$verific$n1085$620 $flatten\U01.$verific$n1088$623 $flatten\U01.$verific$n1089$624 $flatten\U01.$verific$n1093$628 $flatten\U01.$verific$n1094$629 $flatten\U01.$verific$n1097$632 $flatten\U01.$verific$n1098$633 $flatten\U01.$verific$n1099$634 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1430: { $auto$rtlil.cc:2393:Or$1403 $flatten\U01.$verific$n1061$596 $flatten\U01.$verific$n1062$597 $flatten\U01.$verific$n1065$600 $flatten\U01.$verific$n1066$601 $flatten\U01.$verific$n1067$602 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1474: { $auto$rtlil.cc:2393:Or$1403 $auto$rtlil.cc:2393:Or$1415 $auto$rtlil.cc:2393:Or$1423 $flatten\U01.$verific$n1052$587 $flatten\U01.$verific$n1053$588 $flatten\U01.$verific$n1056$591 $flatten\U01.$verific$n1057$592 $flatten\U01.$verific$n1061$596 $flatten\U01.$verific$n1062$597 $flatten\U01.$verific$n1065$600 $flatten\U01.$verific$n1066$601 $flatten\U01.$verific$n1067$602 }
-    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1470: { $auto$rtlil.cc:2393:Or$1443 $flatten\U01.$verific$n1045$580 $flatten\U01.$verific$n1046$581 $flatten\U01.$verific$n1049$584 $flatten\U01.$verific$n1050$585 $flatten\U01.$verific$n1051$586 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1526: { $flatten\U011.$verific$n1157$826 $flatten\U011.$verific$n1158$827 $flatten\U011.$verific$n1161$830 $flatten\U011.$verific$n1162$831 $flatten\U011.$verific$n1163$832 $auto$rtlil.cc:2398:Or$1499 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1570: { $flatten\U011.$verific$n1148$817 $flatten\U011.$verific$n1149$818 $flatten\U011.$verific$n1152$821 $flatten\U011.$verific$n1153$822 $flatten\U011.$verific$n1157$826 $flatten\U011.$verific$n1158$827 $flatten\U011.$verific$n1161$830 $flatten\U011.$verific$n1162$831 $flatten\U011.$verific$n1163$832 $auto$rtlil.cc:2398:Or$1499 $auto$rtlil.cc:2398:Or$1519 $auto$rtlil.cc:2398:Or$1511 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1566: { $flatten\U011.$verific$n1141$810 $flatten\U011.$verific$n1142$811 $flatten\U011.$verific$n1145$814 $flatten\U011.$verific$n1146$815 $flatten\U011.$verific$n1147$816 $auto$rtlil.cc:2398:Or$1539 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1658: { $flatten\U011.$verific$n1132$801 $flatten\U011.$verific$n1133$802 $flatten\U011.$verific$n1136$805 $flatten\U011.$verific$n1137$806 $flatten\U011.$verific$n1141$810 $flatten\U011.$verific$n1142$811 $flatten\U011.$verific$n1145$814 $flatten\U011.$verific$n1146$815 $flatten\U011.$verific$n1147$816 $flatten\U011.$verific$n1148$817 $flatten\U011.$verific$n1149$818 $flatten\U011.$verific$n1152$821 $flatten\U011.$verific$n1153$822 $flatten\U011.$verific$n1157$826 $flatten\U011.$verific$n1158$827 $flatten\U011.$verific$n1161$830 $flatten\U011.$verific$n1162$831 $flatten\U011.$verific$n1163$832 $auto$rtlil.cc:2398:Or$1499 $auto$rtlil.cc:2398:Or$1519 $auto$rtlil.cc:2398:Or$1539 $auto$rtlil.cc:2398:Or$1551 $auto$rtlil.cc:2398:Or$1559 $auto$rtlil.cc:2398:Or$1511 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1610: { $flatten\U011.$verific$n1125$794 $flatten\U011.$verific$n1126$795 $flatten\U011.$verific$n1129$798 $flatten\U011.$verific$n1130$799 $flatten\U011.$verific$n1131$800 $auto$rtlil.cc:2398:Or$1583 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1654: { $flatten\U011.$verific$n1116$785 $flatten\U011.$verific$n1117$786 $flatten\U011.$verific$n1120$789 $flatten\U011.$verific$n1121$790 $flatten\U011.$verific$n1125$794 $flatten\U011.$verific$n1126$795 $flatten\U011.$verific$n1129$798 $flatten\U011.$verific$n1130$799 $flatten\U011.$verific$n1131$800 $auto$rtlil.cc:2398:Or$1583 $auto$rtlil.cc:2398:Or$1595 $auto$rtlil.cc:2398:Or$1603 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1650: { $flatten\U011.$verific$n1109$778 $flatten\U011.$verific$n1110$779 $flatten\U011.$verific$n1113$782 $flatten\U011.$verific$n1114$783 $flatten\U011.$verific$n1115$784 $auto$rtlil.cc:2398:Or$1623 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1834: { $flatten\U011.$verific$n1100$769 $flatten\U011.$verific$n1101$770 $flatten\U011.$verific$n1104$773 $flatten\U011.$verific$n1105$774 $flatten\U011.$verific$n1109$778 $flatten\U011.$verific$n1110$779 $flatten\U011.$verific$n1113$782 $flatten\U011.$verific$n1114$783 $flatten\U011.$verific$n1115$784 $flatten\U011.$verific$n1116$785 $flatten\U011.$verific$n1117$786 $flatten\U011.$verific$n1120$789 $flatten\U011.$verific$n1121$790 $flatten\U011.$verific$n1125$794 $flatten\U011.$verific$n1126$795 $flatten\U011.$verific$n1129$798 $flatten\U011.$verific$n1130$799 $flatten\U011.$verific$n1131$800 $flatten\U011.$verific$n1132$801 $flatten\U011.$verific$n1133$802 $flatten\U011.$verific$n1136$805 $flatten\U011.$verific$n1137$806 $flatten\U011.$verific$n1141$810 $flatten\U011.$verific$n1142$811 $flatten\U011.$verific$n1145$814 $flatten\U011.$verific$n1146$815 $flatten\U011.$verific$n1147$816 $flatten\U011.$verific$n1148$817 $flatten\U011.$verific$n1149$818 $flatten\U011.$verific$n1152$821 $flatten\U011.$verific$n1153$822 $flatten\U011.$verific$n1157$826 $flatten\U011.$verific$n1158$827 $flatten\U011.$verific$n1161$830 $flatten\U011.$verific$n1162$831 $flatten\U011.$verific$n1163$832 $auto$rtlil.cc:2398:Or$1499 $auto$rtlil.cc:2398:Or$1519 $auto$rtlil.cc:2398:Or$1539 $auto$rtlil.cc:2398:Or$1551 $auto$rtlil.cc:2398:Or$1559 $auto$rtlil.cc:2398:Or$1583 $auto$rtlil.cc:2398:Or$1595 $auto$rtlil.cc:2398:Or$1603 $auto$rtlil.cc:2398:Or$1623 $auto$rtlil.cc:2398:Or$1635 $auto$rtlil.cc:2398:Or$1643 $auto$rtlil.cc:2398:Or$1511 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1698: { $flatten\U011.$verific$n1093$762 $flatten\U011.$verific$n1094$763 $flatten\U011.$verific$n1097$766 $flatten\U011.$verific$n1098$767 $flatten\U011.$verific$n1099$768 $auto$rtlil.cc:2398:Or$1671 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1742: { $flatten\U011.$verific$n1084$753 $flatten\U011.$verific$n1085$754 $flatten\U011.$verific$n1088$757 $flatten\U011.$verific$n1089$758 $flatten\U011.$verific$n1093$762 $flatten\U011.$verific$n1094$763 $flatten\U011.$verific$n1097$766 $flatten\U011.$verific$n1098$767 $flatten\U011.$verific$n1099$768 $auto$rtlil.cc:2398:Or$1671 $auto$rtlil.cc:2398:Or$1683 $auto$rtlil.cc:2398:Or$1691 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1738: { $flatten\U011.$verific$n1077$746 $flatten\U011.$verific$n1078$747 $flatten\U011.$verific$n1081$750 $flatten\U011.$verific$n1082$751 $flatten\U011.$verific$n1083$752 $auto$rtlil.cc:2398:Or$1711 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1830: { $flatten\U011.$verific$n1068$737 $flatten\U011.$verific$n1069$738 $flatten\U011.$verific$n1072$741 $flatten\U011.$verific$n1073$742 $flatten\U011.$verific$n1077$746 $flatten\U011.$verific$n1078$747 $flatten\U011.$verific$n1081$750 $flatten\U011.$verific$n1082$751 $flatten\U011.$verific$n1083$752 $flatten\U011.$verific$n1084$753 $flatten\U011.$verific$n1085$754 $flatten\U011.$verific$n1088$757 $flatten\U011.$verific$n1089$758 $flatten\U011.$verific$n1093$762 $flatten\U011.$verific$n1094$763 $flatten\U011.$verific$n1097$766 $flatten\U011.$verific$n1098$767 $flatten\U011.$verific$n1099$768 $auto$rtlil.cc:2398:Or$1671 $auto$rtlil.cc:2398:Or$1683 $auto$rtlil.cc:2398:Or$1691 $auto$rtlil.cc:2398:Or$1711 $auto$rtlil.cc:2398:Or$1723 $auto$rtlil.cc:2398:Or$1731 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1782: { $flatten\U011.$verific$n1061$730 $flatten\U011.$verific$n1062$731 $flatten\U011.$verific$n1065$734 $flatten\U011.$verific$n1066$735 $flatten\U011.$verific$n1067$736 $auto$rtlil.cc:2398:Or$1755 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1826: { $flatten\U011.$verific$n1052$721 $flatten\U011.$verific$n1053$722 $flatten\U011.$verific$n1056$725 $flatten\U011.$verific$n1057$726 $flatten\U011.$verific$n1061$730 $flatten\U011.$verific$n1062$731 $flatten\U011.$verific$n1065$734 $flatten\U011.$verific$n1066$735 $flatten\U011.$verific$n1067$736 $auto$rtlil.cc:2398:Or$1755 $auto$rtlil.cc:2398:Or$1767 $auto$rtlil.cc:2398:Or$1775 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1822: { $flatten\U011.$verific$n1045$714 $flatten\U011.$verific$n1046$715 $flatten\U011.$verific$n1049$718 $flatten\U011.$verific$n1050$719 $flatten\U011.$verific$n1051$720 $auto$rtlil.cc:2398:Or$1795 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1174: { $auto$rtlil.cc:2398:Or$1147 $flatten\U01.$verific$n1157$826 $flatten\U01.$verific$n1158$827 $flatten\U01.$verific$n1161$830 $flatten\U01.$verific$n1162$831 $flatten\U01.$verific$n1163$832 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1218: { $auto$rtlil.cc:2398:Or$1159 $auto$rtlil.cc:2398:Or$1167 $auto$rtlil.cc:2398:Or$1147 $flatten\U01.$verific$n1148$817 $flatten\U01.$verific$n1149$818 $flatten\U01.$verific$n1152$821 $flatten\U01.$verific$n1153$822 $flatten\U01.$verific$n1157$826 $flatten\U01.$verific$n1158$827 $flatten\U01.$verific$n1161$830 $flatten\U01.$verific$n1162$831 $flatten\U01.$verific$n1163$832 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1214: { $auto$rtlil.cc:2398:Or$1187 $flatten\U01.$verific$n1141$810 $flatten\U01.$verific$n1142$811 $flatten\U01.$verific$n1145$814 $flatten\U01.$verific$n1146$815 $flatten\U01.$verific$n1147$816 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1306: { $auto$rtlil.cc:2398:Or$1159 $auto$rtlil.cc:2398:Or$1167 $auto$rtlil.cc:2398:Or$1187 $auto$rtlil.cc:2398:Or$1199 $auto$rtlil.cc:2398:Or$1207 $auto$rtlil.cc:2398:Or$1147 $flatten\U01.$verific$n1132$801 $flatten\U01.$verific$n1133$802 $flatten\U01.$verific$n1136$805 $flatten\U01.$verific$n1137$806 $flatten\U01.$verific$n1141$810 $flatten\U01.$verific$n1142$811 $flatten\U01.$verific$n1145$814 $flatten\U01.$verific$n1146$815 $flatten\U01.$verific$n1147$816 $flatten\U01.$verific$n1148$817 $flatten\U01.$verific$n1149$818 $flatten\U01.$verific$n1152$821 $flatten\U01.$verific$n1153$822 $flatten\U01.$verific$n1157$826 $flatten\U01.$verific$n1158$827 $flatten\U01.$verific$n1161$830 $flatten\U01.$verific$n1162$831 $flatten\U01.$verific$n1163$832 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1258: { $auto$rtlil.cc:2398:Or$1231 $flatten\U01.$verific$n1125$794 $flatten\U01.$verific$n1126$795 $flatten\U01.$verific$n1129$798 $flatten\U01.$verific$n1130$799 $flatten\U01.$verific$n1131$800 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1302: { $auto$rtlil.cc:2398:Or$1231 $auto$rtlil.cc:2398:Or$1243 $auto$rtlil.cc:2398:Or$1251 $flatten\U01.$verific$n1116$785 $flatten\U01.$verific$n1117$786 $flatten\U01.$verific$n1120$789 $flatten\U01.$verific$n1121$790 $flatten\U01.$verific$n1125$794 $flatten\U01.$verific$n1126$795 $flatten\U01.$verific$n1129$798 $flatten\U01.$verific$n1130$799 $flatten\U01.$verific$n1131$800 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1298: { $auto$rtlil.cc:2398:Or$1271 $flatten\U01.$verific$n1109$778 $flatten\U01.$verific$n1110$779 $flatten\U01.$verific$n1113$782 $flatten\U01.$verific$n1114$783 $flatten\U01.$verific$n1115$784 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1482: { $auto$rtlil.cc:2398:Or$1159 $auto$rtlil.cc:2398:Or$1167 $auto$rtlil.cc:2398:Or$1187 $auto$rtlil.cc:2398:Or$1199 $auto$rtlil.cc:2398:Or$1207 $auto$rtlil.cc:2398:Or$1231 $auto$rtlil.cc:2398:Or$1243 $auto$rtlil.cc:2398:Or$1251 $auto$rtlil.cc:2398:Or$1147 $auto$rtlil.cc:2398:Or$1271 $auto$rtlil.cc:2398:Or$1283 $auto$rtlil.cc:2398:Or$1291 $flatten\U01.$verific$n1100$769 $flatten\U01.$verific$n1101$770 $flatten\U01.$verific$n1104$773 $flatten\U01.$verific$n1105$774 $flatten\U01.$verific$n1109$778 $flatten\U01.$verific$n1110$779 $flatten\U01.$verific$n1113$782 $flatten\U01.$verific$n1114$783 $flatten\U01.$verific$n1115$784 $flatten\U01.$verific$n1116$785 $flatten\U01.$verific$n1117$786 $flatten\U01.$verific$n1120$789 $flatten\U01.$verific$n1121$790 $flatten\U01.$verific$n1125$794 $flatten\U01.$verific$n1126$795 $flatten\U01.$verific$n1129$798 $flatten\U01.$verific$n1130$799 $flatten\U01.$verific$n1131$800 $flatten\U01.$verific$n1132$801 $flatten\U01.$verific$n1133$802 $flatten\U01.$verific$n1136$805 $flatten\U01.$verific$n1137$806 $flatten\U01.$verific$n1141$810 $flatten\U01.$verific$n1142$811 $flatten\U01.$verific$n1145$814 $flatten\U01.$verific$n1146$815 $flatten\U01.$verific$n1147$816 $flatten\U01.$verific$n1148$817 $flatten\U01.$verific$n1149$818 $flatten\U01.$verific$n1152$821 $flatten\U01.$verific$n1153$822 $flatten\U01.$verific$n1157$826 $flatten\U01.$verific$n1158$827 $flatten\U01.$verific$n1161$830 $flatten\U01.$verific$n1162$831 $flatten\U01.$verific$n1163$832 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1346: { $auto$rtlil.cc:2398:Or$1319 $flatten\U01.$verific$n1093$762 $flatten\U01.$verific$n1094$763 $flatten\U01.$verific$n1097$766 $flatten\U01.$verific$n1098$767 $flatten\U01.$verific$n1099$768 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1390: { $auto$rtlil.cc:2398:Or$1319 $auto$rtlil.cc:2398:Or$1331 $auto$rtlil.cc:2398:Or$1339 $flatten\U01.$verific$n1084$753 $flatten\U01.$verific$n1085$754 $flatten\U01.$verific$n1088$757 $flatten\U01.$verific$n1089$758 $flatten\U01.$verific$n1093$762 $flatten\U01.$verific$n1094$763 $flatten\U01.$verific$n1097$766 $flatten\U01.$verific$n1098$767 $flatten\U01.$verific$n1099$768 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1386: { $auto$rtlil.cc:2398:Or$1359 $flatten\U01.$verific$n1077$746 $flatten\U01.$verific$n1078$747 $flatten\U01.$verific$n1081$750 $flatten\U01.$verific$n1082$751 $flatten\U01.$verific$n1083$752 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1478: { $auto$rtlil.cc:2398:Or$1319 $auto$rtlil.cc:2398:Or$1331 $auto$rtlil.cc:2398:Or$1339 $auto$rtlil.cc:2398:Or$1359 $auto$rtlil.cc:2398:Or$1371 $auto$rtlil.cc:2398:Or$1379 $flatten\U01.$verific$n1068$737 $flatten\U01.$verific$n1069$738 $flatten\U01.$verific$n1072$741 $flatten\U01.$verific$n1073$742 $flatten\U01.$verific$n1077$746 $flatten\U01.$verific$n1078$747 $flatten\U01.$verific$n1081$750 $flatten\U01.$verific$n1082$751 $flatten\U01.$verific$n1083$752 $flatten\U01.$verific$n1084$753 $flatten\U01.$verific$n1085$754 $flatten\U01.$verific$n1088$757 $flatten\U01.$verific$n1089$758 $flatten\U01.$verific$n1093$762 $flatten\U01.$verific$n1094$763 $flatten\U01.$verific$n1097$766 $flatten\U01.$verific$n1098$767 $flatten\U01.$verific$n1099$768 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1430: { $auto$rtlil.cc:2398:Or$1403 $flatten\U01.$verific$n1061$730 $flatten\U01.$verific$n1062$731 $flatten\U01.$verific$n1065$734 $flatten\U01.$verific$n1066$735 $flatten\U01.$verific$n1067$736 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1474: { $auto$rtlil.cc:2398:Or$1403 $auto$rtlil.cc:2398:Or$1415 $auto$rtlil.cc:2398:Or$1423 $flatten\U01.$verific$n1052$721 $flatten\U01.$verific$n1053$722 $flatten\U01.$verific$n1056$725 $flatten\U01.$verific$n1057$726 $flatten\U01.$verific$n1061$730 $flatten\U01.$verific$n1062$731 $flatten\U01.$verific$n1065$734 $flatten\U01.$verific$n1066$735 $flatten\U01.$verific$n1067$736 }
+    New input vector for $reduce_or cell $auto$pmuxtree.cc:37:or_generator$1470: { $auto$rtlil.cc:2398:Or$1443 $flatten\U01.$verific$n1045$714 $flatten\U01.$verific$n1046$715 $flatten\U01.$verific$n1049$718 $flatten\U01.$verific$n1050$719 $flatten\U01.$verific$n1051$720 }
   Optimizing cells in module \top.
 Performed a total of 30 changes.
 
@@ -876,12 +877,34 @@ yosys> opt_clean
 3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
-yosys> techmap
+yosys> stat
 
-3.22. Executing TECHMAP pass (map to technology primitives).
+3.22. Printing statistics.
 
-3.22.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+=== top ===
+
+   Number of wires:                636
+   Number of wire bits:           3370
+   Number of public wires:          20
+   Number of public wire bits:    1338
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                624
+     $bmux                           2
+     $eq                           254
+     $mux                          238
+     $or                            48
+     $reduce_or                     78
+     $sdff                           4
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
+
+3.23. Executing TECHMAP pass (map to technology primitives).
+
+3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -908,7 +931,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.22.2. Continuing TECHMAP pass.
+3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_rs_alu'.
+Successfully finished Verilog frontend.
+
+3.23.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $reduce_or.
 Using extmapper simplemap for cells of type $or.
@@ -918,26 +946,47 @@ Using extmapper simplemap for cells of type $bmux.
 No more expansions possible.
 <suppressed ~695 debug messages>
 
+yosys> stat
+
+3.24. Printing statistics.
+
+=== top ===
+
+   Number of wires:               3128
+   Number of wire bits:         101340
+   Number of public wires:          20
+   Number of public wire bits:    1338
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              99954
+     $_MUX_                      34178
+     $_NOT_                        254
+     $_OR_                       32740
+     $_SDFF_PP0_                   270
+     $_XOR_                      32512
+
+
 yosys> opt
 
-3.23. Executing OPT pass (performing simple optimizations).
+3.25. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.23.1. Executing OPT_EXPR pass (perform const folding).
+3.25.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 <suppressed ~65410 debug messages>
 
 yosys> opt_merge -nomux
 
-3.23.2. Executing OPT_MERGE pass (detect identical cells).
+3.25.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 <suppressed ~94779 debug messages>
 Removed a total of 31593 cells.
 
 yosys> opt_muxtree
 
-3.23.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -945,37 +994,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.5. Executing OPT_MERGE pass (detect identical cells).
+3.25.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 Removed 0 unused cells and 743 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.23.8. Executing OPT_EXPR pass (perform const folding).
+3.25.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.23.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.23.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -983,64 +1032,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.12. Executing OPT_MERGE pass (detect identical cells).
+3.25.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.23.15. Executing OPT_EXPR pass (perform const folding).
+3.25.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.23.16. Finished OPT passes. (There is nothing left to do.)
+3.25.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.24. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.24.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
-<suppressed ~252 debug messages>
-
-yosys> opt_merge
-
-3.24.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.24.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \top..
-
-3.24.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.25. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.26. Executing OPT pass (performing simple optimizations).
 
@@ -1048,104 +1066,34 @@ yosys> opt_expr -full
 
 3.26.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
+<suppressed ~252 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.26.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.26.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.26.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.26.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.26.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.26.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.26.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
-yosys> opt_expr -full
+3.26.5. Finished fast OPT passes.
 
-3.26.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
+yosys> memory_map
 
-3.26.10. Finished OPT passes. (There is nothing left to do.)
+3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.27. Executing ABC pass (technology mapping using ABC).
-
-3.27.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
-Extracted 3719 gates and 3991 wires to a netlist network with 270 inputs and 270 outputs.
-
-3.27.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/multi_enc_decx2x4/abc_tmp.scr 
-ABC:   #Luts =  1262  Max Lvl =  13  Avg Lvl =   2.55  [   0.41 sec. at Pass 0]
-ABC:   #Luts =   665  Max Lvl =  14  Avg Lvl =   2.49  [  17.85 sec. at Pass 1]
-ABC:   #Luts =   631  Max Lvl =  13  Avg Lvl =   2.48  [   3.75 sec. at Pass 2]
-ABC:   #Luts =   612  Max Lvl =  11  Avg Lvl =   2.47  [   4.90 sec. at Pass 3]
-ABC:   #Luts =   610  Max Lvl =  13  Avg Lvl =   2.46  [   3.60 sec. at Pass 4]
-ABC:   #Luts =   604  Max Lvl =  12  Avg Lvl =   2.43  [   6.42 sec. at Pass 5]
-ABC:   #Luts =   603  Max Lvl =  12  Avg Lvl =   2.41  [   3.72 sec. at Pass 6]
-ABC:   #Luts =   597  Max Lvl =  13  Avg Lvl =   2.41  [   6.11 sec. at Pass 7]
-ABC:   #Luts =   596  Max Lvl =  13  Avg Lvl =   2.47  [   3.16 sec. at Pass 8]
-ABC:   #Luts =   588  Max Lvl =  12  Avg Lvl =   2.43  [   5.34 sec. at Pass 9]
-ABC:   #Luts =   588  Max Lvl =  12  Avg Lvl =   2.43  [   3.03 sec. at Pass 10]
-ABC:   #Luts =   586  Max Lvl =  12  Avg Lvl =   2.40  [   5.21 sec. at Pass 11]
-ABC:   #Luts =   585  Max Lvl =  12  Avg Lvl =   2.41  [   3.45 sec. at Pass 12]
-ABC:   #Luts =   582  Max Lvl =  14  Avg Lvl =   2.44  [   4.20 sec. at Pass 13]
-ABC:   #Luts =   582  Max Lvl =  14  Avg Lvl =   2.44  [   3.29 sec. at Pass 14]
-ABC:   #Luts =   580  Max Lvl =  13  Avg Lvl =   2.45  [   4.54 sec. at Pass 15]
-ABC:   #Luts =   575  Max Lvl =  11  Avg Lvl =   2.42  [   2.52 sec. at Pass 16]
-ABC:   #Luts =   575  Max Lvl =  11  Avg Lvl =   2.42  [   3.90 sec. at Pass 17]
-ABC:   #Luts =   574  Max Lvl =  12  Avg Lvl =   2.41  [   2.06 sec. at Pass 18]
-ABC:   #Luts =   570  Max Lvl =  13  Avg Lvl =   2.44  [   3.19 sec. at Pass 19]
-ABC:   #Luts =   570  Max Lvl =  13  Avg Lvl =   2.44  [   2.33 sec. at Pass 20]
-ABC:   #Luts =   570  Max Lvl =  13  Avg Lvl =   2.44  [   4.03 sec. at Pass 21]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.27.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      570
-ABC RESULTS:        internal signals:     3451
-ABC RESULTS:           input signals:      270
-ABC RESULTS:          output signals:      270
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
@@ -1164,7 +1112,7 @@ Running muxtree optimizer on module \top..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
@@ -1176,27 +1124,136 @@ yosys> opt_merge
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.28.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 3159 unused wires.
-<suppressed ~1 debug messages>
+
+yosys> opt_expr -full
+
+3.28.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top.
+
+3.28.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.29. Executing ABC pass (technology mapping using ABC).
+
+3.29.1. Summary of detected clock domains:
+  3989 cells in clk=\clock, en={ }, arst={ }, srst=\reset
+
+3.29.2. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clock, synchronously reset by \reset
+Extracted 3989 gates and 4247 wires to a netlist network with 256 inputs and 256 outputs.
+
+3.29.2.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.29.2.2. Re-integrating ABC results.
+ABC RESULTS:               AND cells:     1041
+ABC RESULTS:            ANDNOT cells:      464
+ABC RESULTS:               BUF cells:       14
+ABC RESULTS:               DFF cells:       28
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:              NAND cells:      408
+ABC RESULTS:               NOR cells:      131
+ABC RESULTS:                OR cells:       36
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:               XOR cells:       49
+ABC RESULTS:              ZERO cells:       16
+ABC RESULTS:        internal signals:     3735
+ABC RESULTS:           input signals:      256
+ABC RESULTS:          output signals:      256
+Removing temp directory.
+
+yosys> abc -script abc_tmp.scr
+
+3.30. Executing ABC pass (technology mapping using ABC).
+
+3.30.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+Extracted 2141 gates and 2411 wires to a netlist network with 270 inputs and 254 outputs.
+
+3.30.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/multi_enc_decx2x4/abc_tmp.scr 
+ABC:   #Luts =   889  Max Lvl =  14  Avg Lvl =   2.54  [   0.09 sec. at Pass 0]
+ABC:   #Luts =   698  Max Lvl =  13  Avg Lvl =   2.55  [   4.58 sec. at Pass 1]
+ABC:   #Luts =   681  Max Lvl =  12  Avg Lvl =   2.57  [   0.82 sec. at Pass 2]
+ABC:   #Luts =   662  Max Lvl =  13  Avg Lvl =   2.53  [   1.48 sec. at Pass 3]
+ABC:   #Luts =   656  Max Lvl =  14  Avg Lvl =   2.53  [   1.14 sec. at Pass 4]
+ABC:   #Luts =   651  Max Lvl =  13  Avg Lvl =   2.52  [   2.32 sec. at Pass 5]
+ABC:   #Luts =   645  Max Lvl =  13  Avg Lvl =   2.51  [   1.67 sec. at Pass 6]
+ABC:   #Luts =   635  Max Lvl =  14  Avg Lvl =   2.49  [   2.30 sec. at Pass 7]
+ABC:   #Luts =   633  Max Lvl =  14  Avg Lvl =   2.54  [   1.22 sec. at Pass 8]
+ABC:   #Luts =   624  Max Lvl =  16  Avg Lvl =   2.57  [   2.06 sec. at Pass 9]
+ABC:   #Luts =   624  Max Lvl =  16  Avg Lvl =   2.57  [   1.04 sec. at Pass 10]
+ABC:   #Luts =   617  Max Lvl =  15  Avg Lvl =   2.58  [   1.68 sec. at Pass 11]
+ABC:   #Luts =   617  Max Lvl =  15  Avg Lvl =   2.58  [   1.11 sec. at Pass 12]
+ABC:   #Luts =   612  Max Lvl =  15  Avg Lvl =   2.47  [   1.68 sec. at Pass 13]
+ABC:   #Luts =   606  Max Lvl =  14  Avg Lvl =   2.56  [   1.03 sec. at Pass 14]
+ABC:   #Luts =   606  Max Lvl =  14  Avg Lvl =   2.56  [   1.53 sec. at Pass 15]
+ABC:   #Luts =   606  Max Lvl =  12  Avg Lvl =   2.49  [   1.06 sec. at Pass 16]
+ABC:   #Luts =   597  Max Lvl =  14  Avg Lvl =   2.48  [   1.57 sec. at Pass 17]
+ABC:   #Luts =   597  Max Lvl =  14  Avg Lvl =   2.48  [   1.02 sec. at Pass 18]
+ABC:   #Luts =   597  Max Lvl =  14  Avg Lvl =   2.48  [   1.59 sec. at Pass 19]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.30.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      597
+ABC RESULTS:        internal signals:     1887
+ABC RESULTS:           input signals:      270
+ABC RESULTS:          output signals:      254
+Removing temp directory.
+
+yosys> opt
+
+3.31. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.28.8. Executing OPT_EXPR pass (perform const folding).
+3.31.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.31.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-3.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1204,58 +1261,69 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.12. Executing OPT_MERGE pass (detect identical cells).
+3.31.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top..
+Removed 0 unused cells and 5569 unused wires.
+<suppressed ~13 debug messages>
+
+yosys> opt_expr
+
+3.31.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top.
+
+3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.31.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.28.15. Executing OPT_EXPR pass (perform const folding).
+3.31.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.28.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> stat
-
-3.29. Printing statistics.
-
-=== top ===
-
-   Number of wires:                320
-   Number of wire bits:           1638
-   Number of public wires:          20
-   Number of public wire bits:    1338
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:                840
-     $_SDFF_PP0_                   270
-     $lut                          570
-
-
-yosys> shregmap -minlen 8 -maxlen 20
-
-3.30. Executing SHREGMAP pass (map shift registers).
-Converted 0 dff cells into 0 shift registers.
-
-yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
-
-3.31. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.31.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
@@ -1263,25 +1331,52 @@ yosys> stat
 
 === top ===
 
-   Number of wires:                590
-   Number of wire bits:           1908
-   Number of public wires:          20
-   Number of public wire bits:    1338
+   Number of wires:                392
+   Number of wire bits:           1154
+   Number of public wires:           8
+   Number of public wire bits:     770
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1110
-     $_DFF_P_                      270
-     $_MUX_                        270
-     $lut                          570
+   Number of cells:                624
+     $_SDFF_PP0_                    28
+     $lut                          596
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.33. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.35. Printing statistics.
+
+=== top ===
+
+   Number of wires:                420
+   Number of wire bits:           1182
+   Number of public wires:           8
+   Number of public wire bits:     770
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                652
+     $_DFF_P_                       28
+     $_MUX_                         28
+     $lut                          596
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.33. Executing TECHMAP pass (map to technology primitives).
+3.36. Executing TECHMAP pass (map to technology primitives).
 
-3.33.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1308,8 +1403,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.33.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1367,66 +1462,74 @@ Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
 Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Generating RTLIL representation for module `\$_SDFF_PP0_'.
+Generating RTLIL representation for module `\$_SDFF_PN0_'.
+Generating RTLIL representation for module `\$_SDFF_NP0_'.
+Generating RTLIL representation for module `\$_SDFF_NN0_'.
+Generating RTLIL representation for module `\$_SDFF_PP1_'.
+Generating RTLIL representation for module `\$_SDFF_PN1_'.
+Generating RTLIL representation for module `\$_SDFF_NP1_'.
+Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.33.3. Continuing TECHMAP pass.
-Using template \$_DFF_P_ for cells of type $_DFF_P_.
+3.36.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
 No more expansions possible.
-<suppressed ~968 debug messages>
+<suppressed ~760 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.34. Executing OPT_EXPR pass (perform const folding).
+3.37. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~24753 debug messages>
+<suppressed ~22282 debug messages>
 
 yosys> simplemap
 
-3.35. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
 yosys> opt_merge
 
-3.37. Executing OPT_MERGE pass (detect identical cells).
+3.40. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
-<suppressed ~4695 debug messages>
-Removed a total of 1565 cells.
+<suppressed ~5652 debug messages>
+Removed a total of 1884 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.38. Executing OPT_DFF pass (perform DFF optimizations).
+3.41. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.39. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 2360 unused wires.
+Removed 0 unused cells and 1566 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.40. Executing OPT pass (performing simple optimizations).
+3.43. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.40.1. Executing OPT_EXPR pass (perform const folding).
+3.43.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~50 debug messages>
+<suppressed ~81 debug messages>
 
 yosys> opt_merge -nomux
 
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
+3.43.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1434,37 +1537,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
+3.43.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 7 unused wires.
+Removed 0 unused cells and 10 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.40.8. Executing OPT_EXPR pass (perform const folding).
+3.43.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1472,83 +1575,80 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
+3.43.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.40.15. Executing OPT_EXPR pass (perform const folding).
+3.43.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.40.16. Finished OPT passes. (There is nothing left to do.)
+3.43.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -script abc_tmp.scr
 
-3.41. Executing ABC pass (technology mapping using ABC).
+3.44. Executing ABC pass (technology mapping using ABC).
 
-3.41.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
-Extracted 2640 gates and 3169 wires to a netlist network with 527 inputs and 526 outputs.
+3.44.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+Extracted 2509 gates and 2796 wires to a netlist network with 285 inputs and 268 outputs.
 
-3.41.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+3.44.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/multi_enc_decx2x4/abc_tmp.scr 
-ABC:   #Luts =   845  Max Lvl =  14  Avg Lvl =   1.77  [   0.25 sec. at Pass 0]
-ABC:   #Luts =   845  Max Lvl =  14  Avg Lvl =   1.77  [  12.78 sec. at Pass 1]
-ABC:   #Luts =   842  Max Lvl =  12  Avg Lvl =   1.73  [   2.43 sec. at Pass 2]
-ABC:   #Luts =   842  Max Lvl =  12  Avg Lvl =   1.73  [   3.68 sec. at Pass 3]
-ABC:   #Luts =   839  Max Lvl =  12  Avg Lvl =   1.72  [   3.40 sec. at Pass 4]
-ABC:   #Luts =   839  Max Lvl =  12  Avg Lvl =   1.72  [   6.26 sec. at Pass 5]
-ABC:   #Luts =   836  Max Lvl =  13  Avg Lvl =   1.75  [   4.30 sec. at Pass 6]
-ABC:   #Luts =   836  Max Lvl =  13  Avg Lvl =   1.75  [   5.50 sec. at Pass 7]
-ABC:   #Luts =   836  Max Lvl =  13  Avg Lvl =   1.75  [   3.80 sec. at Pass 8]
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/multi_enc_decx2x4/abc_tmp.scr 
+ABC:   #Luts =   624  Max Lvl =  15  Avg Lvl =   2.43  [   0.11 sec. at Pass 0]
+ABC:   #Luts =   624  Max Lvl =  15  Avg Lvl =   2.43  [   3.99 sec. at Pass 1]
+ABC:   #Luts =   624  Max Lvl =  15  Avg Lvl =   2.43  [   0.98 sec. at Pass 2]
+ABC:   #Luts =   615  Max Lvl =  13  Avg Lvl =   2.37  [   1.38 sec. at Pass 3]
+ABC:   #Luts =   615  Max Lvl =  13  Avg Lvl =   2.37  [   1.00 sec. at Pass 4]
+ABC:   #Luts =   615  Max Lvl =  13  Avg Lvl =   2.37  [   1.48 sec. at Pass 5]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.41.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      836
-ABC RESULTS:        internal signals:     2116
-ABC RESULTS:           input signals:      527
-ABC RESULTS:          output signals:      526
+3.44.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      615
+ABC RESULTS:        internal signals:     2243
+ABC RESULTS:           input signals:      285
+ABC RESULTS:          output signals:      268
 Removing temp directory.
 
 yosys> opt
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.45. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.45.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1556,37 +1656,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.45.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 2911 unused wires.
-<suppressed ~5 debug messages>
+Removed 0 unused cells and 2545 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.45.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.45.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1594,86 +1694,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.45.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.45.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.45.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.43. Executing HIERARCHY pass (managing design hierarchy).
+3.46. Executing HIERARCHY pass (managing design hierarchy).
 
-3.43.1. Analyzing design hierarchy..
+3.46.1. Analyzing design hierarchy..
 Top module:  \top
 
-3.43.2. Analyzing design hierarchy..
+3.46.2. Analyzing design hierarchy..
 Top module:  \top
 Removed 0 unused modules.
 
 yosys> stat
 
-3.44. Printing statistics.
+3.47. Printing statistics.
 
 === top ===
 
-   Number of wires:                596
-   Number of wire bits:           1890
-   Number of public wires:          16
-   Number of public wire bits:    1310
+   Number of wires:                411
+   Number of wire bits:           1173
+   Number of public wires:           8
+   Number of public wire bits:     770
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1106
-     $lut                          836
-     dff                           270
+   Number of cells:                643
+     $lut                          615
+     dffsre                         28
 
 
 yosys> opt_clean -purge
 
-3.45. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 6 unused wires.
-<suppressed ~6 debug messages>
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~2 debug messages>
 
-yosys> write_verilog -noattr -nohex top.verilog
+yosys> write_verilog -noattr -nohex synthesized.v
 
-3.46. Executing Verilog backend.
+3.49. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.46.1. Executing BMUXMAP pass.
+3.49.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.46.2. Executing DEMUXMAP pass.
+3.49.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\top'.
 
-End of script. Logfile hash: ae99ad78a6, CPU: user 24.36s system 0.33s, MEM: 200.90 MB peak
-Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
-Time spent: 96% 2x abc (715 sec), 1% 28x opt_expr (10 sec), ...
-real 198.06
-user 683.20
-sys 56.76
+End of script. Logfile hash: 0dc91a6cdc, CPU: user 15.10s system 0.27s, MEM: 200.24 MB peak
+Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
+Time spent: 97% 3x abc (496 sec), 1% 28x opt_expr (6 sec), ...
+real 58.52
+user 471.57
+sys 39.83
