@@ -81,9 +81,3 @@ To generate tasks with specific configurations/settings the following command sh
 python3 scripts/task_generator/run_task_generator.py PATH_TO_OPENFPGA_ROOT --settings_file SPECIFIC_SETTINGS.json --debug
 ```
 Detailed information regarding OpenFPGA tasks generation can be found [here](https://github.com/RapidSilicon/yosys_verific_rs/blob/main/scripts/task_generator/README.md).
-
-## Running yosys without installing it
-Some environment variables should be exported in order to use Yosys without installing it:
-```bash
-source scripts/export_env.sh
-```
