@@ -5,6 +5,11 @@ The repository contains yosys_rs, verific_rs and open-source HDL projects as sub
 # Requirements
 The repository requires SSH key setup. Please see instructions at [connecting-to-github-with-ssh](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
+The list of dependencies:
+ * [`Ubuntu`](.github/scripts/install_ubuntu_dependencies_build.sh)
+ * [`Centos`](.github/scripts/install_centos_dependencies_build.sh)
+ * [`MacOS`](.github/scripts/install_macos_dependencies_build.sh)
+
 # Repository Structure
 ```
 .
@@ -76,9 +81,3 @@ To generate tasks with specific configurations/settings the following command sh
 python3 scripts/task_generator/run_task_generator.py PATH_TO_OPENFPGA_ROOT --settings_file SPECIFIC_SETTINGS.json --debug
 ```
 Detailed information regarding OpenFPGA tasks generation can be found [here](https://github.com/RapidSilicon/yosys_verific_rs/blob/main/scripts/task_generator/README.md).
-
-## Running yosys without installing it
-Some environment variables should be exported in order to use Yosys without installing it:
-```bash
-source scripts/export_env.sh
-```

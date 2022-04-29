@@ -12,7 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-project(yosys_verific_rs)
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 6)
+
+project(yosys_verific_rs VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 add_subdirectory(logic_synthesis-rs)
 
@@ -20,11 +24,14 @@ option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 
-set(ABC ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc)
-set(DE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de)
-set(LSORACLE ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle)
-set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
+set(BUILD_LSORACLE OFF)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
+else()
+    set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
+endif()
 
 list(APPEND VERIFIC_MK_ARGS 
     "VERSION=-O3"
@@ -33,7 +40,9 @@ list(APPEND VERIFIC_MK_ARGS
 list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
-    "ABCEXTERNAL=${ABC}"
+    "ABCEXTERNAL=abc"
+    "YOSYS_VERIFIC=1"
+    "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${CMAKE_PROJECT_VERSION}"
 )
 
 if (ENABLE_VERIFIC)
@@ -137,6 +146,40 @@ add_custom_target(
     COMMENT "Clean All"
 )
 
+add_custom_command(
+    OUTPUT ${YOSYS_PATH}/bin/abc
+    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc ${YOSYS_PATH}/bin/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Copy abc executable into bin"
+    DEPENDS abc yosys
+)
+
+add_custom_command(
+    OUTPUT ${YOSYS_PATH}/bin/de
+    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de ${YOSYS_PATH}/bin/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Copy de executable into bin"
+    DEPENDS de yosys
+)
+
+if (BUILD_LSORACLE)
+    add_custom_command(
+        OUTPUT ${YOSYS_PATH}/bin/lsoracle
+        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle ${YOSYS_PATH}/bin/
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Copy LSOracle executable into bin"
+        DEPENDS lsoracle yosys
+    )
+    add_custom_target(
+        copy_files ALL
+        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de ${YOSYS_PATH}/bin/lsoracle
+    )
+else()    
+    add_custom_target(
+        copy_files ALL
+        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de)
+endif()
+
 # Installation target
 install(
     PROGRAMS ${YOSYS_PATH}/bin/yosys
@@ -151,12 +194,20 @@ install(
 
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
-
 enable_testing()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_test(
+        NAME yosys_verific_rs-valgrind-test
+        COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+    set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
+        FAIL_REGULAR_EXPRESSION "FAILED")
+endif()
+
 add_test(
     NAME yosys_verific_rs-smoke-test
     COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
-    )
-set_property(TEST yosys_verific_rs-smoke-test
-    PROPERTY ENVIRONMENT ABC=${ABC} DE=${DE} LSORACLE=${LSORACLE})
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
+    FAIL_REGULAR_EXPRESSION "FAILED")

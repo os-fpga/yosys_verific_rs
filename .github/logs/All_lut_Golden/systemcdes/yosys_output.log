@@ -19,7 +19,7 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+ Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -34,16 +34,17 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
 
 yosys> verilog_defaults -add -I.
 
-yosys> read -vlog2k GSCLib_3.0.v systemcdes.v
+yosys> read -vlog2k systemcdes.v GSCLib_3.0.v
 
-yosys> verific -vlog2k GSCLib_3.0.v systemcdes.v
+yosys> verific -vlog2k systemcdes.v GSCLib_3.0.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'systemcdes.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'GSCLib_3.0.v'
 VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:91: undeclared symbol 'I0_out', assumed default net type 'wire'
 VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:92: undeclared symbol 'I1_out', assumed default net type 'wire'
@@ -92,16 +93,15 @@ VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:985: undeclared symbol 'RN_EQ_1_AN_SN_EQ_1
 VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:986: undeclared symbol 'I12_out', assumed default net type 'wire'
 VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:987: undeclared symbol 'RN_EQ_1_AN_SE_EQ_0_AN_SN_EQ_1', assumed default net type 'wire'
 VERIFIC-INFO [VERI-2561] GSCLib_3.0.v:1181: undeclared symbol 'I0_out', assumed default net type 'wire'
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'systemcdes.v'
 
-yosys> synth_rs -top systemcdes -tech genesis -goal area -de -no_dsp -no_bram -verilog systemcdes.verilog
+yosys> synth_rs -top systemcdes -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass.
+3. Executing synth_rs pass: v0.2.36
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -109,10 +109,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
-Generating RTLIL representation for module `\dff'.
-Generating RTLIL representation for module `\dffn'.
+3.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -120,6 +118,9 @@ Generating RTLIL representation for module `\latchnsre'.
 Generating RTLIL representation for module `\io_scff'.
 Generating RTLIL representation for module `\scff'.
 Generating RTLIL representation for module `\sh_dff'.
+Generating RTLIL representation for module `\adder_carry'.
+Generating RTLIL representation for module `\sdffr'.
+Generating RTLIL representation for module `\sdffs'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top systemcdes
@@ -174,30 +175,30 @@ VERIFIC-WARNING [VERI-2199] GSCLib_3.0.v:854: specify block is ignored for synth
 VERIFIC-INFO [VERI-1018] GSCLib_3.0.v:224: compiling module 'BUFX1'
 VERIFIC-WARNING [VERI-2199] GSCLib_3.0.v:239: specify block is ignored for synthesis
 Importing module systemcdes.
-Importing module DFFSRX1.
-Importing module NAND2X2.
-Importing module mdff.
-Importing module NAND2X1.
-Importing module INVX1.
-Importing module NAND3X1.
-Importing module NOR2X1.
-Importing module NAND4X1.
-Importing module MX2X1.
-Importing module mmux2.
-Importing module AOI22X1.
-Importing module OR2X1.
-Importing module INVX2.
-Importing module AOI21X1.
-Importing module OAI21X1.
 Importing module AND2X1.
-Importing module NOR3X1.
-Importing module INVX4.
-Importing module CLKBUFX3.
+Importing module AOI21X1.
+Importing module AOI22X1.
+Importing module BUFX1.
+Importing module BUFX3.
 Importing module CLKBUFX1.
 Importing module CLKBUFX2.
-Importing module BUFX3.
+Importing module CLKBUFX3.
+Importing module DFFSRX1.
+Importing module INVX1.
+Importing module INVX2.
+Importing module INVX4.
+Importing module MX2X1.
+Importing module NAND2X1.
+Importing module NAND2X2.
+Importing module NAND3X1.
+Importing module NAND4X1.
+Importing module NOR2X1.
+Importing module NOR3X1.
+Importing module OAI21X1.
 Importing module OAI22X1.
-Importing module BUFX1.
+Importing module OR2X1.
+Importing module mdff.
+Importing module mmux2.
 
 3.3.1. Analyzing design hierarchy..
 Top module:  \systemcdes
@@ -306,59 +307,59 @@ Cleaned up 0 empty switches.
 yosys> opt_expr -keepdc
 
 3.4.11. Executing OPT_EXPR pass (perform const folding).
-Optimizing module BUFX1.
+Optimizing module mmux2.
+Optimizing module mdff.
+Optimizing module OR2X1.
 Optimizing module OAI22X1.
-Optimizing module BUFX3.
+Optimizing module OAI21X1.
+Optimizing module NOR3X1.
+Optimizing module NOR2X1.
+Optimizing module NAND4X1.
+Optimizing module NAND3X1.
+Optimizing module NAND2X2.
+Optimizing module NAND2X1.
+Optimizing module MX2X1.
+Optimizing module INVX4.
+Optimizing module INVX2.
+Optimizing module INVX1.
+Optimizing module DFFSRX1.
+Optimizing module CLKBUFX3.
 Optimizing module CLKBUFX2.
 Optimizing module CLKBUFX1.
-Optimizing module CLKBUFX3.
-Optimizing module INVX4.
-Optimizing module NOR3X1.
-Optimizing module AND2X1.
-Optimizing module OAI21X1.
-Optimizing module AOI21X1.
-Optimizing module INVX2.
-Optimizing module OR2X1.
+Optimizing module BUFX3.
+Optimizing module BUFX1.
 Optimizing module AOI22X1.
-Optimizing module mmux2.
-Optimizing module MX2X1.
-Optimizing module NAND4X1.
-Optimizing module NOR2X1.
-Optimizing module NAND3X1.
-Optimizing module INVX1.
-Optimizing module NAND2X1.
-Optimizing module mdff.
-Optimizing module NAND2X2.
-Optimizing module DFFSRX1.
+Optimizing module AOI21X1.
+Optimizing module AND2X1.
 Optimizing module systemcdes.
 
 yosys> flatten
 
 3.5. Executing FLATTEN pass (flatten design).
-Deleting now unused module BUFX1.
+Deleting now unused module mmux2.
+Deleting now unused module mdff.
+Deleting now unused module OR2X1.
 Deleting now unused module OAI22X1.
-Deleting now unused module BUFX3.
+Deleting now unused module OAI21X1.
+Deleting now unused module NOR3X1.
+Deleting now unused module NOR2X1.
+Deleting now unused module NAND4X1.
+Deleting now unused module NAND3X1.
+Deleting now unused module NAND2X2.
+Deleting now unused module NAND2X1.
+Deleting now unused module MX2X1.
+Deleting now unused module INVX4.
+Deleting now unused module INVX2.
+Deleting now unused module INVX1.
+Deleting now unused module DFFSRX1.
+Deleting now unused module CLKBUFX3.
 Deleting now unused module CLKBUFX2.
 Deleting now unused module CLKBUFX1.
-Deleting now unused module CLKBUFX3.
-Deleting now unused module INVX4.
-Deleting now unused module NOR3X1.
-Deleting now unused module AND2X1.
-Deleting now unused module OAI21X1.
-Deleting now unused module AOI21X1.
-Deleting now unused module INVX2.
-Deleting now unused module OR2X1.
+Deleting now unused module BUFX3.
+Deleting now unused module BUFX1.
 Deleting now unused module AOI22X1.
-Deleting now unused module mmux2.
-Deleting now unused module MX2X1.
-Deleting now unused module NAND4X1.
-Deleting now unused module NOR2X1.
-Deleting now unused module NAND3X1.
-Deleting now unused module INVX1.
-Deleting now unused module NAND2X1.
-Deleting now unused module mdff.
-Deleting now unused module NAND2X2.
-Deleting now unused module DFFSRX1.
+Deleting now unused module AOI21X1.
+Deleting now unused module AND2X1.
 <suppressed ~3325 debug messages>
 
 yosys> tribuf -logic
@@ -419,17 +420,17 @@ yosys> opt_reduce
 
 3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
-    New input vector for $reduce_and cell $flatten\g6980.$verific$i5$GSCLib_3.0.v:639$10242: { \g11417.A \g11417.B \g11417.C \g11417.D \g6980.A \g6980.C }
-    New input vector for $reduce_and cell $flatten\g6945.$verific$i5$GSCLib_3.0.v:639$10242: { \g11252.B \g11252.C \g11251.A \g11249.A \g6945.A \g11252.D \g11249.B \g11248.B }
-    New input vector for $reduce_and cell $flatten\g6915.$verific$i5$GSCLib_3.0.v:671$10246: { \g12786.Y \g12551.Y \g7182.B0 \g7226.B \g7226.C \g7226.D \g6915.A }
-    New input vector for $reduce_and cell $flatten\g6911.$verific$i5$GSCLib_3.0.v:639$10242: { \g11838.A \g11838.B \g11838.C \g11838.D \g6911.A \g6911.C }
-    New input vector for $reduce_and cell $flatten\g6886.$verific$i5$GSCLib_3.0.v:639$10242: { \g11823.A \g11823.B \g11823.D \g11822.I0_out \g11249.A \g6886.A }
-    New input vector for $reduce_and cell $flatten\g12431.$verific$i5$GSCLib_3.0.v:639$10242: { \g12429.B \g6987.A \g6987.B \g6987.C \g6987.D \g12431.C }
-    New input vector for $reduce_and cell $flatten\g12137.$verific$i5$GSCLib_3.0.v:671$10246: { \g12136.A \g7193.A \g7193.B \g12136.C \g12134.A \g7193.C }
-    New input vector for $reduce_and cell $flatten\g12136.$verific$i5$GSCLib_3.0.v:639$10242: { \g12136.A \g7193.A \g7193.B \g12136.C \g7193.C }
-    New input vector for $reduce_and cell $flatten\g6961.$verific$i5$GSCLib_3.0.v:639$10242: { \g12786.Y \g12551.Y \g7182.B0 \g7226.B \g7226.C \g7226.D }
-    New input vector for $reduce_and cell $flatten\g6936.$verific$i5$GSCLib_3.0.v:671$10246: { \g12389.A \g12389.B \g12389.C \g12389.D \g6936.A \g6936.B \g6936.D }
-    New input vector for $reduce_and cell $flatten\g6942.$verific$i5$GSCLib_3.0.v:671$10246: { \g7069.A \g7069.B \g7069.C \g6942.A \g6942.B \g6942.D \g7069.D }
+    New input vector for $reduce_and cell $flatten\g6980.$verific$i5$GSCLib_3.0.v:639$10246: { \g11417.A \g11417.B \g11417.C \g11417.D \g6980.A \g6980.C }
+    New input vector for $reduce_and cell $flatten\g6945.$verific$i5$GSCLib_3.0.v:639$10246: { \g11252.B \g11252.C \g11251.A \g11249.A \g6945.A \g11252.D \g11249.B \g11248.B }
+    New input vector for $reduce_and cell $flatten\g6915.$verific$i5$GSCLib_3.0.v:671$10248: { \g12786.Y \g12551.Y \g7182.B0 \g7226.B \g7226.C \g7226.D \g6915.A }
+    New input vector for $reduce_and cell $flatten\g6911.$verific$i5$GSCLib_3.0.v:639$10246: { \g11838.A \g11838.B \g11838.C \g11838.D \g6911.A \g6911.C }
+    New input vector for $reduce_and cell $flatten\g6886.$verific$i5$GSCLib_3.0.v:639$10246: { \g11823.A \g11823.B \g11823.D \g11822.I0_out \g11249.A \g6886.A }
+    New input vector for $reduce_and cell $flatten\g12431.$verific$i5$GSCLib_3.0.v:639$10246: { \g12429.B \g6987.A \g6987.B \g6987.C \g6987.D \g12431.C }
+    New input vector for $reduce_and cell $flatten\g12137.$verific$i5$GSCLib_3.0.v:671$10248: { \g12136.A \g7193.A \g7193.B \g12136.C \g12134.A \g7193.C }
+    New input vector for $reduce_and cell $flatten\g12136.$verific$i5$GSCLib_3.0.v:639$10246: { \g12136.A \g7193.A \g7193.B \g12136.C \g7193.C }
+    New input vector for $reduce_and cell $flatten\g6961.$verific$i5$GSCLib_3.0.v:639$10246: { \g12786.Y \g12551.Y \g7182.B0 \g7226.B \g7226.C \g7226.D }
+    New input vector for $reduce_and cell $flatten\g6936.$verific$i5$GSCLib_3.0.v:671$10248: { \g12389.A \g12389.B \g12389.C \g12389.D \g6936.A \g6936.B \g6936.D }
+    New input vector for $reduce_and cell $flatten\g6942.$verific$i5$GSCLib_3.0.v:671$10248: { \g7069.A \g7069.B \g7069.C \g6942.A \g6942.B \g6942.D \g7069.D }
   Optimizing cells in module \systemcdes.
 Performed a total of 11 changes.
 
@@ -443,163 +444,163 @@ Removed a total of 43 cells.
 yosys> opt_dff -nodffe -nosdff
 
 3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
-Changing const-value async load to async reset on $flatten\stage1_iter_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\stage1_iter_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\stage1_iter_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\stage1_iter_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\ready_o_reg.\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_R_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[41].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[46].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[55].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[54].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[53].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[48].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[52].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[43].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[51].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[40].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[50].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[49].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[48].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[47].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[46].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[45].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[49].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[44].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[45].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[43].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[42].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[41].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[40].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[47].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[39].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[38].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[37].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[36].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[42].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[35].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[34].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[33].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[51].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[32].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[58].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[44].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[50].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[57].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[34].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[32].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[37].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[33].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[38].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[55].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[61].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[39].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[60].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[52].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[35].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[54].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[56].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[53].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[36].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[59].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[63].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[62].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
-Changing const-value async load to async reset on $flatten\data_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10236 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\stage1_iter_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\stage1_iter_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\stage1_iter_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\stage1_iter_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\ready_o_reg.\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_R_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[41].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[46].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[55].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[54].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[53].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[48].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[52].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[43].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[51].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[40].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[50].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[49].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[48].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[47].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[46].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[45].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[49].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[44].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[45].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[43].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[42].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[41].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[40].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[47].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[39].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[38].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[37].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[36].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[42].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[35].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[34].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[33].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[51].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[32].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[58].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[44].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[3].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[4].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[50].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\rd1_Key_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[1].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[57].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[24].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[16].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[34].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[12].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[18].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[32].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[37].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[5].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[25].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[33].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[38].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[55].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[30].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[61].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[39].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[60].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[29].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[2].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[31].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[23].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[10].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[52].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[21].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[35].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[54].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[9].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[13].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[8].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[56].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[7].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[6].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[19].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[28].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[0].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[14].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[20].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[22].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[53].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[36].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[59].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[17].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[26].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[63].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[62].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[15].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[11].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
+Changing const-value async load to async reset on $flatten\data_o_reg[27].\df1.$verific$out_reg$GSCLib_3.0.v:67$10274 ($aldff) from module systemcdes.
 
 yosys> opt_clean
 
@@ -653,7 +654,7 @@ Optimizing module systemcdes.
 
 3.11.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> fsm
+yosys> fsm -encoding binary
 
 3.12. Executing FSM pass (extract and optimize FSM).
 
@@ -678,7 +679,7 @@ yosys> fsm_opt
 
 3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
-yosys> fsm_recode
+yosys> fsm_recode -encoding binary
 
 3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
@@ -869,12 +870,36 @@ yosys> opt_clean
 3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
-yosys> techmap
+yosys> stat
 
-3.22. Executing TECHMAP pass (map to technology primitives).
+3.22. Printing statistics.
 
-3.22.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+=== systemcdes ===
+
+   Number of wires:              17969
+   Number of wire bits:          18158
+   Number of public wires:       17968
+   Number of public wire bits:   18157
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               4695
+     $adff                         157
+     $aldff                         33
+     $and                         1470
+     $mux                          146
+     $not                         2055
+     $or                           601
+     $reduce_and                   226
+     $reduce_or                      7
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
+
+3.23. Executing TECHMAP pass (map to technology primitives).
+
+3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -901,7 +926,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.22.2. Continuing TECHMAP pass.
+3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_rs_alu'.
+Successfully finished Verilog frontend.
+
+3.23.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $adff.
@@ -913,26 +943,48 @@ Using extmapper simplemap for cells of type $aldff.
 No more expansions possible.
 <suppressed ~4766 debug messages>
 
+yosys> stat
+
+3.24. Printing statistics.
+
+=== systemcdes ===
+
+   Number of wires:              18446
+   Number of wire bits:          18735
+   Number of public wires:       17968
+   Number of public wire bits:   18157
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               5039
+     $_ALDFF_PN_                    33
+     $_AND_                       2033
+     $_DFF_PN1_                    157
+     $_MUX_                        146
+     $_NOT_                       2055
+     $_OR_                         615
+
+
 yosys> opt
 
-3.23. Executing OPT pass (performing simple optimizations).
+3.25. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.23.1. Executing OPT_EXPR pass (perform const folding).
+3.25.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 <suppressed ~1 debug messages>
 
 yosys> opt_merge -nomux
 
-3.23.2. Executing OPT_MERGE pass (detect identical cells).
+3.25.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 <suppressed ~165 debug messages>
 Removed a total of 55 cells.
 
 yosys> opt_muxtree
 
-3.23.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -940,37 +992,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.5. Executing OPT_MERGE pass (detect identical cells).
+3.25.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 Removed 0 unused cells and 262 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.23.8. Executing OPT_EXPR pass (perform const folding).
+3.25.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.23.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.23.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -978,63 +1030,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.12. Executing OPT_MERGE pass (detect identical cells).
+3.25.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
 yosys> opt_expr
 
-3.23.15. Executing OPT_EXPR pass (perform const folding).
+3.25.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.23.16. Finished OPT passes. (There is nothing left to do.)
+3.25.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.24. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.24.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module systemcdes.
-
-yosys> opt_merge
-
-3.24.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\systemcdes'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.24.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \systemcdes..
-
-3.24.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.25. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.26. Executing OPT pass (performing simple optimizations).
 
@@ -1043,90 +1065,32 @@ yosys> opt_expr -full
 3.26.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.26.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.26.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \systemcdes..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.26.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \systemcdes.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.26.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\systemcdes'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.26.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.26.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.26.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
-yosys> opt_expr -full
+3.26.5. Finished fast OPT passes.
 
-3.26.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module systemcdes.
+yosys> memory_map
 
-3.26.10. Finished OPT passes. (There is nothing left to do.)
+3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.27. Executing ABC pass (technology mapping using ABC).
-
-3.27.1. Extracting gate netlist of module `\systemcdes' to `<abc-temp-dir>/input.blif'..
-Extracted 4793 gates and 5105 wires to a netlist network with 312 inputs and 223 outputs.
-
-3.27.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/systemcdes/abc_tmp.scr 
-ABC:   #Luts =   412  Max Lvl =   9  Avg Lvl =   2.39  [   0.46 sec. at Pass 0]
-ABC:   #Luts =   331  Max Lvl =   8  Avg Lvl =   2.54  [  11.29 sec. at Pass 1]
-ABC:   #Luts =   327  Max Lvl =   8  Avg Lvl =   2.55  [   2.68 sec. at Pass 2]
-ABC:   #Luts =   326  Max Lvl =   8  Avg Lvl =   2.52  [   3.08 sec. at Pass 3]
-ABC:   #Luts =   324  Max Lvl =   8  Avg Lvl =   2.50  [   4.18 sec. at Pass 4]
-ABC:   #Luts =   323  Max Lvl =   8  Avg Lvl =   2.48  [   4.81 sec. at Pass 5]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.51  [   3.80 sec. at Pass 6]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.51  [   5.95 sec. at Pass 7]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.51  [   5.30 sec. at Pass 8]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.27.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      419
-ABC RESULTS:        internal signals:     4570
-ABC RESULTS:           input signals:      312
-ABC RESULTS:          output signals:      223
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
@@ -1145,7 +1109,7 @@ Running muxtree optimizer on module \systemcdes..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
@@ -1157,27 +1121,122 @@ yosys> opt_merge
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.28.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
-Removed 0 unused cells and 14800 unused wires.
-<suppressed ~14050 debug messages>
+
+yosys> opt_expr -full
+
+3.28.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module systemcdes.
+
+3.28.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.29. Executing ABC pass (technology mapping using ABC).
+
+3.29.1. Summary of detected clock domains:
+  4983 cells in clk=\clk, en={ }, arst=!\reset, srst={ }
+
+3.29.2. Extracting gate netlist of module `\systemcdes' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, asynchronously reset by !\reset
+Extracted 4950 gates and 5105 wires to a netlist network with 155 inputs and 98 outputs.
+
+3.29.2.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.29.2.2. Re-integrating ABC results.
+ABC RESULTS:               AND cells:      375
+ABC RESULTS:            ANDNOT cells:       91
+ABC RESULTS:               BUF cells:      129
+ABC RESULTS:               DFF cells:      157
+ABC RESULTS:               MUX cells:      361
+ABC RESULTS:              NAND cells:      512
+ABC RESULTS:               NOR cells:       43
+ABC RESULTS:               NOT cells:       10
+ABC RESULTS:                OR cells:      172
+ABC RESULTS:             ORNOT cells:       96
+ABC RESULTS:              XNOR cells:       49
+ABC RESULTS:               XOR cells:       50
+ABC RESULTS:        internal signals:     4852
+ABC RESULTS:           input signals:      155
+ABC RESULTS:          output signals:       98
+Removing temp directory.
+
+yosys> abc -script abc_tmp.scr
+
+3.30. Executing ABC pass (technology mapping using ABC).
+
+3.30.1. Extracting gate netlist of module `\systemcdes' to `<abc-temp-dir>/input.blif'..
+Extracted 1759 gates and 2006 wires to a netlist network with 247 inputs and 126 outputs.
+
+3.30.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/systemcdes/abc_tmp.scr 
+ABC:   #Luts =   333  Max Lvl =   8  Avg Lvl =   4.56  [   0.15 sec. at Pass 0]
+ABC:   #Luts =   323  Max Lvl =   8  Avg Lvl =   4.51  [   4.03 sec. at Pass 1]
+ABC:   #Luts =   323  Max Lvl =   8  Avg Lvl =   4.51  [   0.83 sec. at Pass 2]
+ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   4.60  [   1.05 sec. at Pass 3]
+ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   4.60  [   1.04 sec. at Pass 4]
+ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   4.60  [   1.38 sec. at Pass 5]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.30.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      322
+ABC RESULTS:        internal signals:     1633
+ABC RESULTS:           input signals:      247
+ABC RESULTS:          output signals:      126
+Removing temp directory.
+
+yosys> opt
+
+3.31. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.28.8. Executing OPT_EXPR pass (perform const folding).
+3.31.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.31.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\systemcdes'.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1185,59 +1244,69 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.12. Executing OPT_MERGE pass (detect identical cells).
+3.31.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \systemcdes..
+Removed 0 unused cells and 17876 unused wires.
+<suppressed ~15273 debug messages>
+
+yosys> opt_expr
+
+3.31.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module systemcdes.
+
+3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \systemcdes..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \systemcdes.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.31.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\systemcdes'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
 yosys> opt_expr
 
-3.28.15. Executing OPT_EXPR pass (perform const folding).
+3.31.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.28.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> stat
-
-3.29. Printing statistics.
-
-=== systemcdes ===
-
-   Number of wires:               4115
-   Number of wire bits:           4304
-   Number of public wires:        3919
-   Number of public wire bits:    4108
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:                609
-     $_ALDFF_PN_                    33
-     $_DFF_PN1_                    157
-     $lut                          419
-
-
-yosys> shregmap -minlen 8 -maxlen 20
-
-3.30. Executing SHREGMAP pass (map shift registers).
-Converted 0 dff cells into 0 shift registers.
-
-yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
-
-3.31. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.31.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
@@ -1245,27 +1314,55 @@ yosys> stat
 
 === systemcdes ===
 
-   Number of wires:               4181
-   Number of wire bits:           4370
-   Number of public wires:        3919
-   Number of public wire bits:    4108
+   Number of wires:               3077
+   Number of wire bits:           3266
+   Number of public wires:        2696
+   Number of public wire bits:    2885
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                675
+   Number of cells:                512
+     $_ALDFF_PN_                    33
+     $_DFF_PN0_                    157
+     $lut                          322
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.33. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.35. Printing statistics.
+
+=== systemcdes ===
+
+   Number of wires:               3143
+   Number of wire bits:           3332
+   Number of public wires:        2696
+   Number of public wire bits:    2885
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                578
      $_DFFSR_PNN_                   33
-     $_DFF_PN1_                    157
+     $_DFF_PN0_                    157
      $_ORNOT_                       33
      $_OR_                          33
-     $lut                          419
+     $lut                          322
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.33. Executing TECHMAP pass (map to technology primitives).
+3.36. Executing TECHMAP pass (map to technology primitives).
 
-3.33.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1292,8 +1389,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.33.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1351,67 +1448,75 @@ Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
 Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Generating RTLIL representation for module `\$_SDFF_PP0_'.
+Generating RTLIL representation for module `\$_SDFF_PN0_'.
+Generating RTLIL representation for module `\$_SDFF_NP0_'.
+Generating RTLIL representation for module `\$_SDFF_NN0_'.
+Generating RTLIL representation for module `\$_SDFF_PP1_'.
+Generating RTLIL representation for module `\$_SDFF_PN1_'.
+Generating RTLIL representation for module `\$_SDFF_NP1_'.
+Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.33.3. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $lut.
-Using template \$_DFF_PN1_ for cells of type $_DFF_PN1_.
+3.36.3. Continuing TECHMAP pass.
+Using template \$_DFF_PN0_ for cells of type $_DFF_PN0_.
 Using template \$_DFFSR_PNN_ for cells of type $_DFFSR_PNN_.
+Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
-<suppressed ~737 debug messages>
+<suppressed ~648 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.34. Executing OPT_EXPR pass (perform const folding).
+3.37. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
-<suppressed ~7072 debug messages>
+<suppressed ~6564 debug messages>
 
 yosys> simplemap
 
-3.35. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
 yosys> opt_merge
 
-3.37. Executing OPT_MERGE pass (detect identical cells).
+3.40. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
-<suppressed ~3255 debug messages>
-Removed a total of 1085 cells.
+<suppressed ~4338 debug messages>
+Removed a total of 1446 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.38. Executing OPT_DFF pass (perform DFF optimizations).
+3.41. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.39. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
-Removed 0 unused cells and 1549 unused wires.
+Removed 0 unused cells and 1516 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.40. Executing OPT pass (performing simple optimizations).
+3.43. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.40.1. Executing OPT_EXPR pass (perform const folding).
+3.43.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
-<suppressed ~300 debug messages>
+<suppressed ~343 debug messages>
 
 yosys> opt_merge -nomux
 
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
+3.43.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1419,37 +1524,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
+3.43.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
-Removed 0 unused cells and 121 unused wires.
+Removed 0 unused cells and 36 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.40.8. Executing OPT_EXPR pass (perform const folding).
+3.43.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1457,80 +1562,80 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
+3.43.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
 yosys> opt_expr
 
-3.40.15. Executing OPT_EXPR pass (perform const folding).
+3.43.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.40.16. Finished OPT passes. (There is nothing left to do.)
+3.43.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -script abc_tmp.scr
 
-3.41. Executing ABC pass (technology mapping using ABC).
+3.44. Executing ABC pass (technology mapping using ABC).
 
-3.41.1. Extracting gate netlist of module `\systemcdes' to `<abc-temp-dir>/input.blif'..
-Extracted 1848 gates and 2163 wires to a netlist network with 313 inputs and 224 outputs.
+3.44.1. Extracting gate netlist of module `\systemcdes' to `<abc-temp-dir>/input.blif'..
+Extracted 1771 gates and 2021 wires to a netlist network with 248 inputs and 127 outputs.
 
-3.41.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+3.44.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/systemcdes/abc_tmp.scr 
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [   0.59 sec. at Pass 0]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [  15.43 sec. at Pass 1]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [   3.77 sec. at Pass 2]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [   3.16 sec. at Pass 3]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [   3.38 sec. at Pass 4]
-ABC:   #Luts =   322  Max Lvl =   8  Avg Lvl =   2.47  [   5.34 sec. at Pass 5]
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/systemcdes/abc_tmp.scr 
+ABC:   #Luts =   323  Max Lvl =   8  Avg Lvl =   4.56  [   0.19 sec. at Pass 0]
+ABC:   #Luts =   323  Max Lvl =   6  Avg Lvl =   3.44  [   4.06 sec. at Pass 1]
+ABC:   #Luts =   323  Max Lvl =   6  Avg Lvl =   3.44  [   0.88 sec. at Pass 2]
+ABC:   #Luts =   323  Max Lvl =   6  Avg Lvl =   3.44  [   0.91 sec. at Pass 3]
+ABC:   #Luts =   323  Max Lvl =   6  Avg Lvl =   3.44  [   0.80 sec. at Pass 4]
+ABC:   #Luts =   323  Max Lvl =   6  Avg Lvl =   3.44  [   1.23 sec. at Pass 5]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.41.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      419
-ABC RESULTS:        internal signals:     1626
-ABC RESULTS:           input signals:      313
-ABC RESULTS:          output signals:      224
+3.44.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      322
+ABC RESULTS:        internal signals:     1646
+ABC RESULTS:           input signals:      248
+ABC RESULTS:          output signals:      127
 Removing temp directory.
 
 yosys> opt
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.45. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.45.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1538,37 +1643,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.45.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
-Removed 0 unused cells and 1438 unused wires.
+Removed 0 unused cells and 1291 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.45.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.45.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \systemcdes..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1576,87 +1681,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \systemcdes.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.45.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\systemcdes'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.45.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module systemcdes.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.45.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.43. Executing HIERARCHY pass (managing design hierarchy).
+3.46. Executing HIERARCHY pass (managing design hierarchy).
 
-3.43.1. Analyzing design hierarchy..
+3.46.1. Analyzing design hierarchy..
 Top module:  \systemcdes
 
-3.43.2. Analyzing design hierarchy..
+3.46.2. Analyzing design hierarchy..
 Top module:  \systemcdes
 Removed 0 unused modules.
 
 yosys> stat
 
-3.44. Printing statistics.
+3.47. Printing statistics.
 
 === systemcdes ===
 
-   Number of wires:               4115
-   Number of wire bits:           4304
-   Number of public wires:        3919
-   Number of public wire bits:    4108
+   Number of wires:               3077
+   Number of wire bits:           3266
+   Number of public wires:        2696
+   Number of public wire bits:    2885
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                609
-     $lut                          419
+   Number of cells:                512
+     $lut                          322
      dffsre                        190
 
 
 yosys> opt_clean -purge
 
-3.45. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \systemcdes..
-Removed 0 unused cells and 3499 unused wires.
-<suppressed ~3499 debug messages>
+Removed 0 unused cells and 2558 unused wires.
+<suppressed ~2558 debug messages>
 
-yosys> write_verilog -noattr -nohex systemcdes.verilog
+yosys> write_verilog -noattr -nohex synthesized.v
 
-3.46. Executing Verilog backend.
+3.49. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.46.1. Executing BMUXMAP pass.
+3.49.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.46.2. Executing DEMUXMAP pass.
+3.49.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\systemcdes'.
 
 Warnings: 23 unique messages, 23 total
-End of script. Logfile hash: b2e359023d, CPU: user 23.83s system 0.15s, MEM: 64.97 MB peak
-Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
-Time spent: 90% 2x abc (217 sec), 3% 22x opt_clean (8 sec), ...
-real 116.23
-user 219.50
-sys 22.12
+End of script. Logfile hash: 4eba2c8803, CPU: user 15.17s system 0.12s, MEM: 64.35 MB peak
+Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
+Time spent: 83% 3x abc (77 sec), 5% 22x opt_clean (5 sec), ...
+real 33.11
+user 83.71
+sys 8.95

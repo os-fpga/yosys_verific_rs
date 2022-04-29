@@ -19,7 +19,7 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
+ Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -34,7 +34,7 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
 
 yosys> verilog_defaults -add -I.
 
@@ -43,7 +43,7 @@ yosys> read -vlog2k oc8051_alu.v oc8051_defines.v oc8051_divide.v oc8051_multipl
 yosys> verific -vlog2k oc8051_alu.v oc8051_defines.v oc8051_divide.v oc8051_multiply.v oc8051_timescale.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Jan22_SW_Release, released at Sat Jan 29 02:42:49 2022.
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'oc8051_alu.v'
 VERIFIC-INFO [VERI-1328] oc8051_alu.v:50: analyzing included file 'oc8051_defines.v'
 VERIFIC-INFO [VERI-2320] oc8051_alu.v:50: back to file 'oc8051_alu.v'
@@ -52,14 +52,14 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'oc8051_divide.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'oc8051_multiply.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'oc8051_timescale.v'
 
-yosys> synth_rs -top top -tech genesis -goal area -de -no_dsp -no_bram -verilog top.verilog
+yosys> synth_rs -top top -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass.
+3. Executing synth_rs pass: v0.2.36
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -67,10 +67,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
-Generating RTLIL representation for module `\dff'.
-Generating RTLIL representation for module `\dffn'.
+3.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -78,6 +76,9 @@ Generating RTLIL representation for module `\latchnsre'.
 Generating RTLIL representation for module `\io_scff'.
 Generating RTLIL representation for module `\scff'.
 Generating RTLIL representation for module `\sh_dff'.
+Generating RTLIL representation for module `\adder_carry'.
+Generating RTLIL representation for module `\sdffr'.
+Generating RTLIL representation for module `\sdffs'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top top
@@ -248,7 +249,7 @@ Optimizing module top.
 
 3.11.9. Finished OPT passes. (There is nothing left to do.)
 
-yosys> fsm
+yosys> fsm -encoding binary
 
 3.12. Executing FSM pass (extract and optimize FSM).
 
@@ -273,7 +274,7 @@ yosys> fsm_opt
 
 3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
-yosys> fsm_recode
+yosys> fsm_recode -encoding binary
 
 3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
@@ -472,13 +473,13 @@ Extracting $alu and $macc cells in module top:
   creating $alu cell for $verific$add_101$oc8051_alu.v:195$267: $auto$alumacc.cc:485:replace_alu$859
   creating $alu cell for $verific$add_103$oc8051_alu.v:196$270: $auto$alumacc.cc:485:replace_alu$862
   creating $alu cell for $flatten\oc8051_div1.$verific$LessThan_5$oc8051_divide.v:79$615, $flatten\oc8051_div1.$verific$equal_4$oc8051_divide.v:74$614: $auto$alumacc.cc:485:replace_alu$865
-  creating $alu cell for $verific$add_139$oc8051_alu.v:275$294: $auto$alumacc.cc:485:replace_alu$872
-  creating $alu cell for $verific$add_14$oc8051_alu.v:120$207: $auto$alumacc.cc:485:replace_alu$875
-  creating $alu cell for $verific$add_142$oc8051_alu.v:278$297: $auto$alumacc.cc:485:replace_alu$878
-  creating $alu cell for $verific$add_24$oc8051_alu.v:125$225: $auto$alumacc.cc:485:replace_alu$881
-  creating $alu cell for $verific$add_30$oc8051_alu.v:130$231: $auto$alumacc.cc:485:replace_alu$884
-  creating $alu cell for $verific$add_33$oc8051_alu.v:133$233: $auto$alumacc.cc:485:replace_alu$887
-  creating $alu cell for $verific$add_86$oc8051_alu.v:192$258: $auto$alumacc.cc:485:replace_alu$890
+  creating $alu cell for $verific$add_139$oc8051_alu.v:275$294: $auto$alumacc.cc:485:replace_alu$876
+  creating $alu cell for $verific$add_14$oc8051_alu.v:120$207: $auto$alumacc.cc:485:replace_alu$879
+  creating $alu cell for $verific$add_142$oc8051_alu.v:278$297: $auto$alumacc.cc:485:replace_alu$882
+  creating $alu cell for $verific$add_24$oc8051_alu.v:125$225: $auto$alumacc.cc:485:replace_alu$885
+  creating $alu cell for $verific$add_30$oc8051_alu.v:130$231: $auto$alumacc.cc:485:replace_alu$888
+  creating $alu cell for $verific$add_33$oc8051_alu.v:133$233: $auto$alumacc.cc:485:replace_alu$891
+  creating $alu cell for $verific$add_86$oc8051_alu.v:192$258: $auto$alumacc.cc:485:replace_alu$894
   created 21 $alu and 4 $macc cells.
 
 yosys> opt
@@ -627,12 +628,39 @@ yosys> opt_clean
 3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
-yosys> techmap
+yosys> stat
 
-3.22. Executing TECHMAP pass (map to technology primitives).
+3.22. Printing statistics.
 
-3.22.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+=== top ===
+
+   Number of wires:                150
+   Number of wire bits:            827
+   Number of public wires:          28
+   Number of public wire bits:     150
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 85
+     $alu                           21
+     $and                            3
+     $bmux                           5
+     $logic_not                      1
+     $macc                           4
+     $mux                           24
+     $not                           11
+     $or                             8
+     $reduce_and                     3
+     $reduce_bool                    1
+     $xor                            4
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
+
+3.23. Executing TECHMAP pass (map to technology primitives).
+
+3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -659,13 +687,18 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.22.2. Continuing TECHMAP pass.
-Using template $paramod$1f812f0514ea3255703342654e053e2c502325cc\_90_alu for cells of type $alu.
+3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_rs_alu'.
+Successfully finished Verilog frontend.
+
+3.23.3. Continuing TECHMAP pass.
+Using template $paramod$7e0667b276190bf0f5cbed1755185a5461dc0c9d\_80_rs_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $reduce_and.
-Using template $paramod$b85fbb3374a1d9ba7ee4f4d6323c30f939df3ada\_90_alu for cells of type $alu.
-Using template $paramod$0563fff2c395e9892f21c131fa33d5e0ad144e72\_90_alu for cells of type $alu.
+Using template $paramod$b7976f81e1bebdacc6c27b69d57b88d545898b78\_80_rs_alu for cells of type $alu.
+Using template $paramod$cabd0280ef36eb4fc3e5a0f94ad6a41b7595a158\_80_rs_alu for cells of type $alu.
 Using template $paramod$1d1e68f77481583066c6d429218f48ea9d5739b3\_90_alu for cells of type $alu.
-Using template $paramod$c3cd1564c35d873179656addd6052d7ea8b6d991\_90_alu for cells of type $alu.
+Using template $paramod$6268c9849396b992276ed6f68094a32888ec4427\_80_rs_alu for cells of type $alu.
 Using template $paramod$aebc44f5eedf4f1603d7564e4920ac508059c773\_90_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $xor.
 Using extmapper maccmap for cells of type $macc.
@@ -680,8 +713,8 @@ Using extmapper simplemap for cells of type $or.
 Using extmapper simplemap for cells of type $mux.
 Using template $paramod$740b056ede97228d3eae64ea2fdc81f0a33e0fe7\_90_alu for cells of type $alu.
 Using template $paramod$f85408ed1aa3d09e465edae8a7bf590332ae9f7b\_90_alu for cells of type $alu.
-Using template $paramod$672a140277c71df8314410f22acc08d55222c3c7\_90_alu for cells of type $alu.
-Using template $paramod$a1bc51c02ce12ac21eb18988e83292af48ed7d72\_90_alu for cells of type $alu.
+Using template $paramod$240ad039ec1e9238e4044d74741a0282952c4b79\_80_rs_alu for cells of type $alu.
+Using template $paramod$089a78a8a0966fcc055e2feb3e29c6d35fa032d4\_80_rs_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $bmux.
   add { 1'1 \src1 [3:0] } (5 bits, unsigned)
@@ -693,43 +726,65 @@ Using extmapper simplemap for cells of type $reduce_bool.
   sub $verific$n176$15 (1 bits, unsigned)
   sub \src2 [6:4] (3 bits, unsigned)
   packed 2 (1) bits / 1 words into adder tree
+Using template $paramod$0d6d95e3fa0eb6b4a427f21fbcbdc6321e6ab338\_80_rs_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $logic_not.
 Using extmapper simplemap for cells of type $pos.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000100 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000101 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010000 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000001000 for cells of type $lcu.
-Using template $paramod$7e708ae28ab761f11d0fb59d3ffc72f6a4baf5d9\_90_alu for cells of type $alu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000001001 for cells of type $lcu.
 Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000010000 for cells of type $fa.
 Using template $paramod$6df0329addda9228fcc2546de2aaf14ad26c98e1\_90_alu for cells of type $alu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000001001 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000100 for cells of type $lcu.
+Using template $paramod$7e708ae28ab761f11d0fb59d3ffc72f6a4baf5d9\_90_alu for cells of type $alu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
 Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000000101 for cells of type $fa.
-Using template $paramod$b18e16801adf491a64caa0542270798e5d4ac6b6\_90_alu for cells of type $alu.
+Using template $paramod$e1fa17c54ba251d9a1a740451324521b44278ba8\_80_rs_alu for cells of type $alu.
 Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000000100 for cells of type $fa.
+Using template $paramod$0dc6478095c7e63b7c3a1a3e62a75092266af031\_80_rs_alu for cells of type $alu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010000 for cells of type $lcu.
 No more expansions possible.
-<suppressed ~2261 debug messages>
+<suppressed ~2133 debug messages>
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== top ===
+
+   Number of wires:               1173
+   Number of wire bits:          22626
+   Number of public wires:          28
+   Number of public wire bits:     150
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               2415
+     $_AND_                        671
+     $_MUX_                        630
+     $_NOT_                        217
+     $_OR_                         289
+     $_XOR_                        540
+     adder_carry                    68
+
 
 yosys> opt
 
-3.23. Executing OPT pass (performing simple optimizations).
+3.25. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.23.1. Executing OPT_EXPR pass (perform const folding).
+3.25.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~996 debug messages>
+<suppressed ~865 debug messages>
 
 yosys> opt_merge -nomux
 
-3.23.2. Executing OPT_MERGE pass (detect identical cells).
+3.25.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
-<suppressed ~774 debug messages>
-Removed a total of 258 cells.
+<suppressed ~552 debug messages>
+Removed a total of 184 cells.
 
 yosys> opt_muxtree
 
-3.23.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -737,38 +792,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.5. Executing OPT_MERGE pass (detect identical cells).
+3.25.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 93 unused cells and 945 unused wires.
-<suppressed ~94 debug messages>
+Removed 76 unused cells and 793 unused wires.
+<suppressed ~77 debug messages>
 
 yosys> opt_expr
 
-3.23.8. Executing OPT_EXPR pass (perform const folding).
+3.25.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~9 debug messages>
 
-3.23.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.23.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -776,104 +830,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.23.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.23.12. Executing OPT_MERGE pass (detect identical cells).
+3.25.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.23.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.23.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \top..
-Removed 0 unused cells and 1 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.23.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
-
-3.23.16. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.23.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.23.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.23.19. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.23.20. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.23.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.23.22. Executing OPT_EXPR pass (perform const folding).
+3.25.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.23.23. Finished OPT passes. (There is nothing left to do.)
+3.25.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.24. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.24.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
-<suppressed ~72 debug messages>
-
-yosys> opt_merge
-
-3.24.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.24.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \top..
-Removed 0 unused cells and 4 unused wires.
-<suppressed ~1 debug messages>
-
-3.24.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.25. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.26. Executing OPT pass (performing simple optimizations).
 
@@ -881,174 +864,36 @@ yosys> opt_expr -full
 
 3.26.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
+<suppressed ~76 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.26.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.26.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.26.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.26.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.26.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:278:simplemap_mux$1129 in front of them:
-        $auto$simplemap.cc:86:simplemap_bitop$2094
-        $auto$simplemap.cc:86:simplemap_bitop$2068
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1379 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1362
-        $auto$simplemap.cc:312:simplemap_bmux$1354
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1380 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1363
-        $auto$simplemap.cc:312:simplemap_bmux$1355
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1381 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1364
-        $auto$simplemap.cc:312:simplemap_bmux$1356
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1382 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1365
-        $auto$simplemap.cc:312:simplemap_bmux$1357
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1383 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1366
-        $auto$simplemap.cc:312:simplemap_bmux$1358
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1384 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1367
-        $auto$simplemap.cc:312:simplemap_bmux$1359
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1385 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1368
-        $auto$simplemap.cc:312:simplemap_bmux$1360
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1386 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1369
-        $auto$simplemap.cc:312:simplemap_bmux$1361
-
-
 yosys> opt_dff
 
-3.26.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.26.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
 
-yosys> opt_expr -full
+3.26.5. Finished fast OPT passes.
 
-3.26.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
-<suppressed ~9 debug messages>
+yosys> memory_map
 
-3.26.10. Rerunning OPT passes. (Maybe there is more to do..)
+3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> opt_muxtree
-
-3.26.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \top..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~9 debug messages>
-
-yosys> opt_reduce -full
-
-3.26.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.26.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.26.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.26.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \top..
-
-yosys> opt_expr -full
-
-3.26.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module top.
-
-3.26.18. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.27. Executing ABC pass (technology mapping using ABC).
-
-3.27.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
-Extracted 1324 gates and 1357 wires to a netlist network with 32 inputs and 37 outputs.
-
-3.27.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/osc_alu/abc_tmp.scr 
-ABC:   #Luts =   382  Max Lvl =  37  Avg Lvl =  14.43  [   0.45 sec. at Pass 0]
-ABC:   #Luts =   295  Max Lvl =  30  Avg Lvl =  12.14  [   8.75 sec. at Pass 1]
-ABC:   #Luts =   289  Max Lvl =  26  Avg Lvl =  10.97  [   2.12 sec. at Pass 2]
-ABC:   #Luts =   287  Max Lvl =  26  Avg Lvl =  11.14  [   2.50 sec. at Pass 3]
-ABC:   #Luts =   286  Max Lvl =  26  Avg Lvl =  10.95  [   2.04 sec. at Pass 4]
-ABC:   #Luts =   284  Max Lvl =  26  Avg Lvl =  10.89  [   4.15 sec. at Pass 5]
-ABC:   #Luts =   280  Max Lvl =  26  Avg Lvl =  11.03  [   3.39 sec. at Pass 6]
-ABC:   #Luts =   280  Max Lvl =  26  Avg Lvl =  11.03  [   5.13 sec. at Pass 7]
-ABC:   #Luts =   278  Max Lvl =  26  Avg Lvl =  10.70  [   3.38 sec. at Pass 8]
-ABC:   #Luts =   276  Max Lvl =  26  Avg Lvl =  10.70  [   5.82 sec. at Pass 9]
-ABC:   #Luts =   276  Max Lvl =  25  Avg Lvl =  10.46  [   3.21 sec. at Pass 10]
-ABC:   #Luts =   276  Max Lvl =  25  Avg Lvl =  10.46  [   6.06 sec. at Pass 11]
-ABC:   #Luts =   276  Max Lvl =  25  Avg Lvl =  10.46  [   4.40 sec. at Pass 12]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.27.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      277
-ABC RESULTS:        internal signals:     1288
-ABC RESULTS:           input signals:       32
-ABC RESULTS:          output signals:       37
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
@@ -1064,12 +909,10 @@ yosys> opt_muxtree
 3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
+  No muxes found in this module.
 Removed 0 multiplexer ports.
-<suppressed ~9 debug messages>
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
@@ -1081,88 +924,272 @@ yosys> opt_merge
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.28.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1437 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1420
+        $auto$simplemap.cc:312:simplemap_bmux$1412
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1438 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1421
+        $auto$simplemap.cc:312:simplemap_bmux$1413
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1439 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1422
+        $auto$simplemap.cc:312:simplemap_bmux$1414
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1440 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1423
+        $auto$simplemap.cc:312:simplemap_bmux$1415
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1441 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1424
+        $auto$simplemap.cc:312:simplemap_bmux$1416
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1442 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1425
+        $auto$simplemap.cc:312:simplemap_bmux$1417
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1443 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1426
+        $auto$simplemap.cc:312:simplemap_bmux$1418
+
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1444 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1427
+        $auto$simplemap.cc:312:simplemap_bmux$1419
+
+
 yosys> opt_dff
 
-3.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 468 unused wires.
-<suppressed ~1 debug messages>
 
-yosys> opt_expr
+yosys> opt_expr -full
 
-3.28.8. Executing OPT_EXPR pass (perform const folding).
+3.28.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
+<suppressed ~8 debug messages>
 
-3.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~9 debug messages>
+<suppressed ~8 debug messages>
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
-3.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.12. Executing OPT_MERGE pass (detect identical cells).
+3.28.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.28.14. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top..
+
+yosys> opt_expr -full
+
+3.28.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top.
+
+3.28.18. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.29. Executing ABC pass (technology mapping using ABC).
+
+3.29.1. Summary of detected clock domains:
+  1308 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.29.2. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 1232 gates and 1316 wires to a netlist network with 83 inputs and 66 outputs.
+
+3.29.2.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.29.2.2. Re-integrating ABC results.
+ABC RESULTS:               AND cells:      265
+ABC RESULTS:            ANDNOT cells:       55
+ABC RESULTS:               MUX cells:       57
+ABC RESULTS:              NAND cells:      420
+ABC RESULTS:               NOR cells:       41
+ABC RESULTS:               NOT cells:       18
+ABC RESULTS:                OR cells:       92
+ABC RESULTS:             ORNOT cells:       57
+ABC RESULTS:              XNOR cells:       57
+ABC RESULTS:               XOR cells:      123
+ABC RESULTS:        internal signals:     1167
+ABC RESULTS:           input signals:       83
+ABC RESULTS:          output signals:       66
+Removing temp directory.
+
+yosys> abc -script abc_tmp.scr
+
+3.30. Executing ABC pass (technology mapping using ABC).
+
+3.30.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+Extracted 1185 gates and 1268 wires to a netlist network with 83 inputs and 66 outputs.
+
+3.30.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/osc_alu/abc_tmp.scr 
+ABC:   #Luts =   340  Max Lvl =  33  Avg Lvl =   7.85  [   0.08 sec. at Pass 0]
+ABC:   #Luts =   314  Max Lvl =  27  Avg Lvl =   6.20  [   2.91 sec. at Pass 1]
+ABC:   #Luts =   305  Max Lvl =  26  Avg Lvl =   5.98  [   0.58 sec. at Pass 2]
+ABC:   #Luts =   302  Max Lvl =  27  Avg Lvl =   5.74  [   1.26 sec. at Pass 3]
+ABC:   #Luts =   300  Max Lvl =  24  Avg Lvl =   5.58  [   0.99 sec. at Pass 4]
+ABC:   #Luts =   299  Max Lvl =  25  Avg Lvl =   5.64  [   1.63 sec. at Pass 5]
+ABC:   #Luts =   299  Max Lvl =  25  Avg Lvl =   5.64  [   1.17 sec. at Pass 6]
+ABC:   #Luts =   299  Max Lvl =  25  Avg Lvl =   5.64  [   2.12 sec. at Pass 7]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.30.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      299
+ABC RESULTS:        internal signals:     1119
+ABC RESULTS:           input signals:       83
+ABC RESULTS:          output signals:       66
+Removing temp directory.
+
+yosys> opt
+
+3.31. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.31.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top.
+
+yosys> opt_merge -nomux
+
+3.31.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~8 debug messages>
+
+yosys> opt_reduce
+
+3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.31.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top..
+Removed 0 unused cells and 1743 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.31.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top.
+
+3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~8 debug messages>
+
+yosys> opt_reduce
+
+3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.31.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.28.15. Executing OPT_EXPR pass (perform const folding).
+3.31.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.28.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> stat
-
-3.29. Printing statistics.
-
-=== top ===
-
-   Number of wires:                295
-   Number of wire bits:            420
-   Number of public wires:          28
-   Number of public wire bits:     150
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:                286
-     $lut                          277
-     $mux                            9
-
-
-yosys> shregmap -minlen 8 -maxlen 20
-
-3.30. Executing SHREGMAP pass (map shift registers).
-Converted 0 dff cells into 0 shift registers.
-
-yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
-
-3.31. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.31.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
@@ -1170,24 +1197,53 @@ yosys> stat
 
 === top ===
 
-   Number of wires:                295
-   Number of wire bits:            420
+   Number of wires:                328
+   Number of wire bits:            630
    Number of public wires:          28
    Number of public wire bits:     150
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                286
-     $lut                          277
-     $mux                            9
+   Number of cells:                373
+     $lut                          297
+     $mux                            8
+     adder_carry                    68
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.33. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.35. Printing statistics.
+
+=== top ===
+
+   Number of wires:                328
+   Number of wire bits:            630
+   Number of public wires:          28
+   Number of public wire bits:     150
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                373
+     $lut                          297
+     $mux                            8
+     adder_carry                    68
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.33. Executing TECHMAP pass (map to technology primitives).
+3.36. Executing TECHMAP pass (map to technology primitives).
 
-3.33.1. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1214,8 +1270,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.33.2. Executing Verilog-2005 frontend: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1273,67 +1329,75 @@ Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
 Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
 Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Generating RTLIL representation for module `\$_SDFF_PP0_'.
+Generating RTLIL representation for module `\$_SDFF_PN0_'.
+Generating RTLIL representation for module `\$_SDFF_NP0_'.
+Generating RTLIL representation for module `\$_SDFF_NN0_'.
+Generating RTLIL representation for module `\$_SDFF_PP1_'.
+Generating RTLIL representation for module `\$_SDFF_PN1_'.
+Generating RTLIL representation for module `\$_SDFF_NP1_'.
+Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.33.3. Continuing TECHMAP pass.
+3.36.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
-<suppressed ~414 debug messages>
+<suppressed ~441 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.34. Executing OPT_EXPR pass (perform const folding).
+3.37. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~6574 debug messages>
+<suppressed ~6744 debug messages>
 
 yosys> simplemap
 
-3.35. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
 yosys> opt_merge
 
-3.37. Executing OPT_MERGE pass (detect identical cells).
+3.40. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
-<suppressed ~5091 debug messages>
-Removed a total of 1697 cells.
+<suppressed ~4782 debug messages>
+Removed a total of 1594 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.38. Executing OPT_DFF pass (perform DFF optimizations).
+3.41. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.39. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 510 unused wires.
+Removed 0 unused cells and 576 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.40. Executing OPT pass (performing simple optimizations).
+3.43. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.40.1. Executing OPT_EXPR pass (perform const folding).
+3.43.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
-<suppressed ~231 debug messages>
+<suppressed ~239 debug messages>
 
 yosys> opt_merge -nomux
 
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
+3.43.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
+<suppressed ~9 debug messages>
+Removed a total of 3 cells.
 
 yosys> opt_muxtree
 
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1341,37 +1405,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
+3.43.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 29 unused wires.
+Removed 0 unused cells and 44 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.40.8. Executing OPT_EXPR pass (perform const folding).
+3.43.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1379,80 +1443,80 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
+3.43.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.40.15. Executing OPT_EXPR pass (perform const folding).
+3.43.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.40.16. Finished OPT passes. (There is nothing left to do.)
+3.43.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -script abc_tmp.scr
 
-3.41. Executing ABC pass (technology mapping using ABC).
+3.44. Executing ABC pass (technology mapping using ABC).
 
-3.41.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
-Extracted 1875 gates and 1900 wires to a netlist network with 23 inputs and 19 outputs.
+3.44.1. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+Extracted 1741 gates and 1818 wires to a netlist network with 75 inputs and 48 outputs.
 
-3.41.1.1. Executing ABC.
-Running ABC command: /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/logic_synthesis-rs/abc-rs/abc -s -f <abc-temp-dir>/abc.script 2>&1
+3.44.1.1. Executing ABC.
+Running ABC command: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/build/logic_synthesis-rs/bin/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/meri/Documents/workspace/clean/for_push/yosys_verific_rs/result_23-03-2022T14-57-36/All_lut_synth_rs_ade.json/osc_alu/abc_tmp.scr 
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [   0.52 sec. at Pass 0]
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [  14.43 sec. at Pass 1]
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [   2.09 sec. at Pass 2]
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [   4.83 sec. at Pass 3]
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [   2.77 sec. at Pass 4]
-ABC:   #Luts =   274  Max Lvl =  25  Avg Lvl =  16.79  [   3.97 sec. at Pass 5]
+ABC: + source /home/users/aram/Workspace/clean_repo/yosys_verific_rs/result_20-04-2022T11-33-54/All_lut_synth_rs_ade.json/osc_alu/abc_tmp.scr 
+ABC:   #Luts =   296  Max Lvl =  25  Avg Lvl =   7.21  [   0.17 sec. at Pass 0]
+ABC:   #Luts =   296  Max Lvl =  25  Avg Lvl =   7.21  [   3.99 sec. at Pass 1]
+ABC:   #Luts =   294  Max Lvl =  25  Avg Lvl =   7.19  [   0.72 sec. at Pass 2]
+ABC:   #Luts =   294  Max Lvl =  25  Avg Lvl =   7.19  [   1.19 sec. at Pass 3]
+ABC:   #Luts =   294  Max Lvl =  25  Avg Lvl =   7.19  [   0.65 sec. at Pass 4]
+ABC:   #Luts =   294  Max Lvl =  25  Avg Lvl =   7.19  [   1.28 sec. at Pass 5]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.41.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      274
-ABC RESULTS:        internal signals:     1858
-ABC RESULTS:           input signals:       23
-ABC RESULTS:          output signals:       19
+3.44.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      294
+ABC RESULTS:        internal signals:     1695
+ABC RESULTS:           input signals:       75
+ABC RESULTS:          output signals:       48
 Removing temp directory.
 
 yosys> opt
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.45. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.45.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1460,37 +1524,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.45.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
-Removed 0 unused cells and 1100 unused wires.
+Removed 0 unused cells and 1111 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.45.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.45.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.45.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1498,86 +1562,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.45.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.45.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.45.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.45.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module top.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.45.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.43. Executing HIERARCHY pass (managing design hierarchy).
+3.46. Executing HIERARCHY pass (managing design hierarchy).
 
-3.43.1. Analyzing design hierarchy..
+3.46.1. Analyzing design hierarchy..
 Top module:  \top
 
-3.43.2. Analyzing design hierarchy..
+3.46.2. Analyzing design hierarchy..
 Top module:  \top
 Removed 0 unused modules.
 
 yosys> stat
 
-3.44. Printing statistics.
+3.47. Printing statistics.
 
 === top ===
 
-   Number of wires:                283
-   Number of wire bits:            405
+   Number of wires:                317
+   Number of wire bits:            619
    Number of public wires:          28
    Number of public wire bits:     150
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                274
-     $lut                          274
+   Number of cells:                362
+     $lut                          294
+     adder_carry                    68
 
 
 yosys> opt_clean -purge
 
-3.45. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top..
 Removed 0 unused cells and 17 unused wires.
 <suppressed ~17 debug messages>
 
-yosys> write_verilog -noattr -nohex top.verilog
+yosys> write_verilog -noattr -nohex synthesized.v
 
-3.46. Executing Verilog backend.
+3.49. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.46.1. Executing BMUXMAP pass.
+3.49.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.46.2. Executing DEMUXMAP pass.
+3.49.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\top'.
 
 Warnings: 2 unique messages, 2 total
-End of script. Logfile hash: d83bacd551, CPU: user 5.67s system 0.07s, MEM: 34.60 MB peak
-Yosys 0.14+36 (git sha1 4cd3e3b51, gcc 7.1.0 -fPIC -Os)
-Time spent: 98% 2x abc (296 sec), 0% 40x opt_expr (2 sec), ...
-real 100.47
-user 274.68
-sys 27.36
+End of script. Logfile hash: 25e17a215d, CPU: user 3.98s system 0.05s, MEM: 34.47 MB peak
+Yosys 0.16+6 (git sha1 0c82fb7e3, gcc 9.1.0 -fPIC -Os)
+Time spent: 96% 3x abc (122 sec), 1% 35x opt_expr (1 sec), ...
+real 24.08
+user 113.38
+sys 13.13
