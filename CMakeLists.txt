@@ -194,9 +194,20 @@ install(
 
 # Check system 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
-
 enable_testing()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_test(
+        NAME yosys_verific_rs-valgrind-test
+        COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+    set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
+        FAIL_REGULAR_EXPRESSION "FAILED")
+endif()
+
 add_test(
     NAME yosys_verific_rs-smoke-test
     COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
+    FAIL_REGULAR_EXPRESSION "FAILED")
