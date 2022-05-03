@@ -274,13 +274,28 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
         files_dict = {"v": [], "sv": [], "vhdl": []}
         flist_file = os.path.join(abs_rtl_path, "flist.flist")
         read_hdl = read_hdl_base
+        files = None
         if os.path.exists(flist_file):
             with open(flist_file) as fp:
-                files = fp.readlines()
-                if files[0].strip().endswith(".svh") or files[0].strip().endswith(".sv"):
-                    read_hdl += "\nread -f -sv flist.flist"
-                else:
-                    read_hdl += "\nread -f flist.flist"
+                hdl_list = []
+                curr_hdl_mode = None
+                prev_hdl_mode = None
+                files = [filename.strip() for filename in fp.readlines()]
+                for filename in files:
+                    if filename.endswith(".svh") or filename.endswith(".sv"):
+                        curr_hdl_mode = "-sv"
+                    elif filename.endswith(".vhd") or filename.endswith(".vhdl"):
+                        curr_hdl_mode = "-vhdl"
+                    elif filename.endswith(".vh") or filename.endswith(".v") \
+                         or filename.endswith(".verilog") or filename.endswith(".vlg"):
+                        curr_hdl_mode = "-vlog2k"
+                    if not prev_hdl_mode:
+                        read_hdl += "\nread " + curr_hdl_mode + " " + filename
+                    elif prev_hdl_mode == curr_hdl_mode:
+                        read_hdl += " " + filename
+                    else:
+                        read_hdl += "\nread " + curr_hdl_mode + " " + filename
+                    prev_hdl_mode = curr_hdl_mode
         else:
             for filename in os.listdir(abs_rtl_path):
                 if filename.endswith(".svh"):
