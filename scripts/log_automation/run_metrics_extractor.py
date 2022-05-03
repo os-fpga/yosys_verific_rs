@@ -278,6 +278,8 @@ def extract_yosys_metrics():
                             continue
             except OSError as e:
                 error_exit(e.strerror)
+            except ValueError as e:
+                logger.error("Value error in : " + task_name + " log file")
    
 def extract_vivado_metrics():
     global metrics

@@ -11,6 +11,7 @@ import argparse
 import time
 import logging
 import shutil
+import shlex
 import json
 import re
 import multiprocessing as mp
@@ -271,34 +272,43 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
     try:
         abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
         files_dict = {"v": [], "sv": [], "vhdl": []}
-        for filename in os.listdir(abs_rtl_path):
-            if filename.endswith(".svh"):
-                files_dict["sv"].append(filename)
-            elif filename.endswith(".vh"):
-                files_dict["v"].append(filename)
-        for filename in os.listdir(abs_rtl_path):
-            if filename.endswith(".vhd"):
-                files_dict["vhdl"].append(filename)
-            elif filename.endswith(".vhdl"):
-                files_dict["vhdl"].append(filename)
-            elif filename.endswith(".sv"):
-                files_dict["sv"].append(filename)
-            elif filename.endswith(".v"):
-                files_dict["v"].append(filename)
-            elif filename.endswith(".verilog"):
-                files_dict["v"].append(filename)
-            elif filename.endswith(".vlg"):
-                files_dict["v"].append(filename)
+        flist_file = os.path.join(abs_rtl_path, "flist.flist")
         read_hdl = read_hdl_base
-        if files_dict["v"]:
-            read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
-            read_hdl += read_verilog
-        if files_dict["sv"]:
-            read_sv = "\nread -sv " + " ".join(files_dict["sv"])
-            read_hdl += read_sv
-        if files_dict["vhdl"]:
-            read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
-            read_hdl += read_vhdl
+        if os.path.exists(flist_file):
+            with open(flist_file) as fp:
+                files = fp.readlines()
+                if files[0].strip().endswith(".svh") or files[0].strip().endswith(".sv"):
+                    read_hdl += "\nread -f -sv flist.flist"
+                else:
+                    read_hdl += "\nread -f flist.flist"
+        else:
+            for filename in os.listdir(abs_rtl_path):
+                if filename.endswith(".svh"):
+                    files_dict["sv"].append(filename)
+                elif filename.endswith(".vh"):
+                    files_dict["v"].append(filename)
+            for filename in os.listdir(abs_rtl_path):
+                if filename.endswith(".vhd"):
+                    files_dict["vhdl"].append(filename)
+                elif filename.endswith(".vhdl"):
+                    files_dict["vhdl"].append(filename)
+                elif filename.endswith(".sv"):
+                    files_dict["sv"].append(filename)
+                elif filename.endswith(".v"):
+                    files_dict["v"].append(filename)
+                elif filename.endswith(".verilog"):
+                    files_dict["v"].append(filename)
+                elif filename.endswith(".vlg"):
+                    files_dict["v"].append(filename)
+            if files_dict["v"]:
+                read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
+                read_hdl += read_verilog
+            if files_dict["sv"]:
+                read_sv = "\nread -sv " + " ".join(files_dict["sv"])
+                read_hdl += read_sv
+            if files_dict["vhdl"]:
+                read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
+                read_hdl += read_vhdl
         
         benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
         shutil.copytree(abs_rtl_path, benchmark_run_dir)
@@ -326,8 +336,14 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template,
         abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
         shutil.copytree(abs_rtl_path, benchmark_run_dir)
         vivado_file = os.path.join(benchmark_run_dir, "vivado_script.tcl")
+        flist_file = os.path.join(benchmark_run_dir, "flist.flist")
+        benchmarks_list_str = None
+        if os.path.exists(flist_file):
+            with open(flist_file) as f:
+                benchmarks_list_str = " ".join([shlex.quote(line.strip()) for line in f.readlines()])
         
-        rep = {"${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": 
+        rep = {"${SOURCE_FILES}": benchmarks_list_str if benchmarks_list_str else benchmark_run_dir,
+                "${BENCHMARK_RUN_DIR}": benchmark_run_dir, "${TOP_MODULE}": 
                 benchmark["top_module"], "${BENCHMARK_NAME}": benchmark["name"]}
         create_file_from_template(vivado_file_template, rep, vivado_file)
         os.chdir(benchmark_run_dir)
