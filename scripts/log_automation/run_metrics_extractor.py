@@ -273,9 +273,6 @@ def extract_yosys_metrics():
                             results = results[-1].split()
                             metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[7]
                             metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[11]
-                        else:
-                            logger.error("No information found in : " + task_name + " log file")
-                            continue
             except OSError as e:
                 error_exit(e.strerror)
             except ValueError as e:
