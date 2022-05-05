@@ -39,14 +39,21 @@ run-cmake-debug:
 ##     |---> info       :  Run unit tests
 ##     |---> usage      :  make test
 test: release
-	cmake --build build --target test
+	cd build && ctest -R smoke-test
 
 ##
 ## @ dtest
 ##     |---> info       :  Run unit tests for debug build
 ##     |---> usage      :  make dtest
 dtest: debug
-	cmake --build dbuild --target test
+	cd dbuild && ctest -R smoke-test
+
+##
+## @ dtest
+##     |---> info       :  Run unit tests with valgrind 
+##     |---> usage      :  make dtest
+valgrind: debug
+	cd dbuild && ctest -R valgrind-test
 
 ##
 ## @ clean_test
