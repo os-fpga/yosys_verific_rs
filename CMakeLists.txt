@@ -16,7 +16,7 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 13)
 
-project(yosys_verific_rs VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+project(yosys_verific_rs)
 
 add_subdirectory(logic_synthesis-rs)
 
@@ -42,7 +42,7 @@ list(APPEND YOSYS_MK_ARGS
     "PREFIX=${YOSYS_PATH}"
     "ABCEXTERNAL=abc"
     "YOSYS_VERIFIC=1"
-    "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${CMAKE_PROJECT_VERSION}"
+    "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
 )
 
 if (ENABLE_VERIFIC)
