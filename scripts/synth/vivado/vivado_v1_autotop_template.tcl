@@ -1,5 +1,5 @@
 set_param general.maxThreads 1
-add_files -norecurse ${BENCHMARK_RUN_DIR}
+add_files -norecurse ${SOURCE_FILES}
 
 if {[glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.vh"] != ""} {
   set_property is_global_include true [get_files [glob -nocomplain -directory "${BENCHMARK_RUN_DIR}" "*.vh"]] 

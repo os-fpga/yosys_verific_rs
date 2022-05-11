@@ -1,0 +1,1750 @@
+
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2020  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys-Verific 0.0.8
+ Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+
+
+-- Executing script file `yosys.ys' --
+echo on
+
+yosys> plugin -i synth-rs
+
+yosys> read -verific
+
+yosys> read -incdir .
+
+yosys> verific -vlog-incdir .
+
+1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
+
+yosys> verilog_defaults -add -I.
+
+yosys> read -vlog2k bit_reversal.v crc_comb.v crc_control_unit.v crc_datapath.v crc_ip.v crc_parrallel.v crc_unit.v host_interface.v
+
+yosys> verific -vlog2k bit_reversal.v crc_comb.v crc_control_unit.v crc_datapath.v crc_ip.v crc_parrallel.v crc_unit.v host_interface.v
+
+2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
+Built with Verific Mar22_SW_Release, released at Fri Apr  1 00:31:54 2022.
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'bit_reversal.v'
+VERIFIC-WARNING [VERI-2329] bit_reversal.v:113: begin/end is required for generate-for in this mode of Verilog
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_comb.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_control_unit.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_datapath.v'
+VERIFIC-WARNING [VERI-2329] crc_datapath.v:342: begin/end is required for generate-for in this mode of Verilog
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_ip.v'
+VERIFIC-INFO [VERI-2561] crc_ip.v:127: undeclared symbol 'reset_pending', assumed default net type 'wire'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_parrallel.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'crc_unit.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'host_interface.v'
+
+yosys> synth_rs -top crc_ip -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
+
+3. Executing synth_rs pass: v0.2.37
+
+yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
+
+3.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\inv'.
+Generating RTLIL representation for module `\buff'.
+Generating RTLIL representation for module `\logic_0'.
+Generating RTLIL representation for module `\logic_1'.
+Generating RTLIL representation for module `\gclkbuff'.
+Successfully finished Verilog frontend.
+
+3.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\dffsre'.
+Generating RTLIL representation for module `\dffnsre'.
+Generating RTLIL representation for module `\latchsre'.
+Generating RTLIL representation for module `\latchnsre'.
+Generating RTLIL representation for module `\io_scff'.
+Generating RTLIL representation for module `\scff'.
+Generating RTLIL representation for module `\sh_dff'.
+Generating RTLIL representation for module `\adder_carry'.
+Generating RTLIL representation for module `\sdffr'.
+Generating RTLIL representation for module `\sdffs'.
+Successfully finished Verilog frontend.
+
+yosys> hierarchy -check -top crc_ip
+
+3.3. Executing HIERARCHY pass (managing design hierarchy).
+VERIFIC-INFO [VERI-1018] crc_ip.v:75: compiling module 'crc_ip'
+VERIFIC-INFO [VERI-1018] host_interface.v:75: compiling module 'host_interface'
+VERIFIC-WARNING [VERI-1209] host_interface.v:195: expression size 3 truncated to fit in target size 2
+VERIFIC-INFO [VERI-1018] crc_unit.v:75: compiling module 'crc_unit'
+VERIFIC-INFO [VERI-1018] crc_datapath.v:75: compiling module 'crc_datapath'
+VERIFIC-INFO [VERI-1018] bit_reversal.v:78: compiling module 'bit_reversal'
+VERIFIC-INFO [VERI-1018] crc_parrallel.v:75: compiling module 'crc_parallel(CRC_SIZE=32)'
+VERIFIC-INFO [VERI-1018] crc_comb.v:83: compiling module 'crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111)'
+VERIFIC-INFO [VERI-1018] crc_control_unit.v:76: compiling module 'crc_control_unit'
+Importing module crc_ip.
+Importing module crc_unit.
+Importing module crc_control_unit.
+Importing module crc_datapath.
+Importing module bit_reversal.
+Importing module crc_parallel(CRC_SIZE=32).
+Importing module crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111).
+Importing module host_interface.
+
+3.3.1. Analyzing design hierarchy..
+Top module:  \crc_ip
+Used module:     \crc_unit
+Used module:         \crc_control_unit
+Used module:         \crc_datapath
+Used module:             \crc_parallel(CRC_SIZE=32)
+Used module:                 \crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111)
+Used module:             \bit_reversal
+Used module:     \host_interface
+
+3.3.2. Analyzing design hierarchy..
+Top module:  \crc_ip
+Used module:     \crc_unit
+Used module:         \crc_control_unit
+Used module:         \crc_datapath
+Used module:             \crc_parallel(CRC_SIZE=32)
+Used module:                 \crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111)
+Used module:             \bit_reversal
+Used module:     \host_interface
+Removed 0 unused modules.
+
+yosys> proc
+
+3.4. Executing PROC pass (convert processes to netlists).
+
+yosys> proc_clean
+
+3.4.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+yosys> proc_rmdead
+
+3.4.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Removed a total of 0 dead cases.
+
+yosys> proc_prune
+
+3.4.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 0 assignments to connections.
+
+yosys> proc_init
+
+3.4.4. Executing PROC_INIT pass (extract init attributes).
+
+yosys> proc_arst
+
+3.4.5. Executing PROC_ARST pass (detect async resets in processes).
+
+yosys> proc_mux
+
+3.4.6. Executing PROC_MUX pass (convert decision trees to multiplexers).
+
+yosys> proc_dlatch
+
+3.4.7. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+yosys> proc_dff
+
+3.4.8. Executing PROC_DFF pass (convert process syncs to FFs).
+
+yosys> proc_memwr
+
+3.4.9. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+yosys> proc_clean
+
+3.4.10. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+yosys> opt_expr -keepdc
+
+3.4.11. Executing OPT_EXPR pass (perform const folding).
+Optimizing module host_interface.
+<suppressed ~7 debug messages>
+Optimizing module crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111).
+<suppressed ~1 debug messages>
+Optimizing module crc_parallel(CRC_SIZE=32).
+Optimizing module bit_reversal.
+Optimizing module crc_datapath.
+<suppressed ~9 debug messages>
+Optimizing module crc_control_unit.
+<suppressed ~5 debug messages>
+Optimizing module crc_unit.
+Optimizing module crc_ip.
+
+yosys> flatten
+
+3.5. Executing FLATTEN pass (flatten design).
+Deleting now unused module host_interface.
+Deleting now unused module crc_comb(CRC_SIZE=32,MASK=32'b11111111111111111111111111111111).
+Deleting now unused module crc_parallel(CRC_SIZE=32).
+Deleting now unused module bit_reversal.
+Deleting now unused module crc_datapath.
+Deleting now unused module crc_control_unit.
+Deleting now unused module crc_unit.
+<suppressed ~14 debug messages>
+
+yosys> tribuf -logic
+
+3.6. Executing TRIBUF pass.
+
+yosys> deminout
+
+3.7. Executing DEMINOUT pass (demote inout ports to input or output).
+
+yosys> opt_expr
+
+3.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_clean
+
+3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 2 unused cells and 2030 unused wires.
+<suppressed ~217 debug messages>
+
+yosys> check
+
+3.10. Executing CHECK pass (checking for obvious problems).
+Checking module crc_ip...
+Found and reported 0 problems.
+
+yosys> opt -nodffe -nosdff
+
+3.11. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.11.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~1 debug messages>
+
+yosys> opt_merge -nomux
+
+3.11.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~48 debug messages>
+Removed a total of 16 cells.
+
+yosys> opt_muxtree
+
+3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~30 debug messages>
+
+yosys> opt_reduce
+
+3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+    New ctrl vector for $pmux cell $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$select_82$crc_control_unit.v:263$751: { $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$n22$602 $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$n145$624 $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$n26$606 }
+  Optimizing cells in module \crc_ip.
+Performed a total of 1 changes.
+
+yosys> opt_merge
+
+3.11.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+Removing never-active async load on $flatten\HOST_INTERFACE.$verific$htrans_pp_reg$host_interface.v:170$2734 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\HOST_INTERFACE.$verific$hsize_pp_reg$host_interface.v:170$2733 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\HOST_INTERFACE.$verific$haddr_pp_reg$host_interface.v:170$2732 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\HOST_INTERFACE.$verific$crc_cr_ff_reg$host_interface.v:230$2792 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$size_ff_reg$crc_datapath.v:207$936 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_poly_ff_reg$crc_datapath.v:299$974 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_out_ff_reg$crc_datapath.v:276$963 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_init_ff_reg$crc_datapath.v:266$958 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_idr_ff_reg$crc_datapath.v:288$969 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$byte_ff_reg$crc_datapath.v:186$926 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$buffer_ff_reg$crc_datapath.v:186$925 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\DATAPATH.$verific$bf_size_ff_reg$crc_datapath.v:207$935 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_reset_reg$crc_control_unit.v:287$766 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_full_reg$crc_control_unit.v:144$698 ($aldff) from module crc_ip.
+Removing never-active async load on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_byte_reg$crc_control_unit.v:207$734 ($aldff) from module crc_ip.
+
+yosys> opt_clean
+
+3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 3 unused cells and 21 unused wires.
+<suppressed ~7 debug messages>
+
+yosys> opt_expr
+
+3.11.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~30 debug messages>
+
+yosys> opt_reduce
+
+3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.11.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.11.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.11.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> fsm -encoding binary
+
+3.12. Executing FSM pass (extract and optimize FSM).
+
+yosys> fsm_detect
+
+3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+
+yosys> fsm_extract
+
+3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+
+yosys> fsm_opt
+
+3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+yosys> opt_clean
+
+3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> fsm_opt
+
+3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+yosys> fsm_recode -encoding binary
+
+3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+
+yosys> fsm_info
+
+3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+yosys> fsm_map
+
+3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+
+yosys> opt -sat
+
+3.13. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.13.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_merge -nomux
+
+3.13.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~30 debug messages>
+
+yosys> opt_reduce
+
+3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $flatten\HOST_INTERFACE.$verific$hwrite_pp_reg$host_interface.v:170$2735 ($dff) from module crc_ip (D = \HWRITE, Q = \HOST_INTERFACE.hwrite_pp).
+Adding EN signal on $flatten\HOST_INTERFACE.$verific$htrans_pp_reg$host_interface.v:170$2734 ($dff) from module crc_ip (D = \HTRANS, Q = \HOST_INTERFACE.htrans_pp).
+Adding EN signal on $flatten\HOST_INTERFACE.$verific$hsize_pp_reg$host_interface.v:170$2733 ($dff) from module crc_ip (D = \HSIZE, Q = \HOST_INTERFACE.hsize_pp).
+Adding SRST signal on $flatten\HOST_INTERFACE.$verific$hselx_pp_reg$host_interface.v:170$2731 ($dff) from module crc_ip (D = $flatten\HOST_INTERFACE.$verific$n32$2661, Q = \HOST_INTERFACE.hselx_pp, rval = 1'0).
+Adding EN signal on $auto$ff.cc:262:slice$2808 ($sdff) from module crc_ip (D = \HSElx, Q = \HOST_INTERFACE.hselx_pp).
+Adding EN signal on $flatten\HOST_INTERFACE.$verific$haddr_pp_reg$host_interface.v:170$2732 ($dff) from module crc_ip (D = \HADDR [4:2], Q = \HOST_INTERFACE.haddr_pp).
+Adding SRST signal on $flatten\HOST_INTERFACE.$verific$crc_cr_ff_reg$host_interface.v:230$2792 ($dff) from module crc_ip (D = $flatten\HOST_INTERFACE.$verific$n513$2709, Q = \HOST_INTERFACE.crc_cr_ff, rval = 5'00000).
+Adding EN signal on $auto$ff.cc:262:slice$2813 ($sdff) from module crc_ip (D = \HWDATA [7:3], Q = \HOST_INTERFACE.crc_cr_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$size_ff_reg$crc_datapath.v:207$936 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n391$822, Q = \CRC_UNIT.DATAPATH.size_ff, rval = 2'10).
+Adding EN signal on $auto$ff.cc:262:slice$2815 ($sdff) from module crc_ip (D = \CRC_UNIT.DATAPATH.bf_size_ff, Q = \CRC_UNIT.DATAPATH.size_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_poly_ff_reg$crc_datapath.v:299$974 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n1110$844, Q = \CRC_UNIT.DATAPATH.crc_poly_ff, rval = 79764919).
+Adding EN signal on $auto$ff.cc:262:slice$2817 ($sdff) from module crc_ip (D = \HWDATA, Q = \CRC_UNIT.DATAPATH.crc_poly_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_out_ff_reg$crc_datapath.v:276$963 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n854$837, Q = \CRC_UNIT.DATAPATH.crc_out_ff, rval = 0).
+Adding EN signal on $auto$ff.cc:262:slice$2819 ($sdff) from module crc_ip (D = \CRC_UNIT.DATAPATH.CRC_UNIT.crc_out, Q = \CRC_UNIT.DATAPATH.crc_out_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_init_sel_ff_reg$crc_datapath.v:252$952 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n516$807, Q = \CRC_UNIT.DATAPATH.crc_init_sel_ff, rval = 1'0).
+Adding EN signal on $auto$ff.cc:262:slice$2821 ($sdff) from module crc_ip (D = 1'1, Q = \CRC_UNIT.DATAPATH.crc_init_sel_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_init_ff_reg$crc_datapath.v:266$958 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n687$833, Q = \CRC_UNIT.DATAPATH.crc_init_ff, rval = 32'11111111111111111111111111111111).
+Adding EN signal on $auto$ff.cc:262:slice$2827 ($sdff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n687$833, Q = \CRC_UNIT.DATAPATH.crc_init_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$crc_idr_ff_reg$crc_datapath.v:288$969 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n982$841, Q = \CRC_UNIT.DATAPATH.crc_idr_ff, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:262:slice$2831 ($sdff) from module crc_ip (D = \HWDATA [7:0], Q = \CRC_UNIT.DATAPATH.crc_idr_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$byte_ff_reg$crc_datapath.v:186$926 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n203$814, Q = \CRC_UNIT.DATAPATH.byte_ff, rval = 32'11111111111111111111111111111111).
+Adding EN signal on $auto$ff.cc:262:slice$2833 ($sdff) from module crc_ip (D = \CRC_UNIT.DATAPATH.buffer_ff, Q = \CRC_UNIT.DATAPATH.byte_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$buffer_ff_reg$crc_datapath.v:186$925 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n137$812, Q = \CRC_UNIT.DATAPATH.buffer_ff, rval = 32'11111111111111111111111111111111).
+Adding EN signal on $auto$ff.cc:262:slice$2835 ($sdff) from module crc_ip (D = \CRC_UNIT.DATAPATH.REV_IN.data_out, Q = \CRC_UNIT.DATAPATH.buffer_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\DATAPATH.$verific$bf_size_ff_reg$crc_datapath.v:207$935 ($dff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n385$820, Q = \CRC_UNIT.DATAPATH.bf_size_ff, rval = 2'10).
+Adding EN signal on $auto$ff.cc:262:slice$2837 ($sdff) from module crc_ip (D = $flatten\CRC_UNIT.\DATAPATH.$verific$n385$820, Q = \CRC_UNIT.DATAPATH.bf_size_ff).
+Adding SRST signal on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_reset_reg$crc_control_unit.v:287$766 ($dff) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_reset, Q = \CRC_UNIT.CONTROL_UNIT.state_reset, rval = 3'000).
+Adding SRST signal on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_full_reg$crc_control_unit.v:144$698 ($dff) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_full, Q = \CRC_UNIT.CONTROL_UNIT.state_full, rval = 2'00).
+Adding SRST signal on $flatten\CRC_UNIT.\CONTROL_UNIT.$verific$state_byte_reg$crc_control_unit.v:207$734 ($dff) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_byte, Q = \CRC_UNIT.CONTROL_UNIT.state_byte, rval = 3'100).
+
+yosys> opt_clean
+
+3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 32 unused cells and 32 unused wires.
+<suppressed ~33 debug messages>
+
+yosys> opt_expr
+
+3.13.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~2 debug messages>
+
+3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+yosys> opt_reduce
+
+3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~9 debug messages>
+Removed a total of 3 cells.
+
+yosys> opt_dff -sat
+
+3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 3 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.13.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.13.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.13.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+yosys> opt_reduce
+
+3.13.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.13.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.13.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.13.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.13.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.13.23. Finished OPT passes. (There is nothing left to do.)
+
+yosys> wreduce -keepdc
+
+3.14. Executing WREDUCE pass (reducing word size of cells).
+Removed top 1 bits (of 9) from port B of cell crc_ip.$flatten\HOST_INTERFACE.$verific$and_93$host_interface.v:218$2787 ($and).
+Removed top 24 bits (of 32) from port B of cell crc_ip.$flatten\HOST_INTERFACE.$verific$and_77$host_interface.v:220$2784 ($and).
+Removed top 1 bits (of 3) from port B of cell crc_ip.$flatten\HOST_INTERFACE.$verific$equal_43$host_interface.v:182$2753 ($eq).
+Removed top 2 bits (of 3) from port B of cell crc_ip.$flatten\HOST_INTERFACE.$verific$equal_39$host_interface.v:180$2749 ($eq).
+Removed top 1 bits (of 3) from FF cell crc_ip.$auto$ff.cc:262:slice$2805 ($dffe).
+Removed top 1 bits (of 2) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_12$crc_control_unit.v:148$702 ($eq).
+Removed top 2 bits (of 3) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_13$crc_control_unit.v:148$703 ($eq).
+Removed top 1 bits (of 3) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_17$crc_control_unit.v:149$707 ($eq).
+Removed top 1 bits (of 3) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_79$crc_control_unit.v:261$747 ($eq).
+Removed top 2 bits (of 3) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_150$crc_control_unit.v:339$788 ($eq).
+Removed top 1 bits (of 3) from port B of cell crc_ip.$flatten\CRC_UNIT.\CONTROL_UNIT.$verific$equal_153$crc_control_unit.v:340$791 ($eq).
+Removed top 6 bits (of 31) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.\genblk4[0].CRC_COMB.$verific$and_68$crc_comb.v:112$2646 ($and).
+Removed top 31 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_413$crc_parrallel.v:124$1606 ($and).
+Removed top 30 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_409$crc_parrallel.v:124$1603 ($and).
+Removed top 29 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_405$crc_parrallel.v:124$1600 ($and).
+Removed top 28 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_401$crc_parrallel.v:124$1597 ($and).
+Removed top 27 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_397$crc_parrallel.v:124$1594 ($and).
+Removed top 26 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_393$crc_parrallel.v:124$1591 ($and).
+Removed top 25 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_389$crc_parrallel.v:124$1588 ($and).
+Removed top 24 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_385$crc_parrallel.v:124$1585 ($and).
+Removed top 23 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_381$crc_parrallel.v:124$1582 ($and).
+Removed top 22 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_377$crc_parrallel.v:124$1579 ($and).
+Removed top 21 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_373$crc_parrallel.v:124$1576 ($and).
+Removed top 20 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_369$crc_parrallel.v:124$1573 ($and).
+Removed top 19 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_365$crc_parrallel.v:124$1570 ($and).
+Removed top 18 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_361$crc_parrallel.v:124$1567 ($and).
+Removed top 17 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_357$crc_parrallel.v:124$1564 ($and).
+Removed top 16 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_353$crc_parrallel.v:124$1561 ($and).
+Removed top 15 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_349$crc_parrallel.v:124$1558 ($and).
+Removed top 14 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_345$crc_parrallel.v:124$1555 ($and).
+Removed top 13 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_341$crc_parrallel.v:124$1552 ($and).
+Removed top 12 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_337$crc_parrallel.v:124$1549 ($and).
+Removed top 11 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_333$crc_parrallel.v:124$1546 ($and).
+Removed top 10 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_329$crc_parrallel.v:124$1543 ($and).
+Removed top 9 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_325$crc_parrallel.v:124$1540 ($and).
+Removed top 8 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_321$crc_parrallel.v:124$1537 ($and).
+Removed top 7 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_317$crc_parrallel.v:124$1534 ($and).
+Removed top 6 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_313$crc_parrallel.v:124$1531 ($and).
+Removed top 5 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_309$crc_parrallel.v:124$1528 ($and).
+Removed top 4 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_305$crc_parrallel.v:124$1525 ($and).
+Removed top 3 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_301$crc_parrallel.v:124$1522 ($and).
+Removed top 2 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_297$crc_parrallel.v:124$1519 ($and).
+Removed top 1 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_293$crc_parrallel.v:124$1516 ($and).
+Removed top 1 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_280$crc_parrallel.v:115$1505 ($and).
+Removed top 2 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_275$crc_parrallel.v:115$1502 ($and).
+Removed top 3 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_270$crc_parrallel.v:115$1499 ($and).
+Removed top 4 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_265$crc_parrallel.v:115$1496 ($and).
+Removed top 5 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_260$crc_parrallel.v:115$1493 ($and).
+Removed top 6 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_255$crc_parrallel.v:115$1490 ($and).
+Removed top 7 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_250$crc_parrallel.v:115$1487 ($and).
+Removed top 8 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_245$crc_parrallel.v:115$1484 ($and).
+Removed top 9 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_240$crc_parrallel.v:115$1481 ($and).
+Removed top 10 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_235$crc_parrallel.v:115$1478 ($and).
+Removed top 11 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_230$crc_parrallel.v:115$1475 ($and).
+Removed top 12 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_225$crc_parrallel.v:115$1472 ($and).
+Removed top 13 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_220$crc_parrallel.v:115$1469 ($and).
+Removed top 14 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_215$crc_parrallel.v:115$1466 ($and).
+Removed top 15 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_210$crc_parrallel.v:115$1463 ($and).
+Removed top 1 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_200$crc_parrallel.v:115$1457 ($and).
+Removed top 2 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_195$crc_parrallel.v:115$1454 ($and).
+Removed top 3 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_190$crc_parrallel.v:115$1451 ($and).
+Removed top 4 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_185$crc_parrallel.v:115$1448 ($and).
+Removed top 5 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_180$crc_parrallel.v:115$1445 ($and).
+Removed top 6 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_175$crc_parrallel.v:115$1442 ($and).
+Removed top 7 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_170$crc_parrallel.v:115$1439 ($and).
+Removed top 1 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_155$crc_parrallel.v:115$1430 ($and).
+Removed top 2 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_150$crc_parrallel.v:115$1427 ($and).
+Removed top 3 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_145$crc_parrallel.v:115$1424 ($and).
+Removed top 4 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_140$crc_parrallel.v:115$1421 ($and).
+Removed top 5 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_135$crc_parrallel.v:115$1418 ($and).
+Removed top 6 bits (of 32) from port A of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_130$crc_parrallel.v:115$1415 ($and).
+Removed top 1 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_121$crc_parrallel.v:105$1408 ($and).
+Removed top 2 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_117$crc_parrallel.v:105$1405 ($and).
+Removed top 3 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_113$crc_parrallel.v:105$1402 ($and).
+Removed top 4 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_109$crc_parrallel.v:105$1399 ($and).
+Removed top 5 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_105$crc_parrallel.v:105$1396 ($and).
+Removed top 6 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_101$crc_parrallel.v:105$1393 ($and).
+Removed top 7 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_97$crc_parrallel.v:105$1390 ($and).
+Removed top 8 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_93$crc_parrallel.v:105$1387 ($and).
+Removed top 9 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_89$crc_parrallel.v:105$1384 ($and).
+Removed top 10 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_85$crc_parrallel.v:105$1381 ($and).
+Removed top 11 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_81$crc_parrallel.v:105$1378 ($and).
+Removed top 12 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_77$crc_parrallel.v:105$1375 ($and).
+Removed top 13 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_73$crc_parrallel.v:105$1372 ($and).
+Removed top 14 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_69$crc_parrallel.v:105$1369 ($and).
+Removed top 15 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_65$crc_parrallel.v:105$1366 ($and).
+Removed top 16 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_61$crc_parrallel.v:105$1363 ($and).
+Removed top 17 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_57$crc_parrallel.v:105$1360 ($and).
+Removed top 18 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_53$crc_parrallel.v:105$1357 ($and).
+Removed top 19 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_49$crc_parrallel.v:105$1354 ($and).
+Removed top 20 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_45$crc_parrallel.v:105$1351 ($and).
+Removed top 21 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_41$crc_parrallel.v:105$1348 ($and).
+Removed top 22 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_37$crc_parrallel.v:105$1345 ($and).
+Removed top 23 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_33$crc_parrallel.v:105$1342 ($and).
+Removed top 24 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_29$crc_parrallel.v:105$1339 ($and).
+Removed top 25 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_25$crc_parrallel.v:105$1336 ($and).
+Removed top 26 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_21$crc_parrallel.v:105$1333 ($and).
+Removed top 27 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_17$crc_parrallel.v:105$1330 ($and).
+Removed top 28 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_13$crc_parrallel.v:105$1327 ($and).
+Removed top 29 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_9$crc_parrallel.v:105$1324 ($and).
+Removed top 30 bits (of 32) from port B of cell crc_ip.$flatten\CRC_UNIT.\DATAPATH.\CRC_UNIT.$verific$and_5$crc_parrallel.v:105$1321 ($and).
+
+yosys> peepopt
+
+3.15. Executing PEEPOPT pass (run peephole optimizers).
+
+yosys> pmuxtree
+
+3.16. Executing PMUXTREE pass.
+
+yosys> opt_clean
+
+3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 2 unused cells and 3 unused wires.
+<suppressed ~3 debug messages>
+
+yosys> alumacc
+
+3.18. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module crc_ip:
+  created 0 $alu and 0 $macc cells.
+
+yosys> opt
+
+3.19. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.19.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_merge -nomux
+
+3.19.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.19.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+yosys> opt_reduce
+
+3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.19.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.19.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.19.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.19.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.19.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> memory -nomap
+
+3.20. Executing MEMORY pass.
+
+yosys> opt_mem
+
+3.20.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_priority
+
+3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+yosys> opt_mem_feedback
+
+3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+yosys> memory_dff
+
+3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+yosys> opt_clean
+
+3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> memory_share
+
+3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+yosys> opt_mem_widen
+
+3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+yosys> opt_clean
+
+3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> memory_collect
+
+3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+yosys> opt_clean
+
+3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> stat
+
+3.22. Printing statistics.
+
+=== crc_ip ===
+
+   Number of wires:                560
+   Number of wire bits:          10638
+   Number of public wires:         363
+   Number of public wire bits:    7095
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                371
+     $and                          155
+     $bmux                           9
+     $dffe                           4
+     $eq                            16
+     $logic_not                      4
+     $mux                           21
+     $ne                             2
+     $not                            9
+     $or                            20
+     $reduce_and                     1
+     $reduce_bool                    4
+     $reduce_or                     96
+     $sdff                           3
+     $sdffe                         11
+     $xor                           16
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
+
+3.23. Executing TECHMAP pass (map to technology primitives).
+
+3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_rs_alu'.
+Successfully finished Verilog frontend.
+
+3.23.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $dffe.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $bmux.
+Using extmapper simplemap for cells of type $ne.
+Using extmapper simplemap for cells of type $xor.
+No more expansions possible.
+<suppressed ~442 debug messages>
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== crc_ip ===
+
+   Number of wires:               1134
+   Number of wire bits:          13872
+   Number of public wires:         363
+   Number of public wire bits:    7095
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               7806
+     $_AND_                       3752
+     $_DFFE_PP_                      8
+     $_MUX_                        363
+     $_NOT_                         59
+     $_OR_                        3133
+     $_SDFFE_PN0P_                  66
+     $_SDFFE_PN1P_                 112
+     $_SDFFE_PP0P_                   1
+     $_SDFF_PN0_                     7
+     $_SDFF_PN1_                     1
+     $_XOR_                        304
+
+
+yosys> opt
+
+3.25. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.25.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~6144 debug messages>
+
+yosys> opt_merge -nomux
+
+3.25.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~177 debug messages>
+Removed a total of 59 cells.
+
+yosys> opt_muxtree
+
+3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.25.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 557 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.25.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.25.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:262:slice$3517 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_full [1], Q = \CRC_UNIT.CONTROL_UNIT.state_full [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3516 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_full [0], Q = \CRC_UNIT.CONTROL_UNIT.state_full [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3326 ($_SDFF_PN1_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_byte [2], Q = \CRC_UNIT.CONTROL_UNIT.state_byte [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3325 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_byte [1], Q = \CRC_UNIT.CONTROL_UNIT.state_byte [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3324 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_byte [0], Q = \CRC_UNIT.CONTROL_UNIT.state_byte [0]).
+Adding EN signal on $auto$ff.cc:262:slice$3305 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_reset [2], Q = \CRC_UNIT.CONTROL_UNIT.state_reset [2]).
+Adding EN signal on $auto$ff.cc:262:slice$3304 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_reset [1], Q = \CRC_UNIT.CONTROL_UNIT.state_reset [1]).
+Adding EN signal on $auto$ff.cc:262:slice$3303 ($_SDFF_PN0_) from module crc_ip (D = \CRC_UNIT.CONTROL_UNIT.next_state_reset [0], Q = \CRC_UNIT.CONTROL_UNIT.state_reset [0]).
+
+yosys> opt_clean
+
+3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 34 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.25.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~88 debug messages>
+
+3.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.25.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~288 debug messages>
+Removed a total of 96 cells.
+
+yosys> opt_dff
+
+3.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 109 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.25.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.25.23. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.25.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.25.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.25.26. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.25.27. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.25.28. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.25.29. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.25.30. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt -fast -full
+
+3.26. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.26.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~38 debug messages>
+
+yosys> opt_merge
+
+3.26.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~9 debug messages>
+Removed a total of 3 cells.
+
+yosys> opt_dff
+
+3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 10 unused wires.
+<suppressed ~1 debug messages>
+
+3.26.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.28. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.28.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~4 debug messages>
+
+yosys> opt_merge -nomux
+
+3.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce -full
+
+3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.28.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.28.6. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr -full
+
+3.28.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.28.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -script abc_tmp.scr
+
+3.29. Executing ABC pass (technology mapping using ABC).
+
+3.29.1. Extracting gate netlist of module `\crc_ip' to `<abc-temp-dir>/input.blif'..
+Extracted 1431 gates and 1638 wires to a netlist network with 205 inputs and 154 outputs.
+
+3.29.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/crcahb/abc_tmp.scr 
+ABC:   #Luts =   446  Max Lvl =  14  Avg Lvl =   4.81  [   0.19 sec. at Pass 0]
+ABC:   #Luts =   398  Max Lvl =  12  Avg Lvl =   4.02  [   5.58 sec. at Pass 1]
+ABC:   #Luts =   396  Max Lvl =  12  Avg Lvl =   4.00  [   0.94 sec. at Pass 2]
+ABC:   #Luts =   394  Max Lvl =  11  Avg Lvl =   4.16  [   6.83 sec. at Pass 3]
+ABC:   #Luts =   379  Max Lvl =  12  Avg Lvl =   4.15  [   0.96 sec. at Pass 4]
+ABC:   #Luts =   368  Max Lvl =  11  Avg Lvl =   4.08  [   4.58 sec. at Pass 5]
+ABC:   #Luts =   366  Max Lvl =  11  Avg Lvl =   4.06  [   0.83 sec. at Pass 6]
+ABC:   #Luts =   365  Max Lvl =  11  Avg Lvl =   4.08  [   5.24 sec. at Pass 7]
+ABC:   #Luts =   362  Max Lvl =  11  Avg Lvl =   4.10  [   1.32 sec. at Pass 8]
+ABC:   #Luts =   362  Max Lvl =  11  Avg Lvl =   4.10  [   5.30 sec. at Pass 9]
+ABC:   #Luts =   358  Max Lvl =  11  Avg Lvl =   3.90  [   1.30 sec. at Pass 10]
+ABC:   #Luts =   358  Max Lvl =  11  Avg Lvl =   3.90  [   6.50 sec. at Pass 11]
+ABC:   #Luts =   353  Max Lvl =  10  Avg Lvl =   4.09  [   1.00 sec. at Pass 12]
+ABC:   #Luts =   353  Max Lvl =  10  Avg Lvl =   4.09  [   6.59 sec. at Pass 13]
+ABC:   #Luts =   351  Max Lvl =  11  Avg Lvl =   4.30  [   1.16 sec. at Pass 14]
+ABC:   #Luts =   351  Max Lvl =  11  Avg Lvl =   4.30  [   7.77 sec. at Pass 15]
+ABC:   #Luts =   351  Max Lvl =  11  Avg Lvl =   4.30  [   1.24 sec. at Pass 16]
+ABC:   #Luts =   351  Max Lvl =  11  Avg Lvl =   4.30  [   6.66 sec. at Pass 17]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.29.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      351
+ABC RESULTS:        internal signals:     1279
+ABC RESULTS:           input signals:      205
+ABC RESULTS:          output signals:      154
+Removing temp directory.
+
+yosys> opt
+
+3.30. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.30.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_merge -nomux
+
+3.30.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 673 unused wires.
+<suppressed ~107 debug messages>
+
+yosys> opt_expr
+
+3.30.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.30.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.30.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> stat
+
+3.31. Printing statistics.
+
+=== crc_ip ===
+
+   Number of wires:                496
+   Number of wire bits:           5721
+   Number of public wires:         257
+   Number of public wire bits:    5482
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                546
+     $_DFFE_PP_                      8
+     $_SDFFE_PN0P_                  73
+     $_SDFFE_PN1P_                 113
+     $_SDFFE_PP0N_                   1
+     $lut                          351
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.32. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.34. Printing statistics.
+
+=== crc_ip ===
+
+   Number of wires:                870
+   Number of wire bits:           6095
+   Number of public wires:         257
+   Number of public wire bits:    5482
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                920
+     $_DFFE_PP0P_                    8
+     $_DFF_P_                      187
+     $_MUX_                        374
+     $lut                          351
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
+
+3.35. Executing TECHMAP pass (map to technology primitives).
+
+3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+Generating RTLIL representation for module `\$_DFF_P_'.
+Generating RTLIL representation for module `\$_DFF_PP0_'.
+Generating RTLIL representation for module `\$_DFF_PN0_'.
+Generating RTLIL representation for module `\$_DFF_PP1_'.
+Generating RTLIL representation for module `\$_DFF_PN1_'.
+Generating RTLIL representation for module `\$_DFFE_PP_'.
+Generating RTLIL representation for module `\$_DFFE_PN_'.
+Generating RTLIL representation for module `\$_DFFE_PP0P_'.
+Generating RTLIL representation for module `\$_DFFE_PP0N_'.
+Generating RTLIL representation for module `\$_DFFE_PN0P_'.
+Generating RTLIL representation for module `\$_DFFE_PN0N_'.
+Generating RTLIL representation for module `\$_DFFE_PP1P_'.
+Generating RTLIL representation for module `\$_DFFE_PP1N_'.
+Generating RTLIL representation for module `\$_DFFE_PN1P_'.
+Generating RTLIL representation for module `\$_DFFE_PN1N_'.
+Generating RTLIL representation for module `\$_DFFSR_PPP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNP_'.
+Generating RTLIL representation for module `\$_DFFSR_PNN_'.
+Generating RTLIL representation for module `\$_DFFSR_PPN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNP_'.
+Generating RTLIL representation for module `\$_DFFSR_NNN_'.
+Generating RTLIL representation for module `\$_DFFSR_NPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_PNNN_'.
+Generating RTLIL representation for module `\$_DLATCHSR_PPP_'.
+Generating RTLIL representation for module `\$_DLATCHSR_NPP_'.
+Generating RTLIL representation for module `\$_DFF_N_'.
+Generating RTLIL representation for module `\$_DFF_NP0_'.
+Generating RTLIL representation for module `\$_DFF_NN0_'.
+Generating RTLIL representation for module `\$_DFF_NP1_'.
+Generating RTLIL representation for module `\$_DFF_NN1_'.
+Generating RTLIL representation for module `\$_DFFE_NP_'.
+Generating RTLIL representation for module `\$_DFFE_NN_'.
+Generating RTLIL representation for module `\$_DFFE_NP0P_'.
+Generating RTLIL representation for module `\$_DFFE_NP0N_'.
+Generating RTLIL representation for module `\$_DFFE_NN0P_'.
+Generating RTLIL representation for module `\$_DFFE_NN0N_'.
+Generating RTLIL representation for module `\$_DFFE_NP1P_'.
+Generating RTLIL representation for module `\$_DFFE_NP1N_'.
+Generating RTLIL representation for module `\$_DFFE_NN1P_'.
+Generating RTLIL representation for module `\$_DFFE_NN1N_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNP_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNPN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NPNN_'.
+Generating RTLIL representation for module `\$_DFFSRE_NNNN_'.
+Generating RTLIL representation for module `\$__SHREG_DFF_P_'.
+Generating RTLIL representation for module `\$_SDFF_PP0_'.
+Generating RTLIL representation for module `\$_SDFF_PN0_'.
+Generating RTLIL representation for module `\$_SDFF_NP0_'.
+Generating RTLIL representation for module `\$_SDFF_NN0_'.
+Generating RTLIL representation for module `\$_SDFF_PP1_'.
+Generating RTLIL representation for module `\$_SDFF_PN1_'.
+Generating RTLIL representation for module `\$_SDFF_NP1_'.
+Generating RTLIL representation for module `\$_SDFF_NN1_'.
+Successfully finished Verilog frontend.
+
+3.35.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $lut.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
+Using extmapper simplemap for cells of type $logic_not.
+No more expansions possible.
+<suppressed ~690 debug messages>
+
+yosys> opt_expr -mux_undef
+
+3.36. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~10291 debug messages>
+
+yosys> simplemap
+
+3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+
+yosys> opt_expr
+
+3.38. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_merge
+
+3.39. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~5061 debug messages>
+Removed a total of 1687 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.40. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 1505 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt -nodffe -nosdff
+
+3.42. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.42.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+<suppressed ~306 debug messages>
+
+yosys> opt_merge -nomux
+
+3.42.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+<suppressed ~30 debug messages>
+Removed a total of 10 cells.
+
+yosys> opt_muxtree
+
+3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.42.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 39 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.42.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.42.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.42.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.42.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -script abc_tmp.scr
+
+3.43. Executing ABC pass (technology mapping using ABC).
+
+3.43.1. Extracting gate netlist of module `\crc_ip' to `<abc-temp-dir>/input.blif'..
+Extracted 2317 gates and 2549 wires to a netlist network with 230 inputs and 221 outputs.
+
+3.43.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/crcahb/abc_tmp.scr 
+ABC:   #Luts =   498  Max Lvl =  13  Avg Lvl =   5.70  [   0.44 sec. at Pass 0]
+ABC:   #Luts =   492  Max Lvl =  13  Avg Lvl =   5.67  [   8.72 sec. at Pass 1]
+ABC:   #Luts =   488  Max Lvl =  11  Avg Lvl =   4.99  [   1.18 sec. at Pass 2]
+ABC:   #Luts =   488  Max Lvl =  11  Avg Lvl =   4.99  [   5.96 sec. at Pass 3]
+ABC:   #Luts =   484  Max Lvl =  11  Avg Lvl =   5.49  [   1.45 sec. at Pass 4]
+ABC:   #Luts =   483  Max Lvl =  11  Avg Lvl =   5.49  [   7.17 sec. at Pass 5]
+ABC:   #Luts =   483  Max Lvl =  11  Avg Lvl =   5.49  [   2.03 sec. at Pass 6]
+ABC:   #Luts =   483  Max Lvl =  11  Avg Lvl =   5.49  [   8.03 sec. at Pass 7]
+ABC:   #Luts =   483  Max Lvl =  11  Avg Lvl =   5.49  [   1.58 sec. at Pass 8]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.43.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      483
+ABC RESULTS:        internal signals:     2098
+ABC RESULTS:           input signals:      230
+ABC RESULTS:          output signals:      221
+Removing temp directory.
+
+yosys> opt
+
+3.44. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.44.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+yosys> opt_merge -nomux
+
+3.44.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.44.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 1668 unused wires.
+<suppressed ~30 debug messages>
+
+yosys> opt_expr
+
+3.44.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \crc_ip..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \crc_ip.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.44.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\crc_ip'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+
+yosys> opt_expr
+
+3.44.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module crc_ip.
+
+3.44.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> hierarchy -check
+
+3.45. Executing HIERARCHY pass (managing design hierarchy).
+
+3.45.1. Analyzing design hierarchy..
+Top module:  \crc_ip
+
+3.45.2. Analyzing design hierarchy..
+Top module:  \crc_ip
+Removed 0 unused modules.
+
+yosys> stat
+
+3.46. Printing statistics.
+
+=== crc_ip ===
+
+   Number of wires:                678
+   Number of wire bits:           5774
+   Number of public wires:         228
+   Number of public wire bits:    5324
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                678
+     $lut                          483
+     dffsre                        195
+
+
+yosys> opt_clean -purge
+
+3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \crc_ip..
+Removed 0 unused cells and 193 unused wires.
+<suppressed ~193 debug messages>
+
+yosys> write_verilog -noattr -nohex synthesized.v
+
+3.48. Executing Verilog backend.
+
+yosys> bmuxmap
+
+3.48.1. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.48.2. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+Dumping module `\crc_ip'.
+
+Warnings: 3 unique messages, 3 total
+End of script. Logfile hash: dda994659c, CPU: user 9.16s system 0.06s, MEM: 48.15 MB peak
+Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+Time spent: 98% 2x abc (758 sec), 0% 30x opt_expr (3 sec), ...
+real 115.32
+user 714.26
+sys 53.49
