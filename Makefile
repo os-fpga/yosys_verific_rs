@@ -52,7 +52,9 @@ dtest: debug
 ## @ dtest
 ##     |---> info       :  Run unit tests with valgrind 
 ##     |---> usage      :  make dtest
-valgrind: debug
+valgrind:
+	cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
+	cmake --build dbuild -j $(CPU_CORES)
 	cd dbuild && ctest -R valgrind-test
 
 ##

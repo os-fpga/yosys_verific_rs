@@ -23,6 +23,7 @@ add_subdirectory(logic_synthesis-rs)
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
+option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
 set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
@@ -197,12 +198,14 @@ message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 enable_testing()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_test(
-        NAME yosys_verific_rs-valgrind-test
-        COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
-    set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
-        FAIL_REGULAR_EXPRESSION "FAILED")
+    if (ENABLE_VALGRIND_TESTS)
+        add_test(
+            NAME yosys_verific_rs-valgrind-test
+            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+        set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
+            FAIL_REGULAR_EXPRESSION "FAILED")
+    endif()
 endif()
 
 add_test(
