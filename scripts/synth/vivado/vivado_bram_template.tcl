@@ -23,7 +23,6 @@ synth_design -top ${TOP_MODULE} \
     -control_set_opt_threshold auto \
     -max_uram 0 \
     -max_dsp 0 \
-    -max_bram_cascade_height 0 \
     -max_uram_cascade_height 0 \
     -shreg_min_size 5
 
