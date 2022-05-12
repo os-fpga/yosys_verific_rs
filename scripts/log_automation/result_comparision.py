@@ -61,10 +61,15 @@ def check_status():
 def main():
     for i in percentage_list:
         data = pd.DataFrame(columns=["Benchmarks", "Average", "Minimum", "Maximum"])
-        values = list(df[i][: -4])
+        values = []
+        for val in list(df[i][: -4]):
+            try:
+                values.append(float(val))
+            except:
+                pass
         min_val = min(values)
         max_val = max(values) 
-        average = sum(list(df[i][:-4])) / len(list(df[i][:-4]))
+        average = sum(values) / len(values)
         data.at[1, "Average"] = average
         add_min_benchmarks(data, min_val, values)
         add_max_benchmarks(data, max_val, values)
