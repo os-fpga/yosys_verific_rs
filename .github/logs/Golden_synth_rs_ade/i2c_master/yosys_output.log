@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.13
- Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.19
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -73,7 +73,7 @@ VERIFIC-INFO [VERI-2142] i2c_master_byte_ctrl.v:385: previous definition of desi
 
 yosys> synth_rs -top i2c_master -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-4. Executing synth_rs pass: v0.2.41
+4. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -98,6 +98,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top i2c_master
@@ -2055,55 +2062,82 @@ Optimizing module i2c_master.
 
 4.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+4.20. Printing statistics.
+
+=== i2c_master ===
+
+   Number of wires:                380
+   Number of wire bits:            940
+   Number of public wires:         114
+   Number of public wire bits:     282
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                321
+     $adff                          21
+     $adffe                         10
+     $alu                            1
+     $and                           48
+     $bmux                           1
+     $dff                            2
+     $dffe                           1
+     $eq                            33
+     $logic_not                      3
+     $mux                          114
+     $ne                            13
+     $not                           11
+     $or                            19
+     $reduce_and                    10
+     $reduce_bool                    4
+     $reduce_or                     30
+
+
 yosys> memory -nomap
 
-4.20. Executing MEMORY pass.
+4.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-4.20.1. Executing OPT_MEM pass (optimize memories).
+4.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-4.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+4.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-4.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+4.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-4.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+4.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-4.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 
 yosys> memory_share
 
-4.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+4.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-4.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+4.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-4.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 
 yosys> memory_collect
 
-4.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-4.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \i2c_master..
+4.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -2137,11 +2171,48 @@ yosys> stat
      $reduce_or                     30
 
 
+yosys> opt_clean
+
+4.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \i2c_master..
+
+yosys> stat
+
+4.24. Printing statistics.
+
+=== i2c_master ===
+
+   Number of wires:                380
+   Number of wire bits:            940
+   Number of public wires:         114
+   Number of public wire bits:     282
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                321
+     $adff                          21
+     $adffe                         10
+     $alu                            1
+     $and                           48
+     $bmux                           1
+     $dff                            2
+     $dffe                           1
+     $eq                            33
+     $logic_not                      3
+     $mux                          114
+     $ne                            13
+     $not                           11
+     $or                            19
+     $reduce_and                    10
+     $reduce_bool                    4
+     $reduce_or                     30
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-4.23. Executing TECHMAP pass (map to technology primitives).
+4.25. Executing TECHMAP pass (map to technology primitives).
 
-4.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+4.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -2169,12 +2240,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-4.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+4.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-4.23.3. Continuing TECHMAP pass.
+4.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $eq.
 Using extmapper simplemap for cells of type $adff.
 Using extmapper simplemap for cells of type $mux.
@@ -2199,7 +2270,7 @@ No more expansions possible.
 
 yosys> stat
 
-4.24. Printing statistics.
+4.26. Printing statistics.
 
 === i2c_master ===
 
@@ -2226,24 +2297,24 @@ yosys> stat
 
 yosys> opt
 
-4.25. Executing OPT pass (performing simple optimizations).
+4.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-4.25.1. Executing OPT_EXPR pass (perform const folding).
+4.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 <suppressed ~437 debug messages>
 
 yosys> opt_merge -nomux
 
-4.25.2. Executing OPT_MERGE pass (detect identical cells).
+4.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 <suppressed ~558 debug messages>
 Removed a total of 186 cells.
 
 yosys> opt_muxtree
 
-4.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+4.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \i2c_master..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2251,38 +2322,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-4.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+4.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \i2c_master.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-4.25.5. Executing OPT_MERGE pass (detect identical cells).
+4.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-4.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+4.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 Removed 6 unused cells and 295 unused wires.
 <suppressed ~7 debug messages>
 
 yosys> opt_expr
 
-4.25.8. Executing OPT_EXPR pass (perform const folding).
+4.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 <suppressed ~5 debug messages>
 
-4.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+4.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-4.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+4.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \i2c_master..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2290,67 +2361,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-4.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+4.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \i2c_master.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-4.25.12. Executing OPT_MERGE pass (detect identical cells).
+4.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-4.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+4.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 
 yosys> opt_expr
 
-4.25.15. Executing OPT_EXPR pass (perform const folding).
+4.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
-4.25.16. Finished OPT passes. (There is nothing left to do.)
+4.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-4.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-4.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module i2c_master.
-<suppressed ~98 debug messages>
-
-yosys> opt_merge
-
-4.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\i2c_master'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
-
-yosys> opt_dff
-
-4.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-4.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \i2c_master..
-Removed 0 unused cells and 15 unused wires.
-<suppressed ~1 debug messages>
-
-4.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-4.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 4.28. Executing OPT pass (performing simple optimizations).
 
@@ -2358,17 +2395,51 @@ yosys> opt_expr -full
 
 4.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
+<suppressed ~98 debug messages>
+
+yosys> opt_merge
+
+4.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\i2c_master'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+yosys> opt_dff
+
+4.28.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+4.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \i2c_master..
+Removed 0 unused cells and 15 unused wires.
+<suppressed ~1 debug messages>
+
+4.28.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+4.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+4.30. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+4.30.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module i2c_master.
 <suppressed ~14 debug messages>
 
 yosys> opt_merge -nomux
 
-4.28.2. Executing OPT_MERGE pass (detect identical cells).
+4.30.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-4.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+4.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \i2c_master..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2376,41 +2447,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-4.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+4.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \i2c_master.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-4.28.5. Executing OPT_MERGE pass (detect identical cells).
+4.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-4.28.6. Executing OPT_SHARE pass.
+4.30.6. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-4.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+4.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 
 yosys> opt_expr -full
 
-4.28.9. Executing OPT_EXPR pass (perform const folding).
+4.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
-4.28.10. Finished OPT passes. (There is nothing left to do.)
+4.30.10. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-4.29. Executing ABC pass (technology mapping using ABC).
+4.31. Executing ABC pass (technology mapping using ABC).
 
-4.29.1. Summary of detected clock domains:
+4.31.1. Summary of detected clock domains:
   47 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1108, arst=\arst_i, srst={ }
   7 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1130, arst=\arst_i, srst={ }
   65 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1123, arst=\arst_i, srst={ }
@@ -2425,11 +2496,11 @@ yosys> abc -dff
   37 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
   332 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
 
-4.29.2. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.2. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1108, asynchronously reset by \arst_i
 Extracted 47 gates and 72 wires to a netlist network with 24 inputs and 9 outputs.
 
-4.29.2.1. Executing ABC.
+4.31.2.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2448,7 +2519,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.2.2. Re-integrating ABC results.
+4.31.2.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:            ANDNOT cells:        4
@@ -2462,11 +2533,11 @@ ABC RESULTS:           input signals:       24
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-4.29.3. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.3. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1130, asynchronously reset by \arst_i
 Extracted 7 gates and 12 wires to a netlist network with 4 inputs and 4 outputs.
 
-4.29.3.1. Executing ABC.
+4.31.3.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2485,7 +2556,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.3.2. Re-integrating ABC results.
+4.31.3.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -2496,11 +2567,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-4.29.4. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.4. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1123, asynchronously reset by \arst_i
 Extracted 65 gates and 89 wires to a netlist network with 22 inputs and 21 outputs.
 
-4.29.4.1. Executing ABC.
+4.31.4.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2519,7 +2590,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.4.2. Re-integrating ABC results.
+4.31.4.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        6
 ABC RESULTS:               NOT cells:        7
 ABC RESULTS:                OR cells:        9
@@ -2534,11 +2605,11 @@ ABC RESULTS:           input signals:       22
 ABC RESULTS:          output signals:       21
 Removing temp directory.
 
-4.29.5. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.5. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1045, asynchronously reset by \arst_i
 Extracted 31 gates and 50 wires to a netlist network with 18 inputs and 18 outputs.
 
-4.29.5.1. Executing ABC.
+4.31.5.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2557,7 +2628,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.5.2. Re-integrating ABC results.
+4.31.5.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        8
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               AND cells:        6
@@ -2569,11 +2640,11 @@ ABC RESULTS:           input signals:       18
 ABC RESULTS:          output signals:       18
 Removing temp directory.
 
-4.29.6. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.6. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $flatten\byte_controller.\bit_controller.$verific$n452$535
 Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 2 outputs.
 
-4.29.6.1. Executing ABC.
+4.31.6.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2596,7 +2667,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.6.2. Re-integrating ABC results.
+4.31.6.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               MUX cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -2605,11 +2676,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-4.29.7. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.7. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1076, asynchronously reset by \arst_i
 Extracted 21 gates and 36 wires to a netlist network with 15 inputs and 8 outputs.
 
-4.29.7.1. Executing ABC.
+4.31.7.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2628,7 +2699,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.7.2. Re-integrating ABC results.
+4.31.7.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:                OR cells:        3
@@ -2640,11 +2711,11 @@ ABC RESULTS:           input signals:       15
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 
-4.29.8. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.8. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1091, asynchronously reset by \arst_i
 Extracted 14 gates and 19 wires to a netlist network with 4 inputs and 5 outputs.
 
-4.29.8.1. Executing ABC.
+4.31.8.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2663,7 +2734,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.8.2. Re-integrating ABC results.
+4.31.8.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        2
@@ -2674,11 +2745,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-4.29.9. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.9. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1061, asynchronously reset by \arst_i
 Extracted 41 gates and 58 wires to a netlist network with 16 inputs and 22 outputs.
 
-4.29.9.1. Executing ABC.
+4.31.9.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2697,7 +2768,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.9.2. Re-integrating ABC results.
+4.31.9.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:               NOT cells:        3
@@ -2710,11 +2781,11 @@ ABC RESULTS:           input signals:       16
 ABC RESULTS:          output signals:       22
 Removing temp directory.
 
-4.29.10. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.10. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1052, asynchronously reset by \arst_i
 Extracted 20 gates and 29 wires to a netlist network with 8 inputs and 6 outputs.
 
-4.29.10.1. Executing ABC.
+4.31.10.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2733,7 +2804,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.10.2. Re-integrating ABC results.
+4.31.10.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:             ORNOT cells:        1
@@ -2746,11 +2817,11 @@ ABC RESULTS:           input signals:        8
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-4.29.11. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.11. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1069, asynchronously reset by \arst_i
 Extracted 32 gates and 53 wires to a netlist network with 21 inputs and 4 outputs.
 
-4.29.11.1. Executing ABC.
+4.31.11.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2769,7 +2840,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.11.2. Re-integrating ABC results.
+4.31.11.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -2782,11 +2853,11 @@ ABC RESULTS:           input signals:       21
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-4.29.12. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.12. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1054, asynchronously reset by \arst_i
 Extracted 4 gates and 10 wires to a netlist network with 5 inputs and 4 outputs.
 
-4.29.12.1. Executing ABC.
+4.31.12.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2805,7 +2876,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.12.2. Re-integrating ABC results.
+4.31.12.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               AND cells:        1
@@ -2816,11 +2887,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-4.29.13. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.13. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i
 Extracted 37 gates and 66 wires to a netlist network with 29 inputs and 10 outputs.
 
-4.29.13.1. Executing ABC.
+4.31.13.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2843,7 +2914,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.13.2. Re-integrating ABC results.
+4.31.13.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:            ANDNOT cells:        2
 ABC RESULTS:                OR cells:        8
@@ -2856,11 +2927,11 @@ ABC RESULTS:           input signals:       29
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-4.29.14. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.31.14. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
 Extracted 332 gates and 385 wires to a netlist network with 51 inputs and 51 outputs.
 
-4.29.14.1. Executing ABC.
+4.31.14.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2879,7 +2950,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.29.14.2. Re-integrating ABC results.
+4.31.14.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       38
 ABC RESULTS:               NOT cells:       11
 ABC RESULTS:               MUX cells:       18
@@ -2896,33 +2967,33 @@ ABC RESULTS:           input signals:       51
 ABC RESULTS:          output signals:       51
 Removing temp directory.
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_RLlmSI/abc_tmp_1.scr
 
-4.30. Executing ABC pass (technology mapping using ABC).
+4.32. Executing ABC pass (technology mapping using ABC).
 
-4.30.1. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+4.32.1. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
 Extracted 498 gates and 587 wires to a netlist network with 89 inputs and 94 outputs.
 
-4.30.1.1. Executing ABC.
+4.32.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/i2c_master/abc_tmp.scr 
+ABC: + source /tmp/yosys_RLlmSI/abc_tmp_1.scr 
 ABC:   #Luts =   153  Max Lvl =   5  Avg Lvl =   1.82  [   0.18 sec. at Pass 0]
-ABC:   #Luts =   123  Max Lvl =   5  Avg Lvl =   1.76  [   1.69 sec. at Pass 1]
-ABC:   #Luts =   120  Max Lvl =   4  Avg Lvl =   1.74  [   0.51 sec. at Pass 2]
-ABC:   #Luts =   117  Max Lvl =   3  Avg Lvl =   1.60  [   0.64 sec. at Pass 3]
-ABC:   #Luts =   117  Max Lvl =   3  Avg Lvl =   1.60  [   0.38 sec. at Pass 4]
-ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.84 sec. at Pass 5]
-ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.67 sec. at Pass 6]
-ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.88 sec. at Pass 7]
-ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.63 sec. at Pass 8]
+ABC:   #Luts =   123  Max Lvl =   5  Avg Lvl =   1.76  [   0.75 sec. at Pass 1]
+ABC:   #Luts =   120  Max Lvl =   4  Avg Lvl =   1.74  [   0.39 sec. at Pass 2]
+ABC:   #Luts =   117  Max Lvl =   3  Avg Lvl =   1.60  [   0.69 sec. at Pass 3]
+ABC:   #Luts =   117  Max Lvl =   3  Avg Lvl =   1.60  [   0.43 sec. at Pass 4]
+ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.56 sec. at Pass 5]
+ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.42 sec. at Pass 6]
+ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.62 sec. at Pass 7]
+ABC:   #Luts =   116  Max Lvl =   3  Avg Lvl =   1.59  [   0.39 sec. at Pass 8]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-4.30.1.2. Re-integrating ABC results.
+4.32.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:      116
 ABC RESULTS:        internal signals:      404
 ABC RESULTS:           input signals:       89
@@ -2931,23 +3002,23 @@ Removing temp directory.
 
 yosys> opt
 
-4.31. Executing OPT pass (performing simple optimizations).
+4.33. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-4.31.1. Executing OPT_EXPR pass (perform const folding).
+4.33.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
 yosys> opt_merge -nomux
 
-4.31.2. Executing OPT_MERGE pass (detect identical cells).
+4.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 <suppressed ~3 debug messages>
 Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-4.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+4.33.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \i2c_master..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2955,37 +3026,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-4.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+4.33.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \i2c_master.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-4.31.5. Executing OPT_MERGE pass (detect identical cells).
+4.33.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-4.31.6. Executing OPT_DFF pass (perform DFF optimizations).
+4.33.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.33.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 Removed 0 unused cells and 1229 unused wires.
 <suppressed ~38 debug messages>
 
 yosys> opt_expr
 
-4.31.8. Executing OPT_EXPR pass (perform const folding).
+4.33.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
-4.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+4.33.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-4.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+4.33.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \i2c_master..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2993,35 +3064,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-4.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+4.33.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \i2c_master.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-4.31.12. Executing OPT_MERGE pass (detect identical cells).
+4.33.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-4.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+4.33.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.33.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 
 yosys> opt_expr
 
-4.31.15. Executing OPT_EXPR pass (perform const folding).
+4.33.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
-4.31.16. Finished OPT passes. (There is nothing left to do.)
+4.33.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-4.32. Printing statistics.
+4.34. Printing statistics.
 
 === i2c_master ===
 
@@ -3042,16 +3113,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-4.33. Executing SHREGMAP pass (map shift registers).
+4.35. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-4.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+4.36. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-4.35. Printing statistics.
+4.37. Printing statistics.
 
 === i2c_master ===
 
@@ -3071,9 +3142,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-4.36. Executing TECHMAP pass (map to technology primitives).
+4.38. Executing TECHMAP pass (map to technology primitives).
 
-4.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+4.38.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -3101,7 +3172,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-4.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+4.38.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -3170,7 +3241,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-4.36.3. Continuing TECHMAP pass.
+4.38.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
@@ -3181,158 +3252,38 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-4.37. Executing OPT_EXPR pass (perform const folding).
+4.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 <suppressed ~2749 debug messages>
 
 yosys> simplemap
 
-4.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+4.40. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-4.39. Executing OPT_EXPR pass (perform const folding).
+4.41. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
 
 yosys> opt_merge
 
-4.40. Executing OPT_MERGE pass (detect identical cells).
+4.42. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\i2c_master'.
 <suppressed ~495 debug messages>
 Removed a total of 165 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-4.41. Executing OPT_DFF pass (perform DFF optimizations).
+4.43. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-4.42. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 Removed 0 unused cells and 662 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
-
-4.43. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-4.43.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module i2c_master.
-<suppressed ~9 debug messages>
-
-yosys> opt_merge -nomux
-
-4.43.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\i2c_master'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-4.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \i2c_master..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-4.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \i2c_master.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-4.43.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\i2c_master'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-4.43.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-4.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \i2c_master..
-Removed 0 unused cells and 2 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-4.43.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module i2c_master.
-
-4.43.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-4.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \i2c_master..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-4.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \i2c_master.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-4.43.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\i2c_master'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-4.43.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-4.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \i2c_master..
-
-yosys> opt_expr
-
-4.43.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module i2c_master.
-
-4.43.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-4.44. Executing ABC pass (technology mapping using ABC).
-
-4.44.1. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
-Extracted 381 gates and 473 wires to a netlist network with 90 inputs and 92 outputs.
-
-4.44.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/i2c_master/abc_tmp.scr 
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.29 sec. at Pass 0]
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   2.49 sec. at Pass 1]
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.65 sec. at Pass 2]
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.80 sec. at Pass 3]
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.54 sec. at Pass 4]
-ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   1.17 sec. at Pass 5]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-4.44.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      114
-ABC RESULTS:        internal signals:      291
-ABC RESULTS:           input signals:       90
-ABC RESULTS:          output signals:       92
-Removing temp directory.
-
-yosys> opt
 
 4.45. Executing OPT pass (performing simple optimizations).
 
@@ -3340,6 +3291,7 @@ yosys> opt_expr
 
 4.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module i2c_master.
+<suppressed ~9 debug messages>
 
 yosys> opt_merge -nomux
 
@@ -3367,7 +3319,7 @@ yosys> opt_merge
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 4.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -3375,7 +3327,7 @@ yosys> opt_clean
 
 4.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
-Removed 0 unused cells and 415 unused wires.
+Removed 0 unused cells and 2 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -3405,7 +3357,7 @@ yosys> opt_merge
 Finding identical cells in module `\i2c_master'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 4.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -3421,20 +3373,139 @@ Optimizing module i2c_master.
 
 4.45.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> abc -script /tmp/yosys_RLlmSI/abc_tmp_2.scr
+
+4.46. Executing ABC pass (technology mapping using ABC).
+
+4.46.1. Extracting gate netlist of module `\i2c_master' to `<abc-temp-dir>/input.blif'..
+Extracted 381 gates and 473 wires to a netlist network with 90 inputs and 92 outputs.
+
+4.46.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_RLlmSI/abc_tmp_2.scr 
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.08 sec. at Pass 0]
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   1.20 sec. at Pass 1]
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.38 sec. at Pass 2]
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.72 sec. at Pass 3]
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.52 sec. at Pass 4]
+ABC:   #Luts =   114  Max Lvl =   3  Avg Lvl =   1.55  [   0.85 sec. at Pass 5]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+4.46.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      114
+ABC RESULTS:        internal signals:      291
+ABC RESULTS:           input signals:       90
+ABC RESULTS:          output signals:       92
+Removing temp directory.
+
+yosys> opt
+
+4.47. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+4.47.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module i2c_master.
+
+yosys> opt_merge -nomux
+
+4.47.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\i2c_master'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+4.47.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \i2c_master..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+4.47.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \i2c_master.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+4.47.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\i2c_master'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+4.47.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+4.47.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \i2c_master..
+Removed 0 unused cells and 415 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+4.47.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module i2c_master.
+
+4.47.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+4.47.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \i2c_master..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+4.47.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \i2c_master.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+4.47.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\i2c_master'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+4.47.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+4.47.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \i2c_master..
+
+yosys> opt_expr
+
+4.47.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module i2c_master.
+
+4.47.16. Finished OPT passes. (There is nothing left to do.)
+
 yosys> hierarchy -check
 
-4.46. Executing HIERARCHY pass (managing design hierarchy).
+4.48. Executing HIERARCHY pass (managing design hierarchy).
 
-4.46.1. Analyzing design hierarchy..
+4.48.1. Analyzing design hierarchy..
 Top module:  \i2c_master
 
-4.46.2. Analyzing design hierarchy..
+4.48.2. Analyzing design hierarchy..
 Top module:  \i2c_master
 Removed 0 unused modules.
 
 yosys> stat
 
-4.47. Printing statistics.
+4.49. Printing statistics.
 
 === i2c_master ===
 
@@ -3452,30 +3523,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-4.48. Executing OPT_CLEAN pass (remove unused cells and wires).
+4.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \i2c_master..
 Removed 0 unused cells and 49 unused wires.
 <suppressed ~49 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-4.49. Executing Verilog backend.
+4.51. Executing Verilog backend.
 
 yosys> bmuxmap
 
-4.49.1. Executing BMUXMAP pass.
+4.51.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-4.49.2. Executing DEMUXMAP pass.
+4.51.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\i2c_master'.
 
 Warnings: 252 unique messages, 252 total
-End of script. Logfile hash: a5424b9e61, CPU: user 5.56s system 0.09s, MEM: 24.49 MB peak
-Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
-Time spent: 87% 3x abc (39 sec), 4% 37x opt_dff (1 sec), ...
-real 35.48
-user 37.07
-sys 7.52
+End of script. Logfile hash: 6b4a7b8be8, CPU: user 5.50s system 0.10s, MEM: 27.04 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 87% 3x abc (38 sec), 4% 37x opt_dff (1 sec), ...
+real 22.65
+user 35.95
+sys 8.20

@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.13
- Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.19
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -376,7 +376,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'wav_cgc_rl.sv'
 
 yosys> synth_rs -top ast -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-5. Executing synth_rs pass: v0.2.41
+5. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -401,6 +401,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top ast
@@ -3030,55 +3037,85 @@ Optimizing module ast.
 
 5.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+5.20. Printing statistics.
+
+=== ast ===
+
+   Number of wires:               2885
+   Number of wire bits:          16912
+   Number of public wires:        2437
+   Number of public wire bits:   15797
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                750
+     $adff                          65
+     $adffe                         53
+     $alu                           10
+     $and                          137
+     $bmux                          10
+     $dff                            1
+     $dlatch                         7
+     $eq                            50
+     $logic_not                      6
+     $mux                          118
+     $ne                            19
+     $not                           89
+     $or                           112
+     $reduce_and                     6
+     $reduce_bool                   20
+     $reduce_or                     13
+     $reduce_xor                    28
+     $shl                            2
+     $xor                            4
+
+
 yosys> memory -nomap
 
-5.20. Executing MEMORY pass.
+5.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-5.20.1. Executing OPT_MEM pass (optimize memories).
+5.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-5.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+5.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-5.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+5.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-5.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+5.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-5.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> memory_share
 
-5.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+5.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-5.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+5.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-5.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> memory_collect
 
-5.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-5.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \ast..
+5.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -3115,11 +3152,51 @@ yosys> stat
      $xor                            4
 
 
+yosys> opt_clean
+
+5.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \ast..
+
+yosys> stat
+
+5.24. Printing statistics.
+
+=== ast ===
+
+   Number of wires:               2885
+   Number of wire bits:          16912
+   Number of public wires:        2437
+   Number of public wire bits:   15797
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                750
+     $adff                          65
+     $adffe                         53
+     $alu                           10
+     $and                          137
+     $bmux                          10
+     $dff                            1
+     $dlatch                         7
+     $eq                            50
+     $logic_not                      6
+     $mux                          118
+     $ne                            19
+     $not                           89
+     $or                           112
+     $reduce_and                     6
+     $reduce_bool                   20
+     $reduce_or                     13
+     $reduce_xor                    28
+     $shl                            2
+     $xor                            4
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-5.23. Executing TECHMAP pass (map to technology primitives).
+5.25. Executing TECHMAP pass (map to technology primitives).
 
-5.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+5.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -3147,12 +3224,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-5.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+5.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-5.23.3. Continuing TECHMAP pass.
+5.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $adff.
 Using extmapper simplemap for cells of type $not.
@@ -3192,7 +3269,7 @@ No more expansions possible.
 
 yosys> stat
 
-5.24. Printing statistics.
+5.26. Printing statistics.
 
 === ast ===
 
@@ -3220,24 +3297,24 @@ yosys> stat
 
 yosys> opt
 
-5.25. Executing OPT pass (performing simple optimizations).
+5.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-5.25.1. Executing OPT_EXPR pass (perform const folding).
+5.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~1338 debug messages>
 
 yosys> opt_merge -nomux
 
-5.25.2. Executing OPT_MERGE pass (detect identical cells).
+5.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 <suppressed ~1257 debug messages>
 Removed a total of 419 cells.
 
 yosys> opt_muxtree
 
-5.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3245,37 +3322,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-5.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.25.5. Executing OPT_MERGE pass (detect identical cells).
+5.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+5.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 56 unused cells and 882 unused wires.
 <suppressed ~57 debug messages>
 
 yosys> opt_expr
 
-5.25.8. Executing OPT_EXPR pass (perform const folding).
+5.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+5.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-5.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3283,39 +3360,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-5.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.25.12. Executing OPT_MERGE pass (detect identical cells).
+5.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+5.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $auto$ff.cc:262:slice$12254 ($_DFF_PN0_) from module ast (D = $auto$simplemap.cc:309:simplemap_bmux$12257 [0], Q = \u_entropy.erq_sm [0]).
 Adding EN signal on $auto$ff.cc:262:slice$11371 ($_DFF_PN0_) from module ast (D = $auto$simplemap.cc:309:simplemap_bmux$11386 [0], Q = \u_rglts_pdm_3p3v.rgls_sm [0]).
 
 yosys> opt_clean
 
-5.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 3 unused cells and 1 unused wires.
 <suppressed ~4 debug messages>
 
 yosys> opt_expr
 
-5.25.15. Executing OPT_EXPR pass (perform const folding).
+5.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+5.27.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-5.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3323,81 +3400,81 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-5.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.25.19. Executing OPT_MERGE pass (detect identical cells).
+5.27.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+5.27.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> opt_expr
 
-5.25.22. Executing OPT_EXPR pass (perform const folding).
+5.27.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.25.23. Finished OPT passes. (There is nothing left to do.)
+5.27.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
 
-5.26. Executing OPT pass (performing simple optimizations).
+5.28. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-5.26.1. Executing OPT_EXPR pass (perform const folding).
+5.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~355 debug messages>
 
 yosys> opt_merge
 
-5.26.2. Executing OPT_MERGE pass (detect identical cells).
+5.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 <suppressed ~15 debug messages>
 Removed a total of 5 cells.
 
 yosys> opt_dff
 
-5.26.3. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 Handling never-active EN on $auto$ff.cc:262:slice$11580 ($_DFFE_PN0P_) from module ast (removing D path).
 Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$11580 ($_DLATCH_N_) from module ast.
 Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$11717 ($_DFF_PN0_) from module ast.
 
 yosys> opt_clean
 
-5.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 87 unused wires.
 <suppressed ~1 debug messages>
 
-5.26.5. Rerunning OPT passes. (Removed registers in this run.)
+5.28.5. Rerunning OPT passes. (Removed registers in this run.)
 
 yosys> opt_expr -full
 
-5.26.6. Executing OPT_EXPR pass (perform const folding).
+5.28.6. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~18 debug messages>
 
 yosys> opt_merge
 
-5.26.7. Executing OPT_MERGE pass (detect identical cells).
+5.28.7. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 <suppressed ~12 debug messages>
 Removed a total of 4 cells.
 
 yosys> opt_dff
 
-5.26.8. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.8. Executing OPT_DFF pass (perform DFF optimizations).
 Handling const CLK on $auto$ff.cc:262:slice$15136 ($_DFFE_PN0P_) from module ast (removing D path).
 Handling const CLK on $auto$ff.cc:262:slice$15135 ($_DFFE_PN0P_) from module ast (removing D path).
 Handling const CLK on $auto$ff.cc:262:slice$15134 ($_DFFE_PN0P_) from module ast (removing D path).
@@ -3521,28 +3598,28 @@ Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$15136 ($_DLATCH_N_
 
 yosys> opt_clean
 
-5.26.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 241 unused cells and 177 unused wires.
 <suppressed ~311 debug messages>
 
-5.26.10. Rerunning OPT passes. (Removed registers in this run.)
+5.28.10. Rerunning OPT passes. (Removed registers in this run.)
 
 yosys> opt_expr -full
 
-5.26.11. Executing OPT_EXPR pass (perform const folding).
+5.28.11. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~19 debug messages>
 
 yosys> opt_merge
 
-5.26.12. Executing OPT_MERGE pass (detect identical cells).
+5.28.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.26.13. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.13. Executing OPT_DFF pass (perform DFF optimizations).
 Handling const CLK on $auto$ff.cc:262:slice$12106 ($_DFFE_PN0P_) from module ast (removing D path).
 Removing always-active EN on $auto$ff.cc:262:slice$11698 ($_DFFE_PN0P_) from module ast.
 Handling const CLK on $auto$ff.cc:262:slice$11698 ($_DFFE_PN0P_) from module ast (removing D path).
@@ -3573,28 +3650,28 @@ Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$12155 ($_DFF_PN0_)
 
 yosys> opt_clean
 
-5.26.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 39 unused cells and 28 unused wires.
 <suppressed ~46 debug messages>
 
-5.26.15. Rerunning OPT passes. (Removed registers in this run.)
+5.28.15. Rerunning OPT passes. (Removed registers in this run.)
 
 yosys> opt_expr -full
 
-5.26.16. Executing OPT_EXPR pass (perform const folding).
+5.28.16. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~1 debug messages>
 
 yosys> opt_merge
 
-5.26.17. Executing OPT_MERGE pass (detect identical cells).
+5.28.17. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.26.18. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.18. Executing OPT_DFF pass (perform DFF optimizations).
 Handling const CLK on $auto$ff.cc:262:slice$11295 ($_DFF_NN0_) from module ast (removing D path).
 Handling const CLK on $auto$ff.cc:262:slice$16559 ($_DFFE_PN0P_) from module ast (removing D path).
 Handling const CLK on $auto$ff.cc:262:slice$11554 ($_DFF_NN0_) from module ast (removing D path).
@@ -3639,86 +3716,86 @@ Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$11295 ($_DLATCH_N_
 
 yosys> opt_clean
 
-5.26.19. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.19. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 131 unused cells and 52 unused wires.
 <suppressed ~132 debug messages>
 
-5.26.20. Rerunning OPT passes. (Removed registers in this run.)
+5.28.20. Rerunning OPT passes. (Removed registers in this run.)
 
 yosys> opt_expr -full
 
-5.26.21. Executing OPT_EXPR pass (perform const folding).
+5.28.21. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~12 debug messages>
 
 yosys> opt_merge
 
-5.26.22. Executing OPT_MERGE pass (detect identical cells).
+5.28.22. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.26.23. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.23. Executing OPT_DFF pass (perform DFF optimizations).
 Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$12128 ($_DFF_PN0_) from module ast.
 
 yosys> opt_clean
 
-5.26.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.24. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 6 unused wires.
 <suppressed ~1 debug messages>
 
-5.26.25. Rerunning OPT passes. (Removed registers in this run.)
+5.28.25. Rerunning OPT passes. (Removed registers in this run.)
 
 yosys> opt_expr -full
 
-5.26.26. Executing OPT_EXPR pass (perform const folding).
+5.28.26. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~2 debug messages>
 
 yosys> opt_merge
 
-5.26.27. Executing OPT_MERGE pass (detect identical cells).
+5.28.27. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.26.28. Executing OPT_DFF pass (perform DFF optimizations).
+5.28.28. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.26.29. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.28.29. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 1 unused wires.
 <suppressed ~1 debug messages>
 
-5.26.30. Finished fast OPT passes.
+5.28.30. Finished fast OPT passes.
 
 yosys> memory_map
 
-5.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+5.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> opt -full
 
-5.28. Executing OPT pass (performing simple optimizations).
+5.30. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-5.28.1. Executing OPT_EXPR pass (perform const folding).
+5.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
 yosys> opt_merge -nomux
 
-5.28.2. Executing OPT_MERGE pass (detect identical cells).
+5.30.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-5.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3726,19 +3803,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-5.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.28.5. Executing OPT_MERGE pass (detect identical cells).
+5.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-5.28.6. Executing OPT_SHARE pass.
+5.30.6. Executing OPT_SHARE pass.
     Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$12264 in front of them:
         $auto$simplemap.cc:312:simplemap_bmux$12261
         $auto$simplemap.cc:312:simplemap_bmux$12259
@@ -3746,24 +3823,24 @@ yosys> opt_share
 
 yosys> opt_dff
 
-5.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+5.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> opt_expr -full
 
-5.28.9. Executing OPT_EXPR pass (perform const folding).
+5.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~1 debug messages>
 
-5.28.10. Rerunning OPT passes. (Maybe there is more to do..)
+5.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-5.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -3773,41 +3850,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-5.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.28.13. Executing OPT_MERGE pass (detect identical cells).
+5.30.13. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-5.28.14. Executing OPT_SHARE pass.
+5.30.14. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-5.28.15. Executing OPT_DFF pass (perform DFF optimizations).
+5.30.15. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 1 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr -full
 
-5.28.17. Executing OPT_EXPR pass (perform const folding).
+5.30.17. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.28.18. Rerunning OPT passes. (Maybe there is more to do..)
+5.30.18. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-5.28.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.30.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -3817,41 +3894,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-5.28.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.30.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.28.21. Executing OPT_MERGE pass (detect identical cells).
+5.30.21. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-5.28.22. Executing OPT_SHARE pass.
+5.30.22. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-5.28.23. Executing OPT_DFF pass (perform DFF optimizations).
+5.30.23. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.28.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.30.24. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> opt_expr -full
 
-5.28.25. Executing OPT_EXPR pass (perform const folding).
+5.30.25. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.28.26. Finished OPT passes. (There is nothing left to do.)
+5.30.26. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-5.29. Executing ABC pass (technology mapping using ABC).
+5.31. Executing ABC pass (technology mapping using ABC).
 
-5.29.1. Summary of detected clock domains:
+5.31.1. Summary of detected clock domains:
   2 cells in clk={ }, en={ }, arst={ }, srst={ }
   7 cells in clk=\clk_ast_es_i, en=!\u_entropy.erq_sm [1], arst=!\rst_ast_es_ni, srst={ }
   257 cells in clk=\clk_ast_tlul_i, en=\u_reg.intg_err, arst=!\rst_ast_tlul_ni, srst={ }
@@ -3901,11 +3978,11 @@ yosys> abc -dff
   197 cells in clk=\clk_ast_tlul_i, en=$auto$opt_dff.cc:194:make_patterns_logic$11006, arst=!\u_rng.rst_n, srst={ }
   193 cells in clk=\clk_ast_tlul_i, en=\regal_we, arst=!\rst_ast_tlul_ni, srst={ }
 
-5.29.2. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.2. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 No matching clock domain found. Not extracting any FF cells.
 Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.2.1. Executing ABC.
+5.31.2.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3925,18 +4002,18 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.2.2. Re-integrating ABC results.
+5.31.2.2. Re-integrating ABC results.
 ABC RESULTS:               AND cells:        2
 ABC RESULTS:        internal signals:        0
 ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.3. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.3. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_es_i, enabled by !\u_entropy.erq_sm [1], asynchronously reset by !\rst_ast_es_ni
 Extracted 7 gates and 10 wires to a netlist network with 3 inputs and 4 outputs.
 
-5.29.3.1. Executing ABC.
+5.31.3.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3955,7 +4032,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.3.2. Re-integrating ABC results.
+5.31.3.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3966,11 +4043,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-5.29.4. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.4. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by \u_reg.intg_err, asynchronously reset by !\rst_ast_tlul_ni
 Extracted 257 gates and 348 wires to a netlist network with 90 inputs and 2 outputs.
 
-5.29.4.1. Executing ABC.
+5.31.4.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3989,7 +4066,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.4.2. Re-integrating ABC results.
+5.31.4.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               XOR cells:       49
 ABC RESULTS:              XNOR cells:      160
@@ -4002,11 +4079,11 @@ ABC RESULTS:           input signals:       90
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.5. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.5. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11015, asynchronously reset by !\rst_ast_tlul_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 4 outputs.
 
-5.29.5.1. Executing ABC.
+5.31.5.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4025,7 +4102,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.5.2. Re-integrating ABC results.
+5.31.5.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4036,11 +4113,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-5.29.6. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.6. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_adc_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11130, asynchronously reset by !\rst_ast_adc_ni
 Extracted 33 gates and 38 wires to a netlist network with 4 inputs and 6 outputs.
 
-5.29.6.1. Executing ABC.
+5.31.6.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4059,7 +4136,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.6.2. Re-integrating ABC results.
+5.31.6.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        5
 ABC RESULTS:               NOT cells:        5
 ABC RESULTS:            ANDNOT cells:        1
@@ -4073,11 +4150,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-5.29.7. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.7. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11073, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.7.1. Executing ABC.
+5.31.7.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4096,7 +4173,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.7.2. Re-integrating ABC results.
+5.31.7.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4105,11 +4182,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.8. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.8. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11076, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.8.1. Executing ABC.
+5.31.8.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4128,7 +4205,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.8.2. Re-integrating ABC results.
+5.31.8.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4137,11 +4214,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.9. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.9. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11079, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.9.1. Executing ABC.
+5.31.9.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4160,7 +4237,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.9.2. Re-integrating ABC results.
+5.31.9.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4169,11 +4246,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.10. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.10. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11082, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.10.1. Executing ABC.
+5.31.10.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4192,7 +4269,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.10.2. Re-integrating ABC results.
+5.31.10.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4201,11 +4278,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.11. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.11. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11085, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.11.1. Executing ABC.
+5.31.11.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4224,7 +4301,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.11.2. Re-integrating ABC results.
+5.31.11.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4233,11 +4310,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.12. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.12. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11088, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.12.1. Executing ABC.
+5.31.12.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4256,7 +4333,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.12.2. Re-integrating ABC results.
+5.31.12.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4265,11 +4342,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.13. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.13. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11091, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.13.1. Executing ABC.
+5.31.13.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4288,7 +4365,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.13.2. Re-integrating ABC results.
+5.31.13.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4297,11 +4374,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.14. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.14. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11094, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.14.1. Executing ABC.
+5.31.14.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4320,7 +4397,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.14.2. Re-integrating ABC results.
+5.31.14.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4329,11 +4406,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.15. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.15. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11097, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.15.1. Executing ABC.
+5.31.15.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4352,7 +4429,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.15.2. Re-integrating ABC results.
+5.31.15.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4361,11 +4438,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.16. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.16. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11100, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 8 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.16.1. Executing ABC.
+5.31.16.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4384,7 +4461,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.16.2. Re-integrating ABC results.
+5.31.16.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               BUF cells:        1
@@ -4393,11 +4470,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.17. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.17. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11103, asynchronously reset by !\rst_ast_alert_ni
 Extracted 7 gates and 10 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.17.1. Executing ABC.
+5.31.17.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4416,7 +4493,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.17.2. Re-integrating ABC results.
+5.31.17.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:             ORNOT cells:        1
@@ -4426,11 +4503,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.18. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.18. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11106, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.18.1. Executing ABC.
+5.31.18.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4449,7 +4526,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.18.2. Re-integrating ABC results.
+5.31.18.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4458,11 +4535,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.19. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.19. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11067, asynchronously reset by !\rst_ast_alert_ni
 Extracted 6 gates and 9 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.19.1. Executing ABC.
+5.31.19.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4481,7 +4558,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.19.2. Re-integrating ABC results.
+5.31.19.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4491,11 +4568,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.20. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.20. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11070, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.20.1. Executing ABC.
+5.31.20.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4514,7 +4591,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.20.2. Re-integrating ABC results.
+5.31.20.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4523,11 +4600,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.21. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.21. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11115, asynchronously reset by !\rst_ast_alert_ni
 Extracted 6 gates and 9 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.21.1. Executing ABC.
+5.31.21.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4546,7 +4623,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.21.2. Re-integrating ABC results.
+5.31.21.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4556,11 +4633,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.22. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.22. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11118, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.22.1. Executing ABC.
+5.31.22.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4579,7 +4656,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.22.2. Re-integrating ABC results.
+5.31.22.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4588,11 +4665,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.23. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.23. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11055, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.23.1. Executing ABC.
+5.31.23.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4611,7 +4688,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.23.2. Re-integrating ABC results.
+5.31.23.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4620,11 +4697,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.24. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.24. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11058, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.24.1. Executing ABC.
+5.31.24.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4643,7 +4720,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.24.2. Re-integrating ABC results.
+5.31.24.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4652,11 +4729,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.25. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.25. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11061, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.25.1. Executing ABC.
+5.31.25.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4675,7 +4752,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.25.2. Re-integrating ABC results.
+5.31.25.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4684,11 +4761,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.26. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.26. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11064, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 8 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.26.1. Executing ABC.
+5.31.26.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4707,7 +4784,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.26.2. Re-integrating ABC results.
+5.31.26.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               BUF cells:        1
@@ -4716,11 +4793,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.27. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.27. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11109, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.27.1. Executing ABC.
+5.31.27.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4739,7 +4816,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.27.2. Re-integrating ABC results.
+5.31.27.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4748,11 +4825,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.28. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.28. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11112, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 8 wires to a netlist network with 3 inputs and 2 outputs.
 
-5.29.28.1. Executing ABC.
+5.31.28.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4771,7 +4848,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.28.2. Re-integrating ABC results.
+5.31.28.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               BUF cells:        1
@@ -4780,11 +4857,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.29. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.29. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11121, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.29.1. Executing ABC.
+5.31.29.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4803,7 +4880,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.29.2. Re-integrating ABC results.
+5.31.29.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4812,11 +4889,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.30. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.30. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11124, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.30.1. Executing ABC.
+5.31.30.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4835,7 +4912,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.30.2. Re-integrating ABC results.
+5.31.30.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -4844,11 +4921,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.31. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.31. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11127, asynchronously reset by !\rst_ast_alert_ni
 Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.31.1. Executing ABC.
+5.31.31.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4867,7 +4944,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.31.2. Re-integrating ABC results.
+5.31.31.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -4876,11 +4953,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.32. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.32. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by $abc$16811$u_reg.u_reg_if.a_ack, asynchronously reset by !\rst_ast_tlul_ni
 Extracted 400 gates and 506 wires to a netlist network with 104 inputs and 67 outputs.
 
-5.29.32.1. Executing ABC.
+5.31.32.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4899,7 +4976,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.32.2. Re-integrating ABC results.
+5.31.32.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       44
 ABC RESULTS:            ANDNOT cells:        2
 ABC RESULTS:               MUX cells:        3
@@ -4917,11 +4994,11 @@ ABC RESULTS:           input signals:      104
 ABC RESULTS:          output signals:       67
 Removing temp directory.
 
-5.29.33. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.33. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, asynchronously reset by !\u_rng.rst_n
 Extracted 70 gates and 73 wires to a netlist network with 3 inputs and 3 outputs.
 
-5.29.33.1. Executing ABC.
+5.31.33.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4940,7 +5017,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.33.2. Re-integrating ABC results.
+5.31.33.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       12
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:            ANDNOT cells:        1
@@ -4955,11 +5032,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        3
 Removing temp directory.
 
-5.29.34. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.34. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_rng_i, enabled by \u_rng.sync_rng_val, asynchronously reset by !\rst_ast_rng_ni
 Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 5 outputs.
 
-5.29.34.1. Executing ABC.
+5.31.34.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4978,7 +5055,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.34.2. Re-integrating ABC results.
+5.31.34.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               XOR cells:        1
 ABC RESULTS:               BUF cells:        8
@@ -4987,11 +5064,11 @@ ABC RESULTS:           input signals:        6
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-5.29.35. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.35. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_rng_i, asynchronously reset by !\rst_ast_rng_ni
 Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
 
-5.29.35.1. Executing ABC.
+5.31.35.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5010,7 +5087,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.35.2. Re-integrating ABC results.
+5.31.35.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               BUF cells:        2
 ABC RESULTS:        internal signals:        0
@@ -5018,11 +5095,11 @@ ABC RESULTS:           input signals:        1
 ABC RESULTS:          output signals:        1
 Removing temp directory.
 
-5.29.36. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.36. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by \u_rng.srate_rng_val_en, asynchronously reset by !$abc$17312$u_rng.rst_n
 Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 5 outputs.
 
-5.29.36.1. Executing ABC.
+5.31.36.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5041,7 +5118,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.36.2. Re-integrating ABC results.
+5.31.36.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:            ANDNOT cells:        1
 ABC RESULTS:               BUF cells:        8
@@ -5050,11 +5127,11 @@ ABC RESULTS:           input signals:        6
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-5.29.37. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.37. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_rng_i, asynchronously reset by !$abc$17312$u_rng.rst_n
 Extracted 2 gates and 3 wires to a netlist network with 0 inputs and 1 outputs.
 
-5.29.37.1. Executing ABC.
+5.31.37.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5073,7 +5150,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.37.2. Re-integrating ABC results.
+5.31.37.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               ONE cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -5082,11 +5159,11 @@ ABC RESULTS:           input signals:        0
 ABC RESULTS:          output signals:        1
 Removing temp directory.
 
-5.29.38. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.38. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, asynchronously reset by !\rst_ast_rng_ni
 Extracted 2 gates and 3 wires to a netlist network with 0 inputs and 1 outputs.
 
-5.29.38.1. Executing ABC.
+5.31.38.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5105,7 +5182,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.38.2. Re-integrating ABC results.
+5.31.38.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               ONE cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -5114,11 +5191,11 @@ ABC RESULTS:           input signals:        0
 ABC RESULTS:          output signals:        1
 Removing temp directory.
 
-5.29.39. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.39. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_rng_i, asynchronously reset by !\u_rng.u_rng_val_pulse_sync.rst_dst_n
 Extracted 4 gates and 7 wires to a netlist network with 3 inputs and 3 outputs.
 
-5.29.39.1. Executing ABC.
+5.31.39.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5137,7 +5214,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.39.2. Re-integrating ABC results.
+5.31.39.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               AND cells:        1
 ABC RESULTS:               BUF cells:        5
@@ -5146,11 +5223,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        3
 Removing temp directory.
 
-5.29.40. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.40. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, asynchronously reset by !\u_rng.u_rng_val_pulse_sync.rst_src_n
 Extracted 8 gates and 13 wires to a netlist network with 5 inputs and 4 outputs.
 
-5.29.40.1. Executing ABC.
+5.31.40.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5169,7 +5246,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.40.2. Re-integrating ABC results.
+5.31.40.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               AND cells:        1
@@ -5180,11 +5257,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-5.29.41. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.41. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_es_i, asynchronously reset by !\rst_ast_es_ni
 Extracted 5 gates and 9 wires to a netlist network with 4 inputs and 4 outputs.
 
-5.29.41.1. Executing ABC.
+5.31.41.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5203,7 +5280,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.41.2. Re-integrating ABC results.
+5.31.41.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5214,11 +5291,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-5.29.42. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.42. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_es_i, enabled by \u_entropy.u_dev0_entropy.set_wdata_val, asynchronously reset by !\rst_ast_es_ni
 Extracted 8 gates and 12 wires to a netlist network with 4 inputs and 3 outputs.
 
-5.29.42.1. Executing ABC.
+5.31.42.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5237,7 +5314,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.42.2. Re-integrating ABC results.
+5.31.42.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5250,11 +5327,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        3
 Removing temp directory.
 
-5.29.43. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.43. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_adc_i
 Extracted 3 gates and 5 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.43.1. Executing ABC.
+5.31.43.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5277,7 +5354,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.43.2. Re-integrating ABC results.
+5.31.43.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5286,11 +5363,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.44. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.44. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_adc_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$11142, asynchronously reset by !\rst_ast_adc_ni
 Extracted 17 gates and 26 wires to a netlist network with 8 inputs and 6 outputs.
 
-5.29.44.1. Executing ABC.
+5.31.44.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5309,7 +5386,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.44.2. Re-integrating ABC results.
+5.31.44.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:            ANDNOT cells:        1
 ABC RESULTS:             ORNOT cells:        2
@@ -5322,11 +5399,11 @@ ABC RESULTS:           input signals:        8
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-5.29.45. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.45. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_adc_i, asynchronously reset by !\rst_ast_adc_ni
 Extracted 17 gates and 25 wires to a netlist network with 8 inputs and 6 outputs.
 
-5.29.45.1. Executing ABC.
+5.31.45.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5345,7 +5422,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.45.2. Re-integrating ABC results.
+5.31.45.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:              NAND cells:        1
@@ -5358,11 +5435,11 @@ ABC RESULTS:           input signals:        8
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-5.29.46. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.46. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_adc_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11133, asynchronously reset by !\rst_ast_adc_ni
 Extracted 7 gates and 12 wires to a netlist network with 4 inputs and 4 outputs.
 
-5.29.46.1. Executing ABC.
+5.31.46.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5381,7 +5458,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.46.2. Re-integrating ABC results.
+5.31.46.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -5393,11 +5470,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-5.29.47. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.47. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_alert_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11052, asynchronously reset by !\rst_ast_alert_ni
 Extracted 4 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
 
-5.29.47.1. Executing ABC.
+5.31.47.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5416,7 +5493,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.47.2. Re-integrating ABC results.
+5.31.47.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               BUF cells:        2
@@ -5425,11 +5502,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-5.29.48. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.48. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$11006, asynchronously reset by !$abc$17312$u_rng.rst_n
 Extracted 197 gates and 199 wires to a netlist network with 1 inputs and 5 outputs.
 
-5.29.48.1. Executing ABC.
+5.31.48.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5448,7 +5525,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.48.2. Re-integrating ABC results.
+5.31.48.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       64
 ABC RESULTS:               NOT cells:       38
 ABC RESULTS:               XOR cells:        3
@@ -5458,11 +5535,11 @@ ABC RESULTS:           input signals:        1
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-5.29.49. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.31.49. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_ast_tlul_i, enabled by \regal_we, asynchronously reset by !\rst_ast_tlul_ni
 Extracted 193 gates and 246 wires to a netlist network with 52 inputs and 72 outputs.
 
-5.29.49.1. Executing ABC.
+5.31.49.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5481,7 +5558,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.29.49.2. Re-integrating ABC results.
+5.31.49.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       33
 ABC RESULTS:               NOT cells:        4
 ABC RESULTS:               NOR cells:       17
@@ -5495,43 +5572,43 @@ ABC RESULTS:           input signals:       52
 ABC RESULTS:          output signals:       72
 Removing temp directory.
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_7zJnKL/abc_tmp_1.scr
 
-5.30. Executing ABC pass (technology mapping using ABC).
+5.32. Executing ABC pass (technology mapping using ABC).
 
-5.30.1. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+5.32.1. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
 Extracted 807 gates and 1126 wires to a netlist network with 319 inputs and 189 outputs.
 
-5.30.1.1. Executing ABC.
+5.32.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/ast/abc_tmp.scr 
-ABC:   #Luts =   301  Max Lvl =  11  Avg Lvl =   2.97  [   0.32 sec. at Pass 0]
-ABC:   #Luts =   273  Max Lvl =   9  Avg Lvl =   2.46  [   6.87 sec. at Pass 1]
-ABC:   #Luts =   272  Max Lvl =   8  Avg Lvl =   2.25  [   1.34 sec. at Pass 2]
-ABC:   #Luts =   271  Max Lvl =   8  Avg Lvl =   2.25  [   1.91 sec. at Pass 3]
-ABC:   #Luts =   270  Max Lvl =   9  Avg Lvl =   2.42  [   1.56 sec. at Pass 4]
-ABC:   #Luts =   269  Max Lvl =   8  Avg Lvl =   2.25  [   2.26 sec. at Pass 5]
-ABC:   #Luts =   268  Max Lvl =   9  Avg Lvl =   2.62  [   1.97 sec. at Pass 6]
-ABC:   #Luts =   268  Max Lvl =   9  Avg Lvl =   2.62  [   1.77 sec. at Pass 7]
-ABC:   #Luts =   267  Max Lvl =  10  Avg Lvl =   2.83  [   1.76 sec. at Pass 8]
-ABC:   #Luts =   267  Max Lvl =   9  Avg Lvl =   2.60  [   2.34 sec. at Pass 9]
-ABC:   #Luts =   266  Max Lvl =   9  Avg Lvl =   2.58  [   1.17 sec. at Pass 10]
-ABC:   #Luts =   266  Max Lvl =   9  Avg Lvl =   2.58  [   1.37 sec. at Pass 11]
-ABC:   #Luts =   265  Max Lvl =   9  Avg Lvl =   2.58  [   1.14 sec. at Pass 12]
-ABC:   #Luts =   265  Max Lvl =   9  Avg Lvl =   2.58  [   1.83 sec. at Pass 13]
-ABC:   #Luts =   264  Max Lvl =  10  Avg Lvl =   2.83  [   1.85 sec. at Pass 14]
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   1.67 sec. at Pass 15]
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   2.45 sec. at Pass 16]
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   2.52 sec. at Pass 17]
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   2.78 sec. at Pass 18]
+ABC: + source /tmp/yosys_7zJnKL/abc_tmp_1.scr 
+ABC:   #Luts =   301  Max Lvl =  11  Avg Lvl =   2.97  [   0.27 sec. at Pass 0]
+ABC:   #Luts =   273  Max Lvl =   9  Avg Lvl =   2.46  [   5.59 sec. at Pass 1]
+ABC:   #Luts =   272  Max Lvl =   8  Avg Lvl =   2.25  [   0.96 sec. at Pass 2]
+ABC:   #Luts =   271  Max Lvl =   8  Avg Lvl =   2.25  [   2.10 sec. at Pass 3]
+ABC:   #Luts =   270  Max Lvl =   9  Avg Lvl =   2.42  [   1.65 sec. at Pass 4]
+ABC:   #Luts =   269  Max Lvl =   8  Avg Lvl =   2.25  [   1.88 sec. at Pass 5]
+ABC:   #Luts =   268  Max Lvl =   9  Avg Lvl =   2.62  [   1.87 sec. at Pass 6]
+ABC:   #Luts =   268  Max Lvl =   9  Avg Lvl =   2.62  [   1.74 sec. at Pass 7]
+ABC:   #Luts =   267  Max Lvl =  10  Avg Lvl =   2.83  [   1.17 sec. at Pass 8]
+ABC:   #Luts =   267  Max Lvl =   9  Avg Lvl =   2.60  [   1.62 sec. at Pass 9]
+ABC:   #Luts =   266  Max Lvl =   9  Avg Lvl =   2.58  [   1.29 sec. at Pass 10]
+ABC:   #Luts =   266  Max Lvl =   9  Avg Lvl =   2.58  [   1.62 sec. at Pass 11]
+ABC:   #Luts =   265  Max Lvl =   9  Avg Lvl =   2.58  [   1.38 sec. at Pass 12]
+ABC:   #Luts =   265  Max Lvl =   9  Avg Lvl =   2.58  [   2.29 sec. at Pass 13]
+ABC:   #Luts =   264  Max Lvl =  10  Avg Lvl =   2.83  [   2.06 sec. at Pass 14]
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   1.50 sec. at Pass 15]
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   2.20 sec. at Pass 16]
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   2.32 sec. at Pass 17]
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.80  [   1.74 sec. at Pass 18]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-5.30.1.2. Re-integrating ABC results.
+5.32.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:      262
 ABC RESULTS:        internal signals:      618
 ABC RESULTS:           input signals:      319
@@ -5540,22 +5617,22 @@ Removing temp directory.
 
 yosys> opt
 
-5.31. Executing OPT pass (performing simple optimizations).
+5.33. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-5.31.1. Executing OPT_EXPR pass (perform const folding).
+5.33.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
 yosys> opt_merge -nomux
 
-5.31.2. Executing OPT_MERGE pass (detect identical cells).
+5.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-5.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.33.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -5565,37 +5642,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-5.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.33.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.31.5. Executing OPT_MERGE pass (detect identical cells).
+5.33.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.31.6. Executing OPT_DFF pass (perform DFF optimizations).
+5.33.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.33.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 2373 unused wires.
 <suppressed ~87 debug messages>
 
 yosys> opt_expr
 
-5.31.8. Executing OPT_EXPR pass (perform const folding).
+5.33.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+5.33.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-5.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+5.33.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \ast..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -5605,35 +5682,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-5.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+5.33.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \ast.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-5.31.12. Executing OPT_MERGE pass (detect identical cells).
+5.33.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-5.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+5.33.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.33.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 
 yosys> opt_expr
 
-5.31.15. Executing OPT_EXPR pass (perform const folding).
+5.33.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
-5.31.16. Finished OPT passes. (There is nothing left to do.)
+5.33.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-5.32. Printing statistics.
+5.34. Printing statistics.
 
 === ast ===
 
@@ -5655,16 +5732,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-5.33. Executing SHREGMAP pass (map shift registers).
+5.35. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-5.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+5.36. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-5.35. Printing statistics.
+5.37. Printing statistics.
 
 === ast ===
 
@@ -5686,9 +5763,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-5.36. Executing TECHMAP pass (map to technology primitives).
+5.38. Executing TECHMAP pass (map to technology primitives).
 
-5.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+5.38.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -5716,7 +5793,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-5.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+5.38.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -5785,7 +5862,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-5.36.3. Continuing TECHMAP pass.
+5.38.3. Continuing TECHMAP pass.
 Using template \$_DFFE_PN0P_ for cells of type $_DFFE_PN0P_.
 Using extmapper simplemap for cells of type $lut.
 Using template \$_DFF_PN0_ for cells of type $_DFF_PN0_.
@@ -5798,158 +5875,38 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-5.37. Executing OPT_EXPR pass (perform const folding).
+5.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 <suppressed ~2485 debug messages>
 
 yosys> simplemap
 
-5.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+5.40. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-5.39. Executing OPT_EXPR pass (perform const folding).
+5.41. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
 
 yosys> opt_merge
 
-5.40. Executing OPT_MERGE pass (detect identical cells).
+5.42. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\ast'.
 <suppressed ~5196 debug messages>
 Removed a total of 1732 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-5.41. Executing OPT_DFF pass (perform DFF optimizations).
+5.43. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-5.42. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 1448 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
-
-5.43. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-5.43.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module ast.
-<suppressed ~7 debug messages>
-
-yosys> opt_merge -nomux
-
-5.43.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\ast'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-5.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \ast..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-5.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \ast.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-5.43.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\ast'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-5.43.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-5.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \ast..
-Removed 0 unused cells and 3 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-5.43.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module ast.
-
-5.43.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-5.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \ast..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-5.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \ast.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-5.43.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\ast'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-5.43.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-5.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \ast..
-
-yosys> opt_expr
-
-5.43.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module ast.
-
-5.43.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-5.44. Executing ABC pass (technology mapping using ABC).
-
-5.44.1. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
-Extracted 972 gates and 1292 wires to a netlist network with 318 inputs and 188 outputs.
-
-5.44.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/ast/abc_tmp.scr 
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.82  [   0.35 sec. at Pass 0]
-ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.82  [   5.06 sec. at Pass 1]
-ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.93 sec. at Pass 2]
-ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.46 sec. at Pass 3]
-ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   2.42 sec. at Pass 4]
-ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.92 sec. at Pass 5]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-5.44.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      261
-ABC RESULTS:        internal signals:      786
-ABC RESULTS:           input signals:      318
-ABC RESULTS:          output signals:      188
-Removing temp directory.
-
-yosys> opt
 
 5.45. Executing OPT pass (performing simple optimizations).
 
@@ -5957,6 +5914,7 @@ yosys> opt_expr
 
 5.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module ast.
+<suppressed ~7 debug messages>
 
 yosys> opt_merge -nomux
 
@@ -5984,7 +5942,7 @@ yosys> opt_merge
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 5.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -5992,7 +5950,7 @@ yosys> opt_clean
 
 5.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
-Removed 0 unused cells and 1020 unused wires.
+Removed 0 unused cells and 3 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -6022,7 +5980,7 @@ yosys> opt_merge
 Finding identical cells in module `\ast'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 5.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -6038,20 +5996,139 @@ Optimizing module ast.
 
 5.45.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> abc -script /tmp/yosys_7zJnKL/abc_tmp_2.scr
+
+5.46. Executing ABC pass (technology mapping using ABC).
+
+5.46.1. Extracting gate netlist of module `\ast' to `<abc-temp-dir>/input.blif'..
+Extracted 972 gates and 1292 wires to a netlist network with 318 inputs and 188 outputs.
+
+5.46.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_7zJnKL/abc_tmp_2.scr 
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.82  [   0.27 sec. at Pass 0]
+ABC:   #Luts =   262  Max Lvl =  10  Avg Lvl =   2.82  [   5.29 sec. at Pass 1]
+ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.20 sec. at Pass 2]
+ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.43 sec. at Pass 3]
+ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.58 sec. at Pass 4]
+ABC:   #Luts =   261  Max Lvl =   9  Avg Lvl =   2.62  [   1.96 sec. at Pass 5]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+5.46.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      261
+ABC RESULTS:        internal signals:      786
+ABC RESULTS:           input signals:      318
+ABC RESULTS:          output signals:      188
+Removing temp directory.
+
+yosys> opt
+
+5.47. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+5.47.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module ast.
+
+yosys> opt_merge -nomux
+
+5.47.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\ast'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+5.47.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \ast..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+5.47.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \ast.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+5.47.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\ast'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+5.47.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+5.47.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \ast..
+Removed 0 unused cells and 1020 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+5.47.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module ast.
+
+5.47.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+5.47.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \ast..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+5.47.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \ast.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+5.47.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\ast'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+5.47.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+5.47.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \ast..
+
+yosys> opt_expr
+
+5.47.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module ast.
+
+5.47.16. Finished OPT passes. (There is nothing left to do.)
+
 yosys> hierarchy -check
 
-5.46. Executing HIERARCHY pass (managing design hierarchy).
+5.48. Executing HIERARCHY pass (managing design hierarchy).
 
-5.46.1. Analyzing design hierarchy..
+5.48.1. Analyzing design hierarchy..
 Top module:  \ast
 
-5.46.2. Analyzing design hierarchy..
+5.48.2. Analyzing design hierarchy..
 Top module:  \ast
 Removed 0 unused modules.
 
 yosys> stat
 
-5.47. Printing statistics.
+5.49. Printing statistics.
 
 === ast ===
 
@@ -6069,30 +6146,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-5.48. Executing OPT_CLEAN pass (remove unused cells and wires).
+5.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \ast..
 Removed 0 unused cells and 2018 unused wires.
 <suppressed ~2018 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-5.49. Executing Verilog backend.
+5.51. Executing Verilog backend.
 
 yosys> bmuxmap
 
-5.49.1. Executing BMUXMAP pass.
+5.51.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-5.49.2. Executing DEMUXMAP pass.
+5.51.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\ast'.
 
 Warnings: 256 unique messages, 256 total
-End of script. Logfile hash: f5b0eeccc0, CPU: user 17.34s system 0.44s, MEM: 46.65 MB peak
-Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
-Time spent: 93% 3x abc (254 sec), 1% 42x opt_clean (4 sec), ...
-real 106.54
-user 245.17
-sys 26.48
+End of script. Logfile hash: 813dfb193e, CPU: user 17.15s system 0.35s, MEM: 51.64 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 93% 3x abc (253 sec), 1% 42x opt_clean (4 sec), ...
+real 97.65
+user 243.44
+sys 26.56

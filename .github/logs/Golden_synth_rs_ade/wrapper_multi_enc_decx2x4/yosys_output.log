@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.13
- Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.19
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -53,7 +53,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'wrapper_multi_enc_decx2x4.v'
 
 yosys> synth_rs -top wrapper_multi_enc_decx2x4 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.41
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -78,6 +78,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top wrapper_multi_enc_decx2x4
@@ -1434,55 +1441,72 @@ Optimizing module wrapper_multi_enc_decx2x4.
 
 3.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== wrapper_multi_enc_decx2x4 ===
+
+   Number of wires:               1941
+   Number of wire bits:          13700
+   Number of public wires:          93
+   Number of public wire bits:    7604
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1877
+     $bmux                          11
+     $eq                           762
+     $mux                          714
+     $or                           144
+     $reduce_or                    234
+     $sdff                          12
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -1506,11 +1530,38 @@ yosys> stat
      $sdff                          12
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== wrapper_multi_enc_decx2x4 ===
+
+   Number of wires:               1941
+   Number of wire bits:          13700
+   Number of public wires:          93
+   Number of public wire bits:    7604
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1877
+     $bmux                          11
+     $eq                           762
+     $mux                          714
+     $or                           144
+     $reduce_or                    234
+     $sdff                          12
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1538,12 +1589,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $bmux.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $reduce_or.
@@ -1555,7 +1606,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === wrapper_multi_enc_decx2x4 ===
 
@@ -1576,24 +1627,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 <suppressed ~196742 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 <suppressed ~285393 debug messages>
 Removed a total of 95131 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1601,37 +1652,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 0 unused cells and 2270 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1639,19 +1690,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 Adding SRST signal on $auto$ff.cc:262:slice$47670 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4 (D = $auto$simplemap.cc:309:simplemap_bmux$232525 [255], Q = \i17.top_2.data_encin [127], rval = 1'0).
 Adding SRST signal on $auto$ff.cc:262:slice$47669 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4 (D = $auto$simplemap.cc:309:simplemap_bmux$232525 [254], Q = \i17.top_2.data_encin [126], rval = 1'0).
 Adding SRST signal on $auto$ff.cc:262:slice$47668 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4 (D = $auto$simplemap.cc:309:simplemap_bmux$232525 [253], Q = \i17.top_2.data_encin [125], rval = 1'0).
@@ -2423,21 +2474,21 @@ Adding SRST signal on $auto$ff.cc:262:slice$148287 ($_SDFF_PP0_) from module wra
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 768 unused cells and 776 unused wires.
 <suppressed ~777 debug messages>
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2445,38 +2496,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.19. Executing OPT_MERGE pass (detect identical cells).
+3.27.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 <suppressed ~3429 debug messages>
 Removed a total of 1143 cells.
 
 yosys> opt_dff
 
-3.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 0 unused cells and 1143 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.22. Executing OPT_EXPR pass (perform const folding).
+3.27.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.25.23. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.23. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2484,64 +2535,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.26. Executing OPT_MERGE pass (detect identical cells).
+3.27.26. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.27. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.27. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.28. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.28. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 
 yosys> opt_expr
 
-3.25.29. Executing OPT_EXPR pass (perform const folding).
+3.27.29. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.25.30. Finished OPT passes. (There is nothing left to do.)
+3.27.30. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_multi_enc_decx2x4.
-<suppressed ~1232 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -2549,16 +2569,47 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
+<suppressed ~1232 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
+yosys> opt_dff
+
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
+
+3.28.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.30. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.30.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_multi_enc_decx2x4.
+
+yosys> opt_merge -nomux
+
+3.30.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
+Removed a total of 0 cells.
+
 yosys> opt_muxtree
 
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2566,41 +2617,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
+3.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.6. Executing OPT_SHARE pass.
+3.30.6. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 
 yosys> opt_expr -full
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.28.10. Finished OPT passes. (There is nothing left to do.)
+3.30.10. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-3.29. Executing ABC pass (technology mapping using ABC).
+3.31. Executing ABC pass (technology mapping using ABC).
 
-3.29.1. Summary of detected clock domains:
+3.31.1. Summary of detected clock domains:
   1406 cells in clk=\clock, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$321889
   893 cells in clk=\clock, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$320607
   287 cells in clk=\clock, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$320287
@@ -2609,11 +2660,11 @@ yosys> abc -dff
   225 cells in clk=\clock, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$319073
   8941 cells in clk=\clock, en={ }, arst={ }, srst=\reset
 
-3.29.2. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.2. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$321889
 Extracted 1406 gates and 1922 wires to a netlist network with 515 inputs and 767 outputs.
 
-3.29.2.1. Executing ABC.
+3.31.2.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2632,7 +2683,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.2.2. Re-integrating ABC results.
+3.31.2.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:      256
 ABC RESULTS:                OR cells:      128
 ABC RESULTS:             ORNOT cells:      255
@@ -2644,11 +2695,11 @@ ABC RESULTS:           input signals:      515
 ABC RESULTS:          output signals:      767
 Removing temp directory.
 
-3.29.3. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.3. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$320607
 Extracted 893 gates and 1151 wires to a netlist network with 258 inputs and 383 outputs.
 
-3.29.3.1. Executing ABC.
+3.31.3.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2667,7 +2718,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.3.2. Re-integrating ABC results.
+3.31.3.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:      256
 ABC RESULTS:                OR cells:      129
 ABC RESULTS:             ORNOT cells:      254
@@ -2677,11 +2728,11 @@ ABC RESULTS:           input signals:      258
 ABC RESULTS:          output signals:      383
 Removing temp directory.
 
-3.29.4. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.4. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$320287
 Extracted 287 gates and 323 wires to a netlist network with 35 inputs and 160 outputs.
 
-3.29.4.1. Executing ABC.
+3.31.4.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2700,7 +2751,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.4.2. Re-integrating ABC results.
+3.31.4.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       64
 ABC RESULTS:                OR cells:       33
 ABC RESULTS:             ORNOT cells:       63
@@ -2711,11 +2762,11 @@ ABC RESULTS:           input signals:       35
 ABC RESULTS:          output signals:      160
 Removing temp directory.
 
-3.29.5. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.5. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$319841
 Extracted 225 gates and 291 wires to a netlist network with 66 inputs and 97 outputs.
 
-3.29.5.1. Executing ABC.
+3.31.5.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2734,7 +2785,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.5.2. Re-integrating ABC results.
+3.31.5.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       64
 ABC RESULTS:                OR cells:       33
 ABC RESULTS:             ORNOT cells:       64
@@ -2744,11 +2795,11 @@ ABC RESULTS:           input signals:       66
 ABC RESULTS:          output signals:       97
 Removing temp directory.
 
-3.29.6. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.6. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$319519
 Extracted 287 gates and 323 wires to a netlist network with 35 inputs and 160 outputs.
 
-3.29.6.1. Executing ABC.
+3.31.6.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2767,7 +2818,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.6.2. Re-integrating ABC results.
+3.31.6.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       64
 ABC RESULTS:                OR cells:       33
 ABC RESULTS:             ORNOT cells:       63
@@ -2778,11 +2829,11 @@ ABC RESULTS:           input signals:       35
 ABC RESULTS:          output signals:      160
 Removing temp directory.
 
-3.29.7. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.7. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by $auto$opt_dff.cc:253:combine_resets$319073
 Extracted 225 gates and 291 wires to a netlist network with 66 inputs and 97 outputs.
 
-3.29.7.1. Executing ABC.
+3.31.7.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2801,7 +2852,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.7.2. Re-integrating ABC results.
+3.31.7.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       64
 ABC RESULTS:                OR cells:       33
 ABC RESULTS:             ORNOT cells:       64
@@ -2811,11 +2862,11 @@ ABC RESULTS:           input signals:       66
 ABC RESULTS:          output signals:       97
 Removing temp directory.
 
-3.29.8. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.31.8. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clock, synchronously reset by \reset
 Extracted 8941 gates and 10090 wires to a netlist network with 1147 inputs and 454 outputs.
 
-3.29.8.1. Executing ABC.
+3.31.8.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2834,7 +2885,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.8.2. Re-integrating ABC results.
+3.31.8.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       42
 ABC RESULTS:               NOT cells:        9
 ABC RESULTS:               MUX cells:       14
@@ -2851,40 +2902,40 @@ ABC RESULTS:           input signals:     1147
 ABC RESULTS:          output signals:      454
 Removing temp directory.
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_Ql05Ix/abc_tmp_1.scr
 
-3.30. Executing ABC pass (technology mapping using ABC).
+3.32. Executing ABC pass (technology mapping using ABC).
 
-3.30.1. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+3.32.1. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
 Extracted 7935 gates and 8877 wires to a netlist network with 941 inputs and 944 outputs.
 
-3.30.1.1. Executing ABC.
+3.32.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/wrapper_multi_enc_decx2x4/abc_tmp.scr 
-ABC:   #Luts =  3238  Max Lvl =  20  Avg Lvl =   1.92  [   0.53 sec. at Pass 0]
-ABC:   #Luts =  2426  Max Lvl =  15  Avg Lvl =   1.85  [  43.52 sec. at Pass 1]
-ABC:   #Luts =  2356  Max Lvl =  15  Avg Lvl =   1.82  [   5.74 sec. at Pass 2]
-ABC:   #Luts =  2305  Max Lvl =  14  Avg Lvl =   1.76  [  13.10 sec. at Pass 3]
-ABC:   #Luts =  2305  Max Lvl =  14  Avg Lvl =   1.76  [   9.86 sec. at Pass 4]
-ABC:   #Luts =  2282  Max Lvl =  15  Avg Lvl =   1.74  [  11.80 sec. at Pass 5]
-ABC:   #Luts =  2281  Max Lvl =  15  Avg Lvl =   1.78  [  10.89 sec. at Pass 6]
-ABC:   #Luts =  2250  Max Lvl =  15  Avg Lvl =   1.76  [  15.74 sec. at Pass 7]
-ABC:   #Luts =  2237  Max Lvl =  15  Avg Lvl =   1.78  [  10.83 sec. at Pass 8]
-ABC:   #Luts =  2225  Max Lvl =  16  Avg Lvl =   1.75  [  16.28 sec. at Pass 9]
-ABC:   #Luts =  2225  Max Lvl =  16  Avg Lvl =   1.75  [  13.77 sec. at Pass 10]
-ABC:   #Luts =  2203  Max Lvl =  15  Avg Lvl =   1.78  [  15.74 sec. at Pass 11]
-ABC:   #Luts =  2203  Max Lvl =  15  Avg Lvl =   1.78  [  13.48 sec. at Pass 12]
-ABC:   #Luts =  2192  Max Lvl =  15  Avg Lvl =   1.75  [  19.58 sec. at Pass 13]
-ABC:   #Luts =  2192  Max Lvl =  15  Avg Lvl =   1.75  [  16.05 sec. at Pass 14]
-ABC:   #Luts =  2186  Max Lvl =  15  Avg Lvl =   1.76  [  21.56 sec. at Pass 15]
+ABC: + source /tmp/yosys_Ql05Ix/abc_tmp_1.scr 
+ABC:   #Luts =  3238  Max Lvl =  20  Avg Lvl =   1.92  [   1.09 sec. at Pass 0]
+ABC:   #Luts =  2426  Max Lvl =  15  Avg Lvl =   1.85  [  54.82 sec. at Pass 1]
+ABC:   #Luts =  2356  Max Lvl =  15  Avg Lvl =   1.82  [   6.22 sec. at Pass 2]
+ABC:   #Luts =  2305  Max Lvl =  14  Avg Lvl =   1.76  [  10.87 sec. at Pass 3]
+ABC:   #Luts =  2305  Max Lvl =  14  Avg Lvl =   1.76  [   7.42 sec. at Pass 4]
+ABC:   #Luts =  2282  Max Lvl =  15  Avg Lvl =   1.74  [  13.17 sec. at Pass 5]
+ABC:   #Luts =  2281  Max Lvl =  15  Avg Lvl =   1.78  [   7.62 sec. at Pass 6]
+ABC:   #Luts =  2250  Max Lvl =  15  Avg Lvl =   1.76  [  13.76 sec. at Pass 7]
+ABC:   #Luts =  2237  Max Lvl =  15  Avg Lvl =   1.78  [   7.57 sec. at Pass 8]
+ABC:   #Luts =  2225  Max Lvl =  16  Avg Lvl =   1.75  [  12.08 sec. at Pass 9]
+ABC:   #Luts =  2225  Max Lvl =  16  Avg Lvl =   1.75  [   8.25 sec. at Pass 10]
+ABC:   #Luts =  2203  Max Lvl =  15  Avg Lvl =   1.78  [  11.56 sec. at Pass 11]
+ABC:   #Luts =  2203  Max Lvl =  15  Avg Lvl =   1.78  [   7.07 sec. at Pass 12]
+ABC:   #Luts =  2192  Max Lvl =  15  Avg Lvl =   1.75  [  12.11 sec. at Pass 13]
+ABC:   #Luts =  2192  Max Lvl =  15  Avg Lvl =   1.75  [   8.50 sec. at Pass 14]
+ABC:   #Luts =  2186  Max Lvl =  15  Avg Lvl =   1.76  [   9.21 sec. at Pass 15]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.30.1.2. Re-integrating ABC results.
+3.32.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:     2162
 ABC RESULTS:        internal signals:     6992
 ABC RESULTS:           input signals:      941
@@ -2893,23 +2944,23 @@ Removing temp directory.
 
 yosys> opt
 
-3.31. Executing OPT pass (performing simple optimizations).
+3.33. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.31.1. Executing OPT_EXPR pass (perform const folding).
+3.33.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
 yosys> opt_merge -nomux
 
-3.31.2. Executing OPT_MERGE pass (detect identical cells).
+3.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 <suppressed ~36 debug messages>
 Removed a total of 12 cells.
 
 yosys> opt_muxtree
 
-3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2917,19 +2968,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.5. Executing OPT_MERGE pass (detect identical cells).
+3.33.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.6. Executing OPT_DFF pass (perform DFF optimizations).
 Setting constant 0-bit at position 0 on $abc$325982$auto$blifparse.cc:362:parse_blif$326018 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4.
 Setting constant 0-bit at position 0 on $abc$326271$auto$blifparse.cc:362:parse_blif$326275 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4.
 Setting constant 0-bit at position 0 on $abc$326786$auto$blifparse.cc:362:parse_blif$326806 ($_SDFF_PP0_) from module wrapper_multi_enc_decx2x4.
@@ -2937,21 +2988,21 @@ Setting constant 0-bit at position 0 on $abc$326497$auto$blifparse.cc:362:parse_
 
 yosys> opt_clean
 
-3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 0 unused cells and 19821 unused wires.
 <suppressed ~33 debug messages>
 
 yosys> opt_expr
 
-3.31.8. Executing OPT_EXPR pass (perform const folding).
+3.33.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.33.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2959,35 +3010,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_multi_enc_decx2x4.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.12. Executing OPT_MERGE pass (detect identical cells).
+3.33.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 
 yosys> opt_expr
 
-3.31.15. Executing OPT_EXPR pass (perform const folding).
+3.33.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
-3.31.16. Finished OPT passes. (There is nothing left to do.)
+3.33.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-3.32. Printing statistics.
+3.34. Printing statistics.
 
 === wrapper_multi_enc_decx2x4 ===
 
@@ -3005,16 +3056,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.33. Executing SHREGMAP pass (map shift registers).
+3.35. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.36. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.37. Printing statistics.
 
 === wrapper_multi_enc_decx2x4 ===
 
@@ -3033,9 +3084,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.36. Executing TECHMAP pass (map to technology primitives).
+3.38. Executing TECHMAP pass (map to technology primitives).
 
-3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.38.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -3063,7 +3114,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.38.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -3132,7 +3183,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.36.3. Continuing TECHMAP pass.
+3.38.3. Continuing TECHMAP pass.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
@@ -3140,167 +3191,38 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.37. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 <suppressed ~48490 debug messages>
 
 yosys> simplemap
 
-3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.40. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.39. Executing OPT_EXPR pass (perform const folding).
+3.41. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
 
 yosys> opt_merge
 
-3.40. Executing OPT_MERGE pass (detect identical cells).
+3.42. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 <suppressed ~16194 debug messages>
 Removed a total of 5398 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.41. Executing OPT_DFF pass (perform DFF optimizations).
+3.43. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 5 unused cells and 5627 unused wires.
 <suppressed ~6 debug messages>
 
 yosys> opt -nodffe -nosdff
-
-3.43. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.43.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_multi_enc_decx2x4.
-<suppressed ~613 debug messages>
-
-yosys> opt_merge -nomux
-
-3.43.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_multi_enc_decx2x4.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
-Removed 0 unused cells and 30 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.43.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_multi_enc_decx2x4.
-
-3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_multi_enc_decx2x4.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
-
-yosys> opt_expr
-
-3.43.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_multi_enc_decx2x4.
-
-3.43.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.44. Executing ABC pass (technology mapping using ABC).
-
-3.44.1. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
-Extracted 8212 gates and 9139 wires to a netlist network with 925 inputs and 914 outputs.
-
-3.44.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/wrapper_multi_enc_decx2x4/abc_tmp.scr 
-ABC:   #Luts =  2234  Max Lvl =  17  Avg Lvl =   2.70  [   0.98 sec. at Pass 0]
-ABC:   #Luts =  2234  Max Lvl =  17  Avg Lvl =   2.70  [  45.55 sec. at Pass 1]
-ABC:   #Luts =  2230  Max Lvl =  15  Avg Lvl =   2.67  [   8.94 sec. at Pass 2]
-ABC:   #Luts =  2187  Max Lvl =  14  Avg Lvl =   2.12  [  16.28 sec. at Pass 3]
-ABC:   #Luts =  2183  Max Lvl =  16  Avg Lvl =   2.19  [  10.71 sec. at Pass 4]
-ABC:   #Luts =  2183  Max Lvl =  16  Avg Lvl =   2.19  [  17.26 sec. at Pass 5]
-ABC:   #Luts =  2180  Max Lvl =  14  Avg Lvl =   2.30  [  10.73 sec. at Pass 6]
-ABC:   #Luts =  2164  Max Lvl =  15  Avg Lvl =   2.83  [  14.19 sec. at Pass 7]
-ABC:   #Luts =  2164  Max Lvl =  15  Avg Lvl =   2.83  [   8.94 sec. at Pass 8]
-ABC:   #Luts =  2154  Max Lvl =  15  Avg Lvl =   2.60  [  17.59 sec. at Pass 9]
-ABC:   #Luts =  2153  Max Lvl =  15  Avg Lvl =   2.08  [  11.52 sec. at Pass 10]
-ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  14.72 sec. at Pass 11]
-ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  11.72 sec. at Pass 12]
-ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  13.68 sec. at Pass 13]
-ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  10.91 sec. at Pass 14]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.44.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     2131
-ABC RESULTS:        internal signals:     7300
-ABC RESULTS:           input signals:      925
-ABC RESULTS:          output signals:      914
-Removing temp directory.
-
-yosys> opt
 
 3.45. Executing OPT pass (performing simple optimizations).
 
@@ -3308,6 +3230,7 @@ yosys> opt_expr
 
 3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_multi_enc_decx2x4.
+<suppressed ~613 debug messages>
 
 yosys> opt_merge -nomux
 
@@ -3335,7 +3258,7 @@ yosys> opt_merge
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -3343,7 +3266,7 @@ yosys> opt_clean
 
 3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
-Removed 0 unused cells and 8341 unused wires.
+Removed 0 unused cells and 30 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -3373,7 +3296,7 @@ yosys> opt_merge
 Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -3389,20 +3312,148 @@ Optimizing module wrapper_multi_enc_decx2x4.
 
 3.45.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> abc -script /tmp/yosys_Ql05Ix/abc_tmp_2.scr
+
+3.46. Executing ABC pass (technology mapping using ABC).
+
+3.46.1. Extracting gate netlist of module `\wrapper_multi_enc_decx2x4' to `<abc-temp-dir>/input.blif'..
+Extracted 8212 gates and 9139 wires to a netlist network with 925 inputs and 914 outputs.
+
+3.46.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_Ql05Ix/abc_tmp_2.scr 
+ABC:   #Luts =  2234  Max Lvl =  17  Avg Lvl =   2.70  [   0.45 sec. at Pass 0]
+ABC:   #Luts =  2234  Max Lvl =  17  Avg Lvl =   2.70  [  22.26 sec. at Pass 1]
+ABC:   #Luts =  2230  Max Lvl =  15  Avg Lvl =   2.67  [   5.82 sec. at Pass 2]
+ABC:   #Luts =  2187  Max Lvl =  14  Avg Lvl =   2.12  [   7.42 sec. at Pass 3]
+ABC:   #Luts =  2183  Max Lvl =  16  Avg Lvl =   2.19  [   8.11 sec. at Pass 4]
+ABC:   #Luts =  2183  Max Lvl =  16  Avg Lvl =   2.19  [  12.65 sec. at Pass 5]
+ABC:   #Luts =  2180  Max Lvl =  14  Avg Lvl =   2.30  [   8.10 sec. at Pass 6]
+ABC:   #Luts =  2164  Max Lvl =  15  Avg Lvl =   2.83  [  10.22 sec. at Pass 7]
+ABC:   #Luts =  2164  Max Lvl =  15  Avg Lvl =   2.83  [   9.31 sec. at Pass 8]
+ABC:   #Luts =  2154  Max Lvl =  15  Avg Lvl =   2.60  [  11.83 sec. at Pass 9]
+ABC:   #Luts =  2153  Max Lvl =  15  Avg Lvl =   2.08  [  10.09 sec. at Pass 10]
+ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  12.25 sec. at Pass 11]
+ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [   8.54 sec. at Pass 12]
+ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [  11.70 sec. at Pass 13]
+ABC:   #Luts =  2131  Max Lvl =  16  Avg Lvl =   2.76  [   6.12 sec. at Pass 14]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.46.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     2131
+ABC RESULTS:        internal signals:     7300
+ABC RESULTS:           input signals:      925
+ABC RESULTS:          output signals:      914
+Removing temp directory.
+
+yosys> opt
+
+3.47. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.47.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_multi_enc_decx2x4.
+
+yosys> opt_merge -nomux
+
+3.47.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.47.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \wrapper_multi_enc_decx2x4.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
+Removed 0 unused cells and 8341 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.47.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_multi_enc_decx2x4.
+
+3.47.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.47.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \wrapper_multi_enc_decx2x4..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \wrapper_multi_enc_decx2x4.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_multi_enc_decx2x4'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
+
+yosys> opt_expr
+
+3.47.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_multi_enc_decx2x4.
+
+3.47.16. Finished OPT passes. (There is nothing left to do.)
+
 yosys> hierarchy -check
 
-3.46. Executing HIERARCHY pass (managing design hierarchy).
+3.48. Executing HIERARCHY pass (managing design hierarchy).
 
-3.46.1. Analyzing design hierarchy..
+3.48.1. Analyzing design hierarchy..
 Top module:  \wrapper_multi_enc_decx2x4
 
-3.46.2. Analyzing design hierarchy..
+3.48.2. Analyzing design hierarchy..
 Top module:  \wrapper_multi_enc_decx2x4
 Removed 0 unused modules.
 
 yosys> stat
 
-3.47. Printing statistics.
+3.49. Printing statistics.
 
 === wrapper_multi_enc_decx2x4 ===
 
@@ -3420,30 +3471,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_multi_enc_decx2x4..
 Removed 0 unused cells and 46 unused wires.
 <suppressed ~46 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.49. Executing Verilog backend.
+3.51. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.49.1. Executing BMUXMAP pass.
+3.51.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.49.2. Executing DEMUXMAP pass.
+3.51.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\wrapper_multi_enc_decx2x4'.
 
 Warnings: 1 unique messages, 1 total
-End of script. Logfile hash: 8418e90def, CPU: user 96.15s system 1.40s, MEM: 589.52 MB peak
-Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
-Time spent: 96% 3x abc (2431 sec), 1% 30x opt_expr (37 sec), ...
-real 647.96
-user 2379.62
-sys 146.58
+End of script. Logfile hash: b6027e6daf, CPU: user 97.22s system 2.04s, MEM: 591.99 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 96% 3x abc (2396 sec), 1% 30x opt_expr (38 sec), ...
+real 579.07
+user 2345.65
+sys 147.78
