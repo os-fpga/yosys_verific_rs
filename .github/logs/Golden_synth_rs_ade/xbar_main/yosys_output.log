@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.13
- Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.19
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -116,7 +116,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'xbar_main.sv'
 
 yosys> synth_rs -top xbar_main -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.41
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -141,6 +141,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top xbar_main
@@ -2035,23 +2042,55 @@ Optimizing module xbar_main.
 
 3.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== xbar_main ===
+
+   Number of wires:              22938
+   Number of wire bits:         197100
+   Number of public wires:       21866
+   Number of public wire bits:  189536
+   Number of memories:              40
+   Number of memory bits:         7942
+   Number of processes:              0
+   Number of cells:               1733
+     $adff                           3
+     $adffe                        121
+     $alu                           86
+     $and                          325
+     $eq                           280
+     $logic_not                     15
+     $memrd                         40
+     $memwr                         40
+     $mux                          453
+     $ne                             6
+     $not                          205
+     $or                            32
+     $reduce_and                     6
+     $reduce_bool                   26
+     $reduce_or                     72
+     $xor                           23
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
   Analyzing xbar_main.u_asf_34.reqfifo.storage write port 0.
   Analyzing xbar_main.u_asf_34.rspfifo.storage write port 0.
   Analyzing xbar_main.u_asf_36.reqfifo.storage write port 0.
@@ -2095,7 +2134,7 @@ yosys> opt_mem_feedback
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 Checking read port `\u_asf_34.reqfifo.storage'[0] in module `\xbar_main': no output FF found.
 Checking read port `\u_asf_34.rspfifo.storage'[0] in module `\xbar_main': no output FF found.
 Checking read port `\u_asf_36.reqfifo.storage'[0] in module `\xbar_main': no output FF found.
@@ -2179,31 +2218,26 @@ Checking read port address `\u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.stora
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \xbar_main..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -2236,11 +2270,47 @@ yosys> stat
      $xor                           23
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \xbar_main..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== xbar_main ===
+
+   Number of wires:              22938
+   Number of wire bits:         197100
+   Number of public wires:       21866
+   Number of public wire bits:  189536
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1693
+     $adff                           3
+     $adffe                        121
+     $alu                           86
+     $and                          325
+     $eq                           280
+     $logic_not                     15
+     $mem_v2                        40
+     $mux                          453
+     $ne                             6
+     $not                          205
+     $or                            32
+     $reduce_and                     6
+     $reduce_bool                   26
+     $reduce_or                     72
+     $xor                           23
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -2268,12 +2338,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $eq.
 Using extmapper simplemap for cells of type $mux.
@@ -2302,7 +2372,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === xbar_main ===
 
@@ -2327,24 +2397,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 <suppressed ~10673 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 <suppressed ~3759 debug messages>
 Removed a total of 1253 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2352,37 +2422,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 430 unused cells and 3954 unused wires.
 <suppressed ~551 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2390,64 +2460,64 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
 
-3.26. Executing OPT pass (performing simple optimizations).
+3.28. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-3.26.1. Executing OPT_EXPR pass (perform const folding).
+3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 <suppressed ~7510 debug messages>
 
 yosys> opt_merge
 
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
+3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 0 unused cells and 29 unused wires.
 <suppressed ~1 debug messages>
 
-3.26.5. Finished fast OPT passes.
+3.28.5. Finished fast OPT passes.
 
 yosys> memory_map
 
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 Mapping memory \u_asf_34.reqfifo.storage in module \xbar_main:
   created 4 $dff cells and 0 static cells of width 107.
   read interface: 0 $dff and 3 $mux cells.
@@ -2611,23 +2681,23 @@ Mapping memory \u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.storage in module 
 
 yosys> opt -full
 
-3.28. Executing OPT pass (performing simple optimizations).
+3.30. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-3.28.1. Executing OPT_EXPR pass (perform const folding).
+3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 <suppressed ~92 debug messages>
 
 yosys> opt_merge -nomux
 
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
+3.30.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -2637,41 +2707,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
+3.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.6. Executing OPT_SHARE pass.
+3.30.6. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 0 unused cells and 230 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr -full
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -2681,23 +2751,23 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.13. Executing OPT_MERGE pass (detect identical cells).
+3.30.13. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.14. Executing OPT_SHARE pass.
+3.30.14. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $memory\u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.storage[1]$78273 ($dff) from module xbar_main (D = { \tl_rv_core_ibex__cfg_i.d_opcode \tl_rv_core_ibex__cfg_i.d_param \tl_rv_core_ibex__cfg_i.d_size \tl_rv_core_ibex__cfg_i.d_source \tl_rv_core_ibex__cfg_i.d_sink \u_sm1_53.u_devicefifo.rspfifo.wdata_i [47:16] \tl_rv_core_ibex__cfg_i.d_user.rsp_intg \tl_rv_core_ibex__cfg_i.d_user.data_intg \tl_rv_core_ibex__cfg_i.d_error 1'0 }, Q = \u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.storage[1]).
 Adding EN signal on $memory\u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.storage[0]$78271 ($dff) from module xbar_main (D = { \tl_rv_core_ibex__cfg_i.d_opcode \tl_rv_core_ibex__cfg_i.d_param \tl_rv_core_ibex__cfg_i.d_size \tl_rv_core_ibex__cfg_i.d_source \tl_rv_core_ibex__cfg_i.d_sink \u_sm1_53.u_devicefifo.rspfifo.wdata_i [47:16] \tl_rv_core_ibex__cfg_i.d_user.rsp_intg \tl_rv_core_ibex__cfg_i.d_user.data_intg \tl_rv_core_ibex__cfg_i.d_error 1'0 }, Q = \u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.storage[0]).
 Adding EN signal on $memory\u_sm1_53.u_devicefifo.reqfifo.gen_normal_fifo.storage[1]$78254 ($dff) from module xbar_main (D = { \u_sm1_53.gen_arb_ppc.u_reqarb.data_o [107:1] 1'0 }, Q = \u_sm1_53.u_devicefifo.reqfifo.gen_normal_fifo.storage[1]).
@@ -2859,21 +2929,21 @@ Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$78290 ($dffe) from
 
 yosys> opt_clean
 
-3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 92 unused cells and 92 unused wires.
 <suppressed ~93 debug messages>
 
 yosys> opt_expr -full
 
-3.28.17. Executing OPT_EXPR pass (perform const folding).
+3.30.17. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.28.18. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.18. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.28.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -2883,7 +2953,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
     Consolidated identical input bits for $mux cell $memory\u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.storage$rdmux[0][0][0]$77667:
       Old ports: A={ \u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.storage[0] [64:1] 1'0 }, B={ \u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.storage[1] [64:1] 1'0 }, Y=\u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.rdata_int
@@ -3022,33 +3092,33 @@ Performed a total of 33 changes.
 
 yosys> opt_merge
 
-3.28.21. Executing OPT_MERGE pass (detect identical cells).
+3.30.21. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.22. Executing OPT_SHARE pass.
+3.30.22. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.23. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.23. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.24. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> opt_expr -full
 
-3.28.25. Executing OPT_EXPR pass (perform const folding).
+3.30.25. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.28.26. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.26. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.28.27. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.27. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -3058,41 +3128,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.28. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.28. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.29. Executing OPT_MERGE pass (detect identical cells).
+3.30.29. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.30. Executing OPT_SHARE pass.
+3.30.30. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.31. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.31. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.32. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.32. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> opt_expr -full
 
-3.28.33. Executing OPT_EXPR pass (perform const folding).
+3.30.33. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.28.34. Finished OPT passes. (There is nothing left to do.)
+3.30.34. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-3.29. Executing ABC pass (technology mapping using ABC).
+3.31. Executing ABC pass (technology mapping using ABC).
 
-3.29.1. Summary of detected clock domains:
+3.31.1. Summary of detected clock domains:
   4525 cells in clk=\clk_main_i, en=\u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.fifo_incr_rptr, arst=!\rst_main_ni, srst={ }
   14 cells in clk=\clk_main_i, en=\u_s1n_54.fifo_h.reqfifo.gen_normal_fifo.fifo_incr_wptr, arst=!\rst_main_ni, srst={ }
   876 cells in clk=\clk_main_i, en=\u_s1n_54.accept_t_req, arst=!\rst_main_ni, srst={ }
@@ -3209,11 +3279,11 @@ yosys> abc -dff
   41 cells in clk=\clk_main_i, en=$auto$simplemap.cc:251:simplemap_eqne$64050 [1], arst=!\rst_main_ni, srst={ }
   12 cells in clk=\clk_main_i, en={ }, arst=!\rst_main_ni, srst={ }
 
-3.29.2. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.2. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_54.fifo_h.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 4521 gates and 6390 wires to a netlist network with 1868 inputs and 718 outputs.
 
-3.29.2.1. Executing ABC.
+3.31.2.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3232,7 +3302,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.2.2. Re-integrating ABC results.
+3.31.2.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:       16
 ABC RESULTS:            ANDNOT cells:      603
@@ -3249,11 +3319,11 @@ ABC RESULTS:           input signals:     1868
 ABC RESULTS:          output signals:      718
 Removing temp directory.
 
-3.29.3. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.3. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_54.fifo_h.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.3.1. Executing ABC.
+3.31.3.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3272,7 +3342,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.3.2. Re-integrating ABC results.
+3.31.3.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -3284,11 +3354,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.4. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.4. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_54.accept_t_req, asynchronously reset by !\rst_main_ni
 Extracted 872 gates and 1501 wires to a netlist network with 627 inputs and 469 outputs.
 
-3.29.4.1. Executing ABC.
+3.31.4.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3307,7 +3377,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.4.2. Re-integrating ABC results.
+3.31.4.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        7
 ABC RESULTS:               NOT cells:        5
 ABC RESULTS:              XNOR cells:        3
@@ -3325,11 +3395,11 @@ ABC RESULTS:           input signals:      627
 ABC RESULTS:          output signals:      469
 Removing temp directory.
 
-3.29.5. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.5. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$53543, asynchronously reset by !\rst_main_ni
 Extracted 62 gates and 64 wires to a netlist network with 2 inputs and 2 outputs.
 
-3.29.5.1. Executing ABC.
+3.31.5.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3348,7 +3418,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.5.2. Re-integrating ABC results.
+3.31.5.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:            ANDNOT cells:        1
@@ -3359,11 +3429,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        2
 Removing temp directory.
 
-3.29.6. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.6. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53533, asynchronously reset by !\rst_main_ni
 Extracted 26 gates and 42 wires to a netlist network with 16 inputs and 6 outputs.
 
-3.29.6.1. Executing ABC.
+3.31.6.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3382,7 +3452,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.6.2. Re-integrating ABC results.
+3.31.6.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:               NOT cells:        1
@@ -3395,11 +3465,11 @@ ABC RESULTS:           input signals:       16
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.7. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.7. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_54.accept_t_rsp, asynchronously reset by !\rst_main_ni
 Extracted 68 gates and 141 wires to a netlist network with 72 inputs and 12 outputs.
 
-3.29.7.1. Executing ABC.
+3.31.7.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3418,7 +3488,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.7.2. Re-integrating ABC results.
+3.31.7.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:            ANDNOT cells:       10
@@ -3432,11 +3502,11 @@ ABC RESULTS:           input signals:       72
 ABC RESULTS:          output signals:       12
 Removing temp directory.
 
-3.29.8. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.8. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 53 gates and 94 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.8.1. Executing ABC.
+3.31.8.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3455,7 +3525,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.8.2. Re-integrating ABC results.
+3.31.8.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3470,11 +3540,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.9. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.9. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_53.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.9.1. Executing ABC.
+3.31.9.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3493,7 +3563,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.9.2. Re-integrating ABC results.
+3.31.9.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -3505,11 +3575,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.10. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.10. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_53.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.10.1. Executing ABC.
+3.31.10.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3528,7 +3598,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.10.2. Re-integrating ABC results.
+3.31.10.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3541,11 +3611,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.11. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.11. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53402, asynchronously reset by !\rst_main_ni
 Extracted 21 gates and 33 wires to a netlist network with 11 inputs and 7 outputs.
 
-3.29.11.1. Executing ABC.
+3.31.11.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3564,7 +3634,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.11.2. Re-integrating ABC results.
+3.31.11.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        4
@@ -3577,11 +3647,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:        7
 Removing temp directory.
 
-3.29.12. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.12. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53405, asynchronously reset by !\rst_main_ni
 Extracted 23 gates and 33 wires to a netlist network with 9 inputs and 6 outputs.
 
-3.29.12.1. Executing ABC.
+3.31.12.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3600,7 +3670,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.12.2. Re-integrating ABC results.
+3.31.12.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:              NAND cells:        3
@@ -3613,11 +3683,11 @@ ABC RESULTS:           input signals:        9
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.13. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.13. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_51.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.13.1. Executing ABC.
+3.31.13.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3636,7 +3706,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.13.2. Re-integrating ABC results.
+3.31.13.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -3648,11 +3718,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.14. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.14. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_51.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.14.1. Executing ABC.
+3.31.14.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3671,7 +3741,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.14.2. Re-integrating ABC results.
+3.31.14.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -3685,11 +3755,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.15. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.15. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_51.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.15.1. Executing ABC.
+3.31.15.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3708,7 +3778,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.15.2. Re-integrating ABC results.
+3.31.15.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -3720,11 +3790,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.16. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.16. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_51.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.16.1. Executing ABC.
+3.31.16.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3743,7 +3813,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.16.2. Re-integrating ABC results.
+3.31.16.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3756,11 +3826,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.17. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.17. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53412, asynchronously reset by !\rst_main_ni
 Extracted 24 gates and 39 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.29.17.1. Executing ABC.
+3.31.17.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3779,7 +3849,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.17.2. Re-integrating ABC results.
+3.31.17.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        7
@@ -3792,11 +3862,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.18. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.18. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_50.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.18.1. Executing ABC.
+3.31.18.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3815,7 +3885,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.18.2. Re-integrating ABC results.
+3.31.18.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -3827,11 +3897,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.19. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.19. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_50.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.19.1. Executing ABC.
+3.31.19.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3850,7 +3920,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.19.2. Re-integrating ABC results.
+3.31.19.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -3864,11 +3934,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.20. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.20. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_50.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.20.1. Executing ABC.
+3.31.20.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3887,7 +3957,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.20.2. Re-integrating ABC results.
+3.31.20.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -3899,11 +3969,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.21. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.21. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_50.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.21.1. Executing ABC.
+3.31.21.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3922,7 +3992,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.21.2. Re-integrating ABC results.
+3.31.21.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3935,11 +4005,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.22. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.22. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53419, asynchronously reset by !\rst_main_ni
 Extracted 21 gates and 33 wires to a netlist network with 11 inputs and 7 outputs.
 
-3.29.22.1. Executing ABC.
+3.31.22.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3958,7 +4028,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.22.2. Re-integrating ABC results.
+3.31.22.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        4
@@ -3971,11 +4041,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:        7
 Removing temp directory.
 
-3.29.23. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.23. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_49.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.23.1. Executing ABC.
+3.31.23.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3994,7 +4064,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.23.2. Re-integrating ABC results.
+3.31.23.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4006,11 +4076,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.24. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.24. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_49.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.24.1. Executing ABC.
+3.31.24.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4029,7 +4099,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.24.2. Re-integrating ABC results.
+3.31.24.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4043,11 +4113,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.25. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.25. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_49.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.25.1. Executing ABC.
+3.31.25.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4066,7 +4136,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.25.2. Re-integrating ABC results.
+3.31.25.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4078,11 +4148,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.26. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.26. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_49.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.26.1. Executing ABC.
+3.31.26.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4101,7 +4171,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.26.2. Re-integrating ABC results.
+3.31.26.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -4114,11 +4184,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.27. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.27. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53426, asynchronously reset by !\rst_main_ni
 Extracted 21 gates and 33 wires to a netlist network with 11 inputs and 7 outputs.
 
-3.29.27.1. Executing ABC.
+3.31.27.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4137,7 +4207,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.27.2. Re-integrating ABC results.
+3.31.27.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        4
@@ -4150,11 +4220,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:        7
 Removing temp directory.
 
-3.29.28. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.28. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_48.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.28.1. Executing ABC.
+3.31.28.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4173,7 +4243,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.28.2. Re-integrating ABC results.
+3.31.28.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4185,11 +4255,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.29. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.29. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_48.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.29.1. Executing ABC.
+3.31.29.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4208,7 +4278,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.29.2. Re-integrating ABC results.
+3.31.29.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4222,11 +4292,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.30. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.30. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_48.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.30.1. Executing ABC.
+3.31.30.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4245,7 +4315,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.30.2. Re-integrating ABC results.
+3.31.30.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4257,11 +4327,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.31. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.31. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_48.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.31.1. Executing ABC.
+3.31.31.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4280,7 +4350,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.31.2. Re-integrating ABC results.
+3.31.31.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -4293,11 +4363,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.32. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.32. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53433, asynchronously reset by !\rst_main_ni
 Extracted 22 gates and 34 wires to a netlist network with 11 inputs and 8 outputs.
 
-3.29.32.1. Executing ABC.
+3.31.32.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4316,7 +4386,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.32.2. Re-integrating ABC results.
+3.31.32.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -4331,11 +4401,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 
-3.29.33. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.33. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_47.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.33.1. Executing ABC.
+3.31.33.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4354,7 +4424,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.33.2. Re-integrating ABC results.
+3.31.33.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4366,11 +4436,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.34. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.34. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_47.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.34.1. Executing ABC.
+3.31.34.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4389,7 +4459,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.34.2. Re-integrating ABC results.
+3.31.34.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4403,11 +4473,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.35. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.35. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_47.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.35.1. Executing ABC.
+3.31.35.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4426,7 +4496,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.35.2. Re-integrating ABC results.
+3.31.35.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4438,11 +4508,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.36. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.36. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_47.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.36.1. Executing ABC.
+3.31.36.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4461,7 +4531,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.36.2. Re-integrating ABC results.
+3.31.36.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -4474,11 +4544,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.37. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.37. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53440, asynchronously reset by !\rst_main_ni
 Extracted 24 gates and 38 wires to a netlist network with 13 inputs and 9 outputs.
 
-3.29.37.1. Executing ABC.
+3.31.37.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4497,7 +4567,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.37.2. Re-integrating ABC results.
+3.31.37.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -4512,11 +4582,11 @@ ABC RESULTS:           input signals:       13
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.38. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.38. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_46.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.38.1. Executing ABC.
+3.31.38.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4535,7 +4605,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.38.2. Re-integrating ABC results.
+3.31.38.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4547,11 +4617,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.39. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.39. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_46.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.39.1. Executing ABC.
+3.31.39.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4570,7 +4640,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.39.2. Re-integrating ABC results.
+3.31.39.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4584,11 +4654,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.40. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.40. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_46.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.40.1. Executing ABC.
+3.31.40.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4607,7 +4677,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.40.2. Re-integrating ABC results.
+3.31.40.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4619,11 +4689,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.41. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.41. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_46.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.41.1. Executing ABC.
+3.31.41.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4642,7 +4712,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.41.2. Re-integrating ABC results.
+3.31.41.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -4655,11 +4725,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.42. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.42. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53447, asynchronously reset by !\rst_main_ni
 Extracted 30 gates and 48 wires to a netlist network with 17 inputs and 14 outputs.
 
-3.29.42.1. Executing ABC.
+3.31.42.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4678,7 +4748,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.42.2. Re-integrating ABC results.
+3.31.42.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:             ORNOT cells:        1
@@ -4693,11 +4763,11 @@ ABC RESULTS:           input signals:       17
 ABC RESULTS:          output signals:       14
 Removing temp directory.
 
-3.29.43. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.43. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_45.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.43.1. Executing ABC.
+3.31.43.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4716,7 +4786,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.43.2. Re-integrating ABC results.
+3.31.43.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4728,11 +4798,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.44. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.44. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_45.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.44.1. Executing ABC.
+3.31.44.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4751,7 +4821,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.44.2. Re-integrating ABC results.
+3.31.44.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4765,11 +4835,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.45. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.45. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_45.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.45.1. Executing ABC.
+3.31.45.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4788,7 +4858,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.45.2. Re-integrating ABC results.
+3.31.45.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4800,11 +4870,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.46. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.46. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_45.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.46.1. Executing ABC.
+3.31.46.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4823,7 +4893,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.46.2. Re-integrating ABC results.
+3.31.46.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -4836,11 +4906,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.47. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.47. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53454, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 40 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.29.47.1. Executing ABC.
+3.31.47.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4859,7 +4929,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.47.2. Re-integrating ABC results.
+3.31.47.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -4874,11 +4944,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.48. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.48. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_44.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.48.1. Executing ABC.
+3.31.48.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4897,7 +4967,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.48.2. Re-integrating ABC results.
+3.31.48.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -4909,11 +4979,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.49. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.49. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_44.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.49.1. Executing ABC.
+3.31.49.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4932,7 +5002,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.49.2. Re-integrating ABC results.
+3.31.49.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -4946,11 +5016,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.50. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.50. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_44.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.50.1. Executing ABC.
+3.31.50.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -4969,7 +5039,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.50.2. Re-integrating ABC results.
+3.31.50.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -4981,11 +5051,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.51. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.51. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_44.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.51.1. Executing ABC.
+3.31.51.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5004,7 +5074,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.51.2. Re-integrating ABC results.
+3.31.51.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -5017,11 +5087,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.52. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.52. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53461, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 40 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.29.52.1. Executing ABC.
+3.31.52.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5040,7 +5110,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.52.2. Re-integrating ABC results.
+3.31.52.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -5055,11 +5125,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.53. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.53. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_43.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.53.1. Executing ABC.
+3.31.53.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5078,7 +5148,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.53.2. Re-integrating ABC results.
+3.31.53.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5090,11 +5160,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.54. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.54. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_43.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.54.1. Executing ABC.
+3.31.54.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5113,7 +5183,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.54.2. Re-integrating ABC results.
+3.31.54.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -5127,11 +5197,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.55. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.55. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_43.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.55.1. Executing ABC.
+3.31.55.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5150,7 +5220,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.55.2. Re-integrating ABC results.
+3.31.55.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5162,11 +5232,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.56. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.56. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_43.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.56.1. Executing ABC.
+3.31.56.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5185,7 +5255,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.56.2. Re-integrating ABC results.
+3.31.56.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -5198,11 +5268,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.57. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.57. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53468, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 41 wires to a netlist network with 15 inputs and 9 outputs.
 
-3.29.57.1. Executing ABC.
+3.31.57.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5221,7 +5291,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.57.2. Re-integrating ABC results.
+3.31.57.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        8
@@ -5234,11 +5304,11 @@ ABC RESULTS:           input signals:       15
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.58. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.58. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_42.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.58.1. Executing ABC.
+3.31.58.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5257,7 +5327,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.58.2. Re-integrating ABC results.
+3.31.58.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5269,11 +5339,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.59. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.59. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_42.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.59.1. Executing ABC.
+3.31.59.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5292,7 +5362,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.59.2. Re-integrating ABC results.
+3.31.59.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -5306,11 +5376,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.60. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.60. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_42.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.60.1. Executing ABC.
+3.31.60.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5329,7 +5399,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.60.2. Re-integrating ABC results.
+3.31.60.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5341,11 +5411,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.61. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.61. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_42.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.61.1. Executing ABC.
+3.31.61.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5364,7 +5434,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.61.2. Re-integrating ABC results.
+3.31.61.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -5377,11 +5447,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.62. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.62. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53475, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 40 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.29.62.1. Executing ABC.
+3.31.62.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5400,7 +5470,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.62.2. Re-integrating ABC results.
+3.31.62.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -5415,11 +5485,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.63. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.63. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_41.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.63.1. Executing ABC.
+3.31.63.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5438,7 +5508,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.63.2. Re-integrating ABC results.
+3.31.63.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5450,11 +5520,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.64. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.64. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_41.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.64.1. Executing ABC.
+3.31.64.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5473,7 +5543,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.64.2. Re-integrating ABC results.
+3.31.64.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -5487,11 +5557,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.65. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.65. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_41.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.65.1. Executing ABC.
+3.31.65.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5510,7 +5580,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.65.2. Re-integrating ABC results.
+3.31.65.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5522,11 +5592,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.66. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.66. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_41.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.66.1. Executing ABC.
+3.31.66.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5545,7 +5615,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.66.2. Re-integrating ABC results.
+3.31.66.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -5558,11 +5628,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.67. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.67. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53482, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 40 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.29.67.1. Executing ABC.
+3.31.67.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5581,7 +5651,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.67.2. Re-integrating ABC results.
+3.31.67.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -5596,11 +5666,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.68. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.68. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_40.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.68.1. Executing ABC.
+3.31.68.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5619,7 +5689,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.68.2. Re-integrating ABC results.
+3.31.68.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5631,11 +5701,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.69. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.69. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_40.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.69.1. Executing ABC.
+3.31.69.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5654,7 +5724,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.69.2. Re-integrating ABC results.
+3.31.69.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -5668,11 +5738,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.70. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.70. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_40.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.70.1. Executing ABC.
+3.31.70.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5691,7 +5761,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.70.2. Re-integrating ABC results.
+3.31.70.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5703,11 +5773,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.71. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.71. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_40.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.71.1. Executing ABC.
+3.31.71.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5726,7 +5796,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.71.2. Re-integrating ABC results.
+3.31.71.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -5739,11 +5809,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.72. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.72. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53489, asynchronously reset by !\rst_main_ni
 Extracted 23 gates and 37 wires to a netlist network with 13 inputs and 7 outputs.
 
-3.29.72.1. Executing ABC.
+3.31.72.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5762,7 +5832,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.72.2. Re-integrating ABC results.
+3.31.72.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        6
@@ -5775,11 +5845,11 @@ ABC RESULTS:           input signals:       13
 ABC RESULTS:          output signals:        7
 Removing temp directory.
 
-3.29.73. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.73. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53492, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 40 wires to a netlist network with 14 inputs and 10 outputs.
 
-3.29.73.1. Executing ABC.
+3.31.73.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5798,7 +5868,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.73.2. Re-integrating ABC results.
+3.31.73.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -5813,11 +5883,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.74. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.74. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53495, asynchronously reset by !\rst_main_ni
 Extracted 23 gates and 37 wires to a netlist network with 13 inputs and 9 outputs.
 
-3.29.74.1. Executing ABC.
+3.31.74.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5836,7 +5906,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.74.2. Re-integrating ABC results.
+3.31.74.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        6
@@ -5849,11 +5919,11 @@ ABC RESULTS:           input signals:       13
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-3.29.75. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.75. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_spi_host0_i, enabled by \u_asf_36.rspfifo.fifo_incr_wptr, asynchronously reset by !\rst_spi_host0_ni
 Extracted 16 gates and 17 wires to a netlist network with 1 inputs and 4 outputs.
 
-3.29.75.1. Executing ABC.
+3.31.75.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5872,7 +5942,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.75.2. Re-integrating ABC results.
+3.31.75.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        1
@@ -5886,11 +5956,11 @@ ABC RESULTS:           input signals:        1
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-3.29.76. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.76. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_spi_host1_i, enabled by \u_asf_38.reqfifo.fifo_incr_rptr, asynchronously reset by !\rst_spi_host1_ni
 Extracted 229 gates and 444 wires to a netlist network with 215 inputs and 111 outputs.
 
-3.29.76.1. Executing ABC.
+3.31.76.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5909,7 +5979,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.76.2. Re-integrating ABC results.
+3.31.76.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -5923,11 +5993,11 @@ ABC RESULTS:           input signals:      215
 ABC RESULTS:          output signals:      111
 Removing temp directory.
 
-3.29.77. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.77. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_38.reqfifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 17 gates and 19 wires to a netlist network with 2 inputs and 5 outputs.
 
-3.29.77.1. Executing ABC.
+3.31.77.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5946,7 +6016,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.77.2. Re-integrating ABC results.
+3.31.77.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -5961,11 +6031,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.78. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.78. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_38.rspfifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 22 gates and 25 wires to a netlist network with 3 inputs and 5 outputs.
 
-3.29.78.1. Executing ABC.
+3.31.78.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -5984,7 +6054,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.78.2. Re-integrating ABC results.
+3.31.78.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        2
@@ -5998,11 +6068,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.79. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.79. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53498, asynchronously reset by !\rst_main_ni
 Extracted 24 gates and 39 wires to a netlist network with 14 inputs and 10 outputs.
 
-3.29.79.1. Executing ABC.
+3.31.79.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6021,7 +6091,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.79.2. Re-integrating ABC results.
+3.31.79.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        7
@@ -6034,11 +6104,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.80. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.80. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_fixed_i, enabled by \u_asf_34.rspfifo.fifo_incr_wptr, asynchronously reset by !\rst_fixed_ni
 Extracted 16 gates and 17 wires to a netlist network with 1 inputs and 4 outputs.
 
-3.29.80.1. Executing ABC.
+3.31.80.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6057,7 +6127,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.80.2. Re-integrating ABC results.
+3.31.80.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        1
@@ -6071,11 +6141,11 @@ ABC RESULTS:           input signals:        1
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-3.29.81. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.81. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_spi_host0_i, enabled by \u_asf_36.reqfifo.fifo_incr_rptr, asynchronously reset by !\rst_spi_host0_ni
 Extracted 229 gates and 444 wires to a netlist network with 215 inputs and 111 outputs.
 
-3.29.81.1. Executing ABC.
+3.31.81.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6094,7 +6164,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.81.2. Re-integrating ABC results.
+3.31.81.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -6108,11 +6178,11 @@ ABC RESULTS:           input signals:      215
 ABC RESULTS:          output signals:      111
 Removing temp directory.
 
-3.29.82. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.82. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_36.reqfifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 17 gates and 19 wires to a netlist network with 2 inputs and 5 outputs.
 
-3.29.82.1. Executing ABC.
+3.31.82.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6131,7 +6201,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.82.2. Re-integrating ABC results.
+3.31.82.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6146,11 +6216,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.83. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.83. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_36.rspfifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 22 gates and 25 wires to a netlist network with 3 inputs and 5 outputs.
 
-3.29.83.1. Executing ABC.
+3.31.83.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6169,7 +6239,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.83.2. Re-integrating ABC results.
+3.31.83.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        2
@@ -6183,11 +6253,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.84. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.84. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_33.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.84.1. Executing ABC.
+3.31.84.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6206,7 +6276,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.84.2. Re-integrating ABC results.
+3.31.84.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6218,11 +6288,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.85. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.85. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_fixed_i, enabled by \u_asf_34.reqfifo.fifo_incr_rptr, asynchronously reset by !\rst_fixed_ni
 Extracted 229 gates and 444 wires to a netlist network with 215 inputs and 111 outputs.
 
-3.29.85.1. Executing ABC.
+3.31.85.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6241,7 +6311,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.85.2. Re-integrating ABC results.
+3.31.85.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -6255,11 +6325,11 @@ ABC RESULTS:           input signals:      215
 ABC RESULTS:          output signals:      111
 Removing temp directory.
 
-3.29.86. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.86. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_34.reqfifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 17 gates and 19 wires to a netlist network with 2 inputs and 5 outputs.
 
-3.29.86.1. Executing ABC.
+3.31.86.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6278,7 +6348,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.86.2. Re-integrating ABC results.
+3.31.86.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6293,11 +6363,11 @@ ABC RESULTS:           input signals:        2
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.87. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.87. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_asf_34.rspfifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 22 gates and 25 wires to a netlist network with 3 inputs and 5 outputs.
 
-3.29.87.1. Executing ABC.
+3.31.87.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6316,7 +6386,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.87.2. Re-integrating ABC results.
+3.31.87.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        2
@@ -6330,11 +6400,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.88. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.88. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_33.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.88.1. Executing ABC.
+3.31.88.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6353,7 +6423,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.88.2. Re-integrating ABC results.
+3.31.88.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -6367,11 +6437,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.89. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.89. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_33.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.89.1. Executing ABC.
+3.31.89.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6390,7 +6460,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.89.2. Re-integrating ABC results.
+3.31.89.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -6402,11 +6472,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.90. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.90. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_33.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.90.1. Executing ABC.
+3.31.90.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6425,7 +6495,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.90.2. Re-integrating ABC results.
+3.31.90.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -6438,11 +6508,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.91. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.91. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53505, asynchronously reset by !\rst_main_ni
 Extracted 24 gates and 39 wires to a netlist network with 14 inputs and 10 outputs.
 
-3.29.91.1. Executing ABC.
+3.31.91.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6461,7 +6531,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.91.2. Re-integrating ABC results.
+3.31.91.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        7
@@ -6474,11 +6544,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.92. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.92. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53508, asynchronously reset by !\rst_main_ni
 Extracted 25 gates and 37 wires to a netlist network with 11 inputs and 8 outputs.
 
-3.29.92.1. Executing ABC.
+3.31.92.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6497,7 +6567,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.92.2. Re-integrating ABC results.
+3.31.92.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:              NAND cells:        3
@@ -6510,11 +6580,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 
-3.29.93. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.93. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_30.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.93.1. Executing ABC.
+3.31.93.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6533,7 +6603,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.93.2. Re-integrating ABC results.
+3.31.93.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6545,11 +6615,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.94. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.94. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_31.accept_t_req, asynchronously reset by !\rst_main_ni
 Extracted 905 gates and 1194 wires to a netlist network with 287 inputs and 369 outputs.
 
-3.29.94.1. Executing ABC.
+3.31.94.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6568,7 +6638,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.94.2. Re-integrating ABC results.
+3.31.94.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        5
 ABC RESULTS:               XOR cells:        3
 ABC RESULTS:              XNOR cells:        2
@@ -6583,11 +6653,11 @@ ABC RESULTS:           input signals:      287
 ABC RESULTS:          output signals:      369
 Removing temp directory.
 
-3.29.95. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.95. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53549, asynchronously reset by !\rst_main_ni
 Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.29.95.1. Executing ABC.
+3.31.95.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6606,7 +6676,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.95.2. Re-integrating ABC results.
+3.31.95.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               AND cells:        1
@@ -6616,11 +6686,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        3
 Removing temp directory.
 
-3.29.96. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.96. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$53555, asynchronously reset by !\rst_main_ni
 Extracted 586 gates and 1292 wires to a netlist network with 705 inputs and 368 outputs.
 
-3.29.96.1. Executing ABC.
+3.31.96.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6639,7 +6709,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.96.2. Re-integrating ABC results.
+3.31.96.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:            ANDNOT cells:       13
@@ -6654,11 +6724,11 @@ ABC RESULTS:           input signals:      705
 ABC RESULTS:          output signals:      368
 Removing temp directory.
 
-3.29.97. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.97. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$simplemap.cc:251:simplemap_eqne$63672 [1], asynchronously reset by !\rst_main_ni
 Extracted 43 gates and 76 wires to a netlist network with 33 inputs and 14 outputs.
 
-3.29.97.1. Executing ABC.
+3.31.97.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6677,7 +6747,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.97.2. Re-integrating ABC results.
+3.31.97.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       11
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        2
@@ -6692,11 +6762,11 @@ ABC RESULTS:           input signals:       33
 ABC RESULTS:          output signals:       14
 Removing temp directory.
 
-3.29.98. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.98. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_53.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 10 gates and 14 wires to a netlist network with 3 inputs and 4 outputs.
 
-3.29.98.1. Executing ABC.
+3.31.98.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6715,7 +6785,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.98.2. Re-integrating ABC results.
+3.31.98.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6727,11 +6797,11 @@ ABC RESULTS:           input signals:        3
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-3.29.99. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.99. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_30.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 59 gates and 103 wires to a netlist network with 43 inputs and 40 outputs.
 
-3.29.99.1. Executing ABC.
+3.31.99.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6750,7 +6820,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.99.2. Re-integrating ABC results.
+3.31.99.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -6765,11 +6835,11 @@ ABC RESULTS:           input signals:       43
 ABC RESULTS:          output signals:       40
 Removing temp directory.
 
-3.29.100. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.100. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_30.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 14 gates and 21 wires to a netlist network with 6 inputs and 6 outputs.
 
-3.29.100.1. Executing ABC.
+3.31.100.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6788,7 +6858,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.100.2. Re-integrating ABC results.
+3.31.100.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        3
@@ -6800,11 +6870,11 @@ ABC RESULTS:           input signals:        6
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.101. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.101. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_30.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 528 gates and 958 wires to a netlist network with 429 inputs and 314 outputs.
 
-3.29.101.1. Executing ABC.
+3.31.101.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6823,7 +6893,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.101.2. Re-integrating ABC results.
+3.31.101.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               NOT cells:        3
@@ -6836,11 +6906,11 @@ ABC RESULTS:           input signals:      429
 ABC RESULTS:          output signals:      314
 Removing temp directory.
 
-3.29.102. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.102. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53515, asynchronously reset by !\rst_main_ni
 Extracted 34 gates and 53 wires to a netlist network with 18 inputs and 10 outputs.
 
-3.29.102.1. Executing ABC.
+3.31.102.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6859,7 +6929,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.102.2. Re-integrating ABC results.
+3.31.102.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               AND cells:        3
 ABC RESULTS:               NOT cells:        2
@@ -6872,11 +6942,11 @@ ABC RESULTS:           input signals:       18
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.103. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.103. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53518, asynchronously reset by !\rst_main_ni
 Extracted 35 gates and 50 wires to a netlist network with 14 inputs and 8 outputs.
 
-3.29.103.1. Executing ABC.
+3.31.103.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6895,7 +6965,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.103.2. Re-integrating ABC results.
+3.31.103.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        3
@@ -6908,11 +6978,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 
-3.29.104. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.104. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_28.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 17 wires to a netlist network with 4 inputs and 5 outputs.
 
-3.29.104.1. Executing ABC.
+3.31.104.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6931,7 +7001,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.104.2. Re-integrating ABC results.
+3.31.104.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        1
@@ -6943,11 +7013,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        5
 Removing temp directory.
 
-3.29.105. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.105. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_28.u_devicefifo.rspfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 51 gates and 92 wires to a netlist network with 40 inputs and 39 outputs.
 
-3.29.105.1. Executing ABC.
+3.31.105.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -6966,7 +7036,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.105.2. Re-integrating ABC results.
+3.31.105.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -6980,11 +7050,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       39
 Removing temp directory.
 
-3.29.106. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.106. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_28.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_wptr, asynchronously reset by !\rst_main_ni
 Extracted 13 gates and 19 wires to a netlist network with 5 inputs and 6 outputs.
 
-3.29.106.1. Executing ABC.
+3.31.106.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7003,7 +7073,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.106.2. Re-integrating ABC results.
+3.31.106.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        2
@@ -7015,11 +7085,11 @@ ABC RESULTS:           input signals:        5
 ABC RESULTS:          output signals:        6
 Removing temp directory.
 
-3.29.107. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.107. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_sm1_28.u_devicefifo.reqfifo.gen_normal_fifo.fifo_incr_rptr, asynchronously reset by !\rst_main_ni
 Extracted 329 gates and 654 wires to a netlist network with 324 inputs and 219 outputs.
 
-3.29.107.1. Executing ABC.
+3.31.107.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7038,7 +7108,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.107.2. Re-integrating ABC results.
+3.31.107.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        2
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -7051,11 +7121,11 @@ ABC RESULTS:           input signals:      324
 ABC RESULTS:          output signals:      219
 Removing temp directory.
 
-3.29.108. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.108. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53525, asynchronously reset by !\rst_main_ni
 Extracted 23 gates and 37 wires to a netlist network with 13 inputs and 8 outputs.
 
-3.29.108.1. Executing ABC.
+3.31.108.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7074,7 +7144,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.108.2. Re-integrating ABC results.
+3.31.108.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOR cells:        2
 ABC RESULTS:                OR cells:        6
@@ -7087,11 +7157,11 @@ ABC RESULTS:           input signals:       13
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 
-3.29.109. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.109. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53528, asynchronously reset by !\rst_main_ni
 Extracted 37 gates and 54 wires to a netlist network with 16 inputs and 10 outputs.
 
-3.29.109.1. Executing ABC.
+3.31.109.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7110,7 +7180,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.109.2. Re-integrating ABC results.
+3.31.109.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        4
@@ -7123,11 +7193,11 @@ ABC RESULTS:           input signals:       16
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.110. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.110. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $abc$87020$auto$simplemap.cc:251:simplemap_eqne$62771[1], asynchronously reset by !\rst_main_ni
 Extracted 48 gates and 74 wires to a netlist network with 26 inputs and 34 outputs.
 
-3.29.110.1. Executing ABC.
+3.31.110.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7146,7 +7216,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.110.2. Re-integrating ABC results.
+3.31.110.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       12
 ABC RESULTS:              NAND cells:        1
 ABC RESULTS:               NOT cells:        1
@@ -7159,11 +7229,11 @@ ABC RESULTS:           input signals:       26
 ABC RESULTS:          output signals:       34
 Removing temp directory.
 
-3.29.111. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.111. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by \u_s1n_26.accept_t_req, asynchronously reset by !\rst_main_ni
 Extracted 90 gates and 127 wires to a netlist network with 35 inputs and 10 outputs.
 
-3.29.111.1. Executing ABC.
+3.31.111.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7182,7 +7252,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.111.2. Re-integrating ABC results.
+3.31.111.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOR cells:        6
 ABC RESULTS:              XNOR cells:        3
@@ -7197,11 +7267,11 @@ ABC RESULTS:           input signals:       35
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.112. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.112. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_spi_host1_i, enabled by \u_asf_38.rspfifo.fifo_incr_wptr, asynchronously reset by !\rst_spi_host1_ni
 Extracted 16 gates and 17 wires to a netlist network with 1 inputs and 4 outputs.
 
-3.29.112.1. Executing ABC.
+3.31.112.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7220,7 +7290,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.112.2. Re-integrating ABC results.
+3.31.112.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        1
@@ -7234,11 +7304,11 @@ ABC RESULTS:           input signals:        1
 ABC RESULTS:          output signals:        4
 Removing temp directory.
 
-3.29.113. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.113. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$53561, asynchronously reset by !\rst_main_ni
 Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.29.113.1. Executing ABC.
+3.31.113.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7257,7 +7327,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.113.2. Re-integrating ABC results.
+3.31.113.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               AND cells:        1
@@ -7267,11 +7337,11 @@ ABC RESULTS:           input signals:        4
 ABC RESULTS:          output signals:        3
 Removing temp directory.
 
-3.29.114. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.114. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$53567, asynchronously reset by !\rst_main_ni
 Extracted 210 gates and 383 wires to a netlist network with 172 inputs and 103 outputs.
 
-3.29.114.1. Executing ABC.
+3.31.114.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7290,7 +7360,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.114.2. Re-integrating ABC results.
+3.31.114.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -7306,11 +7376,11 @@ ABC RESULTS:           input signals:      172
 ABC RESULTS:          output signals:      103
 Removing temp directory.
 
-3.29.115. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.115. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, enabled by $auto$simplemap.cc:251:simplemap_eqne$64050 [1], asynchronously reset by !\rst_main_ni
 Extracted 41 gates and 70 wires to a netlist network with 29 inputs and 16 outputs.
 
-3.29.115.1. Executing ABC.
+3.31.115.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7329,7 +7399,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.115.2. Re-integrating ABC results.
+3.31.115.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       11
 ABC RESULTS:               NOT cells:        4
 ABC RESULTS:            ANDNOT cells:        2
@@ -7343,11 +7413,11 @@ ABC RESULTS:           input signals:       29
 ABC RESULTS:          output signals:       16
 Removing temp directory.
 
-3.29.116. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.31.116. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk_main_i, asynchronously reset by !\rst_main_ni
 Extracted 12 gates and 18 wires to a netlist network with 6 inputs and 9 outputs.
 
-3.29.116.1. Executing ABC.
+3.31.116.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -7366,7 +7436,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.116.2. Re-integrating ABC results.
+3.31.116.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:               NOT cells:        6
 ABC RESULTS:            ANDNOT cells:        3
@@ -7376,34 +7446,34 @@ ABC RESULTS:           input signals:        6
 ABC RESULTS:          output signals:        9
 Removing temp directory.
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_FQyukT/abc_tmp_1.scr
 
-3.30. Executing ABC pass (technology mapping using ABC).
+3.32. Executing ABC pass (technology mapping using ABC).
 
-3.30.1. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+3.32.1. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
 Extracted 20215 gates and 24700 wires to a netlist network with 4485 inputs and 5371 outputs.
 
-3.30.1.1. Executing ABC.
+3.32.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/xbar_main/abc_tmp.scr 
-ABC:   #Luts =  8339  Max Lvl =  30  Avg Lvl =   7.47  [   1.57 sec. at Pass 0]
-ABC:   #Luts =  7647  Max Lvl =  23  Avg Lvl =   6.29  [  75.40 sec. at Pass 1]
-ABC:   #Luts =  7530  Max Lvl =  27  Avg Lvl =   7.00  [  13.31 sec. at Pass 2]
-ABC:   #Luts =  7451  Max Lvl =  24  Avg Lvl =   6.92  [  21.17 sec. at Pass 3]
-ABC:   #Luts =  7436  Max Lvl =  29  Avg Lvl =   6.98  [  16.92 sec. at Pass 4]
-ABC:   #Luts =  7413  Max Lvl =  26  Avg Lvl =   6.95  [  32.99 sec. at Pass 5]
-ABC:   #Luts =  7413  Max Lvl =  26  Avg Lvl =   6.95  [  26.24 sec. at Pass 6]
-ABC:   #Luts =  7380  Max Lvl =  25  Avg Lvl =   6.55  [  42.68 sec. at Pass 7]
-ABC:   #Luts =  7380  Max Lvl =  25  Avg Lvl =   6.55  [  30.98 sec. at Pass 8]
-ABC:   #Luts =  7362  Max Lvl =  21  Avg Lvl =   6.03  [  43.03 sec. at Pass 9]
+ABC: + source /tmp/yosys_FQyukT/abc_tmp_1.scr 
+ABC:   #Luts =  8339  Max Lvl =  30  Avg Lvl =   7.47  [   2.16 sec. at Pass 0]
+ABC:   #Luts =  7647  Max Lvl =  23  Avg Lvl =   6.29  [  98.76 sec. at Pass 1]
+ABC:   #Luts =  7530  Max Lvl =  27  Avg Lvl =   7.00  [  15.93 sec. at Pass 2]
+ABC:   #Luts =  7451  Max Lvl =  24  Avg Lvl =   6.92  [  23.91 sec. at Pass 3]
+ABC:   #Luts =  7436  Max Lvl =  29  Avg Lvl =   6.98  [  19.52 sec. at Pass 4]
+ABC:   #Luts =  7413  Max Lvl =  26  Avg Lvl =   6.95  [  26.83 sec. at Pass 5]
+ABC:   #Luts =  7413  Max Lvl =  26  Avg Lvl =   6.95  [  18.14 sec. at Pass 6]
+ABC:   #Luts =  7380  Max Lvl =  25  Avg Lvl =   6.55  [  24.70 sec. at Pass 7]
+ABC:   #Luts =  7380  Max Lvl =  25  Avg Lvl =   6.55  [  18.17 sec. at Pass 8]
+ABC:   #Luts =  7362  Max Lvl =  21  Avg Lvl =   6.03  [  25.03 sec. at Pass 9]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.30.1.2. Re-integrating ABC results.
+3.32.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:     7343
 ABC RESULTS:        internal signals:    14844
 ABC RESULTS:           input signals:     4485
@@ -7412,22 +7482,22 @@ Removing temp directory.
 
 yosys> opt
 
-3.31. Executing OPT pass (performing simple optimizations).
+3.33. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.31.1. Executing OPT_EXPR pass (perform const folding).
+3.33.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
 yosys> opt_merge -nomux
 
-3.31.2. Executing OPT_MERGE pass (detect identical cells).
+3.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -7437,37 +7507,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.5. Executing OPT_MERGE pass (detect identical cells).
+3.33.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 0 unused cells and 43098 unused wires.
 <suppressed ~482 debug messages>
 
 yosys> opt_expr
 
-3.31.8. Executing OPT_EXPR pass (perform const folding).
+3.33.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.33.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -7477,19 +7547,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.12. Executing OPT_MERGE pass (detect identical cells).
+3.33.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.13. Executing OPT_DFF pass (perform DFF optimizations).
 Setting constant 0-bit at position 71 on $auto$ff.cc:262:slice$78384 ($dffe) from module xbar_main.
 Setting constant 0-bit at position 72 on $auto$ff.cc:262:slice$78384 ($dffe) from module xbar_main.
 Setting constant 0-bit at position 73 on $auto$ff.cc:262:slice$78384 ($dffe) from module xbar_main.
@@ -7531,19 +7601,19 @@ Setting constant 0-bit at position 90 on $auto$ff.cc:262:slice$78385 ($dffe) fro
 
 yosys> opt_clean
 
-3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> opt_expr
 
-3.31.15. Executing OPT_EXPR pass (perform const folding).
+3.33.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.31.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.33.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.31.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \xbar_main..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -7553,35 +7623,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \xbar_main.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.19. Executing OPT_MERGE pass (detect identical cells).
+3.33.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 
 yosys> opt_expr
 
-3.31.22. Executing OPT_EXPR pass (perform const folding).
+3.33.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
-3.31.23. Finished OPT passes. (There is nothing left to do.)
+3.33.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-3.32. Printing statistics.
+3.34. Printing statistics.
 
 === xbar_main ===
 
@@ -7604,16 +7674,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.33. Executing SHREGMAP pass (map shift registers).
+3.35. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.36. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.37. Printing statistics.
 
 === xbar_main ===
 
@@ -7636,9 +7706,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.36. Executing TECHMAP pass (map to technology primitives).
+3.38. Executing TECHMAP pass (map to technology primitives).
 
-3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.38.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -7666,7 +7736,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.38.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -7735,7 +7805,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.36.3. Continuing TECHMAP pass.
+3.38.3. Continuing TECHMAP pass.
 Using template \$_DFFE_PN0P_ for cells of type $_DFFE_PN0P_.
 Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $dffe.
@@ -7749,162 +7819,38 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.37. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 <suppressed ~110797 debug messages>
 
 yosys> simplemap
 
-3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.40. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.39. Executing OPT_EXPR pass (perform const folding).
+3.41. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
 
 yosys> opt_merge
 
-3.40. Executing OPT_MERGE pass (detect identical cells).
+3.42. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
 <suppressed ~68934 debug messages>
 Removed a total of 22978 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.41. Executing OPT_DFF pass (perform DFF optimizations).
+3.43. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 0 unused cells and 48149 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
-
-3.43. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.43.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module xbar_main.
-<suppressed ~4506 debug messages>
-
-yosys> opt_merge -nomux
-
-3.43.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\xbar_main'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \xbar_main..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \xbar_main.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\xbar_main'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \xbar_main..
-Removed 0 unused cells and 2431 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.43.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module xbar_main.
-
-3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \xbar_main..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \xbar_main.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\xbar_main'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \xbar_main..
-
-yosys> opt_expr
-
-3.43.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module xbar_main.
-
-3.43.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.44. Executing ABC pass (technology mapping using ABC).
-
-3.44.1. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
-Extracted 22833 gates and 32054 wires to a netlist network with 9219 inputs and 5738 outputs.
-
-3.44.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/xbar_main/abc_tmp.scr 
-ABC:   #Luts =  8976  Max Lvl =  22  Avg Lvl =   5.86  [   3.18 sec. at Pass 0]
-ABC:   #Luts =  8976  Max Lvl =  22  Avg Lvl =   5.86  [ 127.57 sec. at Pass 1]
-ABC:   #Luts =  8900  Max Lvl =  23  Avg Lvl =   6.73  [  24.50 sec. at Pass 2]
-ABC:   #Luts =  8866  Max Lvl =  23  Avg Lvl =   5.81  [  42.45 sec. at Pass 3]
-ABC:   #Luts =  8866  Max Lvl =  23  Avg Lvl =   5.81  [  28.07 sec. at Pass 4]
-ABC:   #Luts =  8856  Max Lvl =  23  Avg Lvl =   5.87  [  42.34 sec. at Pass 5]
-ABC:   #Luts =  8856  Max Lvl =  23  Avg Lvl =   5.87  [  27.09 sec. at Pass 6]
-ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  41.08 sec. at Pass 7]
-ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  25.49 sec. at Pass 8]
-ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  46.76 sec. at Pass 9]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.44.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     8845
-ABC RESULTS:        internal signals:    17097
-ABC RESULTS:           input signals:     9219
-ABC RESULTS:          output signals:     5738
-Removing temp directory.
-
-yosys> opt
 
 3.45. Executing OPT pass (performing simple optimizations).
 
@@ -7912,13 +7858,13 @@ yosys> opt_expr
 
 3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module xbar_main.
+<suppressed ~4506 debug messages>
 
 yosys> opt_merge -nomux
 
 3.45.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\xbar_main'.
-<suppressed ~6 debug messages>
-Removed a total of 2 cells.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
@@ -7940,7 +7886,7 @@ yosys> opt_merge
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -7948,8 +7894,8 @@ yosys> opt_clean
 
 3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
-Removed 0 unused cells and 26501 unused wires.
-<suppressed ~3 debug messages>
+Removed 0 unused cells and 2431 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt_expr
 
@@ -7978,7 +7924,7 @@ yosys> opt_merge
 Finding identical cells in module `\xbar_main'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -7994,20 +7940,144 @@ Optimizing module xbar_main.
 
 3.45.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> abc -script /tmp/yosys_FQyukT/abc_tmp_2.scr
+
+3.46. Executing ABC pass (technology mapping using ABC).
+
+3.46.1. Extracting gate netlist of module `\xbar_main' to `<abc-temp-dir>/input.blif'..
+Extracted 22833 gates and 32054 wires to a netlist network with 9219 inputs and 5738 outputs.
+
+3.46.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_FQyukT/abc_tmp_2.scr 
+ABC:   #Luts =  8976  Max Lvl =  22  Avg Lvl =   5.86  [   1.72 sec. at Pass 0]
+ABC:   #Luts =  8976  Max Lvl =  22  Avg Lvl =   5.86  [ 128.27 sec. at Pass 1]
+ABC:   #Luts =  8900  Max Lvl =  23  Avg Lvl =   6.73  [  34.34 sec. at Pass 2]
+ABC:   #Luts =  8866  Max Lvl =  23  Avg Lvl =   5.81  [  48.25 sec. at Pass 3]
+ABC:   #Luts =  8866  Max Lvl =  23  Avg Lvl =   5.81  [  25.07 sec. at Pass 4]
+ABC:   #Luts =  8856  Max Lvl =  23  Avg Lvl =   5.87  [  50.90 sec. at Pass 5]
+ABC:   #Luts =  8856  Max Lvl =  23  Avg Lvl =   5.87  [  31.90 sec. at Pass 6]
+ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  28.03 sec. at Pass 7]
+ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  21.41 sec. at Pass 8]
+ABC:   #Luts =  8845  Max Lvl =  21  Avg Lvl =   6.31  [  33.63 sec. at Pass 9]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.46.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     8845
+ABC RESULTS:        internal signals:    17097
+ABC RESULTS:           input signals:     9219
+ABC RESULTS:          output signals:     5738
+Removing temp directory.
+
+yosys> opt
+
+3.47. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.47.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module xbar_main.
+
+yosys> opt_merge -nomux
+
+3.47.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\xbar_main'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+yosys> opt_muxtree
+
+3.47.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \xbar_main..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \xbar_main.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\xbar_main'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \xbar_main..
+Removed 0 unused cells and 26501 unused wires.
+<suppressed ~3 debug messages>
+
+yosys> opt_expr
+
+3.47.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module xbar_main.
+
+3.47.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.47.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \xbar_main..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \xbar_main.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\xbar_main'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \xbar_main..
+
+yosys> opt_expr
+
+3.47.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module xbar_main.
+
+3.47.16. Finished OPT passes. (There is nothing left to do.)
+
 yosys> hierarchy -check
 
-3.46. Executing HIERARCHY pass (managing design hierarchy).
+3.48. Executing HIERARCHY pass (managing design hierarchy).
 
-3.46.1. Analyzing design hierarchy..
+3.48.1. Analyzing design hierarchy..
 Top module:  \xbar_main
 
-3.46.2. Analyzing design hierarchy..
+3.48.2. Analyzing design hierarchy..
 Top module:  \xbar_main
 Removed 0 unused modules.
 
 yosys> stat
 
-3.47. Printing statistics.
+3.49. Printing statistics.
 
 === xbar_main ===
 
@@ -8025,30 +8095,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \xbar_main..
 Removed 0 unused cells and 20233 unused wires.
 <suppressed ~20233 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.49. Executing Verilog backend.
+3.51. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.49.1. Executing BMUXMAP pass.
+3.51.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.49.2. Executing DEMUXMAP pass.
+3.51.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\xbar_main'.
 
 Warnings: 53 unique messages, 56 total
-End of script. Logfile hash: 07f594e53d, CPU: user 185.96s system 4.33s, MEM: 485.29 MB peak
-Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
-Time spent: 96% 3x abc (4827 sec), 1% 36x opt_clean (59 sec), ...
-real 1073.83
-user 4728.07
-sys 269.04
+End of script. Logfile hash: 6daf2e038a, CPU: user 177.53s system 4.56s, MEM: 490.49 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 96% 3x abc (4785 sec), 1% 36x opt_clean (57 sec), ...
+real 921.88
+user 4678.61
+sys 268.61

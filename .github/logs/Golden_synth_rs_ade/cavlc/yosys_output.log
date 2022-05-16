@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.13
- Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.19
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -56,7 +56,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'cavlc_read_total_zeros.v'
 
 yosys> synth_rs -top cavlc -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.41
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -81,6 +81,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top cavlc
@@ -1275,55 +1282,82 @@ Optimizing module cavlc.
 
 3.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== cavlc ===
+
+   Number of wires:               1709
+   Number of wire bits:           6872
+   Number of public wires:         207
+   Number of public wire bits:    1260
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1480
+     $adffe                         47
+     $alu                           44
+     $and                           86
+     $bmux                          59
+     $eq                           123
+     $logic_not                     10
+     $macc                           2
+     $mux                          736
+     $ne                            38
+     $not                          109
+     $or                            97
+     $reduce_and                    42
+     $reduce_bool                    6
+     $reduce_or                     78
+     $shl                            2
+     $shr                            1
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \cavlc..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -1357,11 +1391,48 @@ yosys> stat
      $shr                            1
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \cavlc..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== cavlc ===
+
+   Number of wires:               1709
+   Number of wire bits:           6872
+   Number of public wires:         207
+   Number of public wire bits:    1260
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               1480
+     $adffe                         47
+     $alu                           44
+     $and                           86
+     $bmux                          59
+     $eq                           123
+     $logic_not                     10
+     $macc                           2
+     $mux                          736
+     $ne                            38
+     $not                          109
+     $or                            97
+     $reduce_and                    42
+     $reduce_bool                    6
+     $reduce_or                     78
+     $shl                            2
+     $shr                            1
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1389,12 +1460,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper maccmap for cells of type $macc.
   add $flatten\cavlc_read_levels.$verific$n475$855 [8:0] (9 bits, unsigned)
@@ -1461,7 +1532,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === cavlc ===
 
@@ -1485,24 +1556,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 <suppressed ~6867 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 <suppressed ~3156 debug messages>
 Removed a total of 1052 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1510,19 +1581,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $auto$ff.cc:262:slice$15221 ($_DFFE_PN0P_) from module cavlc (D = $flatten\cavlc_read_levels.$verific$n4034$970 [8], Q = \cavlc_read_levels.level_0 [8]).
 Adding EN signal on $auto$ff.cc:262:slice$14659 ($_DFFE_PN0P_) from module cavlc (D = $flatten\cavlc_read_levels.$verific$n3934$960 [8], Q = \cavlc_read_levels.level_10 [8]).
 Adding EN signal on $auto$ff.cc:262:slice$14695 ($_DFFE_PN0P_) from module cavlc (D = $flatten\cavlc_read_levels.$verific$n3924$959 [8], Q = \cavlc_read_levels.level_11 [8]).
@@ -1670,22 +1741,22 @@ Adding EN signal on $auto$ff.cc:262:slice$14687 ($_DFFE_PN0P_) from module cavlc
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 Removed 193 unused cells and 4229 unused wires.
 <suppressed ~194 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 <suppressed ~5982 debug messages>
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1693,38 +1764,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 <suppressed ~30801 debug messages>
 Removed a total of 10267 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 Removed 0 unused cells and 8385 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
-3.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1732,67 +1803,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.19. Executing OPT_MERGE pass (detect identical cells).
+3.27.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> opt_expr
 
-3.25.22. Executing OPT_EXPR pass (perform const folding).
+3.27.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
-3.25.23. Finished OPT passes. (There is nothing left to do.)
+3.27.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module cavlc.
-<suppressed ~1436 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\cavlc'.
-<suppressed ~246 debug messages>
-Removed a total of 82 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \cavlc..
-Removed 1 unused cells and 144 unused wires.
-<suppressed ~2 debug messages>
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -1800,18 +1837,52 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
+<suppressed ~1436 debug messages>
+
+yosys> opt_merge
+
+3.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\cavlc'.
+<suppressed ~246 debug messages>
+Removed a total of 82 cells.
+
+yosys> opt_dff
+
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \cavlc..
+Removed 1 unused cells and 144 unused wires.
+<suppressed ~2 debug messages>
+
+3.28.5. Finished fast OPT passes.
+
+yosys> memory_map
+
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+yosys> opt -full
+
+3.30. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.30.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module cavlc.
 <suppressed ~8 debug messages>
 
 yosys> opt_merge -nomux
 
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
+3.30.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 <suppressed ~3 debug messages>
 Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1819,19 +1890,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
+3.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.6. Executing OPT_SHARE pass.
+3.30.6. Executing OPT_SHARE pass.
     Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$15799 in front of them:
         $auto$simplemap.cc:278:simplemap_mux$5783
         $auto$simplemap.cc:278:simplemap_mux$5820
@@ -1843,24 +1914,24 @@ yosys> opt_share
 
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> opt_expr -full
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 <suppressed ~2 debug messages>
 
-3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1870,41 +1941,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce -full
 
-3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28.13. Executing OPT_MERGE pass (detect identical cells).
+3.30.13. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.28.14. Executing OPT_SHARE pass.
+3.30.14. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> opt_expr -full
 
-3.28.17. Executing OPT_EXPR pass (perform const folding).
+3.30.17. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
-3.28.18. Finished OPT passes. (There is nothing left to do.)
+3.30.18. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-3.29. Executing ABC pass (technology mapping using ABC).
+3.31. Executing ABC pass (technology mapping using ABC).
 
-3.29.1. Summary of detected clock domains:
+3.31.1. Summary of detected clock domains:
   29 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$4009, arst=!\rst_n, srst={ }
   40 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$3804, arst=!\rst_n, srst={ }
   1059 cells in clk=\clk, en=$auto$simplemap.cc:251:simplemap_eqne$15462 [1], arst=!\rst_n, srst={ }
@@ -1952,11 +2023,11 @@ yosys> abc -dff
   64 cells in clk=\clk, en=$flatten\cavlc_read_levels.$verific$n231$765, arst=!\rst_n, srst={ }
   48 cells in clk=\clk, en=\cavlc_read_levels.level_abs_refresh, arst=!\rst_n, srst={ }
 
-3.29.2. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.2. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4009, asynchronously reset by !\rst_n
 Extracted 29 gates and 47 wires to a netlist network with 18 inputs and 7 outputs.
 
-3.29.2.1. Executing ABC.
+3.31.2.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -1975,7 +2046,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.2.2. Re-integrating ABC results.
+3.31.2.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        1
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:            ANDNOT cells:        2
@@ -1989,11 +2060,11 @@ ABC RESULTS:           input signals:       18
 ABC RESULTS:          output signals:        7
 Removing temp directory.
 
-3.29.3. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.3. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3804, asynchronously reset by !\rst_n
 Extracted 40 gates and 65 wires to a netlist network with 24 inputs and 15 outputs.
 
-3.29.3.1. Executing ABC.
+3.31.3.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2012,7 +2083,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.3.2. Re-integrating ABC results.
+3.31.3.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:                OR cells:        5
@@ -2027,11 +2098,11 @@ ABC RESULTS:           input signals:       24
 ABC RESULTS:          output signals:       15
 Removing temp directory.
 
-3.29.4. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.4. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$simplemap.cc:251:simplemap_eqne$15462 [1], asynchronously reset by !\rst_n
 Extracted 1046 gates and 1282 wires to a netlist network with 234 inputs and 75 outputs.
 
-3.29.4.1. Executing ABC.
+3.31.4.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2050,7 +2121,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.4.2. Re-integrating ABC results.
+3.31.4.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        7
 ABC RESULTS:               NOT cells:       27
 ABC RESULTS:             ORNOT cells:       70
@@ -2067,11 +2138,11 @@ ABC RESULTS:           input signals:      234
 ABC RESULTS:          output signals:       75
 Removing temp directory.
 
-3.29.5. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.5. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3793, asynchronously reset by !\rst_n
 Extracted 117 gates and 139 wires to a netlist network with 21 inputs and 70 outputs.
 
-3.29.5.1. Executing ABC.
+3.31.5.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2090,7 +2161,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.5.2. Re-integrating ABC results.
+3.31.5.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       16
 ABC RESULTS:               NOR cells:        4
 ABC RESULTS:               NOT cells:       13
@@ -2105,11 +2176,11 @@ ABC RESULTS:           input signals:       21
 ABC RESULTS:          output signals:       70
 Removing temp directory.
 
-3.29.6. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.6. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3782, asynchronously reset by !\rst_n
 Extracted 112 gates and 133 wires to a netlist network with 19 inputs and 65 outputs.
 
-3.29.6.1. Executing ABC.
+3.31.6.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2128,7 +2199,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.6.2. Re-integrating ABC results.
+3.31.6.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       14
 ABC RESULTS:               NOR cells:        5
 ABC RESULTS:               NOT cells:       15
@@ -2143,11 +2214,11 @@ ABC RESULTS:           input signals:       19
 ABC RESULTS:          output signals:       65
 Removing temp directory.
 
-3.29.7. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.7. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3773, asynchronously reset by !\rst_n
 Extracted 109 gates and 125 wires to a netlist network with 14 inputs and 53 outputs.
 
-3.29.7.1. Executing ABC.
+3.31.7.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2166,7 +2237,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.7.2. Re-integrating ABC results.
+3.31.7.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:       10
 ABC RESULTS:              XNOR cells:        1
 ABC RESULTS:               NOR cells:        4
@@ -2184,11 +2255,11 @@ ABC RESULTS:           input signals:       14
 ABC RESULTS:          output signals:       53
 Removing temp directory.
 
-3.29.8. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.8. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3766, asynchronously reset by !\rst_n
 Extracted 23 gates and 32 wires to a netlist network with 9 inputs and 11 outputs.
 
-3.29.8.1. Executing ABC.
+3.31.8.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2207,7 +2278,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.8.2. Re-integrating ABC results.
+3.31.8.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        6
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              XNOR cells:        1
@@ -2222,11 +2293,11 @@ ABC RESULTS:           input signals:        9
 ABC RESULTS:          output signals:       11
 Removing temp directory.
 
-3.29.9. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.9. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$24216, asynchronously reset by !\rst_n
 Extracted 50 gates and 95 wires to a netlist network with 44 inputs and 21 outputs.
 
-3.29.9.1. Executing ABC.
+3.31.9.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2245,7 +2316,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.9.2. Re-integrating ABC results.
+3.31.9.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               NOR cells:        1
@@ -2261,11 +2332,11 @@ ABC RESULTS:           input signals:       44
 ABC RESULTS:          output signals:       21
 Removing temp directory.
 
-3.29.10. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.10. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$24062, asynchronously reset by !\rst_n
 Extracted 47 gates and 86 wires to a netlist network with 38 inputs and 26 outputs.
 
-3.29.10.1. Executing ABC.
+3.31.10.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2284,7 +2355,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.10.2. Re-integrating ABC results.
+3.31.10.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        6
 ABC RESULTS:               NOR cells:        1
@@ -2298,11 +2369,11 @@ ABC RESULTS:           input signals:       38
 ABC RESULTS:          output signals:       26
 Removing temp directory.
 
-3.29.11. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.11. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23906, asynchronously reset by !\rst_n
 Extracted 57 gates and 102 wires to a netlist network with 44 inputs and 26 outputs.
 
-3.29.11.1. Executing ABC.
+3.31.11.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2321,7 +2392,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.11.2. Re-integrating ABC results.
+3.31.11.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        7
 ABC RESULTS:               NOR cells:        1
@@ -2335,11 +2406,11 @@ ABC RESULTS:           input signals:       44
 ABC RESULTS:          output signals:       26
 Removing temp directory.
 
-3.29.12. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.12. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23719, asynchronously reset by !\rst_n
 Extracted 61 gates and 109 wires to a netlist network with 47 inputs and 24 outputs.
 
-3.29.12.1. Executing ABC.
+3.31.12.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2358,7 +2429,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.12.2. Re-integrating ABC results.
+3.31.12.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        8
 ABC RESULTS:               NOR cells:        1
@@ -2372,11 +2443,11 @@ ABC RESULTS:           input signals:       47
 ABC RESULTS:          output signals:       24
 Removing temp directory.
 
-3.29.13. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.13. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23534, asynchronously reset by !\rst_n
 Extracted 49 gates and 90 wires to a netlist network with 40 inputs and 29 outputs.
 
-3.29.13.1. Executing ABC.
+3.31.13.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2395,7 +2466,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.13.2. Re-integrating ABC results.
+3.31.13.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        8
 ABC RESULTS:               NOR cells:        1
@@ -2409,11 +2480,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       29
 Removing temp directory.
 
-3.29.14. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.14. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23380, asynchronously reset by !\rst_n
 Extracted 53 gates and 98 wires to a netlist network with 44 inputs and 26 outputs.
 
-3.29.14.1. Executing ABC.
+3.31.14.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2432,7 +2503,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.14.2. Re-integrating ABC results.
+3.31.14.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:              XNOR cells:        1
@@ -2448,11 +2519,11 @@ ABC RESULTS:           input signals:       44
 ABC RESULTS:          output signals:       26
 Removing temp directory.
 
-3.29.15. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.15. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23225, asynchronously reset by !\rst_n
 Extracted 46 gates and 86 wires to a netlist network with 39 inputs and 24 outputs.
 
-3.29.15.1. Executing ABC.
+3.31.15.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2471,7 +2542,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.15.2. Re-integrating ABC results.
+3.31.15.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        3
 ABC RESULTS:               NOR cells:        1
@@ -2487,11 +2558,11 @@ ABC RESULTS:           input signals:       39
 ABC RESULTS:          output signals:       24
 Removing temp directory.
 
-3.29.16. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.16. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$23054, asynchronously reset by !\rst_n
 Extracted 52 gates and 96 wires to a netlist network with 43 inputs and 25 outputs.
 
-3.29.16.1. Executing ABC.
+3.31.16.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2510,7 +2581,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.16.2. Re-integrating ABC results.
+3.31.16.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        3
 ABC RESULTS:               NOR cells:        1
@@ -2526,11 +2597,11 @@ ABC RESULTS:           input signals:       43
 ABC RESULTS:          output signals:       25
 Removing temp directory.
 
-3.29.17. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.17. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22884, asynchronously reset by !\rst_n
 Extracted 47 gates and 88 wires to a netlist network with 40 inputs and 23 outputs.
 
-3.29.17.1. Executing ABC.
+3.31.17.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2549,7 +2620,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.17.2. Re-integrating ABC results.
+3.31.17.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        4
 ABC RESULTS:               NOR cells:        1
@@ -2564,11 +2635,11 @@ ABC RESULTS:           input signals:       40
 ABC RESULTS:          output signals:       23
 Removing temp directory.
 
-3.29.18. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.18. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22731, asynchronously reset by !\rst_n
 Extracted 47 gates and 82 wires to a netlist network with 35 inputs and 30 outputs.
 
-3.29.18.1. Executing ABC.
+3.31.18.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2587,7 +2658,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.18.2. Re-integrating ABC results.
+3.31.18.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        3
 ABC RESULTS:               AND cells:       17
@@ -2598,11 +2669,11 @@ ABC RESULTS:           input signals:       35
 ABC RESULTS:          output signals:       30
 Removing temp directory.
 
-3.29.19. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.19. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22602, asynchronously reset by !\rst_n
 Extracted 57 gates and 102 wires to a netlist network with 44 inputs and 23 outputs.
 
-3.29.19.1. Executing ABC.
+3.31.19.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2621,7 +2692,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.19.2. Re-integrating ABC results.
+3.31.19.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        4
 ABC RESULTS:               NOR cells:        1
@@ -2637,11 +2708,11 @@ ABC RESULTS:           input signals:       44
 ABC RESULTS:          output signals:       23
 Removing temp directory.
 
-3.29.20. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.20. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22470, asynchronously reset by !\rst_n
 Extracted 61 gates and 108 wires to a netlist network with 46 inputs and 32 outputs.
 
-3.29.20.1. Executing ABC.
+3.31.20.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2660,7 +2731,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.20.2. Re-integrating ABC results.
+3.31.20.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        4
 ABC RESULTS:               NOR cells:        1
@@ -2675,11 +2746,11 @@ ABC RESULTS:           input signals:       46
 ABC RESULTS:          output signals:       32
 Removing temp directory.
 
-3.29.21. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.21. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22316, asynchronously reset by !\rst_n
 Extracted 47 gates and 84 wires to a netlist network with 36 inputs and 26 outputs.
 
-3.29.21.1. Executing ABC.
+3.31.21.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2698,7 +2769,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.21.2. Re-integrating ABC results.
+3.31.21.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        5
 ABC RESULTS:               NOR cells:        1
@@ -2711,11 +2782,11 @@ ABC RESULTS:           input signals:       36
 ABC RESULTS:          output signals:       26
 Removing temp directory.
 
-3.29.22. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.22. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$22161, asynchronously reset by !\rst_n
 Extracted 56 gates and 101 wires to a netlist network with 44 inputs and 30 outputs.
 
-3.29.22.1. Executing ABC.
+3.31.22.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2734,7 +2805,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.22.2. Re-integrating ABC results.
+3.31.22.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOR cells:        1
 ABC RESULTS:               NOT cells:        1
@@ -2749,11 +2820,11 @@ ABC RESULTS:           input signals:       44
 ABC RESULTS:          output signals:       30
 Removing temp directory.
 
-3.29.23. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.23. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$21990, asynchronously reset by !\rst_n
 Extracted 62 gates and 111 wires to a netlist network with 48 inputs and 32 outputs.
 
-3.29.23.1. Executing ABC.
+3.31.23.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2772,7 +2843,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.23.2. Re-integrating ABC results.
+3.31.23.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:              NAND cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -2787,11 +2858,11 @@ ABC RESULTS:           input signals:       48
 ABC RESULTS:          output signals:       32
 Removing temp directory.
 
-3.29.24. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.24. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$21820, asynchronously reset by !\rst_n
 Extracted 33 gates and 59 wires to a netlist network with 25 inputs and 20 outputs.
 
-3.29.24.1. Executing ABC.
+3.31.24.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2810,7 +2881,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.24.2. Re-integrating ABC results.
+3.31.24.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        2
 ABC RESULTS:               AND cells:        7
@@ -2822,11 +2893,11 @@ ABC RESULTS:           input signals:       25
 ABC RESULTS:          output signals:       20
 Removing temp directory.
 
-3.29.25. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.25. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4014, asynchronously reset by !\rst_n
 Extracted 380 gates and 522 wires to a netlist network with 140 inputs and 81 outputs.
 
-3.29.25.1. Executing ABC.
+3.31.25.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2845,7 +2916,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.25.2. Re-integrating ABC results.
+3.31.25.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        8
 ABC RESULTS:               XOR cells:        2
 ABC RESULTS:             ORNOT cells:       12
@@ -2862,11 +2933,11 @@ ABC RESULTS:           input signals:      140
 ABC RESULTS:          output signals:       81
 Removing temp directory.
 
-3.29.26. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.26. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4025, asynchronously reset by !\rst_n
 Extracted 225 gates and 347 wires to a netlist network with 121 inputs and 96 outputs.
 
-3.29.26.1. Executing ABC.
+3.31.26.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2885,7 +2956,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.26.2. Re-integrating ABC results.
+3.31.26.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               NOT cells:       26
 ABC RESULTS:               MUX cells:       15
@@ -2903,11 +2974,11 @@ ABC RESULTS:           input signals:      121
 ABC RESULTS:          output signals:       96
 Removing temp directory.
 
-3.29.27. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.27. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3912, asynchronously reset by !\rst_n
 Extracted 38 gates and 62 wires to a netlist network with 23 inputs and 14 outputs.
 
-3.29.27.1. Executing ABC.
+3.31.27.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2926,7 +2997,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.27.2. Re-integrating ABC results.
+3.31.27.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:              NAND cells:        2
@@ -2940,11 +3011,11 @@ ABC RESULTS:           input signals:       23
 ABC RESULTS:          output signals:       14
 Removing temp directory.
 
-3.29.28. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.28. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3894, asynchronously reset by !\rst_n
 Extracted 33 gates and 56 wires to a netlist network with 22 inputs and 10 outputs.
 
-3.29.28.1. Executing ABC.
+3.31.28.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2963,7 +3034,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.28.2. Re-integrating ABC results.
+3.31.28.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               NOR cells:        3
@@ -2976,11 +3047,11 @@ ABC RESULTS:           input signals:       22
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.29. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.29. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3903, asynchronously reset by !\rst_n
 Extracted 35 gates and 58 wires to a netlist network with 22 inputs and 12 outputs.
 
-3.29.29.1. Executing ABC.
+3.31.29.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -2999,7 +3070,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.29.2. Re-integrating ABC results.
+3.31.29.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:             ORNOT cells:        1
@@ -3014,11 +3085,11 @@ ABC RESULTS:           input signals:       22
 ABC RESULTS:          output signals:       12
 Removing temp directory.
 
-3.29.30. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.30. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3921, asynchronously reset by !\rst_n
 Extracted 32 gates and 53 wires to a netlist network with 20 inputs and 10 outputs.
 
-3.29.30.1. Executing ABC.
+3.31.30.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3037,7 +3108,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.30.2. Re-integrating ABC results.
+3.31.30.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:              NAND cells:        2
 ABC RESULTS:               NOR cells:        2
@@ -3050,11 +3121,11 @@ ABC RESULTS:           input signals:       20
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.31. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.31. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3930, asynchronously reset by !\rst_n
 Extracted 37 gates and 62 wires to a netlist network with 24 inputs and 13 outputs.
 
-3.29.31.1. Executing ABC.
+3.31.31.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3073,7 +3144,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.31.2. Re-integrating ABC results.
+3.31.31.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:                OR cells:        1
@@ -3087,11 +3158,11 @@ ABC RESULTS:           input signals:       24
 ABC RESULTS:          output signals:       13
 Removing temp directory.
 
-3.29.32. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.32. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3937, asynchronously reset by !\rst_n
 Extracted 12 gates and 24 wires to a netlist network with 12 inputs and 11 outputs.
 
-3.29.32.1. Executing ABC.
+3.31.32.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3110,7 +3181,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.32.2. Re-integrating ABC results.
+3.31.32.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:             ORNOT cells:        1
 ABC RESULTS:               AND cells:        1
@@ -3120,11 +3191,11 @@ ABC RESULTS:           input signals:       12
 ABC RESULTS:          output signals:       11
 Removing temp directory.
 
-3.29.33. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.33. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3813, asynchronously reset by !\rst_n
 Extracted 34 gates and 57 wires to a netlist network with 22 inputs and 10 outputs.
 
-3.29.33.1. Executing ABC.
+3.31.33.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3143,7 +3214,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.33.2. Re-integrating ABC results.
+3.31.33.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               NOR cells:        4
@@ -3156,11 +3227,11 @@ ABC RESULTS:           input signals:       22
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.34. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.34. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3822, asynchronously reset by !\rst_n
 Extracted 29 gates and 49 wires to a netlist network with 19 inputs and 10 outputs.
 
-3.29.34.1. Executing ABC.
+3.31.34.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3179,7 +3250,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.34.2. Re-integrating ABC results.
+3.31.34.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               MUX cells:        1
@@ -3194,11 +3265,11 @@ ABC RESULTS:           input signals:       19
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.35. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.35. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3831, asynchronously reset by !\rst_n
 Extracted 35 gates and 60 wires to a netlist network with 24 inputs and 12 outputs.
 
-3.29.35.1. Executing ABC.
+3.31.35.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3217,7 +3288,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.35.2. Re-integrating ABC results.
+3.31.35.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:                OR cells:        3
@@ -3231,11 +3302,11 @@ ABC RESULTS:           input signals:       24
 ABC RESULTS:          output signals:       12
 Removing temp directory.
 
-3.29.36. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.36. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3945, asynchronously reset by !\rst_n
 Extracted 189 gates and 247 wires to a netlist network with 56 inputs and 53 outputs.
 
-3.29.36.1. Executing ABC.
+3.31.36.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3254,7 +3325,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.36.2. Re-integrating ABC results.
+3.31.36.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        3
 ABC RESULTS:             ORNOT cells:        1
 ABC RESULTS:               NOT cells:        7
@@ -3271,11 +3342,11 @@ ABC RESULTS:           input signals:       56
 ABC RESULTS:          output signals:       53
 Removing temp directory.
 
-3.29.37. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.37. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3840, asynchronously reset by !\rst_n
 Extracted 32 gates and 55 wires to a netlist network with 22 inputs and 10 outputs.
 
-3.29.37.1. Executing ABC.
+3.31.37.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3294,7 +3365,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.37.2. Re-integrating ABC results.
+3.31.37.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:              NAND cells:        2
 ABC RESULTS:               NOR cells:        3
@@ -3307,11 +3378,11 @@ ABC RESULTS:           input signals:       22
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.38. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.38. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$3940, asynchronously reset by !\rst_n
 Extracted 142 gates and 190 wires to a netlist network with 46 inputs and 27 outputs.
 
-3.29.38.1. Executing ABC.
+3.31.38.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3330,7 +3401,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.38.2. Re-integrating ABC results.
+3.31.38.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:               NOT cells:       11
 ABC RESULTS:             ORNOT cells:       12
@@ -3347,11 +3418,11 @@ ABC RESULTS:           input signals:       46
 ABC RESULTS:          output signals:       27
 Removing temp directory.
 
-3.29.39. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.39. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3885, asynchronously reset by !\rst_n
 Extracted 37 gates and 64 wires to a netlist network with 26 inputs and 16 outputs.
 
-3.29.39.1. Executing ABC.
+3.31.39.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3370,7 +3441,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.39.2. Re-integrating ABC results.
+3.31.39.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:             ORNOT cells:        1
@@ -3385,11 +3456,11 @@ ABC RESULTS:           input signals:       26
 ABC RESULTS:          output signals:       16
 Removing temp directory.
 
-3.29.40. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.40. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3876, asynchronously reset by !\rst_n
 Extracted 34 gates and 58 wires to a netlist network with 23 inputs and 12 outputs.
 
-3.29.40.1. Executing ABC.
+3.31.40.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3408,7 +3479,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.40.2. Re-integrating ABC results.
+3.31.40.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        1
 ABC RESULTS:               NOR cells:        3
@@ -3422,11 +3493,11 @@ ABC RESULTS:           input signals:       23
 ABC RESULTS:          output signals:       12
 Removing temp directory.
 
-3.29.41. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.41. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3867, asynchronously reset by !\rst_n
 Extracted 34 gates and 56 wires to a netlist network with 21 inputs and 13 outputs.
 
-3.29.41.1. Executing ABC.
+3.31.41.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3445,7 +3516,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.41.2. Re-integrating ABC results.
+3.31.41.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        2
 ABC RESULTS:              NAND cells:        1
@@ -3459,11 +3530,11 @@ ABC RESULTS:           input signals:       21
 ABC RESULTS:          output signals:       13
 Removing temp directory.
 
-3.29.42. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.42. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3858, asynchronously reset by !\rst_n
 Extracted 29 gates and 49 wires to a netlist network with 19 inputs and 10 outputs.
 
-3.29.42.1. Executing ABC.
+3.31.42.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3482,7 +3553,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.42.2. Re-integrating ABC results.
+3.31.42.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               NOR cells:        2
@@ -3495,11 +3566,11 @@ ABC RESULTS:           input signals:       19
 ABC RESULTS:          output signals:       10
 Removing temp directory.
 
-3.29.43. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.43. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3849, asynchronously reset by !\rst_n
 Extracted 39 gates and 68 wires to a netlist network with 28 inputs and 14 outputs.
 
-3.29.43.1. Executing ABC.
+3.31.43.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3518,7 +3589,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.43.2. Re-integrating ABC results.
+3.31.43.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:                OR cells:       11
 ABC RESULTS:               NOR cells:        2
@@ -3531,11 +3602,11 @@ ABC RESULTS:           input signals:       28
 ABC RESULTS:          output signals:       14
 Removing temp directory.
 
-3.29.44. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.44. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3761, asynchronously reset by !\rst_n
 Extracted 47 gates and 59 wires to a netlist network with 11 inputs and 19 outputs.
 
-3.29.44.1. Executing ABC.
+3.31.44.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3554,7 +3625,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.44.2. Re-integrating ABC results.
+3.31.44.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        8
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:               NOR cells:        3
@@ -3568,11 +3639,11 @@ ABC RESULTS:           input signals:       11
 ABC RESULTS:          output signals:       19
 Removing temp directory.
 
-3.29.45. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.45. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$53916$flatten\cavlc_read_levels.$verific$n474$782, asynchronously reset by !\rst_n
 Extracted 225 gates and 265 wires to a netlist network with 38 inputs and 17 outputs.
 
-3.29.45.1. Executing ABC.
+3.31.45.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3591,7 +3662,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.45.2. Re-integrating ABC results.
+3.31.45.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:        3
 ABC RESULTS:             ORNOT cells:       10
@@ -3608,11 +3679,11 @@ ABC RESULTS:           input signals:       38
 ABC RESULTS:          output signals:       17
 Removing temp directory.
 
-3.29.46. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.46. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$53916$flatten\cavlc_read_levels.$verific$n231$765, asynchronously reset by !\rst_n
 Extracted 64 gates and 82 wires to a netlist network with 16 inputs and 16 outputs.
 
-3.29.46.1. Executing ABC.
+3.31.46.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3631,7 +3702,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.46.2. Re-integrating ABC results.
+3.31.46.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        4
 ABC RESULTS:                OR cells:        1
 ABC RESULTS:               NOT cells:        5
@@ -3646,11 +3717,11 @@ ABC RESULTS:           input signals:       16
 ABC RESULTS:          output signals:       16
 Removing temp directory.
 
-3.29.47. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.31.47. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$53916$cavlc_read_levels.level_abs_refresh, asynchronously reset by !\rst_n
 Extracted 39 gates and 57 wires to a netlist network with 17 inputs and 16 outputs.
 
-3.29.47.1. Executing ABC.
+3.31.47.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
@@ -3669,7 +3740,7 @@ ABC: + &nf
 ABC: + &put 
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.29.47.2. Re-integrating ABC results.
+3.31.47.2. Re-integrating ABC results.
 ABC RESULTS:               DFF cells:        9
 ABC RESULTS:               NOT cells:       16
 ABC RESULTS:            ANDNOT cells:        1
@@ -3681,53 +3752,53 @@ ABC RESULTS:           input signals:       17
 ABC RESULTS:          output signals:       16
 Removing temp directory.
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_A8fJ7K/abc_tmp_1.scr
 
-3.30. Executing ABC pass (technology mapping using ABC).
+3.32. Executing ABC pass (technology mapping using ABC).
 
-3.30.1. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+3.32.1. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
 Extracted 3763 gates and 4064 wires to a netlist network with 301 inputs and 382 outputs.
 
-3.30.1.1. Executing ABC.
+3.32.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/cavlc/abc_tmp.scr 
-ABC:   #Luts =  1067  Max Lvl =  15  Avg Lvl =   5.73  [   0.65 sec. at Pass 0]
-ABC:   #Luts =   853  Max Lvl =  14  Avg Lvl =   4.61  [  14.10 sec. at Pass 1]
-ABC:   #Luts =   842  Max Lvl =  14  Avg Lvl =   5.07  [   2.75 sec. at Pass 2]
-ABC:   #Luts =   815  Max Lvl =  14  Avg Lvl =   4.55  [  12.19 sec. at Pass 3]
-ABC:   #Luts =   809  Max Lvl =  14  Avg Lvl =   4.53  [   2.82 sec. at Pass 4]
-ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   4.48  [  14.51 sec. at Pass 5]
-ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   4.48  [   3.92 sec. at Pass 6]
-ABC:   #Luts =   794  Max Lvl =  13  Avg Lvl =   4.31  [  15.91 sec. at Pass 7]
-ABC:   #Luts =   793  Max Lvl =  15  Avg Lvl =   4.59  [   3.34 sec. at Pass 8]
-ABC:   #Luts =   792  Max Lvl =  13  Avg Lvl =   4.29  [  15.81 sec. at Pass 9]
-ABC:   #Luts =   789  Max Lvl =  13  Avg Lvl =   4.51  [   3.99 sec. at Pass 10]
-ABC:   #Luts =   789  Max Lvl =  13  Avg Lvl =   4.51  [  16.86 sec. at Pass 11]
-ABC:   #Luts =   788  Max Lvl =  13  Avg Lvl =   4.49  [   3.76 sec. at Pass 12]
-ABC:   #Luts =   785  Max Lvl =  12  Avg Lvl =   4.45  [  22.29 sec. at Pass 13]
-ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [   3.28 sec. at Pass 14]
-ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [  16.92 sec. at Pass 15]
-ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [   5.16 sec. at Pass 16]
-ABC:   #Luts =   782  Max Lvl =  12  Avg Lvl =   4.42  [  20.40 sec. at Pass 17]
-ABC:   #Luts =   782  Max Lvl =  12  Avg Lvl =   4.42  [   5.72 sec. at Pass 18]
-ABC:   #Luts =   781  Max Lvl =  11  Avg Lvl =   4.42  [  16.39 sec. at Pass 19]
-ABC:   #Luts =   781  Max Lvl =  11  Avg Lvl =   4.42  [   4.11 sec. at Pass 20]
-ABC:   #Luts =   780  Max Lvl =  11  Avg Lvl =   4.39  [  17.97 sec. at Pass 21]
-ABC:   #Luts =   780  Max Lvl =  11  Avg Lvl =   4.39  [   4.33 sec. at Pass 22]
-ABC:   #Luts =   778  Max Lvl =  10  Avg Lvl =   4.39  [  17.24 sec. at Pass 23]
-ABC:   #Luts =   778  Max Lvl =  10  Avg Lvl =   4.39  [   3.15 sec. at Pass 24]
-ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [  13.47 sec. at Pass 25]
-ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [   3.16 sec. at Pass 26]
-ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [  19.27 sec. at Pass 27]
-ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [   4.23 sec. at Pass 28]
+ABC: + source /tmp/yosys_A8fJ7K/abc_tmp_1.scr 
+ABC:   #Luts =  1067  Max Lvl =  15  Avg Lvl =   5.73  [   0.42 sec. at Pass 0]
+ABC:   #Luts =   853  Max Lvl =  14  Avg Lvl =   4.61  [  13.95 sec. at Pass 1]
+ABC:   #Luts =   842  Max Lvl =  14  Avg Lvl =   5.07  [   1.95 sec. at Pass 2]
+ABC:   #Luts =   815  Max Lvl =  14  Avg Lvl =   4.55  [  14.16 sec. at Pass 3]
+ABC:   #Luts =   809  Max Lvl =  14  Avg Lvl =   4.53  [   4.34 sec. at Pass 4]
+ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   4.48  [  21.03 sec. at Pass 5]
+ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   4.48  [   5.04 sec. at Pass 6]
+ABC:   #Luts =   794  Max Lvl =  13  Avg Lvl =   4.31  [  16.77 sec. at Pass 7]
+ABC:   #Luts =   793  Max Lvl =  15  Avg Lvl =   4.59  [   3.36 sec. at Pass 8]
+ABC:   #Luts =   792  Max Lvl =  13  Avg Lvl =   4.29  [  14.60 sec. at Pass 9]
+ABC:   #Luts =   789  Max Lvl =  13  Avg Lvl =   4.51  [   3.08 sec. at Pass 10]
+ABC:   #Luts =   789  Max Lvl =  13  Avg Lvl =   4.51  [  16.96 sec. at Pass 11]
+ABC:   #Luts =   788  Max Lvl =  13  Avg Lvl =   4.49  [   4.36 sec. at Pass 12]
+ABC:   #Luts =   785  Max Lvl =  12  Avg Lvl =   4.45  [  16.99 sec. at Pass 13]
+ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [   3.69 sec. at Pass 14]
+ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [  13.38 sec. at Pass 15]
+ABC:   #Luts =   784  Max Lvl =  12  Avg Lvl =   4.47  [   3.02 sec. at Pass 16]
+ABC:   #Luts =   782  Max Lvl =  12  Avg Lvl =   4.42  [  16.09 sec. at Pass 17]
+ABC:   #Luts =   782  Max Lvl =  12  Avg Lvl =   4.42  [   2.27 sec. at Pass 18]
+ABC:   #Luts =   781  Max Lvl =  11  Avg Lvl =   4.42  [  12.27 sec. at Pass 19]
+ABC:   #Luts =   781  Max Lvl =  11  Avg Lvl =   4.42  [   2.95 sec. at Pass 20]
+ABC:   #Luts =   780  Max Lvl =  11  Avg Lvl =   4.39  [  11.84 sec. at Pass 21]
+ABC:   #Luts =   780  Max Lvl =  11  Avg Lvl =   4.39  [   3.01 sec. at Pass 22]
+ABC:   #Luts =   778  Max Lvl =  10  Avg Lvl =   4.39  [   9.85 sec. at Pass 23]
+ABC:   #Luts =   778  Max Lvl =  10  Avg Lvl =   4.39  [   3.01 sec. at Pass 24]
+ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [  10.86 sec. at Pass 25]
+ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [   3.52 sec. at Pass 26]
+ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [  12.89 sec. at Pass 27]
+ABC:   #Luts =   776  Max Lvl =  11  Avg Lvl =   4.41  [   3.97 sec. at Pass 28]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.30.1.2. Re-integrating ABC results.
+3.32.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:      776
 ABC RESULTS:        internal signals:     3381
 ABC RESULTS:           input signals:      301
@@ -3736,23 +3807,23 @@ Removing temp directory.
 
 yosys> opt
 
-3.31. Executing OPT pass (performing simple optimizations).
+3.33. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.31.1. Executing OPT_EXPR pass (perform const folding).
+3.33.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 <suppressed ~2 debug messages>
 
 yosys> opt_merge -nomux
 
-3.31.2. Executing OPT_MERGE pass (detect identical cells).
+3.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.31.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3760,37 +3831,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.5. Executing OPT_MERGE pass (detect identical cells).
+3.33.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 Removed 0 unused cells and 8358 unused wires.
 <suppressed ~53 debug messages>
 
 yosys> opt_expr
 
-3.31.8. Executing OPT_EXPR pass (perform const folding).
+3.33.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
-3.31.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.33.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.31.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \cavlc..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3798,35 +3869,35 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.31.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.33.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \cavlc.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.31.12. Executing OPT_MERGE pass (detect identical cells).
+3.33.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.31.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.33.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.33.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 
 yosys> opt_expr
 
-3.31.15. Executing OPT_EXPR pass (perform const folding).
+3.33.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
-3.31.16. Finished OPT passes. (There is nothing left to do.)
+3.33.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> stat
 
-3.32. Printing statistics.
+3.34. Printing statistics.
 
 === cavlc ===
 
@@ -3845,16 +3916,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.33. Executing SHREGMAP pass (map shift registers).
+3.35. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.34. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.36. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.37. Printing statistics.
 
 === cavlc ===
 
@@ -3873,9 +3944,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.36. Executing TECHMAP pass (map to technology primitives).
+3.38. Executing TECHMAP pass (map to technology primitives).
 
-3.36.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.38.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -3903,7 +3974,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.36.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.38.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -3972,7 +4043,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.36.3. Continuing TECHMAP pass.
+3.38.3. Continuing TECHMAP pass.
 Using template \$_DFFE_PN0P_ for cells of type $_DFFE_PN0P_.
 Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
@@ -3980,175 +4051,38 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.37. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 <suppressed ~17113 debug messages>
 
 yosys> simplemap
 
-3.38. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.40. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.39. Executing OPT_EXPR pass (perform const folding).
+3.41. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
 
 yosys> opt_merge
 
-3.40. Executing OPT_MERGE pass (detect identical cells).
+3.42. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
 <suppressed ~7251 debug messages>
 Removed a total of 2417 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.41. Executing OPT_DFF pass (perform DFF optimizations).
+3.43. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 Removed 0 unused cells and 3342 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
-
-3.43. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.43.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module cavlc.
-<suppressed ~662 debug messages>
-
-yosys> opt_merge -nomux
-
-3.43.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\cavlc'.
-<suppressed ~18 debug messages>
-Removed a total of 6 cells.
-
-yosys> opt_muxtree
-
-3.43.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \cavlc..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \cavlc.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\cavlc'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \cavlc..
-Removed 0 unused cells and 59 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.43.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module cavlc.
-
-3.43.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.43.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \cavlc..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.43.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \cavlc.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.43.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\cavlc'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.43.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.43.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \cavlc..
-
-yosys> opt_expr
-
-3.43.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module cavlc.
-
-3.43.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.44. Executing ABC pass (technology mapping using ABC).
-
-3.44.1. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
-Extracted 3356 gates and 3657 wires to a netlist network with 299 inputs and 344 outputs.
-
-3.44.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/Workspace/yosys_verific_rs/result_10-05-2022T23-40-15/Golden_synth_rs_ade.json/cavlc/abc_tmp.scr 
-ABC:   #Luts =   743  Max Lvl =  11  Avg Lvl =   4.32  [   0.30 sec. at Pass 0]
-ABC:   #Luts =   743  Max Lvl =  11  Avg Lvl =   4.32  [  11.84 sec. at Pass 1]
-ABC:   #Luts =   741  Max Lvl =  12  Avg Lvl =   4.35  [   3.10 sec. at Pass 2]
-ABC:   #Luts =   738  Max Lvl =  12  Avg Lvl =   4.58  [  13.72 sec. at Pass 3]
-ABC:   #Luts =   738  Max Lvl =  12  Avg Lvl =   4.58  [   3.41 sec. at Pass 4]
-ABC:   #Luts =   737  Max Lvl =  12  Avg Lvl =   4.58  [  12.65 sec. at Pass 5]
-ABC:   #Luts =   737  Max Lvl =  12  Avg Lvl =   4.58  [   2.50 sec. at Pass 6]
-ABC:   #Luts =   737  Max Lvl =  11  Avg Lvl =   4.32  [  13.49 sec. at Pass 7]
-ABC:   #Luts =   737  Max Lvl =  11  Avg Lvl =   4.32  [   2.99 sec. at Pass 8]
-ABC:   #Luts =   732  Max Lvl =  12  Avg Lvl =   4.14  [  14.02 sec. at Pass 9]
-ABC:   #Luts =   732  Max Lvl =  12  Avg Lvl =   4.14  [   2.24 sec. at Pass 10]
-ABC:   #Luts =   731  Max Lvl =  12  Avg Lvl =   4.15  [   9.99 sec. at Pass 11]
-ABC:   #Luts =   731  Max Lvl =  12  Avg Lvl =   4.15  [   2.24 sec. at Pass 12]
-ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [  13.18 sec. at Pass 13]
-ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [   2.84 sec. at Pass 14]
-ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [  12.16 sec. at Pass 15]
-ABC:   #Luts =   730  Max Lvl =  10  Avg Lvl =   4.54  [   2.20 sec. at Pass 16]
-ABC:   #Luts =   729  Max Lvl =  12  Avg Lvl =   4.15  [   9.70 sec. at Pass 17]
-ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [   2.41 sec. at Pass 18]
-ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [  14.60 sec. at Pass 19]
-ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [   2.34 sec. at Pass 20]
-ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [  11.85 sec. at Pass 21]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.44.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      729
-ABC RESULTS:        internal signals:     3014
-ABC RESULTS:           input signals:      299
-ABC RESULTS:          output signals:      344
-Removing temp directory.
-
-yosys> opt
 
 3.45. Executing OPT pass (performing simple optimizations).
 
@@ -4156,12 +4090,14 @@ yosys> opt_expr
 
 3.45.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module cavlc.
+<suppressed ~662 debug messages>
 
 yosys> opt_merge -nomux
 
 3.45.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\cavlc'.
-Removed a total of 0 cells.
+<suppressed ~18 debug messages>
+Removed a total of 6 cells.
 
 yosys> opt_muxtree
 
@@ -4183,7 +4119,7 @@ yosys> opt_merge
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.6. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -4191,7 +4127,7 @@ yosys> opt_clean
 
 3.45.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
-Removed 0 unused cells and 2876 unused wires.
+Removed 0 unused cells and 59 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -4221,7 +4157,7 @@ yosys> opt_merge
 Finding identical cells in module `\cavlc'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_dff -nodffe -nosdff
 
 3.45.13. Executing OPT_DFF pass (perform DFF optimizations).
 
@@ -4237,20 +4173,155 @@ Optimizing module cavlc.
 
 3.45.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> abc -script /tmp/yosys_A8fJ7K/abc_tmp_2.scr
+
+3.46. Executing ABC pass (technology mapping using ABC).
+
+3.46.1. Extracting gate netlist of module `\cavlc' to `<abc-temp-dir>/input.blif'..
+Extracted 3356 gates and 3657 wires to a netlist network with 299 inputs and 344 outputs.
+
+3.46.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_A8fJ7K/abc_tmp_2.scr 
+ABC:   #Luts =   743  Max Lvl =  11  Avg Lvl =   4.32  [   0.53 sec. at Pass 0]
+ABC:   #Luts =   743  Max Lvl =  11  Avg Lvl =   4.32  [  11.44 sec. at Pass 1]
+ABC:   #Luts =   741  Max Lvl =  12  Avg Lvl =   4.35  [   2.89 sec. at Pass 2]
+ABC:   #Luts =   738  Max Lvl =  12  Avg Lvl =   4.58  [  15.31 sec. at Pass 3]
+ABC:   #Luts =   738  Max Lvl =  12  Avg Lvl =   4.58  [   2.98 sec. at Pass 4]
+ABC:   #Luts =   737  Max Lvl =  12  Avg Lvl =   4.58  [  14.48 sec. at Pass 5]
+ABC:   #Luts =   737  Max Lvl =  12  Avg Lvl =   4.58  [   3.78 sec. at Pass 6]
+ABC:   #Luts =   737  Max Lvl =  11  Avg Lvl =   4.32  [  13.87 sec. at Pass 7]
+ABC:   #Luts =   737  Max Lvl =  11  Avg Lvl =   4.32  [   3.00 sec. at Pass 8]
+ABC:   #Luts =   732  Max Lvl =  12  Avg Lvl =   4.14  [  17.17 sec. at Pass 9]
+ABC:   #Luts =   732  Max Lvl =  12  Avg Lvl =   4.14  [   3.49 sec. at Pass 10]
+ABC:   #Luts =   731  Max Lvl =  12  Avg Lvl =   4.15  [  14.46 sec. at Pass 11]
+ABC:   #Luts =   731  Max Lvl =  12  Avg Lvl =   4.15  [   2.81 sec. at Pass 12]
+ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [  11.64 sec. at Pass 13]
+ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [   2.95 sec. at Pass 14]
+ABC:   #Luts =   731  Max Lvl =  11  Avg Lvl =   4.13  [  16.33 sec. at Pass 15]
+ABC:   #Luts =   730  Max Lvl =  10  Avg Lvl =   4.54  [   3.77 sec. at Pass 16]
+ABC:   #Luts =   729  Max Lvl =  12  Avg Lvl =   4.15  [  16.92 sec. at Pass 17]
+ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [   3.61 sec. at Pass 18]
+ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [  12.26 sec. at Pass 19]
+ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [   2.46 sec. at Pass 20]
+ABC:   #Luts =   729  Max Lvl =  11  Avg Lvl =   4.56  [  12.47 sec. at Pass 21]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.46.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      729
+ABC RESULTS:        internal signals:     3014
+ABC RESULTS:           input signals:      299
+ABC RESULTS:          output signals:      344
+Removing temp directory.
+
+yosys> opt
+
+3.47. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.47.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module cavlc.
+
+yosys> opt_merge -nomux
+
+3.47.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\cavlc'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.47.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \cavlc..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \cavlc.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\cavlc'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \cavlc..
+Removed 0 unused cells and 2876 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.47.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module cavlc.
+
+3.47.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.47.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \cavlc..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.47.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \cavlc.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.47.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\cavlc'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.47.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \cavlc..
+
+yosys> opt_expr
+
+3.47.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module cavlc.
+
+3.47.16. Finished OPT passes. (There is nothing left to do.)
+
 yosys> hierarchy -check
 
-3.46. Executing HIERARCHY pass (managing design hierarchy).
+3.48. Executing HIERARCHY pass (managing design hierarchy).
 
-3.46.1. Analyzing design hierarchy..
+3.48.1. Analyzing design hierarchy..
 Top module:  \cavlc
 
-3.46.2. Analyzing design hierarchy..
+3.48.2. Analyzing design hierarchy..
 Top module:  \cavlc
 Removed 0 unused modules.
 
 yosys> stat
 
-3.47. Printing statistics.
+3.49. Printing statistics.
 
 === cavlc ===
 
@@ -4269,30 +4340,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.48. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \cavlc..
 Removed 0 unused cells and 108 unused wires.
 <suppressed ~108 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.49. Executing Verilog backend.
+3.51. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.49.1. Executing BMUXMAP pass.
+3.51.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.49.2. Executing DEMUXMAP pass.
+3.51.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\cavlc'.
 
 Warnings: 73 unique messages, 74 total
-End of script. Logfile hash: 13b306b92f, CPU: user 29.63s system 0.50s, MEM: 77.93 MB peak
-Yosys 0.16+65 (git sha1 051517d61, gcc 9.1.0 -fPIC -Os)
-Time spent: 99% 3x abc (2909 sec), 0% 51x opt_expr (9 sec), ...
-real 537.60
-user 2768.24
-sys 169.70
+End of script. Logfile hash: afb79cf749, CPU: user 29.99s system 0.50s, MEM: 81.26 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 99% 3x abc (2895 sec), 0% 51x opt_expr (9 sec), ...
+real 540.71
+user 2753.61
+sys 170.64
