@@ -357,8 +357,6 @@ def extract_vivado_metrics():
                                     if re.search("LUT as Memory", line, re.IGNORECASE):
                                         lut_count = line.split()[5]
                                         if lut_count:
-                                            metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = \
-                                                int(metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)])
                                             metrics.at[design_index, extract_column_name("LUT_AS_MEMORY",tool,label)] = int(lut_count)
                                     if re.search("LUT as Logic", line, re.IGNORECASE):
                                         lut_count = line.split()[5]
