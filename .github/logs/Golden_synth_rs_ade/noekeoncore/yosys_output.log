@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -103,7 +103,7 @@ VERIFIC-INFO [VHDL-1010] theta.vhd:39: analyzing architecture 'behavioral'
 
 yosys> synth_rs -top noekeon -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -128,6 +128,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top noekeon
@@ -599,55 +606,72 @@ Optimizing module noekeon.
 
 3.19.9. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== noekeon ===
+
+   Number of wires:                346
+   Number of wire bits:           9823
+   Number of public wires:         312
+   Number of public wire bits:    9013
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 86
+     $and                            6
+     $dff                            9
+     $logic_not                      2
+     $mux                           16
+     $not                            2
+     $xor                           51
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \noekeon..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -671,11 +695,38 @@ yosys> stat
      $xor                           51
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \noekeon..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== noekeon ===
+
+   Number of wires:                346
+   Number of wire bits:           9823
+   Number of public wires:         312
+   Number of public wire bits:    9013
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 86
+     $and                            6
+     $dff                            9
+     $logic_not                      2
+     $mux                           16
+     $not                            2
+     $xor                           51
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -703,12 +754,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $dff.
 Using extmapper simplemap for cells of type $xor.
@@ -720,7 +771,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === noekeon ===
 
@@ -742,24 +793,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 <suppressed ~272 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 <suppressed ~6 debug messages>
 Removed a total of 2 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -767,19 +818,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding SRST signal on $auto$ff.cc:262:slice$963 ($_DFF_P_) from module noekeon (D = $flatten\RC_GEN_0.$verific$n128$143 [7], Q = \RC_GEN_0.rc_s [7], rval = 1'1).
 Adding SRST signal on $auto$ff.cc:262:slice$956 ($_DFF_P_) from module noekeon (D = $flatten\RC_GEN_0.$verific$n128$143 [0], Q = \RC_GEN_0.rc_s [0], rval = 1'0).
 Adding SRST signal on $auto$ff.cc:262:slice$957 ($_DFF_P_) from module noekeon (D = $flatten\RC_GEN_0.$verific$n128$143 [1], Q = \RC_GEN_0.rc_s [1], rval = 1'0).
@@ -788,21 +839,21 @@ Adding SRST signal on $auto$ff.cc:262:slice$961 ($_DFF_P_) from module noekeon (
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 Removed 6 unused cells and 14 unused wires.
 <suppressed ~7 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -810,63 +861,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module noekeon.
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\noekeon'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \noekeon..
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -875,99 +896,32 @@ yosys> opt_expr -full
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \noekeon..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \noekeon.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\noekeon'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
-yosys> opt_expr -full
+3.28.5. Finished fast OPT passes.
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module noekeon.
+yosys> memory_map
 
-3.28.10. Finished OPT passes. (There is nothing left to do.)
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
-Extracted 2038 gates and 2560 wires to a netlist network with 522 inputs and 392 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/noekeoncore/abc_tmp.scr 
-ABC:   #Luts =   856  Max Lvl =  10  Avg Lvl =   6.88  [   0.51 sec. at Pass 0]
-ABC:   #Luts =   803  Max Lvl =   7  Avg Lvl =   4.94  [  25.94 sec. at Pass 1]
-ABC:   #Luts =   768  Max Lvl =   7  Avg Lvl =   4.54  [   3.53 sec. at Pass 2]
-ABC:   #Luts =   768  Max Lvl =   7  Avg Lvl =   4.54  [   5.58 sec. at Pass 3]
-ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.77  [   3.19 sec. at Pass 4]
-ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.77  [   6.24 sec. at Pass 5]
-ABC:   #Luts =   752  Max Lvl =   7  Avg Lvl =   4.59  [   4.94 sec. at Pass 6]
-ABC:   #Luts =   752  Max Lvl =   7  Avg Lvl =   4.59  [   6.51 sec. at Pass 7]
-ABC:   #Luts =   743  Max Lvl =   7  Avg Lvl =   4.77  [   4.62 sec. at Pass 8]
-ABC:   #Luts =   743  Max Lvl =   7  Avg Lvl =   4.77  [   6.23 sec. at Pass 9]
-ABC:   #Luts =   741  Max Lvl =   7  Avg Lvl =   4.33  [   4.71 sec. at Pass 10]
-ABC:   #Luts =   741  Max Lvl =   7  Avg Lvl =   4.33  [   5.61 sec. at Pass 11]
-ABC:   #Luts =   737  Max Lvl =   6  Avg Lvl =   4.64  [   4.43 sec. at Pass 12]
-ABC:   #Luts =   737  Max Lvl =   6  Avg Lvl =   4.64  [   6.40 sec. at Pass 13]
-ABC:   #Luts =   732  Max Lvl =   6  Avg Lvl =   4.16  [   5.66 sec. at Pass 14]
-ABC:   #Luts =   732  Max Lvl =   6  Avg Lvl =   4.16  [   7.78 sec. at Pass 15]
-ABC:   #Luts =   732  Max Lvl =   6  Avg Lvl =   4.16  [   4.31 sec. at Pass 16]
-ABC:   #Luts =   732  Max Lvl =   6  Avg Lvl =   4.16  [   4.43 sec. at Pass 17]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      732
-ABC RESULTS:        internal signals:     1646
-ABC RESULTS:           input signals:      522
-ABC RESULTS:          output signals:      392
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
@@ -986,7 +940,7 @@ Running muxtree optimizer on module \noekeon..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
@@ -998,27 +952,320 @@ yosys> opt_merge
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
-Removed 0 unused cells and 954 unused wires.
-<suppressed ~145 debug messages>
+
+yosys> opt_expr -full
+
+3.30.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module noekeon.
+
+3.30.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  2145 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  157 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+
+3.31.2. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 2145 gates and 2457 wires to a netlist network with 312 inputs and 203 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 259 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      259
+ABC RESULTS:               NOT cells:       21
+ABC RESULTS:             ORNOT cells:       30
+ABC RESULTS:                OR cells:       20
+ABC RESULTS:               XOR cells:      252
+ABC RESULTS:              NAND cells:       32
+ABC RESULTS:               AND cells:       66
+ABC RESULTS:               NOR cells:       28
+ABC RESULTS:            ANDNOT cells:       59
+ABC RESULTS:              XNOR cells:      934
+ABC RESULTS:               MUX cells:      233
+ABC RESULTS:        internal signals:     1942
+ABC RESULTS:           input signals:      312
+ABC RESULTS:          output signals:      203
+Removing temp directory.
+
+3.31.3. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 157 gates and 273 wires to a netlist network with 116 inputs and 89 outputs.
+
+3.31.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               AND cells:        5
+ABC RESULTS:               NOT cells:        7
+ABC RESULTS:              XNOR cells:       64
+ABC RESULTS:               XOR cells:       65
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        6
+ABC RESULTS:        internal signals:       68
+ABC RESULTS:           input signals:      116
+ABC RESULTS:          output signals:       89
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  1990 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  95 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+
+3.32.2. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 1990 gates and 2278 wires to a netlist network with 288 inputs and 168 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 259 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      259
+ABC RESULTS:               NOT cells:       16
+ABC RESULTS:               NOR cells:       22
+ABC RESULTS:            ANDNOT cells:       55
+ABC RESULTS:               AND cells:       79
+ABC RESULTS:                OR cells:       26
+ABC RESULTS:               XOR cells:      364
+ABC RESULTS:             ORNOT cells:       35
+ABC RESULTS:              XNOR cells:      878
+ABC RESULTS:              NAND cells:       44
+ABC RESULTS:               MUX cells:      165
+ABC RESULTS:        internal signals:     1822
+ABC RESULTS:           input signals:      288
+ABC RESULTS:          output signals:      168
+Removing temp directory.
+
+3.32.3. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 95 gates and 161 wires to a netlist network with 66 inputs and 50 outputs.
+
+3.32.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:               AND cells:        5
+ABC RESULTS:               NOT cells:        8
+ABC RESULTS:              NAND cells:        5
+ABC RESULTS:              XNOR cells:       49
+ABC RESULTS:               XOR cells:       19
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:       45
+ABC RESULTS:           input signals:       66
+ABC RESULTS:          output signals:       50
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  1989 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  55 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+
+3.33.2. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 1989 gates and 2275 wires to a netlist network with 286 inputs and 153 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 259 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      259
+ABC RESULTS:               NOT cells:       17
+ABC RESULTS:               NOR cells:       24
+ABC RESULTS:              NAND cells:       39
+ABC RESULTS:                OR cells:       28
+ABC RESULTS:               AND cells:       81
+ABC RESULTS:            ANDNOT cells:       55
+ABC RESULTS:              XNOR cells:      935
+ABC RESULTS:             ORNOT cells:       39
+ABC RESULTS:               XOR cells:      344
+ABC RESULTS:               MUX cells:      163
+ABC RESULTS:        internal signals:     1836
+ABC RESULTS:           input signals:      286
+ABC RESULTS:          output signals:      153
+Removing temp directory.
+
+3.33.3. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 55 gates and 85 wires to a netlist network with 30 inputs and 28 outputs.
+
+3.33.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:              NAND cells:        4
+ABC RESULTS:              XNOR cells:       22
+ABC RESULTS:               XOR cells:        7
+ABC RESULTS:               MUX cells:        4
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:       27
+ABC RESULTS:           input signals:       30
+ABC RESULTS:          output signals:       28
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.35.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
+<suppressed ~3 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\noekeon'.
+<suppressed ~12 debug messages>
+Removed a total of 4 cells.
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1026,85 +1273,344 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\noekeon'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \noekeon..
+Removed 0 unused cells and 5629 unused wires.
+<suppressed ~207 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module noekeon.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \noekeon..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \noekeon.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\noekeon'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \noekeon..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module noekeon.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  49 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+  1985 cells in clk=\clk, en={ }, arst={ }, srst={ }
+
+3.36.2. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 49 gates and 74 wires to a netlist network with 25 inputs and 25 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:              NAND cells:        4
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:              XNOR cells:       14
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               XOR cells:        9
+ABC RESULTS:               MUX cells:        8
+ABC RESULTS:        internal signals:       24
+ABC RESULTS:           input signals:       25
+ABC RESULTS:          output signals:       25
+Removing temp directory.
+
+3.36.3. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 1985 gates and 2268 wires to a netlist network with 283 inputs and 148 outputs.
+
+3.36.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 259 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      259
+ABC RESULTS:               NOT cells:       11
+ABC RESULTS:               XOR cells:      362
+ABC RESULTS:            ANDNOT cells:       52
+ABC RESULTS:              NAND cells:       46
+ABC RESULTS:                OR cells:       19
+ABC RESULTS:               AND cells:       82
+ABC RESULTS:             ORNOT cells:       39
+ABC RESULTS:               NOR cells:       27
+ABC RESULTS:              XNOR cells:      922
+ABC RESULTS:               MUX cells:      160
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:     1837
+ABC RESULTS:           input signals:      283
+ABC RESULTS:          output signals:      148
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_7LfcqY/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Extracted 1764 gates and 2286 wires to a netlist network with 522 inputs and 392 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_7LfcqY/abc_tmp_1.scr 
+ABC:   #Luts =   890  Max Lvl =  11  Avg Lvl =   7.73  [   0.22 sec. at Pass 0]
+ABC:   #Luts =   796  Max Lvl =   6  Avg Lvl =   4.56  [   7.02 sec. at Pass 1]
+ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.28  [   1.28 sec. at Pass 2]
+ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.28  [   1.79 sec. at Pass 3]
+ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.28  [   1.45 sec. at Pass 4]
+ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.28  [   1.99 sec. at Pass 5]
+ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.28  [   0.28 sec. at Pass 6]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      759
+ABC RESULTS:        internal signals:     1372
+ABC RESULTS:           input signals:      522
+ABC RESULTS:          output signals:      392
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module noekeon.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\noekeon'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \noekeon..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \noekeon.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \noekeon..
+Removed 0 unused cells and 4629 unused wires.
+<suppressed ~19 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module noekeon.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \noekeon..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \noekeon.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\noekeon'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === noekeon ===
 
-   Number of wires:                644
-   Number of wire bits:           4881
-   Number of public wires:         168
-   Number of public wire bits:    4405
+   Number of wires:                983
+   Number of wire bits:           2740
+   Number of public wires:          88
+   Number of public wire bits:    1845
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                996
+   Number of cells:               1023
      $_DFF_P_                      259
-     $_SDFF_PP0_                     4
-     $_SDFF_PP1_                     1
-     $lut                          732
+     $_SDFF_PP0_                     5
+     $lut                          759
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === noekeon ===
 
-   Number of wires:                649
-   Number of wire bits:           4886
-   Number of public wires:         168
-   Number of public wire bits:    4405
+   Number of wires:                988
+   Number of wire bits:           2745
+   Number of public wires:          88
+   Number of public wire bits:    1845
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1001
+   Number of cells:               1028
      $_DFF_P_                      264
      $_MUX_                          5
-     $lut                          732
+     $lut                          759
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1132,7 +1638,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1201,64 +1707,64 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
+3.45.3. Continuing TECHMAP pass.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
-<suppressed ~1132 debug messages>
+<suppressed ~1159 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
-<suppressed ~7481 debug messages>
+<suppressed ~7419 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
-<suppressed ~30693 debug messages>
-Removed a total of 10231 cells.
+<suppressed ~26817 debug messages>
+Removed a total of 8939 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
-Removed 0 unused cells and 2166 unused wires.
+Removed 0 unused cells and 2224 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
-<suppressed ~69 debug messages>
+<suppressed ~62 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1266,37 +1772,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
-Removed 0 unused cells and 15 unused wires.
+Removed 0 unused cells and 12 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1304,80 +1810,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_7LfcqY/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
-Extracted 3972 gates and 4496 wires to a netlist network with 522 inputs and 392 outputs.
+3.53.1. Extracting gate netlist of module `\noekeon' to `<abc-temp-dir>/input.blif'..
+Extracted 4010 gates and 4534 wires to a netlist network with 522 inputs and 392 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/noekeoncore/abc_tmp.scr 
-ABC:   #Luts =   794  Max Lvl =   6  Avg Lvl =   4.87  [   0.40 sec. at Pass 0]
-ABC:   #Luts =   759  Max Lvl =   6  Avg Lvl =   4.35  [  20.07 sec. at Pass 1]
-ABC:   #Luts =   737  Max Lvl =   5  Avg Lvl =   4.11  [   3.25 sec. at Pass 2]
-ABC:   #Luts =   737  Max Lvl =   5  Avg Lvl =   4.11  [   5.62 sec. at Pass 3]
-ABC:   #Luts =   737  Max Lvl =   5  Avg Lvl =   4.11  [   4.02 sec. at Pass 4]
-ABC:   #Luts =   737  Max Lvl =   5  Avg Lvl =   4.11  [   6.80 sec. at Pass 5]
+ABC: + source /tmp/yosys_7LfcqY/abc_tmp_2.scr 
+ABC:   #Luts =   791  Max Lvl =   7  Avg Lvl =   4.81  [   0.32 sec. at Pass 0]
+ABC:   #Luts =   790  Max Lvl =   7  Avg Lvl =   4.62  [   7.93 sec. at Pass 1]
+ABC:   #Luts =   771  Max Lvl =   6  Avg Lvl =   4.52  [   1.26 sec. at Pass 2]
+ABC:   #Luts =   771  Max Lvl =   6  Avg Lvl =   4.52  [   2.39 sec. at Pass 3]
+ABC:   #Luts =   764  Max Lvl =   7  Avg Lvl =   4.63  [   1.81 sec. at Pass 4]
+ABC:   #Luts =   764  Max Lvl =   7  Avg Lvl =   4.63  [   2.29 sec. at Pass 5]
+ABC:   #Luts =   764  Max Lvl =   6  Avg Lvl =   4.55  [   1.86 sec. at Pass 6]
+ABC:   #Luts =   764  Max Lvl =   6  Avg Lvl =   4.55  [   2.27 sec. at Pass 7]
+ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.83  [   2.01 sec. at Pass 8]
+ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.83  [   2.76 sec. at Pass 9]
+ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.83  [   1.77 sec. at Pass 10]
+ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.83  [   2.49 sec. at Pass 11]
+ABC:   #Luts =   763  Max Lvl =   7  Avg Lvl =   4.83  [   0.38 sec. at Pass 12]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      737
-ABC RESULTS:        internal signals:     3582
+3.53.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      763
+ABC RESULTS:        internal signals:     3620
 ABC RESULTS:           input signals:      522
 ABC RESULTS:          output signals:      392
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1385,37 +1898,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
-Removed 0 unused cells and 3048 unused wires.
+Removed 0 unused cells and 3111 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \noekeon..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1423,86 +1936,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \noekeon.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\noekeon'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module noekeon.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \noekeon
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \noekeon
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === noekeon ===
 
-   Number of wires:                649
-   Number of wire bits:           4886
-   Number of public wires:         168
-   Number of public wire bits:    4405
+   Number of wires:                987
+   Number of wire bits:           2744
+   Number of public wires:          88
+   Number of public wire bits:    1845
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1001
-     $lut                          737
+   Number of cells:               1027
+     $lut                          763
      dffsre                        264
 
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \noekeon..
-Removed 0 unused cells and 138 unused wires.
-<suppressed ~138 debug messages>
+Removed 0 unused cells and 73 unused wires.
+<suppressed ~73 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\noekeon'.
 
-End of script. Logfile hash: d64aa6714c, CPU: user 10.09s system 0.10s, MEM: 57.70 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 98% 2x abc (770 sec), 0% 26x opt_expr (4 sec), ...
-real 176.72
-user 708.64
-sys 72.00
+End of script. Logfile hash: e5bfcdcc67, CPU: user 7.72s system 0.12s, MEM: 59.09 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 97% 6x abc (310 sec), 0% 29x opt_expr (3 sec), ...
+real 56.89
+user 285.76
+sys 31.65

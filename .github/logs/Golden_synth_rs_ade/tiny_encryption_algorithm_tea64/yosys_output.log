@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -58,7 +58,7 @@ VERIFIC-INFO [VHDL-1010] tea64.vhd:14: analyzing architecture 'behavioral'
 
 yosys> synth_rs -top tea64 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -83,6 +83,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top tea64
@@ -1258,55 +1265,68 @@ Optimizing module tea64.
 
 3.19.9. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== tea64 ===
+
+   Number of wires:               1034
+   Number of wire bits:          32480
+   Number of public wires:         266
+   Number of public wire bits:    8672
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                384
+     $alu                          256
+     $xor                          128
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \tea64..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -1326,11 +1346,34 @@ yosys> stat
      $xor                          128
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tea64..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== tea64 ===
+
+   Number of wires:               1034
+   Number of wire bits:          32480
+   Number of public wires:         266
+   Number of public wire bits:    8672
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                384
+     $alu                          256
+     $xor                          128
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1358,12 +1401,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using template $paramod$be80489e44a49c29884f59fd81c31ed03229cfc1\_80_rs_alu for cells of type $alu.
 Using template $paramod$62a9e1f6b6a22c94f58bcb1cbfe24600db0272fe\_80_rs_alu for cells of type $alu.
 Using template $paramod$e891e6b399cf52748460a311fafe476815d24bd7\_90_alu for cells of type $alu.
@@ -1384,7 +1427,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === tea64 ===
 
@@ -1406,24 +1449,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 <suppressed ~15916 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 <suppressed ~17454 debug messages>
 Removed a total of 5818 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1431,37 +1474,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 Removed 2140 unused cells and 9686 unused wires.
 <suppressed ~2141 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1469,64 +1512,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module tea64.
-<suppressed ~64 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\tea64'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \tea64..
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -1534,90 +1546,34 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
+<suppressed ~64 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \tea64..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \tea64.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\tea64'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
-yosys> opt_expr -full
+3.28.5. Finished fast OPT passes.
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module tea64.
+yosys> memory_map
 
-3.28.10. Finished OPT passes. (There is nothing left to do.)
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
-Extracted 19086 gates and 24938 wires to a netlist network with 5852 inputs and 7360 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/tiny_encryption_algorithm_tea64/abc_tmp.scr 
-ABC:   #Luts =  8842  Max Lvl = 198  Avg Lvl =   6.42  [   2.37 sec. at Pass 0]
-ABC:   #Luts =  8508  Max Lvl = 168  Avg Lvl =   7.24  [  93.54 sec. at Pass 1]
-ABC:   #Luts =  8352  Max Lvl =  66  Avg Lvl =   4.95  [  15.45 sec. at Pass 2]
-ABC:   #Luts =  8352  Max Lvl =  66  Avg Lvl =   4.95  [  19.73 sec. at Pass 3]
-ABC:   #Luts =  8327  Max Lvl = 141  Avg Lvl =   6.29  [  13.72 sec. at Pass 4]
-ABC:   #Luts =  8327  Max Lvl = 141  Avg Lvl =   6.29  [  27.19 sec. at Pass 5]
-ABC:   #Luts =  8327  Max Lvl = 141  Avg Lvl =   6.29  [  17.42 sec. at Pass 6]
-ABC:   #Luts =  8327  Max Lvl = 141  Avg Lvl =   6.29  [  20.70 sec. at Pass 7]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     8327
-ABC RESULTS:        internal signals:    11726
-ABC RESULTS:           input signals:     5852
-ABC RESULTS:          output signals:     7360
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
@@ -1636,7 +1592,7 @@ Running muxtree optimizer on module \tea64..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
@@ -1648,27 +1604,188 @@ yosys> opt_merge
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
-Removed 0 unused cells and 17494 unused wires.
-<suppressed ~1 debug messages>
+
+yosys> opt_expr -full
+
+3.30.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+3.30.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  24974 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.31.2. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 19086 gates and 24938 wires to a netlist network with 5852 inputs and 7360 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:      106
+ABC RESULTS:            ANDNOT cells:      292
+ABC RESULTS:               NOR cells:      290
+ABC RESULTS:             ORNOT cells:      252
+ABC RESULTS:               AND cells:      976
+ABC RESULTS:                OR cells:      392
+ABC RESULTS:              NAND cells:      223
+ABC RESULTS:               XOR cells:     6835
+ABC RESULTS:              XNOR cells:     5123
+ABC RESULTS:        internal signals:    11726
+ABC RESULTS:           input signals:     5852
+ABC RESULTS:          output signals:     7360
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  20377 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.32.2. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 14489 gates and 20341 wires to a netlist network with 5852 inputs and 7360 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:      106
+ABC RESULTS:                OR cells:      354
+ABC RESULTS:            ANDNOT cells:      319
+ABC RESULTS:               NOR cells:      289
+ABC RESULTS:             ORNOT cells:      250
+ABC RESULTS:              NAND cells:      203
+ABC RESULTS:               AND cells:      972
+ABC RESULTS:              XNOR cells:     5073
+ABC RESULTS:               XOR cells:     6878
+ABC RESULTS:        internal signals:     7129
+ABC RESULTS:           input signals:     5852
+ABC RESULTS:          output signals:     7360
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  20332 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.33.2. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 14444 gates and 20296 wires to a netlist network with 5852 inputs and 7360 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:      111
+ABC RESULTS:            ANDNOT cells:      314
+ABC RESULTS:               NOR cells:      283
+ABC RESULTS:             ORNOT cells:      264
+ABC RESULTS:                OR cells:      344
+ABC RESULTS:              NAND cells:      240
+ABC RESULTS:               XOR cells:     6845
+ABC RESULTS:               AND cells:      942
+ABC RESULTS:              XNOR cells:     5106
+ABC RESULTS:        internal signals:     7084
+ABC RESULTS:           input signals:     5852
+ABC RESULTS:          output signals:     7360
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.35.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1676,82 +1793,302 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tea64..
+Removed 0 unused cells and 58131 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tea64..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tea64.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tea64..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  20337 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.36.2. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 14449 gates and 20301 wires to a netlist network with 5852 inputs and 7360 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:      108
+ABC RESULTS:                OR cells:      351
+ABC RESULTS:            ANDNOT cells:      335
+ABC RESULTS:               NOR cells:      281
+ABC RESULTS:             ORNOT cells:      257
+ABC RESULTS:              NAND cells:      187
+ABC RESULTS:               AND cells:      976
+ABC RESULTS:              XNOR cells:     5089
+ABC RESULTS:               XOR cells:     6854
+ABC RESULTS:        internal signals:     7089
+ABC RESULTS:           input signals:     5852
+ABC RESULTS:          output signals:     7360
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_waNCL7/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+Extracted 14438 gates and 20290 wires to a netlist network with 5852 inputs and 7360 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_waNCL7/abc_tmp_1.scr 
+ABC:   #Luts =  8535  Max Lvl = 136  Avg Lvl =   6.96  [   0.56 sec. at Pass 0]
+ABC:   #Luts =  8535  Max Lvl = 136  Avg Lvl =   6.96  [  24.74 sec. at Pass 1]
+ABC:   #Luts =  8416  Max Lvl =  80  Avg Lvl =   5.48  [   6.29 sec. at Pass 2]
+ABC:   #Luts =  8402  Max Lvl =  86  Avg Lvl =   5.34  [   7.77 sec. at Pass 3]
+ABC:   #Luts =  8352  Max Lvl = 118  Avg Lvl =   5.94  [   6.30 sec. at Pass 4]
+ABC:   #Luts =  8352  Max Lvl = 118  Avg Lvl =   5.94  [   7.50 sec. at Pass 5]
+ABC:   #Luts =  8345  Max Lvl = 128  Avg Lvl =   6.20  [   6.36 sec. at Pass 6]
+ABC:   #Luts =  8345  Max Lvl = 128  Avg Lvl =   6.20  [   7.35 sec. at Pass 7]
+ABC:   #Luts =  8343  Max Lvl = 126  Avg Lvl =   6.00  [   6.00 sec. at Pass 8]
+ABC:   #Luts =  8343  Max Lvl = 126  Avg Lvl =   6.00  [   7.33 sec. at Pass 9]
+ABC:   #Luts =  8343  Max Lvl = 126  Avg Lvl =   6.00  [   1.79 sec. at Pass 10]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     8343
+ABC RESULTS:        internal signals:     7078
+ABC RESULTS:           input signals:     5852
+ABC RESULTS:          output signals:     7360
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tea64..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tea64.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tea64..
+Removed 0 unused cells and 40591 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tea64..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tea64.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === tea64 ===
 
-   Number of wires:               1937
-   Number of wire bits:          25639
+   Number of wires:               1953
+   Number of wire bits:          25655
    Number of public wires:         266
    Number of public wire bits:    8672
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              14215
-     $lut                         8327
+   Number of cells:              14231
+     $lut                         8343
      adder_carry                  5888
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === tea64 ===
 
-   Number of wires:               1937
-   Number of wire bits:          25639
+   Number of wires:               1953
+   Number of wire bits:          25655
    Number of public wires:         266
    Number of public wire bits:    8672
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              14215
-     $lut                         8327
+   Number of cells:              14231
+     $lut                         8343
      adder_carry                  5888
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1779,7 +2116,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1848,63 +2185,63 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
 No more expansions possible.
-<suppressed ~8463 debug messages>
+<suppressed ~8479 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
-<suppressed ~42890 debug messages>
+<suppressed ~43206 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
-<suppressed ~79662 debug messages>
-Removed a total of 26554 cells.
+<suppressed ~77052 debug messages>
+Removed a total of 25684 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
-Removed 0 unused cells and 12536 unused wires.
+Removed 0 unused cells and 11913 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
-<suppressed ~98 debug messages>
+<suppressed ~127 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1912,84 +2249,121 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tea64..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.52.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tea64.
+
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tea64..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tea64.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tea64'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -nodffe -nosdff
+
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.42.9. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_waNCL7/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
-Extracted 25975 gates and 31829 wires to a netlist network with 5852 inputs and 7360 outputs.
+3.53.1. Extracting gate netlist of module `\tea64' to `<abc-temp-dir>/input.blif'..
+Extracted 26480 gates and 32334 wires to a netlist network with 5852 inputs and 7360 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/tiny_encryption_algorithm_tea64/abc_tmp.scr 
-ABC:   #Luts =  8497  Max Lvl = 134  Avg Lvl =   5.86  [   1.50 sec. at Pass 0]
-ABC:   #Luts =  8478  Max Lvl = 149  Avg Lvl =   7.01  [  52.52 sec. at Pass 1]
-ABC:   #Luts =  8333  Max Lvl = 141  Avg Lvl =   6.25  [  14.74 sec. at Pass 2]
-ABC:   #Luts =  8333  Max Lvl = 141  Avg Lvl =   6.25  [  20.47 sec. at Pass 3]
-ABC:   #Luts =  8323  Max Lvl = 128  Avg Lvl =   6.04  [  18.07 sec. at Pass 4]
-ABC:   #Luts =  8323  Max Lvl = 128  Avg Lvl =   6.04  [  29.15 sec. at Pass 5]
-ABC:   #Luts =  8323  Max Lvl = 126  Avg Lvl =   6.07  [  20.96 sec. at Pass 6]
-ABC:   #Luts =  8323  Max Lvl = 126  Avg Lvl =   6.07  [  20.65 sec. at Pass 7]
-ABC:   #Luts =  8323  Max Lvl = 126  Avg Lvl =   6.07  [  15.65 sec. at Pass 8]
-ABC:   #Luts =  8323  Max Lvl = 126  Avg Lvl =   6.07  [  19.29 sec. at Pass 9]
+ABC: + source /tmp/yosys_waNCL7/abc_tmp_2.scr 
+ABC:   #Luts =  8480  Max Lvl = 117  Avg Lvl =   6.08  [   0.96 sec. at Pass 0]
+ABC:   #Luts =  8474  Max Lvl = 122  Avg Lvl =   6.53  [  27.04 sec. at Pass 1]
+ABC:   #Luts =  8346  Max Lvl = 112  Avg Lvl =   5.68  [   6.30 sec. at Pass 2]
+ABC:   #Luts =  8346  Max Lvl = 112  Avg Lvl =   5.68  [   7.79 sec. at Pass 3]
+ABC:   #Luts =  8339  Max Lvl = 112  Avg Lvl =   5.79  [   6.46 sec. at Pass 4]
+ABC:   #Luts =  8339  Max Lvl = 112  Avg Lvl =   5.79  [   8.19 sec. at Pass 5]
+ABC:   #Luts =  8339  Max Lvl = 112  Avg Lvl =   5.79  [   6.52 sec. at Pass 6]
+ABC:   #Luts =  8339  Max Lvl = 112  Avg Lvl =   5.79  [   8.01 sec. at Pass 7]
+ABC:   #Luts =  8339  Max Lvl = 112  Avg Lvl =   5.79  [   1.68 sec. at Pass 8]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     8323
-ABC RESULTS:        internal signals:    18617
+3.53.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     8339
+ABC RESULTS:        internal signals:    19122
 ABC RESULTS:           input signals:     5852
 ABC RESULTS:          output signals:     7360
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1997,37 +2371,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
-Removed 0 unused cells and 25632 unused wires.
+Removed 0 unused cells and 26283 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \tea64..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2035,86 +2409,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \tea64.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\tea64'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module tea64.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \tea64
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \tea64
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === tea64 ===
 
-   Number of wires:               1933
-   Number of wire bits:          25635
+   Number of wires:               1949
+   Number of wire bits:          25651
    Number of public wires:         266
    Number of public wire bits:    8672
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              14211
-     $lut                         8323
+   Number of cells:              14227
+     $lut                         8339
      adder_carry                  5888
 
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \tea64..
 Removed 0 unused cells and 137 unused wires.
 <suppressed ~137 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\tea64'.
 
-End of script. Logfile hash: fca7da7c29, CPU: user 75.84s system 0.93s, MEM: 240.35 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 96% 2x abc (1992 sec), 1% 26x opt_expr (28 sec), ...
-real 537.49
-user 1850.84
-sys 216.45
+End of script. Logfile hash: 7778f9a520, CPU: user 71.11s system 0.64s, MEM: 257.39 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 93% 6x abc (984 sec), 2% 30x opt_expr (23 sec), ...
+real 251.92
+user 930.11
+sys 118.95

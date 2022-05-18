@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -60,7 +60,7 @@ VERIFIC-INFO [VERI-2142] bram_v1.v:169: previous definition of design element 'B
 
 yosys> synth_rs -top BRAM -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -85,6 +85,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top BRAM
@@ -493,60 +500,79 @@ Optimizing module BRAM.
 
 3.19.9. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== BRAM ===
+
+   Number of wires:                 14
+   Number of wire bits:            185
+   Number of public wires:           8
+   Number of public wire bits:     117
+   Number of memories:               1
+   Number of memory bits:          288
+   Number of processes:              0
+   Number of cells:                 16
+     $and                            1
+     $dffe                           1
+     $meminit                        8
+     $memrd                          1
+     $memwr                          1
+     $mux                            1
+     $not                            1
+     $reduce_or                      2
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
   Analyzing BRAM.memory write port 0.
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 Checking read port `\memory'[0] in module `\BRAM': merging output FF to cell.
     Write port 0: non-transparent.
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 Removed 3 unused cells and 35 unused wires.
 <suppressed ~4 debug messages>
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \BRAM..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -568,11 +594,36 @@ yosys> stat
      $reduce_or                      1
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== BRAM ===
+
+   Number of wires:                 11
+   Number of wire bits:            120
+   Number of public wires:           8
+   Number of public wire bits:     117
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                  4
+     $and                            1
+     $mem_v2                         1
+     $not                            1
+     $reduce_or                      1
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -600,12 +651,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $reduce_or.
 Using extmapper simplemap for cells of type $and.
@@ -614,7 +665,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === BRAM ===
 
@@ -634,22 +685,22 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -657,37 +708,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 Removed 0 unused cells and 1 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -695,62 +746,62 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
 
-3.26. Executing OPT pass (performing simple optimizations).
+3.28. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-3.26.1. Executing OPT_EXPR pass (perform const folding).
+3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 <suppressed ~5 debug messages>
 
 yosys> opt_merge
 
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
+3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
-3.26.5. Finished fast OPT passes.
+3.28.5. Finished fast OPT passes.
 
 yosys> memory_map
 
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 Mapping memory \memory in module \BRAM:
   created 9 $dff cells and 0 static cells of width 32.
 Extracted data FF from read port 0 of BRAM.memory: $\memory$rdreg[0]
@@ -759,198 +810,13 @@ Extracted data FF from read port 0 of BRAM.memory: $\memory$rdreg[0]
 
 yosys> opt -full
 
-3.28. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.28.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module BRAM.
-<suppressed ~21 debug messages>
-
-yosys> opt_merge -nomux
-
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\BRAM'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \BRAM..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~10 debug messages>
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \BRAM.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\BRAM'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \BRAM..
-Removed 0 unused cells and 33 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr -full
-
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module BRAM.
-<suppressed ~3 debug messages>
-
-3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \BRAM..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~10 debug messages>
-
-yosys> opt_reduce -full
-
-3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \BRAM.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\BRAM'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $memory\memory[8]$180 ($dff) from module BRAM (D = \wd, Q = \memory[8]).
-Adding EN signal on $memory\memory[7]$178 ($dff) from module BRAM (D = \wd, Q = \memory[7]).
-Adding EN signal on $memory\memory[6]$176 ($dff) from module BRAM (D = \wd, Q = \memory[6]).
-Adding EN signal on $memory\memory[5]$174 ($dff) from module BRAM (D = \wd, Q = \memory[5]).
-Adding EN signal on $memory\memory[4]$172 ($dff) from module BRAM (D = \wd, Q = \memory[4]).
-Adding EN signal on $memory\memory[3]$170 ($dff) from module BRAM (D = \wd, Q = \memory[3]).
-Adding EN signal on $memory\memory[2]$168 ($dff) from module BRAM (D = \wd, Q = \memory[2]).
-Adding EN signal on $memory\memory[1]$166 ($dff) from module BRAM (D = \wd, Q = \memory[1]).
-Adding EN signal on $memory\memory[0]$164 ($dff) from module BRAM (D = \wd, Q = \memory[0]).
-
-yosys> opt_clean
-
-3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \BRAM..
-Removed 9 unused cells and 12 unused wires.
-<suppressed ~10 debug messages>
-
-yosys> opt_expr -full
-
-3.28.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module BRAM.
-
-3.28.18. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.28.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \BRAM..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
-
-yosys> opt_reduce -full
-
-3.28.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \BRAM.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.21. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\BRAM'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.22. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.28.23. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.24. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \BRAM..
-
-yosys> opt_expr -full
-
-3.28.25. Executing OPT_EXPR pass (perform const folding).
-Optimizing module BRAM.
-
-3.28.26. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
-Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 1 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/bram/abc_tmp.scr 
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.37 sec. at Pass 0]
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.47 sec. at Pass 1]
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.30 sec. at Pass 2]
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.47 sec. at Pass 3]
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.34 sec. at Pass 4]
-ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.46 sec. at Pass 5]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:        1
-ABC RESULTS:        internal signals:        5
-ABC RESULTS:           input signals:        6
-ABC RESULTS:          output signals:        1
-Removing temp directory.
-
-yosys> opt
-
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
+<suppressed ~21 debug messages>
 
 yosys> opt_merge -nomux
 
@@ -966,9 +832,9 @@ Running muxtree optimizer on module \BRAM..
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
+<suppressed ~10 debug messages>
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
@@ -980,27 +846,268 @@ yosys> opt_merge
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
-Removed 0 unused cells and 11 unused wires.
+Removed 0 unused cells and 33 unused wires.
 <suppressed ~1 debug messages>
 
-yosys> opt_expr
+yosys> opt_expr -full
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
+<suppressed ~3 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \BRAM..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~10 debug messages>
+
+yosys> opt_reduce -full
+
+3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \BRAM.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.30.14. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $memory\memory[8]$180 ($dff) from module BRAM (D = \wd, Q = \memory[8]).
+Adding EN signal on $memory\memory[7]$178 ($dff) from module BRAM (D = \wd, Q = \memory[7]).
+Adding EN signal on $memory\memory[6]$176 ($dff) from module BRAM (D = \wd, Q = \memory[6]).
+Adding EN signal on $memory\memory[5]$174 ($dff) from module BRAM (D = \wd, Q = \memory[5]).
+Adding EN signal on $memory\memory[4]$172 ($dff) from module BRAM (D = \wd, Q = \memory[4]).
+Adding EN signal on $memory\memory[3]$170 ($dff) from module BRAM (D = \wd, Q = \memory[3]).
+Adding EN signal on $memory\memory[2]$168 ($dff) from module BRAM (D = \wd, Q = \memory[2]).
+Adding EN signal on $memory\memory[1]$166 ($dff) from module BRAM (D = \wd, Q = \memory[1]).
+Adding EN signal on $memory\memory[0]$164 ($dff) from module BRAM (D = \wd, Q = \memory[0]).
+
+yosys> opt_clean
+
+3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+Removed 9 unused cells and 12 unused wires.
+<suppressed ~10 debug messages>
+
+yosys> opt_expr -full
+
+3.30.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+3.30.18. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.30.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \BRAM..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce -full
+
+3.30.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \BRAM.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.21. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.30.22. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.30.23. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.30.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+
+yosys> opt_expr -full
+
+3.30.25. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+3.30.26. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  53 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.31.2. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 1 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:        internal signals:        5
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:        1
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  52 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.32.2. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 1 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:        internal signals:        4
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:        1
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  52 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.33.2. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 1 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:        internal signals:        4
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:        1
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.35.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1010,35 +1117,252 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+Removed 0 unused cells and 33 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \BRAM..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \BRAM.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  52 cells in clk={ }, en={ }, arst={ }, srst={ }
+
+3.36.2. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+No matching clock domain found. Not extracting any FF cells.
+Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 1 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:        internal signals:        4
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:        1
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_tfWWbx/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 1 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_tfWWbx/abc_tmp_1.scr 
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.04 sec. at Pass 0]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.12 sec. at Pass 1]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.05 sec. at Pass 2]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.09 sec. at Pass 3]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.09 sec. at Pass 4]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.13 sec. at Pass 5]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.14 sec. at Pass 6]
+ABC:   #Luts =     1  Max Lvl =   1  Avg Lvl =   1.00  [   0.13 sec. at Pass 7]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:        1
+ABC RESULTS:        internal signals:        4
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:        1
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \BRAM..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \BRAM.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \BRAM..
+Removed 0 unused cells and 22 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module BRAM.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \BRAM..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \BRAM.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\BRAM'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === BRAM ===
 
@@ -1059,16 +1383,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === BRAM ===
 
@@ -1089,9 +1413,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1119,7 +1443,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1188,11 +1512,11 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $dffe.
-Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $and.
 Using template \$_DFFE_PP_ for cells of type $_DFFE_PP_.
 No more expansions possible.
@@ -1200,54 +1524,54 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 <suppressed ~57 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 Removed 0 unused cells and 1281 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1255,56 +1579,58 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.42.9. Finished OPT passes. (There is nothing left to do.)
+3.52.9. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_tfWWbx/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
+3.53.1. Extracting gate netlist of module `\BRAM' to `<abc-temp-dir>/input.blif'..
 Extracted 291 gates and 594 wires to a netlist network with 302 inputs and 41 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/bram/abc_tmp.scr 
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.37 sec. at Pass 0]
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   3.08 sec. at Pass 1]
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   1.02 sec. at Pass 2]
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   1.81 sec. at Pass 3]
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   1.11 sec. at Pass 4]
-ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   2.13 sec. at Pass 5]
+ABC: + source /tmp/yosys_tfWWbx/abc_tmp_2.scr 
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.09 sec. at Pass 0]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.62 sec. at Pass 1]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.15 sec. at Pass 2]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.31 sec. at Pass 3]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.26 sec. at Pass 4]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.40 sec. at Pass 5]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.81 sec. at Pass 6]
+ABC:   #Luts =   106  Max Lvl =   2  Avg Lvl =   2.00  [   0.10 sec. at Pass 7]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
+3.53.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:      106
 ABC RESULTS:        internal signals:      251
 ABC RESULTS:           input signals:      302
@@ -1313,22 +1639,22 @@ Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1336,37 +1662,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 Removed 0 unused cells and 376 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \BRAM..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1374,46 +1700,46 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \BRAM.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\BRAM'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module BRAM.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \BRAM
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \BRAM
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === BRAM ===
 
@@ -1431,30 +1757,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \BRAM..
 Removed 0 unused cells and 1 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\BRAM'.
 
 Warnings: 5 unique messages, 5 total
-End of script. Logfile hash: c5e809f0de, CPU: user 1.11s system 0.03s, MEM: 20.81 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 94% 2x abc (20 sec), 1% 2x write_verilog (0 sec), ...
-real 18.12
-user 17.78
-sys 3.79
+End of script. Logfile hash: a9f1cc1d9f, CPU: user 0.99s system 0.04s, MEM: 23.18 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 96% 6x abc (30 sec), 0% 31x opt_expr (0 sec), ...
+real 5.39
+user 25.26
+sys 5.81

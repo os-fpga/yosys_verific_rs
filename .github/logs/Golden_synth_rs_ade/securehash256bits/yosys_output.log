@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -77,7 +77,7 @@ VERIFIC-INFO [VHDL-1010] gv_sha256.vhd:108: analyzing architecture 'rtl'
 
 yosys> synth_rs -top gv_sha256 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -102,6 +102,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top gv_sha256
@@ -774,55 +781,82 @@ Optimizing module gv_sha256.
 
 3.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== gv_sha256 ===
+
+   Number of wires:                523
+   Number of wire bits:           9992
+   Number of public wires:         304
+   Number of public wire bits:    6755
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                304
+     $alu                           11
+     $and                           24
+     $bmux                          16
+     $dffe                          32
+     $eq                            70
+     $logic_not                      1
+     $macc                           3
+     $mux                          107
+     $ne                             1
+     $not                            9
+     $or                             8
+     $reduce_and                     1
+     $reduce_bool                    2
+     $reduce_or                      1
+     $sdffe                          7
+     $xor                           11
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -856,11 +890,48 @@ yosys> stat
      $xor                           11
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== gv_sha256 ===
+
+   Number of wires:                523
+   Number of wire bits:           9992
+   Number of public wires:         304
+   Number of public wire bits:    6755
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                304
+     $alu                           11
+     $and                           24
+     $bmux                          16
+     $dffe                          32
+     $eq                            70
+     $logic_not                      1
+     $macc                           3
+     $mux                          107
+     $ne                             1
+     $not                            9
+     $or                             8
+     $reduce_and                     1
+     $reduce_bool                    2
+     $reduce_or                      1
+     $sdffe                          7
+     $xor                           11
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -888,12 +959,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $dffe.
 Using extmapper simplemap for cells of type $or.
 Using extmapper simplemap for cells of type $and.
@@ -935,7 +1006,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === gv_sha256 ===
 
@@ -960,24 +1031,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 <suppressed ~3487 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~1611 debug messages>
-Removed a total of 537 cells.
+<suppressed ~1803 debug messages>
+Removed a total of 601 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -985,40 +1056,40 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $auto$ff.cc:262:slice$1770 ($_SDFFE_PP0P_) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [2], Q = \Inst_sha256_control.hash_control_st_reg [2]).
 Adding EN signal on $auto$ff.cc:262:slice$1769 ($_SDFFE_PP0P_) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [1], Q = \Inst_sha256_control.hash_control_st_reg [1]).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 589 unused cells and 1180 unused wires.
-<suppressed ~590 debug messages>
+Removed 525 unused cells and 1180 unused wires.
+<suppressed ~526 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 <suppressed ~47 debug messages>
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1026,41 +1097,41 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 <suppressed ~126 debug messages>
 Removed a total of 42 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $auto$ff.cc:262:slice$1783 ($_SDFFE_PP0P_) from module gv_sha256 (D = \Inst_sha256_control.hash_control_st_next [0], Q = \Inst_sha256_control.hash_control_st_reg [0]).
 Adding EN signal on $auto$ff.cc:262:slice$1781 ($_SDFFE_PP0P_) from module gv_sha256 (D = $auto$simplemap.cc:309:simplemap_bmux$1510 [1], Q = \Inst_sha256_control.padding_reg).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 Removed 1 unused cells and 50 unused wires.
 <suppressed ~3 debug messages>
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 <suppressed ~20 debug messages>
 
-3.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1068,38 +1139,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.19. Executing OPT_MERGE pass (detect identical cells).
+3.27.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 <suppressed ~45 debug messages>
 Removed a total of 15 cells.
 
 yosys> opt_dff
 
-3.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 Removed 0 unused cells and 17 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.22. Executing OPT_EXPR pass (perform const folding).
+3.27.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.25.23. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.23. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1107,67 +1178,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.26. Executing OPT_MERGE pass (detect identical cells).
+3.27.26. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.27. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.27. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.28. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.28. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.25.29. Executing OPT_EXPR pass (perform const folding).
+3.27.29. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.25.30. Finished OPT passes. (There is nothing left to do.)
+3.27.30. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~1203 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~6 debug messages>
-Removed a total of 2 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 7 unused wires.
-<suppressed ~1 debug messages>
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -1175,163 +1212,41 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~2 debug messages>
+<suppressed ~1203 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1561 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1551
-        $auto$simplemap.cc:312:simplemap_bmux$1548
-
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
 
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr -full
-
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
+Removed 0 unused cells and 7 unused wires.
 <suppressed ~1 debug messages>
 
-3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
+3.28.5. Finished fast OPT passes.
 
-yosys> opt_muxtree
+yosys> memory_map
 
-3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> opt_reduce -full
-
-3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr -full
-
-3.28.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.28.18. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Extracted 5425 gates and 6459 wires to a netlist network with 1032 inputs and 933 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/securehash256bits/abc_tmp.scr 
-ABC:   #Luts =  1709  Max Lvl =  26  Avg Lvl =   4.16  [   1.14 sec. at Pass 0]
-ABC:   #Luts =  1565  Max Lvl =  39  Avg Lvl =   5.13  [  48.30 sec. at Pass 1]
-ABC:   #Luts =  1528  Max Lvl =  36  Avg Lvl =   4.90  [   5.11 sec. at Pass 2]
-ABC:   #Luts =  1522  Max Lvl =  35  Avg Lvl =   4.84  [  17.78 sec. at Pass 3]
-ABC:   #Luts =  1518  Max Lvl =  35  Avg Lvl =   4.79  [   5.43 sec. at Pass 4]
-ABC:   #Luts =  1518  Max Lvl =  35  Avg Lvl =   4.79  [  25.67 sec. at Pass 5]
-ABC:   #Luts =  1512  Max Lvl =  35  Avg Lvl =   4.90  [   8.29 sec. at Pass 6]
-ABC:   #Luts =  1512  Max Lvl =  35  Avg Lvl =   4.90  [  24.43 sec. at Pass 7]
-ABC:   #Luts =  1508  Max Lvl =  33  Avg Lvl =   4.62  [   5.45 sec. at Pass 8]
-ABC:   #Luts =  1508  Max Lvl =  33  Avg Lvl =   4.62  [  19.09 sec. at Pass 9]
-ABC:   #Luts =  1508  Max Lvl =  32  Avg Lvl =   4.60  [   6.56 sec. at Pass 10]
-ABC:   #Luts =  1508  Max Lvl =  32  Avg Lvl =   4.60  [  20.82 sec. at Pass 11]
-ABC:   #Luts =  1505  Max Lvl =  31  Avg Lvl =   4.46  [   6.56 sec. at Pass 12]
-ABC:   #Luts =  1505  Max Lvl =  31  Avg Lvl =   4.46  [  27.66 sec. at Pass 13]
-ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.41  [   8.56 sec. at Pass 14]
-ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.41  [  23.93 sec. at Pass 15]
-ABC:   #Luts =  1501  Max Lvl =  32  Avg Lvl =   4.50  [   6.62 sec. at Pass 16]
-ABC:   #Luts =  1501  Max Lvl =  32  Avg Lvl =   4.50  [  21.13 sec. at Pass 17]
-ABC:   #Luts =  1501  Max Lvl =  30  Avg Lvl =   4.43  [   5.79 sec. at Pass 18]
-ABC:   #Luts =  1500  Max Lvl =  31  Avg Lvl =   4.47  [  22.91 sec. at Pass 19]
-ABC:   #Luts =  1499  Max Lvl =  32  Avg Lvl =   4.50  [   6.14 sec. at Pass 20]
-ABC:   #Luts =  1499  Max Lvl =  32  Avg Lvl =   4.50  [  23.05 sec. at Pass 21]
-ABC:   #Luts =  1497  Max Lvl =  32  Avg Lvl =   4.50  [   6.99 sec. at Pass 22]
-ABC:   #Luts =  1497  Max Lvl =  32  Avg Lvl =   4.50  [  29.04 sec. at Pass 23]
-ABC:   #Luts =  1496  Max Lvl =  33  Avg Lvl =   4.58  [   6.15 sec. at Pass 24]
-ABC:   #Luts =  1496  Max Lvl =  33  Avg Lvl =   4.58  [  23.18 sec. at Pass 25]
-ABC:   #Luts =  1496  Max Lvl =  32  Avg Lvl =   4.50  [   5.15 sec. at Pass 26]
-ABC:   #Luts =  1496  Max Lvl =  32  Avg Lvl =   4.50  [  17.19 sec. at Pass 27]
-ABC:   #Luts =  1496  Max Lvl =  32  Avg Lvl =   4.50  [   3.72 sec. at Pass 28]
-ABC:   #Luts =  1496  Max Lvl =  32  Avg Lvl =   4.50  [  19.51 sec. at Pass 29]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     1496
-ABC RESULTS:        internal signals:     4494
-ABC RESULTS:           input signals:     1032
-ABC RESULTS:          output signals:      933
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
+<suppressed ~2 debug messages>
 
 yosys> opt_merge -nomux
 
@@ -1344,12 +1259,10 @@ yosys> opt_muxtree
 3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
+  No muxes found in this module.
 Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
@@ -1361,27 +1274,1283 @@ yosys> opt_merge
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1561 in front of them:
+        $auto$simplemap.cc:312:simplemap_bmux$1551
+        $auto$simplemap.cc:312:simplemap_bmux$1548
+
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 2662 unused wires.
-<suppressed ~50 debug messages>
 
-yosys> opt_expr
+yosys> opt_expr -full
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
+<suppressed ~1 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce -full
+
+3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.30.14. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> opt_expr -full
+
+3.30.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.30.18. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  366 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  4046 cells in clk=\clk_i, en=\Inst_sha256_control.core_ce, arst={ }, srst={ }
+  1186 cells in clk=\clk_i, en=\Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  16 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  41 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$flatten\Inst_sha256_control.$verific$n368$120
+  18 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  1017 cells in clk=\clk_i, en=\Inst_sha256_control.core_ld, arst={ }, srst={ }
+  4 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$12093, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  41 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$12065, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$1143
+  77 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$11877, arst={ }, srst=\start_i
+
+3.31.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by \Inst_sha256_control.oregs_ld
+Extracted 366 gates and 413 wires to a netlist network with 46 inputs and 41 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       61
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:               MUX cells:       62
+ABC RESULTS:            ANDNOT cells:        6
+ABC RESULTS:                OR cells:        7
+ABC RESULTS:               AND cells:       92
+ABC RESULTS:              NAND cells:        7
+ABC RESULTS:               XOR cells:       60
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:      326
+ABC RESULTS:           input signals:       46
+ABC RESULTS:          output signals:       41
+Removing temp directory.
+
+3.31.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.core_ce
+Extracted 4014 gates and 4386 wires to a netlist network with 371 inputs and 317 outputs.
+
+3.31.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:               NOT cells:       32
+ABC RESULTS:             ORNOT cells:       64
+ABC RESULTS:               XOR cells:      275
+ABC RESULTS:            ANDNOT cells:       10
+ABC RESULTS:                OR cells:      246
+ABC RESULTS:              NAND cells:     1224
+ABC RESULTS:               AND cells:      372
+ABC RESULTS:              XNOR cells:      280
+ABC RESULTS:               MUX cells:      289
+ABC RESULTS:               BUF cells:      224
+ABC RESULTS:        internal signals:     3698
+ABC RESULTS:           input signals:      371
+ABC RESULTS:          output signals:      317
+Removing temp directory.
+
+3.31.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.sch_ce
+Extracted 1186 gates and 1222 wires to a netlist network with 36 inputs and 33 outputs.
+
+3.31.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      512
+ABC RESULTS:            ANDNOT cells:        2
+ABC RESULTS:                OR cells:       88
+ABC RESULTS:               AND cells:       94
+ABC RESULTS:              NAND cells:      110
+ABC RESULTS:               XOR cells:      154
+ABC RESULTS:              XNOR cells:      138
+ABC RESULTS:               MUX cells:       65
+ABC RESULTS:               BUF cells:      480
+ABC RESULTS:        internal signals:     1153
+ABC RESULTS:           input signals:       36
+ABC RESULTS:          output signals:       33
+Removing temp directory.
+
+3.31.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$12121$Inst_sha256_control.oregs_ld
+Extracted 16 gates and 29 wires to a netlist network with 12 inputs and 6 outputs.
+
+3.31.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:                OR cells:        7
+ABC RESULTS:        internal signals:       11
+ABC RESULTS:           input signals:       12
+ABC RESULTS:          output signals:        6
+Removing temp directory.
+
+3.31.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $flatten\Inst_sha256_control.$verific$n368$120
+Extracted 41 gates and 45 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.31.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        7
+ABC RESULTS:                OR cells:        7
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:              NAND cells:        3
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:              XNOR cells:        4
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:        internal signals:       22
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.31.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$12121$Inst_sha256_control.oregs_ld
+Extracted 18 gates and 25 wires to a netlist network with 6 inputs and 10 outputs.
+
+3.31.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:        6
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:        9
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:       10
+Removing temp directory.
+
+3.31.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.core_ld
+Extracted 761 gates and 1239 wires to a netlist network with 477 inputs and 723 outputs.
+
+3.31.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:               MUX cells:        1
+ABC RESULTS:              XNOR cells:        5
+ABC RESULTS:               NOR cells:       25
+ABC RESULTS:               XOR cells:      222
+ABC RESULTS:               BUF cells:      256
+ABC RESULTS:              NAND cells:       32
+ABC RESULTS:            ANDNOT cells:      221
+ABC RESULTS:                OR cells:      267
+ABC RESULTS:               AND cells:       23
+ABC RESULTS:        internal signals:       39
+ABC RESULTS:           input signals:      477
+ABC RESULTS:          output signals:      723
+Removing temp directory.
+
+3.31.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$12093, synchronously reset by $abc$12121$Inst_sha256_control.oregs_ld
+Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.31.9.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.9.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        3
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.31.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$12065, synchronously reset by $auto$opt_dff.cc:253:combine_resets$1143
+Extracted 41 gates and 67 wires to a netlist network with 24 inputs and 23 outputs.
+
+3.31.10.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.10.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:              XNOR cells:        1
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:             ORNOT cells:        6
+ABC RESULTS:               AND cells:       11
+ABC RESULTS:              NAND cells:        6
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:       20
+ABC RESULTS:           input signals:       24
+ABC RESULTS:          output signals:       23
+Removing temp directory.
+
+3.31.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$11877, synchronously reset by \start_i
+Extracted 76 gates and 116 wires to a netlist network with 38 inputs and 26 outputs.
+
+3.31.11.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.11.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:               MUX cells:        3
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:            ANDNOT cells:        4
+ABC RESULTS:                OR cells:       16
+ABC RESULTS:               AND cells:       16
+ABC RESULTS:              NAND cells:       16
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:       52
+ABC RESULTS:           input signals:       38
+ABC RESULTS:          output signals:       26
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  20 cells in clk=\clk_i, en=$abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=$abc$12121$Inst_sha256_control.oregs_ld
+  5 cells in clk=\clk_i, en=$abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, arst={ }, srst=$abc$12121$Inst_sha256_control.oregs_ld
+  35 cells in clk=\clk_i, en=$abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, arst={ }, srst=$abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+  12 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$12121$Inst_sha256_control.oregs_ld
+  38 cells in clk=\clk_i, en=$abc$17362$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+  295 cells in clk=\clk_i, en=$abc$12121$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$12121$Inst_sha256_control.oregs_ld
+  3586 cells in clk=\clk_i, en=$abc$12427$Inst_sha256_control.core_ce, arst={ }, srst={ }
+  1141 cells in clk=\clk_i, en=$abc$15700$Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  834 cells in clk=\clk_i, en=$abc$17420$Inst_sha256_control.core_ld, arst={ }, srst={ }
+  69 cells in clk=\clk_i, en=$abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, arst={ }, srst=\start_i
+
+3.32.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$12121$Inst_sha256_control.oregs_ld
+Extracted 20 gates and 32 wires to a netlist network with 11 inputs and 10 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:              NAND cells:        4
+ABC RESULTS:            ANDNOT cells:        5
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:               NOR cells:        3
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:        internal signals:       11
+ABC RESULTS:           input signals:       11
+ABC RESULTS:          output signals:       10
+Removing temp directory.
+
+3.32.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, synchronously reset by $abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.32.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:        internal signals:        3
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.32.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, synchronously reset by $abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+Extracted 35 gates and 56 wires to a netlist network with 21 inputs and 21 outputs.
+
+3.32.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:              XNOR cells:        1
+ABC RESULTS:               AND cells:        9
+ABC RESULTS:              NAND cells:        4
+ABC RESULTS:        internal signals:       14
+ABC RESULTS:           input signals:       21
+ABC RESULTS:          output signals:       21
+Removing temp directory.
+
+3.32.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 12 gates and 21 wires to a netlist network with 9 inputs and 6 outputs.
+
+3.32.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:                OR cells:        6
+ABC RESULTS:        internal signals:        6
+ABC RESULTS:           input signals:        9
+ABC RESULTS:          output signals:        6
+Removing temp directory.
+
+3.32.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$17362$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.32.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        7
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:               AND cells:        6
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:        internal signals:       19
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.32.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$12121$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 295 gates and 343 wires to a netlist network with 48 inputs and 40 outputs.
+
+3.32.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       61
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               MUX cells:       58
+ABC RESULTS:            ANDNOT cells:        8
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:               AND cells:       85
+ABC RESULTS:              NAND cells:       20
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:       60
+ABC RESULTS:        internal signals:      255
+ABC RESULTS:           input signals:       48
+ABC RESULTS:          output signals:       40
+Removing temp directory.
+
+3.32.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$12427$Inst_sha256_control.core_ce
+Extracted 3554 gates and 4183 wires to a netlist network with 629 inputs and 324 outputs.
+
+3.32.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:               NOT cells:       34
+ABC RESULTS:             ORNOT cells:       57
+ABC RESULTS:              NAND cells:     1314
+ABC RESULTS:               MUX cells:       76
+ABC RESULTS:              XNOR cells:      273
+ABC RESULTS:               XOR cells:      492
+ABC RESULTS:            ANDNOT cells:      213
+ABC RESULTS:                OR cells:      581
+ABC RESULTS:               AND cells:      498
+ABC RESULTS:               BUF cells:       13
+ABC RESULTS:        internal signals:     3230
+ABC RESULTS:           input signals:      629
+ABC RESULTS:          output signals:      324
+Removing temp directory.
+
+3.32.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$15700$Inst_sha256_control.sch_ce
+Extracted 1141 gates and 1185 wires to a netlist network with 44 inputs and 37 outputs.
+
+3.32.9.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.9.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      512
+ABC RESULTS:            ANDNOT cells:        2
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:              NAND cells:      111
+ABC RESULTS:              XNOR cells:      138
+ABC RESULTS:               AND cells:       99
+ABC RESULTS:                OR cells:       91
+ABC RESULTS:               XOR cells:      154
+ABC RESULTS:               MUX cells:       33
+ABC RESULTS:               BUF cells:      480
+ABC RESULTS:        internal signals:     1104
+ABC RESULTS:           input signals:       44
+ABC RESULTS:          output signals:       37
+Removing temp directory.
+
+3.32.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$17420$Inst_sha256_control.core_ld
+Extracted 578 gates and 862 wires to a netlist network with 284 inputs and 296 outputs.
+
+3.32.10.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.10.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:       13
+ABC RESULTS:               NOR cells:       26
+ABC RESULTS:              NAND cells:       24
+ABC RESULTS:               AND cells:       12
+ABC RESULTS:                OR cells:      135
+ABC RESULTS:            ANDNOT cells:      111
+ABC RESULTS:               BUF cells:      256
+ABC RESULTS:        internal signals:      282
+ABC RESULTS:           input signals:      284
+ABC RESULTS:          output signals:      296
+Removing temp directory.
+
+3.32.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, synchronously reset by \start_i
+Extracted 68 gates and 98 wires to a netlist network with 30 inputs and 25 outputs.
+
+3.32.11.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.11.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:               MUX cells:        2
+ABC RESULTS:                OR cells:       14
+ABC RESULTS:             ORNOT cells:        4
+ABC RESULTS:               AND cells:       13
+ABC RESULTS:              NAND cells:       17
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:            ANDNOT cells:        5
+ABC RESULTS:        internal signals:       43
+ABC RESULTS:           input signals:       30
+ABC RESULTS:          output signals:       25
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  10 cells in clk=\clk_i, en=$abc$18845$abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+  5 cells in clk=\clk_i, en=$abc$18867$abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, arst={ }, srst=$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+  35 cells in clk=\clk_i, en=$abc$18874$abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, arst={ }, srst=$abc$18874$abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+  39 cells in clk=\clk_i, en=$abc$18923$abc$17362$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$18923$abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+  10 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+  310 cells in clk=\clk_i, en=$abc$18963$abc$12121$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+  3783 cells in clk=\clk_i, en=$abc$19263$abc$12427$Inst_sha256_control.core_ce, arst={ }, srst={ }
+  1142 cells in clk=\clk_i, en=$abc$23071$abc$15700$Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  879 cells in clk=\clk_i, en=$abc$24694$abc$17420$Inst_sha256_control.core_ld, arst={ }, srst={ }
+  62 cells in clk=\clk_i, en=$abc$25531$abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, arst={ }, srst=\start_i
+
+3.33.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18845$abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 10 gates and 19 wires to a netlist network with 8 inputs and 6 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:        internal signals:        5
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        6
+Removing temp directory.
+
+3.33.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18867$abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, synchronously reset by $abc$25595$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.33.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:        internal signals:        3
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.33.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18874$abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, synchronously reset by $abc$18874$abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+Extracted 35 gates and 56 wires to a netlist network with 21 inputs and 17 outputs.
+
+3.33.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:              XNOR cells:        1
+ABC RESULTS:             ORNOT cells:        4
+ABC RESULTS:            ANDNOT cells:        4
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:               AND cells:        7
+ABC RESULTS:              NAND cells:        7
+ABC RESULTS:        internal signals:       18
+ABC RESULTS:           input signals:       21
+ABC RESULTS:          output signals:       17
+Removing temp directory.
+
+3.33.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18923$abc$17362$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$18923$abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 39 gates and 43 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.33.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        7
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:               AND cells:        6
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:        internal signals:       20
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.33.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$25595$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 4 outputs.
+
+3.33.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:                OR cells:        4
+ABC RESULTS:        internal signals:        6
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        4
+Removing temp directory.
+
+3.33.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18963$abc$12121$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$25595$abc$18845$abc$12121$Inst_sha256_control.oregs_ld
+Extracted 310 gates and 356 wires to a netlist network with 46 inputs and 42 outputs.
+
+3.33.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       61
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:               MUX cells:       49
+ABC RESULTS:            ANDNOT cells:       11
+ABC RESULTS:                OR cells:        4
+ABC RESULTS:               AND cells:       82
+ABC RESULTS:              NAND cells:       47
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:       60
+ABC RESULTS:        internal signals:      268
+ABC RESULTS:           input signals:       46
+ABC RESULTS:          output signals:       42
+Removing temp directory.
+
+3.33.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19263$abc$12427$Inst_sha256_control.core_ce
+Extracted 3751 gates and 4338 wires to a netlist network with 587 inputs and 323 outputs.
+
+3.33.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:               NOT cells:       34
+ABC RESULTS:             ORNOT cells:       58
+ABC RESULTS:              NAND cells:     1307
+ABC RESULTS:              XNOR cells:      274
+ABC RESULTS:               XOR cells:      449
+ABC RESULTS:               AND cells:      502
+ABC RESULTS:               MUX cells:       76
+ABC RESULTS:            ANDNOT cells:      213
+ABC RESULTS:                OR cells:      582
+ABC RESULTS:               BUF cells:       55
+ABC RESULTS:        internal signals:     3428
+ABC RESULTS:           input signals:      587
+ABC RESULTS:          output signals:      323
+Removing temp directory.
+
+3.33.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$23071$abc$15700$Inst_sha256_control.sch_ce
+Extracted 1142 gates and 1186 wires to a netlist network with 44 inputs and 37 outputs.
+
+3.33.9.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.9.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      512
+ABC RESULTS:            ANDNOT cells:        2
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:                OR cells:       91
+ABC RESULTS:              NAND cells:      111
+ABC RESULTS:               XOR cells:      154
+ABC RESULTS:               AND cells:       99
+ABC RESULTS:              XNOR cells:      138
+ABC RESULTS:               MUX cells:       33
+ABC RESULTS:               BUF cells:      480
+ABC RESULTS:        internal signals:     1105
+ABC RESULTS:           input signals:       44
+ABC RESULTS:          output signals:       37
+Removing temp directory.
+
+3.33.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$24694$abc$17420$Inst_sha256_control.core_ld
+Extracted 623 gates and 948 wires to a netlist network with 325 inputs and 338 outputs.
+
+3.33.10.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.10.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:              XNOR cells:        2
+ABC RESULTS:               XOR cells:       56
+ABC RESULTS:               NOR cells:       26
+ABC RESULTS:              NAND cells:       26
+ABC RESULTS:                OR cells:      134
+ABC RESULTS:            ANDNOT cells:      111
+ABC RESULTS:               AND cells:       12
+ABC RESULTS:               BUF cells:      256
+ABC RESULTS:        internal signals:      285
+ABC RESULTS:           input signals:      325
+ABC RESULTS:          output signals:      338
+Removing temp directory.
+
+3.33.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$25531$abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, synchronously reset by \start_i
+Extracted 61 gates and 88 wires to a netlist network with 27 inputs and 26 outputs.
+
+3.33.11.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.11.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               MUX cells:        2
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:                OR cells:       14
+ABC RESULTS:               AND cells:       12
+ABC RESULTS:              NAND cells:       16
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:            ANDNOT cells:        5
+ABC RESULTS:        internal signals:       35
+ABC RESULTS:           input signals:       27
+ABC RESULTS:          output signals:       26
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.35.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~44 debug messages>
+
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+<suppressed ~138 debug messages>
+Removed a total of 46 cells.
+
+yosys> opt_muxtree
+
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1391,90 +2560,667 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 18886 unused wires.
+<suppressed ~149 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  48 cells in clk=\clk_i, en=$abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, arst={ }, srst=\start_i
+  1085 cells in clk=\clk_i, en=\Inst_sha256_control.core_ld, arst={ }, srst={ }
+  1140 cells in clk=\clk_i, en=\Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  3532 cells in clk=\clk_i, en=\Inst_sha256_control.core_ce, arst={ }, srst={ }
+  320 cells in clk=\clk_i, en=$abc$12121$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  11 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  38 cells in clk=\clk_i, en=$abc$17362$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+  50 cells in clk=\clk_i, en=$abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, arst={ }, srst=$abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+  4 cells in clk=\clk_i, en=$abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, arst={ }, srst=\Inst_sha256_control.oregs_ld
+  13 cells in clk=\clk_i, en=$abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=\Inst_sha256_control.oregs_ld
+
+3.36.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18777$auto$opt_dff.cc:219:make_patterns_logic$11877, synchronously reset by \start_i
+Extracted 47 gates and 61 wires to a netlist network with 14 inputs and 22 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:               MUX cells:        1
+ABC RESULTS:                OR cells:        6
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:               AND cells:       12
+ABC RESULTS:               NOR cells:        4
+ABC RESULTS:              NAND cells:       10
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:       25
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:       22
+Removing temp directory.
+
+3.36.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$32399$Inst_sha256_control.core_ld
+Extracted 829 gates and 1334 wires to a netlist network with 505 inputs and 514 outputs.
+
+3.36.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:              XNOR cells:        8
+ABC RESULTS:               NOR cells:       26
+ABC RESULTS:               XOR cells:      251
+ABC RESULTS:                OR cells:      135
+ABC RESULTS:            ANDNOT cells:      110
+ABC RESULTS:               BUF cells:      256
+ABC RESULTS:              NAND cells:       34
+ABC RESULTS:               AND cells:       20
+ABC RESULTS:        internal signals:      315
+ABC RESULTS:           input signals:      505
+ABC RESULTS:          output signals:      514
+Removing temp directory.
+
+3.36.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$32399$Inst_sha256_control.sch_ce
+Extracted 1140 gates and 1181 wires to a netlist network with 41 inputs and 33 outputs.
+
+3.36.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      512
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               XOR cells:      154
+ABC RESULTS:                OR cells:       91
+ABC RESULTS:              XNOR cells:      138
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:              NAND cells:      114
+ABC RESULTS:               MUX cells:       62
+ABC RESULTS:               AND cells:      100
+ABC RESULTS:               BUF cells:      480
+ABC RESULTS:        internal signals:     1107
+ABC RESULTS:           input signals:       41
+ABC RESULTS:          output signals:       33
+Removing temp directory.
+
+3.36.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$32399$Inst_sha256_control.core_ce
+Extracted 3500 gates and 3839 wires to a netlist network with 339 inputs and 316 outputs.
+
+3.36.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      256
+ABC RESULTS:               NOT cells:       35
+ABC RESULTS:             ORNOT cells:       57
+ABC RESULTS:              NAND cells:     1238
+ABC RESULTS:              XNOR cells:      298
+ABC RESULTS:               XOR cells:      224
+ABC RESULTS:               AND cells:      519
+ABC RESULTS:               MUX cells:       43
+ABC RESULTS:            ANDNOT cells:      215
+ABC RESULTS:                OR cells:      614
+ABC RESULTS:               BUF cells:      256
+ABC RESULTS:        internal signals:     3184
+ABC RESULTS:           input signals:      339
+ABC RESULTS:          output signals:      316
+Removing temp directory.
+
+3.36.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$12121$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$32399$Inst_sha256_control.oregs_ld
+Extracted 320 gates and 367 wires to a netlist network with 47 inputs and 41 outputs.
+
+3.36.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       61
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:               MUX cells:       41
+ABC RESULTS:            ANDNOT cells:        9
+ABC RESULTS:                OR cells:        4
+ABC RESULTS:               AND cells:       76
+ABC RESULTS:              NAND cells:       68
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:       60
+ABC RESULTS:        internal signals:      279
+ABC RESULTS:           input signals:       47
+ABC RESULTS:          output signals:       41
+Removing temp directory.
+
+3.36.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$32399$Inst_sha256_control.oregs_ld
+Extracted 11 gates and 20 wires to a netlist network with 9 inputs and 4 outputs.
+
+3.36.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:                OR cells:        5
+ABC RESULTS:        internal signals:        7
+ABC RESULTS:           input signals:        9
+ABC RESULTS:          output signals:        4
+Removing temp directory.
+
+3.36.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$17362$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$17362$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.36.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        7
+ABC RESULTS:             ORNOT cells:        7
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:               AND cells:        6
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:              XNOR cells:        3
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:        internal signals:       19
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.36.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18736$auto$opt_dff.cc:219:make_patterns_logic$12065, synchronously reset by $abc$18736$auto$opt_dff.cc:253:combine_resets$1143
+Extracted 50 gates and 83 wires to a netlist network with 33 inputs and 20 outputs.
+
+3.36.9.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.9.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:                OR cells:       12
+ABC RESULTS:             ORNOT cells:        6
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:               NOR cells:        3
+ABC RESULTS:               AND cells:       14
+ABC RESULTS:              NAND cells:       10
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:       30
+ABC RESULTS:           input signals:       33
+ABC RESULTS:          output signals:       20
+Removing temp directory.
+
+3.36.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$18729$auto$opt_dff.cc:219:make_patterns_logic$12093, synchronously reset by $abc$32399$Inst_sha256_control.oregs_ld
+Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.36.10.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.10.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        3
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.36.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$17401$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$32399$Inst_sha256_control.oregs_ld
+Extracted 13 gates and 22 wires to a netlist network with 8 inputs and 6 outputs.
+
+3.36.11.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.11.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:              NAND cells:        3
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:               ONE cells:        1
+ABC RESULTS:        internal signals:        8
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        6
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_8Q4osx/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Extracted 4905 gates and 5937 wires to a netlist network with 1032 inputs and 933 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_8Q4osx/abc_tmp_1.scr 
+ABC:   #Luts =  1605  Max Lvl =  42  Avg Lvl =   5.45  [   0.24 sec. at Pass 0]
+ABC:   #Luts =  1561  Max Lvl =  37  Avg Lvl =   4.92  [  18.89 sec. at Pass 1]
+ABC:   #Luts =  1520  Max Lvl =  32  Avg Lvl =   4.44  [   1.92 sec. at Pass 2]
+ABC:   #Luts =  1520  Max Lvl =  32  Avg Lvl =   4.44  [   3.74 sec. at Pass 3]
+ABC:   #Luts =  1514  Max Lvl =  31  Avg Lvl =   4.31  [   2.55 sec. at Pass 4]
+ABC:   #Luts =  1514  Max Lvl =  31  Avg Lvl =   4.31  [   5.34 sec. at Pass 5]
+ABC:   #Luts =  1511  Max Lvl =  32  Avg Lvl =   4.32  [   3.20 sec. at Pass 6]
+ABC:   #Luts =  1511  Max Lvl =  31  Avg Lvl =   4.36  [   6.38 sec. at Pass 7]
+ABC:   #Luts =  1508  Max Lvl =  31  Avg Lvl =   4.28  [   3.57 sec. at Pass 8]
+ABC:   #Luts =  1508  Max Lvl =  31  Avg Lvl =   4.28  [   6.34 sec. at Pass 9]
+ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.39  [   3.42 sec. at Pass 10]
+ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.39  [   5.96 sec. at Pass 11]
+ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.39  [   3.48 sec. at Pass 12]
+ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.39  [   6.84 sec. at Pass 13]
+ABC:   #Luts =  1503  Max Lvl =  30  Avg Lvl =   4.39  [   0.39 sec. at Pass 14]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     1503
+ABC RESULTS:        internal signals:     3972
+ABC RESULTS:           input signals:     1032
+ABC RESULTS:          output signals:      933
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 13865 unused wires.
+<suppressed ~20 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 1 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:                857
-   Number of wire bits:           7297
-   Number of public wires:         254
-   Number of public wire bits:    6127
+   Number of wires:               2201
+   Number of wire bits:           5305
+   Number of public wires:         136
+   Number of public wire bits:    2673
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               2883
+   Number of cells:               2889
      $_DFFE_PP_                   1024
      $_SDFFE_PP0P_                  73
      $_SDFFE_PP1P_                   1
-     $lut                         1496
+     $lut                         1502
      $mux                            1
      adder_carry                   288
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:               1005
-   Number of wire bits:           7445
-   Number of public wires:         254
-   Number of public wire bits:    6127
+   Number of wires:               2351
+   Number of wire bits:           5455
+   Number of public wires:         136
+   Number of public wire bits:    2673
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               3031
+   Number of cells:               3039
      $_DFFE_PP0P_                 1024
      $_DFF_P_                       74
      $_MUX_                        148
-     $lut                         1496
+     $_NOT_                          2
+     $lut                         1502
      $mux                            1
      adder_carry                   288
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1502,7 +3248,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1571,68 +3317,68 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $lut.
-Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
-Using template \$_DFF_P_ for cells of type $_DFF_P_.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
+Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~3755 debug messages>
+<suppressed ~3761 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~16370 debug messages>
+<suppressed ~16384 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~19092 debug messages>
-Removed a total of 6364 cells.
+<suppressed ~17310 debug messages>
+Removed a total of 5770 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 9118 unused wires.
+Removed 0 unused cells and 9107 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~213 debug messages>
+<suppressed ~162 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
+<suppressed ~9 debug messages>
+Removed a total of 3 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1640,37 +3386,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 7 unused wires.
+Removed 0 unused cells and 43 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1678,92 +3424,81 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_8Q4osx/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Extracted 6619 gates and 7652 wires to a netlist network with 1031 inputs and 924 outputs.
+3.53.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Extracted 6478 gates and 7511 wires to a netlist network with 1031 inputs and 924 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/securehash256bits/abc_tmp.scr 
-ABC:   #Luts =  1522  Max Lvl =  32  Avg Lvl =   4.55  [   0.96 sec. at Pass 0]
-ABC:   #Luts =  1522  Max Lvl =  32  Avg Lvl =   4.55  [  34.66 sec. at Pass 1]
-ABC:   #Luts =  1516  Max Lvl =  32  Avg Lvl =   4.53  [   5.15 sec. at Pass 2]
-ABC:   #Luts =  1512  Max Lvl =  32  Avg Lvl =   4.41  [  17.73 sec. at Pass 3]
-ABC:   #Luts =  1511  Max Lvl =  32  Avg Lvl =   4.37  [   5.24 sec. at Pass 4]
-ABC:   #Luts =  1510  Max Lvl =  31  Avg Lvl =   4.53  [  25.67 sec. at Pass 5]
-ABC:   #Luts =  1510  Max Lvl =  30  Avg Lvl =   4.38  [   8.51 sec. at Pass 6]
-ABC:   #Luts =  1509  Max Lvl =  30  Avg Lvl =   4.40  [  27.83 sec. at Pass 7]
-ABC:   #Luts =  1505  Max Lvl =  31  Avg Lvl =   5.03  [   7.91 sec. at Pass 8]
-ABC:   #Luts =  1505  Max Lvl =  31  Avg Lvl =   5.03  [  27.37 sec. at Pass 9]
-ABC:   #Luts =  1505  Max Lvl =  30  Avg Lvl =   4.96  [   6.09 sec. at Pass 10]
-ABC:   #Luts =  1505  Max Lvl =  30  Avg Lvl =   4.96  [  22.68 sec. at Pass 11]
-ABC:   #Luts =  1498  Max Lvl =  30  Avg Lvl =   5.04  [   6.01 sec. at Pass 12]
-ABC:   #Luts =  1498  Max Lvl =  30  Avg Lvl =   5.04  [  23.66 sec. at Pass 13]
-ABC:   #Luts =  1494  Max Lvl =  30  Avg Lvl =   5.05  [   6.58 sec. at Pass 14]
-ABC:   #Luts =  1494  Max Lvl =  30  Avg Lvl =   5.05  [  25.01 sec. at Pass 15]
-ABC:   #Luts =  1494  Max Lvl =  30  Avg Lvl =   5.05  [   5.99 sec. at Pass 16]
-ABC:   #Luts =  1494  Max Lvl =  30  Avg Lvl =   5.05  [  16.31 sec. at Pass 17]
+ABC: + source /tmp/yosys_8Q4osx/abc_tmp_2.scr 
+ABC:   #Luts =  1526  Max Lvl =  31  Avg Lvl =   4.52  [   0.54 sec. at Pass 0]
+ABC:   #Luts =  1526  Max Lvl =  31  Avg Lvl =   4.52  [  21.64 sec. at Pass 1]
+ABC:   #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.28  [   2.89 sec. at Pass 2]
+ABC:   #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.28  [   5.10 sec. at Pass 3]
+ABC:   #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.28  [   2.96 sec. at Pass 4]
+ABC:   #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.28  [   5.48 sec. at Pass 5]
+ABC:   #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.28  [   0.44 sec. at Pass 6]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     1494
-ABC RESULTS:        internal signals:     5697
+3.53.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     1517
+ABC RESULTS:        internal signals:     5556
 ABC RESULTS:           input signals:     1031
 ABC RESULTS:          output signals:      924
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1771,37 +3506,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 5092 unused wires.
-<suppressed ~9 debug messages>
+Removed 0 unused cells and 5064 unused wires.
+<suppressed ~6 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1809,87 +3544,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \gv_sha256
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \gv_sha256
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:                917
-   Number of wire bits:           7349
-   Number of public wires:         246
-   Number of public wire bits:    6111
+   Number of wires:               2210
+   Number of wire bits:           5314
+   Number of public wires:         131
+   Number of public wire bits:    2668
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               2880
-     $lut                         1494
+   Number of cells:               2903
+     $lut                         1517
      adder_carry                   288
      dffsre                       1098
 
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 168 unused wires.
-<suppressed ~168 debug messages>
+Removed 0 unused cells and 99 unused wires.
+<suppressed ~99 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\gv_sha256'.
 
-End of script. Logfile hash: 52b88214d4, CPU: user 35.02s system 0.15s, MEM: 90.09 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 99% 2x abc (5149 sec), 0% 23x opt_dff (10 sec), ...
-real 800.86
-user 4877.16
-sys 306.96
+End of script. Logfile hash: 5958eab8e8, CPU: user 39.70s system 0.48s, MEM: 88.52 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 95% 6x abc (847 sec), 1% 25x opt_dff (14 sec), ...
+real 161.45
+user 823.24
+sys 60.81

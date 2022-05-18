@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -56,7 +56,7 @@ VERIFIC-INFO [VHDL-1010] rtea.vhdl:34: analyzing architecture 'behave'
 
 yosys> synth_rs -top rtea -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -81,6 +81,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top rtea
@@ -611,55 +618,78 @@ Optimizing module rtea.
 
 3.19.16. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== rtea ===
+
+   Number of wires:                 54
+   Number of wire bits:            839
+   Number of public wires:          14
+   Number of public wire bits:     370
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 43
+     $alu                            2
+     $dffe                           5
+     $eq                             3
+     $logic_not                      2
+     $macc                           2
+     $mux                           17
+     $ne                             4
+     $not                            1
+     $reduce_and                     3
+     $reduce_bool                    1
+     $sdffe                          1
+     $xor                            2
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \rtea..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -689,11 +719,44 @@ yosys> stat
      $xor                            2
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rtea..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== rtea ===
+
+   Number of wires:                 54
+   Number of wire bits:            839
+   Number of public wires:          14
+   Number of public wire bits:     370
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 43
+     $alu                            2
+     $dffe                           5
+     $eq                             3
+     $logic_not                      2
+     $macc                           2
+     $mux                           17
+     $ne                             4
+     $not                            1
+     $reduce_and                     3
+     $reduce_bool                    1
+     $sdffe                          1
+     $xor                            2
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -721,12 +784,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $reduce_and.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $ne.
@@ -764,7 +827,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === rtea ===
 
@@ -789,24 +852,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 <suppressed ~464 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 <suppressed ~114 debug messages>
 Removed a total of 38 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -814,38 +877,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding SRST signal on $auto$ff.cc:262:slice$319 ($_DFFE_PP_) from module rtea (D = $verific$n1159$56 [4], Q = \round [4], rval = 1'0).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 Removed 104 unused cells and 257 unused wires.
 <suppressed ~105 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -853,66 +916,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module rtea.
-<suppressed ~80 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\rtea'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \rtea..
-Removed 0 unused cells and 7 unused wires.
-<suppressed ~1 debug messages>
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -920,147 +950,36 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
+<suppressed ~80 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \rtea..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \rtea.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\rtea'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:278:simplemap_mux$720 in front of them:
-        $auto$simplemap.cc:86:simplemap_bitop$1066
-        $auto$simplemap.cc:86:simplemap_bitop$1133
-
-
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
-
-yosys> opt_expr -full
-
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module rtea.
+Removed 0 unused cells and 7 unused wires.
 <suppressed ~1 debug messages>
 
-3.28.10. Rerunning OPT passes. (Maybe there is more to do..)
+3.28.5. Finished fast OPT passes.
 
-yosys> opt_muxtree
+yosys> memory_map
 
-3.28.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \rtea..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> opt_reduce -full
-
-3.28.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \rtea.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\rtea'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.28.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \rtea..
-
-yosys> opt_expr -full
-
-3.28.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module rtea.
-
-3.28.18. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
-Extracted 1493 gates and 1791 wires to a netlist network with 298 inputs and 136 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/rtea/abc_tmp.scr 
-ABC:   #Luts =   494  Max Lvl =  13  Avg Lvl =   4.15  [   0.39 sec. at Pass 0]
-ABC:   #Luts =   440  Max Lvl =  22  Avg Lvl =   4.77  [   7.51 sec. at Pass 1]
-ABC:   #Luts =   431  Max Lvl =  22  Avg Lvl =   4.75  [   1.17 sec. at Pass 2]
-ABC:   #Luts =   418  Max Lvl =  23  Avg Lvl =   4.74  [   7.87 sec. at Pass 3]
-ABC:   #Luts =   413  Max Lvl =  22  Avg Lvl =   4.69  [   2.47 sec. at Pass 4]
-ABC:   #Luts =   412  Max Lvl =  22  Avg Lvl =   4.71  [  13.48 sec. at Pass 5]
-ABC:   #Luts =   411  Max Lvl =  21  Avg Lvl =   4.69  [   3.06 sec. at Pass 6]
-ABC:   #Luts =   405  Max Lvl =  21  Avg Lvl =   4.67  [  12.91 sec. at Pass 7]
-ABC:   #Luts =   405  Max Lvl =  21  Avg Lvl =   4.67  [   3.50 sec. at Pass 8]
-ABC:   #Luts =   405  Max Lvl =  21  Avg Lvl =   4.67  [  16.35 sec. at Pass 9]
-ABC:   #Luts =   404  Max Lvl =  21  Avg Lvl =   4.68  [   3.06 sec. at Pass 10]
-ABC:   #Luts =   402  Max Lvl =  21  Avg Lvl =   4.76  [  15.64 sec. at Pass 11]
-ABC:   #Luts =   402  Max Lvl =  21  Avg Lvl =   4.76  [   4.05 sec. at Pass 12]
-ABC:   #Luts =   402  Max Lvl =  21  Avg Lvl =   4.76  [  19.29 sec. at Pass 13]
-ABC:   #Luts =   401  Max Lvl =  21  Avg Lvl =   4.76  [   4.42 sec. at Pass 14]
-ABC:   #Luts =   401  Max Lvl =  21  Avg Lvl =   4.76  [  17.79 sec. at Pass 15]
-ABC:   #Luts =   401  Max Lvl =  21  Avg Lvl =   4.76  [   3.35 sec. at Pass 16]
-ABC:   #Luts =   401  Max Lvl =  21  Avg Lvl =   4.76  [  14.93 sec. at Pass 17]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      401
-ABC RESULTS:        internal signals:     1357
-ABC RESULTS:           input signals:      298
-ABC RESULTS:          output signals:      136
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
@@ -1076,12 +995,10 @@ yosys> opt_muxtree
 3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
+  No muxes found in this module.
 Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
@@ -1093,27 +1010,841 @@ yosys> opt_merge
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:278:simplemap_mux$720 in front of them:
+        $auto$simplemap.cc:86:simplemap_bitop$1066
+        $auto$simplemap.cc:86:simplemap_bitop$1133
+
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
-Removed 0 unused cells and 540 unused wires.
-<suppressed ~2 debug messages>
 
-yosys> opt_expr
+yosys> opt_expr -full
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.30.9. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
+<suppressed ~1 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rtea..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce -full
+
+3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rtea.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.30.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.30.14. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rtea..
+
+yosys> opt_expr -full
+
+3.30.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+
+3.30.18. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  5 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$136, arst={ }, srst=!\start
+  1523 cells in clk=\clk, en=$auto$opt_dff.cc:194:make_patterns_logic$146, arst={ }, srst={ }
+  22 cells in clk=\clk, en=!\start, arst={ }, srst={ }
+  65 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$155, arst={ }, srst={ }
+  39 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst={ }
+  8 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst=!\start
+
+3.31.2. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$136, synchronously reset by !\start
+Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 2 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:        2
+Removing temp directory.
+
+3.31.3. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$146
+Extracted 1491 gates and 1733 wires to a netlist network with 242 inputs and 125 outputs.
+
+3.31.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               MUX cells:      156
+ABC RESULTS:                OR cells:       83
+ABC RESULTS:            ANDNOT cells:        8
+ABC RESULTS:               XOR cells:      182
+ABC RESULTS:              XNOR cells:      262
+ABC RESULTS:             ORNOT cells:       90
+ABC RESULTS:               AND cells:      142
+ABC RESULTS:              NAND cells:      443
+ABC RESULTS:               BUF cells:       64
+ABC RESULTS:        internal signals:     1366
+ABC RESULTS:           input signals:      242
+ABC RESULTS:          output signals:      125
+Removing temp directory.
+
+3.31.4. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !\start
+Extracted 21 gates and 38 wires to a netlist network with 17 inputs and 11 outputs.
+
+3.31.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 1 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               XOR cells:        4
+ABC RESULTS:               MUX cells:        4
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:       10
+ABC RESULTS:           input signals:       17
+ABC RESULTS:          output signals:       11
+Removing temp directory.
+
+3.31.5. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$155
+Extracted 65 gates and 131 wires to a netlist network with 66 inputs and 65 outputs.
+
+3.31.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:       66
+ABC RESULTS:          output signals:       65
+Removing temp directory.
+
+3.31.6. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$143
+Extracted 39 gates and 51 wires to a netlist network with 12 inputs and 23 outputs.
+
+3.31.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 5 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:              XNOR cells:        2
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:               XOR cells:        2
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        5
+ABC RESULTS:                OR cells:       10
+ABC RESULTS:        internal signals:       16
+ABC RESULTS:           input signals:       12
+ABC RESULTS:          output signals:       23
+Removing temp directory.
+
+3.31.7. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, synchronously reset by !\start
+Extracted 8 gates and 13 wires to a netlist network with 5 inputs and 6 outputs.
+
+3.31.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:              XNOR cells:        1
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        5
+ABC RESULTS:          output signals:        6
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  145 cells in clk=\clk, en=!\start, arst={ }, srst={ }
+  5 cells in clk=\clk, en=$abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, arst={ }, srst=!\start
+  41 cells in clk=\clk, en=$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst={ }
+  1330 cells in clk=\clk, en=$abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146, arst={ }, srst={ }
+  65 cells in clk=\clk, en=$abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155, arst={ }, srst={ }
+  9 cells in clk=\clk, en=$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst=!\start
+
+3.32.2. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !\start
+Extracted 137 gates and 252 wires to a netlist network with 115 inputs and 55 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 1 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:        3
+ABC RESULTS:               XOR cells:        5
+ABC RESULTS:                OR cells:       11
+ABC RESULTS:               MUX cells:       25
+ABC RESULTS:              NAND cells:       30
+ABC RESULTS:               AND cells:       15
+ABC RESULTS:              XNOR cells:       40
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:       82
+ABC RESULTS:           input signals:      115
+ABC RESULTS:          output signals:       55
+Removing temp directory.
+
+3.32.3. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, synchronously reset by !\start
+Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 2 outputs.
+
+3.32.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.3.2. Re-integrating ABC results.
+ABC RESULTS:               MUX cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        4
+ABC RESULTS:          output signals:        2
+Removing temp directory.
+
+3.32.4. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143
+Extracted 41 gates and 55 wires to a netlist network with 14 inputs and 25 outputs.
+
+3.32.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 5 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:              NAND cells:        3
+ABC RESULTS:               XOR cells:        4
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:                OR cells:       11
+ABC RESULTS:        internal signals:       16
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:       25
+Removing temp directory.
+
+3.32.5. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146
+Extracted 1305 gates and 1557 wires to a netlist network with 252 inputs and 177 outputs.
+
+3.32.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:       14
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:            ANDNOT cells:       16
+ABC RESULTS:               XOR cells:      185
+ABC RESULTS:              XNOR cells:      190
+ABC RESULTS:               MUX cells:      138
+ABC RESULTS:                OR cells:       84
+ABC RESULTS:             ORNOT cells:       95
+ABC RESULTS:               AND cells:      143
+ABC RESULTS:              NAND cells:      380
+ABC RESULTS:               BUF cells:       64
+ABC RESULTS:        internal signals:     1128
+ABC RESULTS:           input signals:      252
+ABC RESULTS:          output signals:      177
+Removing temp directory.
+
+3.32.6. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155
+Extracted 65 gates and 131 wires to a netlist network with 66 inputs and 65 outputs.
+
+3.32.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:       66
+ABC RESULTS:          output signals:       65
+Removing temp directory.
+
+3.32.7. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4750$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, synchronously reset by !\start
+Extracted 9 gates and 17 wires to a netlist network with 8 inputs and 7 outputs.
+
+3.32.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:                OR cells:        3
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        7
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  352 cells in clk=\clk, en=!\start, arst={ }, srst={ }
+  8 cells in clk=\clk, en=$abc$4746$abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, arst={ }, srst=!\start
+  38 cells in clk=\clk, en=$abc$4750$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst={ }
+  1127 cells in clk=\clk, en=$abc$4793$abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146, arst={ }, srst={ }
+  65 cells in clk=\clk, en=$abc$6169$abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155, arst={ }, srst={ }
+  10 cells in clk=\clk, en=$abc$4750$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst=!\start
+
+3.33.2. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !\start
+Extracted 330 gates and 571 wires to a netlist network with 241 inputs and 135 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 1 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:             ORNOT cells:       28
+ABC RESULTS:                OR cells:       23
+ABC RESULTS:               MUX cells:       62
+ABC RESULTS:               AND cells:       27
+ABC RESULTS:            ANDNOT cells:       10
+ABC RESULTS:               XOR cells:       33
+ABC RESULTS:              XNOR cells:       67
+ABC RESULTS:              NAND cells:       63
+ABC RESULTS:               NOT cells:        9
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:      195
+ABC RESULTS:           input signals:      241
+ABC RESULTS:          output signals:      135
+Removing temp directory.
+
+3.33.3. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4746$abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, synchronously reset by !\start
+Extracted 7 gates and 15 wires to a netlist network with 8 inputs and 4 outputs.
+
+3.33.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.3.2. Re-integrating ABC results.
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               MUX cells:        1
+ABC RESULTS:        internal signals:        3
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        4
+Removing temp directory.
+
+3.33.4. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4750$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143
+Extracted 38 gates and 52 wires to a netlist network with 14 inputs and 24 outputs.
+
+3.33.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 5 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:               XOR cells:        6
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:                OR cells:        7
+ABC RESULTS:        internal signals:       14
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:       24
+Removing temp directory.
+
+3.33.5. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4793$abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146
+Extracted 1116 gates and 1376 wires to a netlist network with 260 inputs and 199 outputs.
+
+3.33.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:        9
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:       13
+ABC RESULTS:               XOR cells:      169
+ABC RESULTS:             ORNOT cells:       66
+ABC RESULTS:              XNOR cells:      144
+ABC RESULTS:                OR cells:       74
+ABC RESULTS:              NAND cells:      340
+ABC RESULTS:               AND cells:      124
+ABC RESULTS:               MUX cells:      108
+ABC RESULTS:               BUF cells:       64
+ABC RESULTS:        internal signals:      917
+ABC RESULTS:           input signals:      260
+ABC RESULTS:          output signals:      199
+Removing temp directory.
+
+3.33.6. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6169$abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155
+Extracted 65 gates and 131 wires to a netlist network with 66 inputs and 65 outputs.
+
+3.33.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:       66
+ABC RESULTS:          output signals:       65
+Removing temp directory.
+
+3.33.7. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6710$abc$4750$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, synchronously reset by !\start
+Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 7 outputs.
+
+3.33.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:                OR cells:        3
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:        internal signals:        3
+ABC RESULTS:           input signals:        8
+ABC RESULTS:          output signals:        7
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.35.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+<suppressed ~2 debug messages>
+
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+yosys> opt_muxtree
+
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1123,92 +1854,544 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rtea..
+Removed 0 unused cells and 5512 unused wires.
+<suppressed ~2 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rtea..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rtea.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rtea..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  8 cells in clk=\clk, en=$abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, arst={ }, srst=!\start
+  18 cells in clk=\clk, en=$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst=!\start
+  65 cells in clk=\clk, en=$abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155, arst={ }, srst={ }
+  1232 cells in clk=\clk, en=$abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146, arst={ }, srst={ }
+  28 cells in clk=\clk, en=$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, arst={ }, srst={ }
+  235 cells in clk=\clk, en=!\start, arst={ }, srst={ }
+
+3.36.2. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$2836$auto$opt_dff.cc:219:make_patterns_logic$136, synchronously reset by !\start
+Extracted 7 gates and 16 wires to a netlist network with 9 inputs and 5 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:        2
+ABC RESULTS:               MUX cells:        1
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:        internal signals:        2
+ABC RESULTS:           input signals:        9
+ABC RESULTS:          output signals:        5
+Removing temp directory.
+
+3.36.3. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143, synchronously reset by !\start
+Extracted 18 gates and 32 wires to a netlist network with 14 inputs and 9 outputs.
+
+3.36.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOT cells:        1
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:            ANDNOT cells:        1
+ABC RESULTS:               AND cells:        4
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:                OR cells:        4
+ABC RESULTS:               XOR cells:        2
+ABC RESULTS:        internal signals:        9
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:        9
+Removing temp directory.
+
+3.36.4. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4359$auto$opt_dff.cc:219:make_patterns_logic$155
+Extracted 65 gates and 131 wires to a netlist network with 66 inputs and 65 outputs.
+
+3.36.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               AND cells:        1
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:       66
+ABC RESULTS:          output signals:       65
+Removing temp directory.
+
+3.36.5. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$8134$abc$2840$auto$opt_dff.cc:194:make_patterns_logic$146
+Extracted 1201 gates and 1506 wires to a netlist network with 305 inputs and 219 outputs.
+
+3.36.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 64 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:       16
+ABC RESULTS:               NOR cells:        8
+ABC RESULTS:            ANDNOT cells:       21
+ABC RESULTS:               XOR cells:      151
+ABC RESULTS:              XNOR cells:      192
+ABC RESULTS:               MUX cells:      164
+ABC RESULTS:                OR cells:       72
+ABC RESULTS:             ORNOT cells:       88
+ABC RESULTS:               AND cells:      109
+ABC RESULTS:              NAND cells:      310
+ABC RESULTS:               BUF cells:       64
+ABC RESULTS:        internal signals:      982
+ABC RESULTS:           input signals:      305
+ABC RESULTS:          output signals:      219
+Removing temp directory.
+
+3.36.6. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$8142$abc$4553$auto$opt_dff.cc:219:make_patterns_logic$143
+Extracted 27 gates and 34 wires to a netlist network with 7 inputs and 19 outputs.
+
+3.36.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 5 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        5
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:                OR cells:        3
+ABC RESULTS:               AND cells:        3
+ABC RESULTS:               XOR cells:        4
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:               BUF cells:        5
+ABC RESULTS:        internal signals:        8
+ABC RESULTS:           input signals:        7
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.36.7. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !\start
+Extracted 234 gates and 347 wires to a netlist network with 113 inputs and 76 outputs.
+
+3.36.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 1 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:            ANDNOT cells:        5
+ABC RESULTS:               NOT cells:       12
+ABC RESULTS:             ORNOT cells:       15
+ABC RESULTS:               XOR cells:       39
+ABC RESULTS:               MUX cells:        7
+ABC RESULTS:                OR cells:       14
+ABC RESULTS:              XNOR cells:       36
+ABC RESULTS:              NAND cells:       90
+ABC RESULTS:               AND cells:       21
+ABC RESULTS:               BUF cells:        2
+ABC RESULTS:        internal signals:      158
+ABC RESULTS:           input signals:      113
+ABC RESULTS:          output signals:       76
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_I6NkmS/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Extracted 1417 gates and 1715 wires to a netlist network with 298 inputs and 136 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_I6NkmS/abc_tmp_1.scr 
+ABC:   #Luts =   461  Max Lvl =  33  Avg Lvl =   6.21  [   0.10 sec. at Pass 0]
+ABC:   #Luts =   430  Max Lvl =  25  Avg Lvl =   4.94  [   3.95 sec. at Pass 1]
+ABC:   #Luts =   415  Max Lvl =  22  Avg Lvl =   4.85  [   0.80 sec. at Pass 2]
+ABC:   #Luts =   415  Max Lvl =  22  Avg Lvl =   4.85  [   1.20 sec. at Pass 3]
+ABC:   #Luts =   413  Max Lvl =  23  Avg Lvl =   5.10  [   1.01 sec. at Pass 4]
+ABC:   #Luts =   413  Max Lvl =  23  Avg Lvl =   5.10  [   1.80 sec. at Pass 5]
+ABC:   #Luts =   412  Max Lvl =  24  Avg Lvl =   5.02  [   1.04 sec. at Pass 6]
+ABC:   #Luts =   412  Max Lvl =  24  Avg Lvl =   5.02  [   1.78 sec. at Pass 7]
+ABC:   #Luts =   409  Max Lvl =  23  Avg Lvl =   5.04  [   1.00 sec. at Pass 8]
+ABC:   #Luts =   409  Max Lvl =  23  Avg Lvl =   5.04  [   2.03 sec. at Pass 9]
+ABC:   #Luts =   409  Max Lvl =  23  Avg Lvl =   5.04  [   0.99 sec. at Pass 10]
+ABC:   #Luts =   409  Max Lvl =  23  Avg Lvl =   5.04  [   1.79 sec. at Pass 11]
+ABC:   #Luts =   404  Max Lvl =  24  Avg Lvl =   4.99  [   8.32 sec. at Pass 12]
+ABC:   #Luts =   404  Max Lvl =  24  Avg Lvl =   4.99  [   1.23 sec. at Pass 13]
+ABC:   #Luts =   404  Max Lvl =  24  Avg Lvl =   4.99  [   2.10 sec. at Pass 14]
+ABC:   #Luts =   404  Max Lvl =  24  Avg Lvl =   4.99  [   1.08 sec. at Pass 15]
+ABC:   #Luts =   402  Max Lvl =  24  Avg Lvl =   5.11  [   8.48 sec. at Pass 16]
+ABC:   #Luts =   402  Max Lvl =  24  Avg Lvl =   5.11  [   2.35 sec. at Pass 17]
+ABC:   #Luts =   400  Max Lvl =  24  Avg Lvl =   5.15  [   1.16 sec. at Pass 18]
+ABC:   #Luts =   400  Max Lvl =  24  Avg Lvl =   5.15  [   2.14 sec. at Pass 19]
+ABC:   #Luts =   400  Max Lvl =  24  Avg Lvl =   5.15  [   1.09 sec. at Pass 20]
+ABC:   #Luts =   400  Max Lvl =  24  Avg Lvl =   5.15  [   2.12 sec. at Pass 21]
+ABC:   #Luts =   396  Max Lvl =  25  Avg Lvl =   5.18  [   8.88 sec. at Pass 22]
+ABC:   #Luts =   396  Max Lvl =  25  Avg Lvl =   5.18  [   1.09 sec. at Pass 23]
+ABC:   #Luts =   396  Max Lvl =  25  Avg Lvl =   5.18  [   2.02 sec. at Pass 24]
+ABC:   #Luts =   396  Max Lvl =  25  Avg Lvl =   5.18  [   1.17 sec. at Pass 25]
+ABC:   #Luts =   395  Max Lvl =  24  Avg Lvl =   5.21  [   9.19 sec. at Pass 26]
+ABC:   #Luts =   395  Max Lvl =  24  Avg Lvl =   5.21  [   2.10 sec. at Pass 27]
+ABC:   #Luts =   395  Max Lvl =  24  Avg Lvl =   5.21  [   1.03 sec. at Pass 28]
+ABC:   #Luts =   395  Max Lvl =  24  Avg Lvl =   5.21  [   1.49 sec. at Pass 29]
+ABC:   #Luts =   395  Max Lvl =  24  Avg Lvl =   5.21  [   0.20 sec. at Pass 30]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      395
+ABC RESULTS:        internal signals:     1281
+ABC RESULTS:           input signals:      298
+ABC RESULTS:          output signals:      136
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rtea..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rtea.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rtea..
+Removed 0 unused cells and 3972 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rtea.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rtea..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~1 debug messages>
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rtea.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rtea'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === rtea ===
 
-   Number of wires:                359
-   Number of wire bits:            814
+   Number of wires:                356
+   Number of wire bits:            811
    Number of public wires:          13
    Number of public wire bits:     338
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                570
+   Number of cells:                564
      $_DFFE_PN_                      1
      $_DFFE_PP_                    133
-     $_SDFFCE_PN0P_                  1
+     $_SDFFE_PN0P_                   1
      $_SDFFE_PN1P_                   1
-     $lut                          401
+     $lut                          395
      $mux                            1
      adder_carry                    32
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === rtea ===
 
-   Number of wires:                362
-   Number of wire bits:            817
+   Number of wires:                360
+   Number of wire bits:            815
    Number of public wires:          13
    Number of public wire bits:     338
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                573
+   Number of cells:                568
      $_DFFE_PP0N_                    1
-     $_DFFE_PP0P_                  134
-     $_DFF_P_                        1
-     $_MUX_                          3
-     $lut                          401
+     $_DFFE_PP0P_                  133
+     $_DFF_P_                        2
+     $_MUX_                          4
+     $lut                          395
      $mux                            1
      adder_carry                    32
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1236,7 +2419,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1305,68 +2488,69 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $lut.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using extmapper simplemap for cells of type $lut.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using template \$_DFFE_PP0N_ for cells of type $_DFFE_PP0N_.
-Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~810 debug messages>
+<suppressed ~803 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
-<suppressed ~8764 debug messages>
+<suppressed ~8475 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
-<suppressed ~8343 debug messages>
-Removed a total of 2781 cells.
+<suppressed ~9276 debug messages>
+Removed a total of 3092 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
-Removed 0 unused cells and 1670 unused wires.
+Removed 0 unused cells and 1651 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
-<suppressed ~75 debug messages>
+<suppressed ~72 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
-Removed a total of 0 cells.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1374,37 +2558,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
-Removed 0 unused cells and 23 unused wires.
+Removed 0 unused cells and 13 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1412,83 +2596,94 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_I6NkmS/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
-Extracted 2569 gates and 2868 wires to a netlist network with 297 inputs and 136 outputs.
+3.53.1. Extracting gate netlist of module `\rtea' to `<abc-temp-dir>/input.blif'..
+Extracted 2551 gates and 2850 wires to a netlist network with 297 inputs and 136 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/rtea/abc_tmp.scr 
-ABC:   #Luts =   407  Max Lvl =  21  Avg Lvl =   4.77  [   0.30 sec. at Pass 0]
-ABC:   #Luts =   407  Max Lvl =  20  Avg Lvl =   4.71  [  14.73 sec. at Pass 1]
-ABC:   #Luts =   404  Max Lvl =  20  Avg Lvl =   4.66  [   2.21 sec. at Pass 2]
-ABC:   #Luts =   402  Max Lvl =  20  Avg Lvl =   4.79  [  12.89 sec. at Pass 3]
-ABC:   #Luts =   402  Max Lvl =  20  Avg Lvl =   4.79  [   3.38 sec. at Pass 4]
-ABC:   #Luts =   397  Max Lvl =  20  Avg Lvl =   4.85  [  17.06 sec. at Pass 5]
-ABC:   #Luts =   397  Max Lvl =  20  Avg Lvl =   4.85  [   4.01 sec. at Pass 6]
-ABC:   #Luts =   397  Max Lvl =  20  Avg Lvl =   4.85  [  22.34 sec. at Pass 7]
-ABC:   #Luts =   397  Max Lvl =  20  Avg Lvl =   4.85  [   3.77 sec. at Pass 8]
+ABC: + source /tmp/yosys_I6NkmS/abc_tmp_2.scr 
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   0.20 sec. at Pass 0]
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   7.01 sec. at Pass 1]
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   1.12 sec. at Pass 2]
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   2.21 sec. at Pass 3]
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   1.68 sec. at Pass 4]
+ABC:   #Luts =   399  Max Lvl =  25  Avg Lvl =   5.32  [   2.75 sec. at Pass 5]
+ABC:   #Luts =   397  Max Lvl =  25  Avg Lvl =   5.25  [  11.96 sec. at Pass 6]
+ABC:   #Luts =   397  Max Lvl =  25  Avg Lvl =   5.25  [   1.63 sec. at Pass 7]
+ABC:   #Luts =   397  Max Lvl =  25  Avg Lvl =   5.25  [   2.62 sec. at Pass 8]
+ABC:   #Luts =   397  Max Lvl =  25  Avg Lvl =   5.25  [   1.63 sec. at Pass 9]
+ABC:   #Luts =   397  Max Lvl =  23  Avg Lvl =   5.19  [  10.92 sec. at Pass 10]
+ABC:   #Luts =   397  Max Lvl =  23  Avg Lvl =   5.19  [   2.32 sec. at Pass 11]
+ABC:   #Luts =   397  Max Lvl =  23  Avg Lvl =   5.19  [   1.09 sec. at Pass 12]
+ABC:   #Luts =   397  Max Lvl =  23  Avg Lvl =   5.19  [   2.14 sec. at Pass 13]
+ABC:   #Luts =   396  Max Lvl =  23  Avg Lvl =   5.18  [  10.14 sec. at Pass 14]
+ABC:   #Luts =   396  Max Lvl =  23  Avg Lvl =   5.18  [   1.15 sec. at Pass 15]
+ABC:   #Luts =   396  Max Lvl =  23  Avg Lvl =   5.18  [   2.22 sec. at Pass 16]
+ABC:   #Luts =   396  Max Lvl =  23  Avg Lvl =   5.18  [   1.24 sec. at Pass 17]
+ABC:   #Luts =   396  Max Lvl =  23  Avg Lvl =   5.18  [   9.85 sec. at Pass 18]
+ABC:   #Luts =   395  Max Lvl =  23  Avg Lvl =   5.08  [   0.20 sec. at Pass 19]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      397
-ABC RESULTS:        internal signals:     2435
+3.53.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      395
+ABC RESULTS:        internal signals:     2417
 ABC RESULTS:           input signals:      297
 ABC RESULTS:          output signals:      136
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1496,37 +2691,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
-Removed 0 unused cells and 1734 unused wires.
+Removed 0 unused cells and 1746 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \rtea..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1534,87 +2729,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \rtea.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\rtea'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module rtea.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \rtea
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \rtea
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === rtea ===
 
-   Number of wires:                355
-   Number of wire bits:            810
+   Number of wires:                356
+   Number of wire bits:            811
    Number of public wires:          13
    Number of public wire bits:     338
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                565
-     $lut                          397
+   Number of cells:                563
+     $lut                          395
      adder_carry                    32
      dffsre                        136
 
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \rtea..
 Removed 0 unused cells and 2 unused wires.
 <suppressed ~2 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\rtea'.
 
-End of script. Logfile hash: 1bebe276e4, CPU: user 6.25s system 0.07s, MEM: 41.29 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 99% 2x abc (1041 sec), 0% 34x opt_expr (2 sec), ...
-real 256.28
-user 976.26
-sys 71.92
+End of script. Logfile hash: 7320ac1c43, CPU: user 6.29s system 0.17s, MEM: 44.86 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 99% 6x abc (1779 sec), 0% 37x opt_expr (2 sec), ...
+real 161.40
+user 1686.39
+sys 99.09

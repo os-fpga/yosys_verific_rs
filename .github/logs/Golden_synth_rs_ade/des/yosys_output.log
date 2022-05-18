@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -61,7 +61,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'sbox8.v'
 
 yosys> synth_rs -top des3 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -86,6 +86,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top des3
@@ -759,55 +766,70 @@ Optimizing module des3.
 
 3.19.9. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== des3 ===
+
+   Number of wires:               1477
+   Number of wire bits:          33268
+   Number of public wires:        1432
+   Number of public wire bits:   31828
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                725
+     $bmux                         384
+     $dff                          195
+     $mux                           50
+     $xor                           96
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \des3..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -829,11 +851,36 @@ yosys> stat
      $xor                           96
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \des3..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== des3 ===
+
+   Number of wires:               1477
+   Number of wire bits:          33268
+   Number of public wires:        1432
+   Number of public wire bits:   31828
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                725
+     $bmux                         384
+     $dff                          195
+     $mux                           50
+     $xor                           96
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -861,12 +908,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $dff.
 Using extmapper simplemap for cells of type $xor.
@@ -876,7 +923,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === des3 ===
 
@@ -895,24 +942,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 <suppressed ~36912 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 <suppressed ~102528 debug messages>
 Removed a total of 34176 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -920,38 +967,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 Removed 0 unused cells and 384 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 <suppressed ~768 debug messages>
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -959,37 +1006,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 Removed 0 unused cells and 1 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.25.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -997,64 +1044,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.19. Executing OPT_MERGE pass (detect identical cells).
+3.27.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> opt_expr
 
-3.25.22. Executing OPT_EXPR pass (perform const folding).
+3.27.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.25.23. Finished OPT passes. (There is nothing left to do.)
+3.27.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module des3.
-<suppressed ~1584 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\des3'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \des3..
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -1062,88 +1078,34 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
+<suppressed ~1584 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \des3..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \des3.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\des3'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
-yosys> opt_expr -full
+3.28.5. Finished fast OPT passes.
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module des3.
+yosys> memory_map
 
-3.28.10. Finished OPT passes. (There is nothing left to do.)
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
-Extracted 31168 gates and 36995 wires to a netlist network with 5825 inputs and 1648 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/des/abc_tmp.scr 
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   4.16 sec. at Pass 0]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 278.47 sec. at Pass 1]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  59.45 sec. at Pass 2]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 272.15 sec. at Pass 3]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  65.59 sec. at Pass 4]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 390.40 sec. at Pass 5]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:     5488
-ABC RESULTS:        internal signals:    29522
-ABC RESULTS:           input signals:     5825
-ABC RESULTS:          output signals:     1648
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
@@ -1162,7 +1124,7 @@ Running muxtree optimizer on module \des3..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
@@ -1174,27 +1136,207 @@ yosys> opt_merge
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
-Removed 0 unused cells and 9101 unused wires.
-<suppressed ~1105 debug messages>
+
+yosys> opt_expr -full
+
+3.30.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module des3.
+
+3.30.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  39976 cells in clk=\clk, en={ }, arst={ }, srst={ }
+
+3.31.2. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 39976 gates and 40211 wires to a netlist network with 233 inputs and 64 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 8808 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:     8808
+ABC RESULTS:               NOT cells:      606
+ABC RESULTS:            ANDNOT cells:     1622
+ABC RESULTS:               NOR cells:     2133
+ABC RESULTS:             ORNOT cells:     3062
+ABC RESULTS:                OR cells:     3509
+ABC RESULTS:              NAND cells:    11029
+ABC RESULTS:               AND cells:     6161
+ABC RESULTS:              XNOR cells:     4665
+ABC RESULTS:               MUX cells:     6724
+ABC RESULTS:               XOR cells:      478
+ABC RESULTS:               BUF cells:     7224
+ABC RESULTS:        internal signals:    39914
+ABC RESULTS:           input signals:      233
+ABC RESULTS:          output signals:       64
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  48797 cells in clk=\clk, en={ }, arst={ }, srst={ }
+
+3.32.2. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 48797 gates and 49030 wires to a netlist network with 233 inputs and 64 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 8808 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:     8808
+ABC RESULTS:               NOR cells:      404
+ABC RESULTS:               XOR cells:      668
+ABC RESULTS:               NOT cells:      380
+ABC RESULTS:             ORNOT cells:     3567
+ABC RESULTS:            ANDNOT cells:     3070
+ABC RESULTS:               MUX cells:     6034
+ABC RESULTS:              NAND cells:    13224
+ABC RESULTS:                OR cells:     3344
+ABC RESULTS:               AND cells:     5270
+ABC RESULTS:              XNOR cells:     4206
+ABC RESULTS:               BUF cells:     7224
+ABC RESULTS:        internal signals:    48733
+ABC RESULTS:           input signals:      233
+ABC RESULTS:          output signals:       64
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  48975 cells in clk=\clk, en={ }, arst={ }, srst={ }
+
+3.33.2. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 48975 gates and 49208 wires to a netlist network with 233 inputs and 64 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 8808 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:     8808
+ABC RESULTS:               XOR cells:      588
+ABC RESULTS:               NOT cells:      379
+ABC RESULTS:               NOR cells:      408
+ABC RESULTS:             ORNOT cells:     3594
+ABC RESULTS:                OR cells:     3421
+ABC RESULTS:               AND cells:     5377
+ABC RESULTS:            ANDNOT cells:     3126
+ABC RESULTS:              NAND cells:    13601
+ABC RESULTS:               MUX cells:     5653
+ABC RESULTS:              XNOR cells:     4225
+ABC RESULTS:               BUF cells:     7224
+ABC RESULTS:        internal signals:    48911
+ABC RESULTS:           input signals:      233
+ABC RESULTS:          output signals:       64
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.35.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
+<suppressed ~64 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\des3'.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1202,42 +1344,264 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\des3'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \des3..
+Removed 0 unused cells and 123571 unused wires.
+<suppressed ~1401 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module des3.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \des3..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \des3.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\des3'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \des3..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module des3.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  49180 cells in clk=\clk, en={ }, arst={ }, srst={ }
+
+3.36.2. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 49180 gates and 49413 wires to a netlist network with 233 inputs and 64 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: Warning: 8808 registers in this network have don't-care init values.
+ABC: The don't-care are assumed to be 0. The result may not verify.
+ABC: Use command "print_latch" to see the init values of registers.
+ABC: Use command "zero" to convert or "init" to change the values.
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:     8808
+ABC RESULTS:               XOR cells:      535
+ABC RESULTS:               NOT cells:      326
+ABC RESULTS:               NOR cells:      416
+ABC RESULTS:             ORNOT cells:     3661
+ABC RESULTS:               MUX cells:     5389
+ABC RESULTS:            ANDNOT cells:     3040
+ABC RESULTS:              NAND cells:    13897
+ABC RESULTS:                OR cells:     3463
+ABC RESULTS:               AND cells:     5532
+ABC RESULTS:              XNOR cells:     4234
+ABC RESULTS:               BUF cells:     7224
+ABC RESULTS:        internal signals:    49116
+ABC RESULTS:           input signals:      233
+ABC RESULTS:          output signals:       64
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_fUoVnA/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Extracted 40493 gates and 46318 wires to a netlist network with 5825 inputs and 1648 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_fUoVnA/abc_tmp_1.scr 
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   2.55 sec. at Pass 0]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 125.07 sec. at Pass 1]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  20.97 sec. at Pass 2]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  41.77 sec. at Pass 3]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  26.74 sec. at Pass 4]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  50.01 sec. at Pass 5]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   1.13 sec. at Pass 6]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:     5488
+ABC RESULTS:        internal signals:    38845
+ABC RESULTS:           input signals:     5825
+ABC RESULTS:          output signals:     1648
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module des3.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\des3'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \des3..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \des3.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \des3..
+Removed 0 unused cells and 102955 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module des3.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \des3..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \des3.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\des3'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === des3 ===
 
-   Number of wires:               5608
-   Number of wire bits:          19444
-   Number of public wires:         328
-   Number of public wire bits:   14164
+   Number of wires:              14264
+   Number of wire bits:          15444
+   Number of public wires:          32
+   Number of public wire bits:    1212
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
@@ -1248,191 +1612,191 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
-Converting des3.$auto$ff.cc:262:slice$2240 ... des3.$auto$ff.cc:262:slice$78256 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2241 ... des3.$auto$ff.cc:262:slice$78257 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2242 ... des3.$auto$ff.cc:262:slice$78258 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2243 ... des3.$auto$ff.cc:262:slice$78259 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2244 ... des3.$auto$ff.cc:262:slice$78260 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2245 ... des3.$auto$ff.cc:262:slice$78261 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2246 ... des3.$auto$ff.cc:262:slice$78262 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2247 ... des3.$auto$ff.cc:262:slice$78263 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2248 ... des3.$auto$ff.cc:262:slice$78264 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2249 ... des3.$auto$ff.cc:262:slice$78265 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2250 ... des3.$auto$ff.cc:262:slice$78266 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2251 ... des3.$auto$ff.cc:262:slice$78267 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2252 ... des3.$auto$ff.cc:262:slice$78268 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2253 ... des3.$auto$ff.cc:262:slice$78269 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2254 ... des3.$auto$ff.cc:262:slice$78270 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2255 ... des3.$auto$ff.cc:262:slice$78271 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2256 ... des3.$auto$ff.cc:262:slice$78272 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2257 ... des3.$auto$ff.cc:262:slice$78273 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2258 ... des3.$auto$ff.cc:262:slice$78274 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2259 ... des3.$auto$ff.cc:262:slice$78275 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2260 ... des3.$auto$ff.cc:262:slice$78276 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2261 ... des3.$auto$ff.cc:262:slice$78277 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2262 ... des3.$auto$ff.cc:262:slice$78278 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2263 ... des3.$auto$ff.cc:262:slice$78279 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2264 ... des3.$auto$ff.cc:262:slice$78280 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2265 ... des3.$auto$ff.cc:262:slice$78281 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2266 ... des3.$auto$ff.cc:262:slice$78282 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2267 ... des3.$auto$ff.cc:262:slice$78283 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2268 ... des3.$auto$ff.cc:262:slice$78284 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2269 ... des3.$auto$ff.cc:262:slice$78285 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2270 ... des3.$auto$ff.cc:262:slice$78286 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2271 ... des3.$auto$ff.cc:262:slice$78287 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2272 ... des3.$auto$ff.cc:262:slice$78288 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2273 ... des3.$auto$ff.cc:262:slice$78289 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2274 ... des3.$auto$ff.cc:262:slice$78290 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2275 ... des3.$auto$ff.cc:262:slice$78291 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2276 ... des3.$auto$ff.cc:262:slice$78292 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2277 ... des3.$auto$ff.cc:262:slice$78293 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2278 ... des3.$auto$ff.cc:262:slice$78294 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2279 ... des3.$auto$ff.cc:262:slice$78295 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2280 ... des3.$auto$ff.cc:262:slice$78296 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2281 ... des3.$auto$ff.cc:262:slice$78297 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2282 ... des3.$auto$ff.cc:262:slice$78298 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2283 ... des3.$auto$ff.cc:262:slice$78299 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2284 ... des3.$auto$ff.cc:262:slice$78300 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2285 ... des3.$auto$ff.cc:262:slice$78301 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2286 ... des3.$auto$ff.cc:262:slice$78302 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2287 ... des3.$auto$ff.cc:262:slice$78303 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2288 ... des3.$auto$ff.cc:262:slice$78304 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2289 ... des3.$auto$ff.cc:262:slice$78305 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2290 ... des3.$auto$ff.cc:262:slice$78306 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2291 ... des3.$auto$ff.cc:262:slice$78307 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2292 ... des3.$auto$ff.cc:262:slice$78308 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2293 ... des3.$auto$ff.cc:262:slice$78309 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2294 ... des3.$auto$ff.cc:262:slice$78310 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$2295 ... des3.$auto$ff.cc:262:slice$78311 to a shift register with depth 18.
-Converting des3.$auto$ff.cc:262:slice$4088 ... des3.$auto$ff.cc:262:slice$3024 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2968 ... des3.$auto$ff.cc:262:slice$115312 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4089 ... des3.$auto$ff.cc:262:slice$3025 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2969 ... des3.$auto$ff.cc:262:slice$115313 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4090 ... des3.$auto$ff.cc:262:slice$3026 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2970 ... des3.$auto$ff.cc:262:slice$115314 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4091 ... des3.$auto$ff.cc:262:slice$3027 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2971 ... des3.$auto$ff.cc:262:slice$115315 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4092 ... des3.$auto$ff.cc:262:slice$3028 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2972 ... des3.$auto$ff.cc:262:slice$115316 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4093 ... des3.$auto$ff.cc:262:slice$3029 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2973 ... des3.$auto$ff.cc:262:slice$115317 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4094 ... des3.$auto$ff.cc:262:slice$3030 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2974 ... des3.$auto$ff.cc:262:slice$115318 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4095 ... des3.$auto$ff.cc:262:slice$3031 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2975 ... des3.$auto$ff.cc:262:slice$115319 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4096 ... des3.$auto$ff.cc:262:slice$3032 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2976 ... des3.$auto$ff.cc:262:slice$115320 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4097 ... des3.$auto$ff.cc:262:slice$3033 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2977 ... des3.$auto$ff.cc:262:slice$115321 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4098 ... des3.$auto$ff.cc:262:slice$3034 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2978 ... des3.$auto$ff.cc:262:slice$115322 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4099 ... des3.$auto$ff.cc:262:slice$3035 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2979 ... des3.$auto$ff.cc:262:slice$115323 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4100 ... des3.$auto$ff.cc:262:slice$3036 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2980 ... des3.$auto$ff.cc:262:slice$115324 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4101 ... des3.$auto$ff.cc:262:slice$3037 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2981 ... des3.$auto$ff.cc:262:slice$115325 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4102 ... des3.$auto$ff.cc:262:slice$3038 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2982 ... des3.$auto$ff.cc:262:slice$115326 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4103 ... des3.$auto$ff.cc:262:slice$3039 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2983 ... des3.$auto$ff.cc:262:slice$115327 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4104 ... des3.$auto$ff.cc:262:slice$3040 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2984 ... des3.$auto$ff.cc:262:slice$115328 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4105 ... des3.$auto$ff.cc:262:slice$3041 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2985 ... des3.$auto$ff.cc:262:slice$115329 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4106 ... des3.$auto$ff.cc:262:slice$3042 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2986 ... des3.$auto$ff.cc:262:slice$115330 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4107 ... des3.$auto$ff.cc:262:slice$3043 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2987 ... des3.$auto$ff.cc:262:slice$115331 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4108 ... des3.$auto$ff.cc:262:slice$3044 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2988 ... des3.$auto$ff.cc:262:slice$115332 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4109 ... des3.$auto$ff.cc:262:slice$3045 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2989 ... des3.$auto$ff.cc:262:slice$115333 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4110 ... des3.$auto$ff.cc:262:slice$3046 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2990 ... des3.$auto$ff.cc:262:slice$115334 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4111 ... des3.$auto$ff.cc:262:slice$3047 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2991 ... des3.$auto$ff.cc:262:slice$115335 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4112 ... des3.$auto$ff.cc:262:slice$3048 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2992 ... des3.$auto$ff.cc:262:slice$115336 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4113 ... des3.$auto$ff.cc:262:slice$3049 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2993 ... des3.$auto$ff.cc:262:slice$115337 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4114 ... des3.$auto$ff.cc:262:slice$3050 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2994 ... des3.$auto$ff.cc:262:slice$115338 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4115 ... des3.$auto$ff.cc:262:slice$3051 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2995 ... des3.$auto$ff.cc:262:slice$115339 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4116 ... des3.$auto$ff.cc:262:slice$3052 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2996 ... des3.$auto$ff.cc:262:slice$115340 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4117 ... des3.$auto$ff.cc:262:slice$3053 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2997 ... des3.$auto$ff.cc:262:slice$115341 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4118 ... des3.$auto$ff.cc:262:slice$3054 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2998 ... des3.$auto$ff.cc:262:slice$115342 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4119 ... des3.$auto$ff.cc:262:slice$3055 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$2999 ... des3.$auto$ff.cc:262:slice$115343 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4120 ... des3.$auto$ff.cc:262:slice$3056 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3000 ... des3.$auto$ff.cc:262:slice$115344 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4121 ... des3.$auto$ff.cc:262:slice$3057 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3001 ... des3.$auto$ff.cc:262:slice$115345 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4122 ... des3.$auto$ff.cc:262:slice$3058 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3002 ... des3.$auto$ff.cc:262:slice$115346 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4123 ... des3.$auto$ff.cc:262:slice$3059 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3003 ... des3.$auto$ff.cc:262:slice$115347 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4124 ... des3.$auto$ff.cc:262:slice$3060 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3004 ... des3.$auto$ff.cc:262:slice$115348 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4125 ... des3.$auto$ff.cc:262:slice$3061 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3005 ... des3.$auto$ff.cc:262:slice$115349 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4126 ... des3.$auto$ff.cc:262:slice$3062 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3006 ... des3.$auto$ff.cc:262:slice$115350 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4127 ... des3.$auto$ff.cc:262:slice$3063 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3007 ... des3.$auto$ff.cc:262:slice$115351 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4128 ... des3.$auto$ff.cc:262:slice$3064 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3008 ... des3.$auto$ff.cc:262:slice$115352 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4129 ... des3.$auto$ff.cc:262:slice$3065 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3009 ... des3.$auto$ff.cc:262:slice$115353 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4130 ... des3.$auto$ff.cc:262:slice$3066 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3010 ... des3.$auto$ff.cc:262:slice$115354 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4131 ... des3.$auto$ff.cc:262:slice$3067 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3011 ... des3.$auto$ff.cc:262:slice$115355 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4132 ... des3.$auto$ff.cc:262:slice$3068 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3012 ... des3.$auto$ff.cc:262:slice$115356 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4133 ... des3.$auto$ff.cc:262:slice$3069 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3013 ... des3.$auto$ff.cc:262:slice$115357 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4134 ... des3.$auto$ff.cc:262:slice$3070 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3014 ... des3.$auto$ff.cc:262:slice$115358 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4135 ... des3.$auto$ff.cc:262:slice$3071 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3015 ... des3.$auto$ff.cc:262:slice$115359 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4136 ... des3.$auto$ff.cc:262:slice$3072 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3016 ... des3.$auto$ff.cc:262:slice$115360 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4137 ... des3.$auto$ff.cc:262:slice$3073 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3017 ... des3.$auto$ff.cc:262:slice$115361 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4138 ... des3.$auto$ff.cc:262:slice$3074 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3018 ... des3.$auto$ff.cc:262:slice$115362 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4139 ... des3.$auto$ff.cc:262:slice$3075 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3019 ... des3.$auto$ff.cc:262:slice$115363 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4140 ... des3.$auto$ff.cc:262:slice$3076 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3020 ... des3.$auto$ff.cc:262:slice$115364 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4141 ... des3.$auto$ff.cc:262:slice$3077 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3021 ... des3.$auto$ff.cc:262:slice$115365 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4142 ... des3.$auto$ff.cc:262:slice$3078 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3022 ... des3.$auto$ff.cc:262:slice$115366 to a shift register with depth 15.
-Converting des3.$auto$ff.cc:262:slice$4143 ... des3.$auto$ff.cc:262:slice$3079 to a shift register with depth 20.
-Converting des3.$auto$ff.cc:262:slice$3023 ... des3.$auto$ff.cc:262:slice$115367 to a shift register with depth 15.
+3.42. Executing SHREGMAP pass (map shift registers).
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287196 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290916 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287197 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290918 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287198 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290920 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287199 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290922 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287200 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290924 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287201 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290926 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287202 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290928 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287203 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290930 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287204 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290932 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287205 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290934 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287206 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290936 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287207 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290938 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287208 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290940 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287209 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290942 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287210 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290944 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287211 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290946 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287212 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290948 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287213 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290950 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287214 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290952 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287215 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290954 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287216 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290956 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287217 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290958 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287218 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290960 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287219 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290962 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287220 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290964 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287221 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290966 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287222 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290968 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287223 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290970 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287224 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290972 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287225 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290974 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287226 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290976 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287227 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290978 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287228 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290980 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287229 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290982 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287230 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290984 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287231 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290986 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287232 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290988 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287233 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290990 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287234 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290992 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287235 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290994 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287236 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290996 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287237 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$290998 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287238 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291000 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287239 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291002 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287240 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291004 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287241 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291006 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287242 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291008 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287243 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291010 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287244 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291012 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287245 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291014 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287246 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291016 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287247 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291018 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287248 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291020 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287249 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291022 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287250 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291024 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287251 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$291026 to a shift register with depth 18.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289524 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287756 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287700 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$283999 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289535 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287757 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287701 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284004 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289546 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287758 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287702 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284009 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289557 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287759 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287703 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284014 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289568 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287760 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287704 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284019 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289579 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287761 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287705 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284024 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289590 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287762 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287706 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284029 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289601 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287763 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287707 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284034 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289612 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287764 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287708 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284039 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289623 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287765 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287709 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284044 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289634 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287766 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287710 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284049 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289645 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287767 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287711 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284054 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289656 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287768 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287712 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284059 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289667 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287769 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287713 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284064 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289678 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287770 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287714 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284069 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289689 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287771 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287715 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284074 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289700 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287772 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287716 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284079 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289711 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287773 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287717 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284084 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289722 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287774 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287718 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284089 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289733 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287775 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287719 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284094 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289736 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287776 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287720 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284099 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289737 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287777 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287721 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284104 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289738 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287778 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287722 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284109 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289739 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287779 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287723 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284114 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289740 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287780 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287724 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284119 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289741 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287781 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287725 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284124 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289742 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287782 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287726 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284129 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289743 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287783 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287727 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284134 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289744 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287784 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287728 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284139 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289745 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287785 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287729 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284144 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289746 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287786 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287730 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284149 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289747 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287787 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287731 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284154 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289748 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287788 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287732 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284159 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289749 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287789 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287733 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284164 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289750 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287790 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287734 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284169 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289751 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287791 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287735 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284174 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289752 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287792 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287736 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284179 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289753 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287793 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287737 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284184 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289754 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287794 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287738 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284189 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289755 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287795 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287739 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284194 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289756 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287796 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287740 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284199 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289757 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287797 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287741 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284204 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289758 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287798 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287742 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284209 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289759 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287799 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287743 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284214 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289760 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287800 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287744 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284219 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289761 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287801 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287745 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284224 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289762 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287802 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287746 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284229 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289763 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287803 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287747 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284234 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289764 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287804 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287748 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284239 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289765 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287805 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287749 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284244 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289766 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287806 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287750 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284249 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289767 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287807 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287751 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284254 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289768 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287808 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287752 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284259 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289769 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287809 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287753 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284264 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289770 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287810 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287754 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284269 to a shift register with depth 15.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$289771 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287811 to a shift register with depth 20.
+Converting des3.$abc$283995$auto$blifparse.cc:362:parse_blif$287755 ... des3.$abc$283995$auto$blifparse.cc:362:parse_blif$284274 to a shift register with depth 15.
 Converted 2968 dff cells into 168 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === des3 ===
 
-   Number of wires:               5608
-   Number of wire bits:          19444
-   Number of public wires:         328
-   Number of public wire bits:   14164
+   Number of wires:              14264
+   Number of wire bits:          15444
+   Number of public wires:          32
+   Number of public wire bits:    1212
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
@@ -1444,9 +1808,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1474,7 +1838,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1543,68 +1907,68 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
-Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000010010 for cells of type $__SHREG_DFF_P_.
-Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000010100 for cells of type $__SHREG_DFF_P_.
-Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000001111 for cells of type $__SHREG_DFF_P_.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000010100 for cells of type $__SHREG_DFF_P_.
+Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000010010 for cells of type $__SHREG_DFF_P_.
+Using template $paramod\$__SHREG_DFF_P_\DEPTH=32'00000000000000000000000000001111 for cells of type $__SHREG_DFF_P_.
 No more expansions possible.
 <suppressed ~11665 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
-<suppressed ~61152 debug messages>
+<suppressed ~61032 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
-<suppressed ~77616 debug messages>
-Removed a total of 25872 cells.
+<suppressed ~77580 debug messages>
+Removed a total of 25860 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
-Removed 0 unused cells and 25501 unused wires.
-<suppressed ~49 debug messages>
+Removed 0 unused cells and 28108 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
-<suppressed ~3696 debug messages>
+<suppressed ~3597 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
-<suppressed ~288 debug messages>
-Removed a total of 96 cells.
+<suppressed ~336 debug messages>
+Removed a total of 112 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1612,37 +1976,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
-Removed 0 unused cells and 1003 unused wires.
+Removed 0 unused cells and 995 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1650,80 +2014,81 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_fUoVnA/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
-Extracted 45904 gates and 51731 wires to a netlist network with 5825 inputs and 1648 outputs.
+3.53.1. Extracting gate netlist of module `\des3' to `<abc-temp-dir>/input.blif'..
+Extracted 46119 gates and 51946 wires to a netlist network with 5825 inputs and 1648 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/des/abc_tmp.scr 
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   6.47 sec. at Pass 0]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 293.05 sec. at Pass 1]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  51.62 sec. at Pass 2]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 234.76 sec. at Pass 3]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  42.55 sec. at Pass 4]
-ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 366.52 sec. at Pass 5]
+ABC: + source /tmp/yosys_fUoVnA/abc_tmp_2.scr 
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   2.96 sec. at Pass 0]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [ 130.21 sec. at Pass 1]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  26.76 sec. at Pass 2]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  48.71 sec. at Pass 3]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  26.42 sec. at Pass 4]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [  47.23 sec. at Pass 5]
+ABC:   #Luts =  5488  Max Lvl =   3  Avg Lvl =   2.86  [   1.88 sec. at Pass 6]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
+3.53.1.2. Re-integrating ABC results.
 ABC RESULTS:              $lut cells:     5488
-ABC RESULTS:        internal signals:    44258
+ABC RESULTS:        internal signals:    44473
 ABC RESULTS:           input signals:     5825
 ABC RESULTS:          output signals:     1648
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1731,37 +2096,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
-Removed 0 unused cells and 24721 unused wires.
+Removed 0 unused cells and 24874 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \des3..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1769,53 +2134,53 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \des3.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\des3'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module des3.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \des3
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \des3
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === des3 ===
 
-   Number of wires:               5728
-   Number of wire bits:          19556
-   Number of public wires:         280
-   Number of public wire bits:   11476
+   Number of wires:              11632
+   Number of wire bits:          15444
+   Number of public wires:          32
+   Number of public wire bits:    1212
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
@@ -1827,30 +2192,30 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \des3..
-Removed 0 unused cells and 127 unused wires.
-<suppressed ~127 debug messages>
+Removed 0 unused cells and 25 unused wires.
+<suppressed ~25 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\des3'.
 
 Warnings: 54 unique messages, 54 total
-End of script. Logfile hash: 701ed39665, CPU: user 130.08s system 1.23s, MEM: 325.28 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 97% 2x abc (6204 sec), 0% 27x opt_expr (53 sec), ...
-real 2243.72
-user 6084.68
-sys 249.29
+End of script. Logfile hash: 52479a82df, CPU: user 136.57s system 0.99s, MEM: 349.64 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 95% 6x abc (2593 sec), 1% 30x opt_expr (50 sec), ...
+real 763.17
+user 2542.63
+sys 172.90

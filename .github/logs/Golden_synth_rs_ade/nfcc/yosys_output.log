@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.8
- Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.20
+ Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -63,7 +63,7 @@ VERIFIC-INFO [VHDL-1010] sbox.vhdl:43: analyzing architecture 'phy'
 
 yosys> synth_rs -top kasumi -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.2.37
+3. Executing synth_rs pass: v0.4.44
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -88,6 +88,13 @@ Generating RTLIL representation for module `\sh_dff'.
 Generating RTLIL representation for module `\adder_carry'.
 Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
+Generating RTLIL representation for module `\TDP_BRAM18'.
+Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\RS_DSP1'.
+Generating RTLIL representation for module `\RS_DSP2'.
+Generating RTLIL representation for module `\dsp_t1_sim'.
+Generating RTLIL representation for module `\dsp_t1_20x18x64'.
+Generating RTLIL representation for module `\dsp_t1_10x9x32'.
 Successfully finished Verilog frontend.
 
 yosys> hierarchy -check -top kasumi
@@ -588,55 +595,77 @@ Optimizing module kasumi.
 
 3.19.9. Finished OPT passes. (There is nothing left to do.)
 
+yosys> stat
+
+3.20. Printing statistics.
+
+=== kasumi ===
+
+   Number of wires:                355
+   Number of wire bits:           2638
+   Number of public wires:          77
+   Number of public wire bits:    1360
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                309
+     $and                          146
+     $bmux                           3
+     $eq                             3
+     $mux                            8
+     $not                            5
+     $or                             4
+     $reduce_bool                    2
+     $reduce_or                      1
+     $sdff                           7
+     $sdffe                          5
+     $xor                          125
+
+
 yosys> memory -nomap
 
-3.20. Executing MEMORY pass.
+3.21. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.20.1. Executing OPT_MEM pass (optimize memories).
+3.21.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.20.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.20.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_dff
 
-3.20.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.21.4. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.20.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.5. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> memory_share
 
-3.20.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.21.6. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.20.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.21.7. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> memory_collect
 
-3.20.9. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> opt_clean
-
-3.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \kasumi..
+3.21.9. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -665,11 +694,43 @@ yosys> stat
      $xor                          125
 
 
+yosys> opt_clean
+
+3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \kasumi..
+
+yosys> stat
+
+3.24. Printing statistics.
+
+=== kasumi ===
+
+   Number of wires:                355
+   Number of wire bits:           2638
+   Number of public wires:          77
+   Number of public wire bits:    1360
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                309
+     $and                          146
+     $bmux                           3
+     $eq                             3
+     $mux                            8
+     $not                            5
+     $or                             4
+     $reduce_bool                    2
+     $reduce_or                      1
+     $sdff                           7
+     $sdffe                          5
+     $xor                          125
+
+
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.23. Executing TECHMAP pass (map to technology primitives).
+3.25. Executing TECHMAP pass (map to technology primitives).
 
-3.23.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.25.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -697,12 +758,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.23.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.25.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.23.3. Continuing TECHMAP pass.
+3.25.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $reduce_bool.
 Using extmapper simplemap for cells of type $sdff.
 Using extmapper simplemap for cells of type $eq.
@@ -719,7 +780,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.24. Printing statistics.
+3.26. Printing statistics.
 
 === kasumi ===
 
@@ -743,24 +804,24 @@ yosys> stat
 
 yosys> opt
 
-3.25. Executing OPT pass (performing simple optimizations).
+3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.25.1. Executing OPT_EXPR pass (perform const folding).
+3.27.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 <suppressed ~357 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25.2. Executing OPT_MERGE pass (detect identical cells).
+3.27.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 <suppressed ~795 debug messages>
 Removed a total of 265 cells.
 
 yosys> opt_muxtree
 
-3.25.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -768,38 +829,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.5. Executing OPT_MERGE pass (detect identical cells).
+3.27.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 Removed 0 unused cells and 46 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.25.8. Executing OPT_EXPR pass (perform const folding).
+3.27.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 <suppressed ~32 debug messages>
 
-3.25.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.25.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -807,66 +868,33 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.25.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.25.12. Executing OPT_MERGE pass (detect identical cells).
+3.27.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.25.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.25.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> opt_expr
 
-3.25.15. Executing OPT_EXPR pass (perform const folding).
+3.27.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.25.16. Finished OPT passes. (There is nothing left to do.)
+3.27.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> opt -fast -full
-
-3.26. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.26.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module kasumi.
-<suppressed ~192 debug messages>
-
-yosys> opt_merge
-
-3.26.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\kasumi'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.26.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.26.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 2 unused wires.
-<suppressed ~1 debug messages>
-
-3.26.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.27. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
 
 3.28. Executing OPT pass (performing simple optimizations).
 
@@ -874,105 +902,36 @@ yosys> opt_expr -full
 
 3.28.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
+<suppressed ~192 debug messages>
 
-yosys> opt_merge -nomux
+yosys> opt_merge
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
-yosys> opt_muxtree
-
-3.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \kasumi..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \kasumi.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\kasumi'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.28.6. Executing OPT_SHARE pass.
-
 yosys> opt_dff
 
-3.28.7. Executing OPT_DFF pass (perform DFF optimizations).
+3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
 
-yosys> opt_expr -full
+3.28.5. Finished fast OPT passes.
 
-3.28.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module kasumi.
+yosys> memory_map
 
-3.28.10. Finished OPT passes. (There is nothing left to do.)
+3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
-yosys> abc -script abc_tmp.scr
-
-3.29. Executing ABC pass (technology mapping using ABC).
-
-3.29.1. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
-Extracted 1654 gates and 2081 wires to a netlist network with 426 inputs and 237 outputs.
-
-3.29.1.1. Executing ABC.
-Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
-ABC: ABC command line: "source <abc-temp-dir>/abc.script".
-ABC: 
-ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_library <abc-temp-dir>/stdcells.genlib 
-ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/nfcc/abc_tmp.scr 
-ABC:   #Luts =   715  Max Lvl =  12  Avg Lvl =   3.34  [   0.45 sec. at Pass 0]
-ABC:   #Luts =   651  Max Lvl =  13  Avg Lvl =   3.40  [  16.01 sec. at Pass 1]
-ABC:   #Luts =   645  Max Lvl =  14  Avg Lvl =   3.61  [   2.69 sec. at Pass 2]
-ABC:   #Luts =   601  Max Lvl =  13  Avg Lvl =   3.24  [  16.10 sec. at Pass 3]
-ABC:   #Luts =   597  Max Lvl =  14  Avg Lvl =   3.25  [   3.58 sec. at Pass 4]
-ABC:   #Luts =   592  Max Lvl =  12  Avg Lvl =   3.19  [  17.62 sec. at Pass 5]
-ABC:   #Luts =   589  Max Lvl =  13  Avg Lvl =   3.19  [   2.61 sec. at Pass 6]
-ABC:   #Luts =   589  Max Lvl =  12  Avg Lvl =   3.14  [  15.35 sec. at Pass 7]
-ABC:   #Luts =   589  Max Lvl =  12  Avg Lvl =   3.14  [   3.72 sec. at Pass 8]
-ABC:   #Luts =   586  Max Lvl =  13  Avg Lvl =   3.15  [  20.98 sec. at Pass 9]
-ABC:   #Luts =   586  Max Lvl =  13  Avg Lvl =   3.15  [   3.77 sec. at Pass 10]
-ABC:   #Luts =   582  Max Lvl =  13  Avg Lvl =   3.19  [  20.50 sec. at Pass 11]
-ABC:   #Luts =   582  Max Lvl =  13  Avg Lvl =   3.19  [   4.97 sec. at Pass 12]
-ABC:   #Luts =   581  Max Lvl =  12  Avg Lvl =   3.03  [  22.65 sec. at Pass 13]
-ABC:   #Luts =   577  Max Lvl =  13  Avg Lvl =   3.19  [   3.90 sec. at Pass 14]
-ABC:   #Luts =   577  Max Lvl =  13  Avg Lvl =   3.19  [  15.12 sec. at Pass 15]
-ABC:   #Luts =   577  Max Lvl =  13  Avg Lvl =   3.19  [   3.74 sec. at Pass 16]
-ABC:   #Luts =   576  Max Lvl =  13  Avg Lvl =   3.14  [  16.29 sec. at Pass 17]
-ABC:   #Luts =   576  Max Lvl =  13  Avg Lvl =   3.14  [   2.82 sec. at Pass 18]
-ABC:   #Luts =   575  Max Lvl =  13  Avg Lvl =   3.20  [  18.73 sec. at Pass 19]
-ABC:   #Luts =   575  Max Lvl =  13  Avg Lvl =   3.20  [   3.25 sec. at Pass 20]
-ABC:   #Luts =   575  Max Lvl =  13  Avg Lvl =   3.20  [  21.25 sec. at Pass 21]
-ABC:   #Luts =   575  Max Lvl =  13  Avg Lvl =   3.20  [   3.31 sec. at Pass 22]
-ABC: + write_blif <abc-temp-dir>/output.blif 
-
-3.29.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      575
-ABC RESULTS:        internal signals:     1418
-ABC RESULTS:           input signals:      426
-ABC RESULTS:          output signals:      237
-Removing temp directory.
-
-yosys> opt
+yosys> opt -full
 
 3.30. Executing OPT pass (performing simple optimizations).
 
-yosys> opt_expr
+yosys> opt_expr -full
 
 3.30.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
@@ -991,7 +950,7 @@ Running muxtree optimizer on module \kasumi..
   No muxes found in this module.
 Removed 0 multiplexer ports.
 
-yosys> opt_reduce
+yosys> opt_reduce -full
 
 3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
@@ -1003,27 +962,863 @@ yosys> opt_merge
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.30.6. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.30.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 748 unused wires.
-<suppressed ~17 debug messages>
+
+yosys> opt_expr -full
+
+3.30.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module kasumi.
+
+3.30.10. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.31. Executing ABC pass (technology mapping using ABC).
+
+3.31.1. Summary of detected clock domains:
+  19 cells in clk=\clk, en=!$auto$simplemap.cc:257:simplemap_eqne$710, arst={ }, srst=\rst
+  458 cells in clk=\clk, en={ }, arst={ }, srst=\c3b_rst
+  354 cells in clk=\clk, en=$auto$opt_dff.cc:194:make_patterns_logic$579, arst={ }, srst=\rst
+  132 cells in clk=\clk, en=!$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$574
+  999 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+  5 cells in clk=\clk, en=!$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=\rst
+  112 cells in clk=\clk, en=$auto$opt_dff.cc:194:make_patterns_logic$563, arst={ }, srst=\rst
+
+3.31.2. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$auto$simplemap.cc:257:simplemap_eqne$710, synchronously reset by \rst
+Extracted 19 gates and 53 wires to a netlist network with 34 inputs and 19 outputs.
+
+3.31.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               MUX cells:       16
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:       34
+ABC RESULTS:          output signals:       19
+Removing temp directory.
+
+3.31.3. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \c3b_rst
+Extracted 458 gates and 844 wires to a netlist network with 386 inputs and 117 outputs.
+
+3.31.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        3
+ABC RESULTS:            ANDNOT cells:       17
+ABC RESULTS:             ORNOT cells:       48
+ABC RESULTS:              NAND cells:      296
+ABC RESULTS:               MUX cells:      204
+ABC RESULTS:                OR cells:       46
+ABC RESULTS:               AND cells:      132
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:              XNOR cells:       17
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        4
+ABC RESULTS:        internal signals:      341
+ABC RESULTS:           input signals:      386
+ABC RESULTS:          output signals:      117
+Removing temp directory.
+
+3.31.4. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$579, synchronously reset by \rst
+Extracted 354 gates and 516 wires to a netlist network with 162 inputs and 193 outputs.
+
+3.31.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      128
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:               XOR cells:       96
+ABC RESULTS:               MUX cells:      128
+ABC RESULTS:               BUF cells:       96
+ABC RESULTS:        internal signals:      161
+ABC RESULTS:           input signals:      162
+ABC RESULTS:          output signals:      193
+Removing temp directory.
+
+3.31.5. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by $auto$opt_dff.cc:253:combine_resets$574
+Extracted 132 gates and 138 wires to a netlist network with 6 inputs and 99 outputs.
+
+3.31.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        4
+ABC RESULTS:               BUF cells:       49
+ABC RESULTS:               NOT cells:       49
+ABC RESULTS:        internal signals:       33
+ABC RESULTS:           input signals:        6
+ABC RESULTS:          output signals:       99
+Removing temp directory.
+
+3.31.6. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 999 gates and 1248 wires to a netlist network with 248 inputs and 291 outputs.
+
+3.31.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       99
+ABC RESULTS:               NOT cells:        6
+ABC RESULTS:              NAND cells:       51
+ABC RESULTS:               AND cells:       91
+ABC RESULTS:              XNOR cells:      209
+ABC RESULTS:               XOR cells:       89
+ABC RESULTS:                OR cells:       42
+ABC RESULTS:               MUX cells:      264
+ABC RESULTS:             ORNOT cells:       14
+ABC RESULTS:               NOR cells:       14
+ABC RESULTS:            ANDNOT cells:       48
+ABC RESULTS:               BUF cells:       67
+ABC RESULTS:        internal signals:      709
+ABC RESULTS:           input signals:      248
+ABC RESULTS:          output signals:      291
+Removing temp directory.
+
+3.31.7. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by \rst
+Extracted 5 gates and 5 wires to a netlist network with 0 inputs and 2 outputs.
+
+3.31.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:        internal signals:        3
+ABC RESULTS:           input signals:        0
+ABC RESULTS:          output signals:        2
+Removing temp directory.
+
+3.31.8. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, synchronously reset by \rst
+Extracted 112 gates and 224 wires to a netlist network with 112 inputs and 112 outputs.
+
+3.31.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.31.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               XOR cells:       48
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:      112
+ABC RESULTS:          output signals:      112
+Removing temp directory.
+
+yosys> abc -dff
+
+3.32. Executing ABC pass (technology mapping using ABC).
+
+3.32.1. Summary of detected clock domains:
+  178 cells in clk=\clk, en=!$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, arst={ }, srst=\rst
+  8 cells in clk=\clk, en=!$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=\rst
+  989 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+  69 cells in clk=\clk, en=!$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=$abc$4560$auto$opt_dff.cc:253:combine_resets$574
+  464 cells in clk=\clk, en=$abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, arst={ }, srst=\rst
+  295 cells in clk=\clk, en={ }, arst={ }, srst=$abc$3340$c3b_rst
+  238 cells in clk=\clk, en=$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, arst={ }, srst=\rst
+
+3.32.2. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, synchronously reset by \rst
+Extracted 178 gates and 294 wires to a netlist network with 116 inputs and 20 outputs.
+
+3.32.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:             ORNOT cells:        4
+ABC RESULTS:            ANDNOT cells:        4
+ABC RESULTS:               AND cells:       73
+ABC RESULTS:              NAND cells:      114
+ABC RESULTS:               MUX cells:        6
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:        internal signals:      158
+ABC RESULTS:           input signals:      116
+ABC RESULTS:          output signals:       20
+Removing temp directory.
+
+3.32.3. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by \rst
+Extracted 8 gates and 11 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.32.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:        internal signals:        5
+ABC RESULTS:           input signals:        3
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.32.4. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 989 gates and 1258 wires to a netlist network with 269 inputs and 255 outputs.
+
+3.32.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       99
+ABC RESULTS:               NOT cells:       28
+ABC RESULTS:              XNOR cells:      177
+ABC RESULTS:               XOR cells:       62
+ABC RESULTS:             ORNOT cells:       26
+ABC RESULTS:                OR cells:       51
+ABC RESULTS:               AND cells:      132
+ABC RESULTS:               MUX cells:      267
+ABC RESULTS:              NAND cells:      166
+ABC RESULTS:               NOR cells:        7
+ABC RESULTS:            ANDNOT cells:       31
+ABC RESULTS:               BUF cells:       67
+ABC RESULTS:        internal signals:      734
+ABC RESULTS:           input signals:      269
+ABC RESULTS:          output signals:      255
+Removing temp directory.
+
+3.32.5. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by $abc$4560$auto$opt_dff.cc:253:combine_resets$574
+Extracted 69 gates and 88 wires to a netlist network with 19 inputs and 68 outputs.
+
+3.32.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               XOR cells:       17
+ABC RESULTS:               NOT cells:       49
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:        1
+ABC RESULTS:           input signals:       19
+ABC RESULTS:          output signals:       68
+Removing temp directory.
+
+3.32.6. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, synchronously reset by \rst
+Extracted 464 gates and 588 wires to a netlist network with 124 inputs and 167 outputs.
+
+3.32.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      128
+ABC RESULTS:                OR cells:       15
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:            ANDNOT cells:       15
+ABC RESULTS:             ORNOT cells:        2
+ABC RESULTS:               XOR cells:       79
+ABC RESULTS:               MUX cells:      224
+ABC RESULTS:               BUF cells:       17
+ABC RESULTS:        internal signals:      297
+ABC RESULTS:           input signals:      124
+ABC RESULTS:          output signals:      167
+Removing temp directory.
+
+3.32.7. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$3340$c3b_rst
+Extracted 295 gates and 506 wires to a netlist network with 211 inputs and 143 outputs.
+
+3.32.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        3
+ABC RESULTS:             ORNOT cells:       54
+ABC RESULTS:              NAND cells:       54
+ABC RESULTS:               AND cells:       52
+ABC RESULTS:            ANDNOT cells:       14
+ABC RESULTS:               MUX cells:       77
+ABC RESULTS:                OR cells:       37
+ABC RESULTS:              XNOR cells:        1
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        6
+ABC RESULTS:        internal signals:      152
+ABC RESULTS:           input signals:      211
+ABC RESULTS:          output signals:      143
+Removing temp directory.
+
+3.32.8. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6125$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, synchronously reset by \rst
+Extracted 238 gates and 383 wires to a netlist network with 145 inputs and 127 outputs.
+
+3.32.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.32.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:            ANDNOT cells:        7
+ABC RESULTS:                OR cells:        8
+ABC RESULTS:               MUX cells:       10
+ABC RESULTS:               AND cells:       15
+ABC RESULTS:               NOR cells:        5
+ABC RESULTS:             ORNOT cells:        8
+ABC RESULTS:              NAND cells:       11
+ABC RESULTS:              XNOR cells:       45
+ABC RESULTS:               XOR cells:       63
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:      111
+ABC RESULTS:           input signals:      145
+ABC RESULTS:          output signals:      127
+Removing temp directory.
+
+yosys> abc -dff
+
+3.33. Executing ABC pass (technology mapping using ABC).
+
+3.33.1. Summary of detected clock domains:
+  366 cells in clk=\clk, en={ }, arst={ }, srst=$abc$7794$abc$3340$c3b_rst
+  161 cells in clk=\clk, en=!$abc$5908$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, arst={ }, srst=\rst
+  8 cells in clk=\clk, en=!$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=\rst
+  1041 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+  57 cells in clk=\clk, en=!$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=$abc$7239$abc$4560$auto$opt_dff.cc:253:combine_resets$574
+  448 cells in clk=\clk, en=$abc$7312$abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, arst={ }, srst=\rst
+  247 cells in clk=\clk, en=$abc$6125$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, arst={ }, srst=\rst
+
+3.33.2. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$7794$abc$3340$c3b_rst
+Extracted 366 gates and 647 wires to a netlist network with 281 inputs and 241 outputs.
+
+3.33.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        3
+ABC RESULTS:            ANDNOT cells:       19
+ABC RESULTS:             ORNOT cells:       25
+ABC RESULTS:               AND cells:      109
+ABC RESULTS:               MUX cells:      103
+ABC RESULTS:              NAND cells:      163
+ABC RESULTS:                OR cells:       69
+ABC RESULTS:              XNOR cells:        6
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:       14
+ABC RESULTS:        internal signals:      125
+ABC RESULTS:           input signals:      281
+ABC RESULTS:          output signals:      241
+Removing temp directory.
+
+3.33.3. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$5908$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, synchronously reset by \rst
+Extracted 161 gates and 275 wires to a netlist network with 114 inputs and 31 outputs.
+
+3.33.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:                OR cells:        5
+ABC RESULTS:             ORNOT cells:        5
+ABC RESULTS:               AND cells:       43
+ABC RESULTS:            ANDNOT cells:        8
+ABC RESULTS:              NAND cells:       82
+ABC RESULTS:               MUX cells:       16
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:        internal signals:      130
+ABC RESULTS:           input signals:      114
+ABC RESULTS:          output signals:       31
+Removing temp directory.
+
+3.33.4. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by \rst
+Extracted 8 gates and 11 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.33.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:        internal signals:        5
+ABC RESULTS:           input signals:        3
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.33.5. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 1041 gates and 1384 wires to a netlist network with 343 inputs and 241 outputs.
+
+3.33.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       99
+ABC RESULTS:               NOT cells:       23
+ABC RESULTS:               AND cells:      163
+ABC RESULTS:                OR cells:       66
+ABC RESULTS:              NAND cells:      243
+ABC RESULTS:               MUX cells:      171
+ABC RESULTS:              XNOR cells:      155
+ABC RESULTS:             ORNOT cells:       25
+ABC RESULTS:               XOR cells:       65
+ABC RESULTS:               NOR cells:       11
+ABC RESULTS:            ANDNOT cells:       42
+ABC RESULTS:               BUF cells:      104
+ABC RESULTS:        internal signals:      800
+ABC RESULTS:           input signals:      343
+ABC RESULTS:          output signals:      241
+Removing temp directory.
+
+3.33.6. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$9138$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by $abc$7239$abc$4560$auto$opt_dff.cc:253:combine_resets$574
+Extracted 57 gates and 64 wires to a netlist network with 7 inputs and 56 outputs.
+
+3.33.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               XOR cells:        5
+ABC RESULTS:               NOT cells:       49
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:        1
+ABC RESULTS:           input signals:        7
+ABC RESULTS:          output signals:       56
+Removing temp directory.
+
+3.33.7. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$7312$abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, synchronously reset by \rst
+Extracted 448 gates and 566 wires to a netlist network with 118 inputs and 167 outputs.
+
+3.33.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      128
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:            ANDNOT cells:       15
+ABC RESULTS:                OR cells:        6
+ABC RESULTS:               XOR cells:       91
+ABC RESULTS:               MUX cells:      206
+ABC RESULTS:               BUF cells:       21
+ABC RESULTS:        internal signals:      281
+ABC RESULTS:           input signals:      118
+ABC RESULTS:          output signals:      167
+Removing temp directory.
+
+3.33.8. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$9147$abc$6125$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, synchronously reset by \rst
+Extracted 247 gates and 399 wires to a netlist network with 152 inputs and 129 outputs.
+
+3.33.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.33.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:        4
+ABC RESULTS:            ANDNOT cells:        4
+ABC RESULTS:               NOR cells:        2
+ABC RESULTS:               MUX cells:       10
+ABC RESULTS:               AND cells:       26
+ABC RESULTS:                OR cells:        7
+ABC RESULTS:              NAND cells:       15
+ABC RESULTS:             ORNOT cells:        6
+ABC RESULTS:              XNOR cells:       51
+ABC RESULTS:               XOR cells:       59
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:      118
+ABC RESULTS:           input signals:      152
+ABC RESULTS:          output signals:      129
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.34. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.35. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.30.8. Executing OPT_EXPR pass (perform const folding).
+3.35.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
+<suppressed ~28 debug messages>
 
-3.30.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> opt_merge -nomux
+
+3.35.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\kasumi'.
+<suppressed ~150 debug messages>
+Removed a total of 50 cells.
 
 yosys> opt_muxtree
 
-3.30.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1031,86 +1826,575 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.30.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.30.12. Executing OPT_MERGE pass (detect identical cells).
+3.35.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\kasumi'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \kasumi..
+Removed 0 unused cells and 8706 unused wires.
+<suppressed ~29 debug messages>
+
+yosys> opt_expr
+
+3.35.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module kasumi.
+
+3.35.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.35.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \kasumi..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.35.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \kasumi.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.35.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\kasumi'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.35.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.35.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \kasumi..
+
+yosys> opt_expr
+
+3.35.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module kasumi.
+
+3.35.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.36. Executing ABC pass (technology mapping using ABC).
+
+3.36.1. Summary of detected clock domains:
+  1280 cells in clk=\clk, en={ }, arst={ }, srst=\rst
+  7 cells in clk=\clk, en=!$abc$10376$abc$9138$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=\rst
+  185 cells in clk=\clk, en=!$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, arst={ }, srst=\rst
+  371 cells in clk=\clk, en={ }, arst={ }, srst=\c3b_rst
+  246 cells in clk=\clk, en=$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, arst={ }, srst=\rst
+  354 cells in clk=\clk, en=$abc$10376$abc$7312$abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, arst={ }, srst=\rst
+  5 cells in clk=\clk, en=!$abc$10376$abc$9138$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, arst={ }, srst=$abc$10315$abc$7239$abc$4560$auto$opt_dff.cc:253:combine_resets$574
+
+3.36.2. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \rst
+Extracted 1280 gates and 1618 wires to a netlist network with 338 inputs and 251 outputs.
+
+3.36.2.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.2.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       99
+ABC RESULTS:               NOT cells:       10
+ABC RESULTS:               XOR cells:       59
+ABC RESULTS:                OR cells:       69
+ABC RESULTS:              XNOR cells:      153
+ABC RESULTS:               AND cells:      235
+ABC RESULTS:             ORNOT cells:       49
+ABC RESULTS:              NAND cells:      376
+ABC RESULTS:               MUX cells:      194
+ABC RESULTS:               NOR cells:       19
+ABC RESULTS:            ANDNOT cells:       63
+ABC RESULTS:               BUF cells:       67
+ABC RESULTS:        internal signals:     1029
+ABC RESULTS:           input signals:      338
+ABC RESULTS:          output signals:      251
+Removing temp directory.
+
+3.36.3. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$10376$abc$9138$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by \rst
+Extracted 7 gates and 10 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.36.3.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.3.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        2
+ABC RESULTS:               XOR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:        internal signals:        4
+ABC RESULTS:           input signals:        3
+ABC RESULTS:          output signals:        3
+Removing temp directory.
+
+3.36.4. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$3318$auto$simplemap.cc:257:simplemap_eqne$710, synchronously reset by \rst
+Extracted 185 gates and 301 wires to a netlist network with 116 inputs and 46 outputs.
+
+3.36.4.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.4.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        1
+ABC RESULTS:            ANDNOT cells:        8
+ABC RESULTS:             ORNOT cells:        3
+ABC RESULTS:                OR cells:       12
+ABC RESULTS:               MUX cells:       10
+ABC RESULTS:              NAND cells:       90
+ABC RESULTS:               AND cells:       67
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:        internal signals:      139
+ABC RESULTS:           input signals:      116
+ABC RESULTS:          output signals:       46
+Removing temp directory.
+
+3.36.5. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \c3b_rst
+Extracted 371 gates and 640 wires to a netlist network with 269 inputs and 191 outputs.
+
+3.36.5.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.5.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        3
+ABC RESULTS:            ANDNOT cells:       17
+ABC RESULTS:               NOR cells:        4
+ABC RESULTS:             ORNOT cells:       46
+ABC RESULTS:               AND cells:       56
+ABC RESULTS:               MUX cells:       99
+ABC RESULTS:              NAND cells:      106
+ABC RESULTS:                OR cells:       25
+ABC RESULTS:              XNOR cells:        2
+ABC RESULTS:               BUF cells:        1
+ABC RESULTS:               NOT cells:        5
+ABC RESULTS:        internal signals:      180
+ABC RESULTS:           input signals:      269
+ABC RESULTS:          output signals:      191
+Removing temp directory.
+
+3.36.6. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$11223$abc$4665$auto$opt_dff.cc:194:make_patterns_logic$563, synchronously reset by \rst
+Extracted 246 gates and 400 wires to a netlist network with 154 inputs and 129 outputs.
+
+3.36.6.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.6.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:       64
+ABC RESULTS:               NOT cells:        2
+ABC RESULTS:               NOR cells:        1
+ABC RESULTS:            ANDNOT cells:        6
+ABC RESULTS:             ORNOT cells:        4
+ABC RESULTS:               AND cells:       18
+ABC RESULTS:               MUX cells:        9
+ABC RESULTS:                OR cells:        5
+ABC RESULTS:              NAND cells:       25
+ABC RESULTS:              XNOR cells:       51
+ABC RESULTS:               XOR cells:       60
+ABC RESULTS:               BUF cells:      128
+ABC RESULTS:        internal signals:      117
+ABC RESULTS:           input signals:      154
+ABC RESULTS:          output signals:      129
+Removing temp directory.
+
+3.36.7. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$10376$abc$7312$abc$4110$auto$opt_dff.cc:194:make_patterns_logic$579, synchronously reset by \rst
+Extracted 354 gates and 425 wires to a netlist network with 71 inputs and 194 outputs.
+
+3.36.7.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.7.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:      128
+ABC RESULTS:             ORNOT cells:        1
+ABC RESULTS:              NAND cells:        1
+ABC RESULTS:               XOR cells:       96
+ABC RESULTS:               MUX cells:      128
+ABC RESULTS:               BUF cells:       96
+ABC RESULTS:        internal signals:      160
+ABC RESULTS:           input signals:       71
+ABC RESULTS:          output signals:      194
+Removing temp directory.
+
+3.36.8. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by !$abc$12617$abc$10376$abc$9138$abc$6116$abc$4560$auto$simplemap.cc:128:simplemap_reduce$1720, synchronously reset by $abc$10315$abc$7239$abc$4560$auto$opt_dff.cc:253:combine_resets$574
+Extracted 5 gates and 7 wires to a netlist network with 2 inputs and 5 outputs.
+
+3.36.8.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + strash 
+ABC: + ifraig 
+ABC: + scorr 
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.36.8.2. Re-integrating ABC results.
+ABC RESULTS:               DFF cells:        2
+ABC RESULTS:                OR cells:        1
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:               BUF cells:        3
+ABC RESULTS:        internal signals:        0
+ABC RESULTS:           input signals:        2
+ABC RESULTS:          output signals:        5
+Removing temp directory.
+
+yosys> opt_ffinv
+
+3.37. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> abc -script /tmp/yosys_KmhTvn/abc_tmp_1.scr
+
+3.38. Executing ABC pass (technology mapping using ABC).
+
+3.38.1. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Extracted 2196 gates and 2528 wires to a netlist network with 332 inputs and 238 outputs.
+
+3.38.1.1. Executing ABC.
+Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
+ABC: + source /tmp/yosys_KmhTvn/abc_tmp_1.scr 
+ABC:   #Luts =   703  Max Lvl =  15  Avg Lvl =   3.58  [   0.16 sec. at Pass 0]
+ABC:   #Luts =   660  Max Lvl =  14  Avg Lvl =   3.46  [   5.47 sec. at Pass 1]
+ABC:   #Luts =   655  Max Lvl =  14  Avg Lvl =   3.58  [   1.04 sec. at Pass 2]
+ABC:   #Luts =   619  Max Lvl =  13  Avg Lvl =   3.38  [   2.18 sec. at Pass 3]
+ABC:   #Luts =   608  Max Lvl =  13  Avg Lvl =   3.31  [   1.20 sec. at Pass 4]
+ABC:   #Luts =   601  Max Lvl =  13  Avg Lvl =   3.22  [   3.32 sec. at Pass 5]
+ABC:   #Luts =   591  Max Lvl =  14  Avg Lvl =   3.35  [   1.35 sec. at Pass 6]
+ABC:   #Luts =   589  Max Lvl =  14  Avg Lvl =   3.33  [   3.73 sec. at Pass 7]
+ABC:   #Luts =   589  Max Lvl =  13  Avg Lvl =   3.26  [   1.91 sec. at Pass 8]
+ABC:   #Luts =   589  Max Lvl =  12  Avg Lvl =   3.21  [   4.17 sec. at Pass 9]
+ABC:   #Luts =   586  Max Lvl =  12  Avg Lvl =   3.13  [   1.51 sec. at Pass 10]
+ABC:   #Luts =   583  Max Lvl =  13  Avg Lvl =   3.19  [   3.64 sec. at Pass 11]
+ABC:   #Luts =   583  Max Lvl =  13  Avg Lvl =   3.19  [   1.52 sec. at Pass 12]
+ABC:   #Luts =   579  Max Lvl =  12  Avg Lvl =   3.11  [   4.02 sec. at Pass 13]
+ABC:   #Luts =   579  Max Lvl =  12  Avg Lvl =   3.11  [   1.24 sec. at Pass 14]
+ABC:   #Luts =   579  Max Lvl =  12  Avg Lvl =   3.11  [   3.55 sec. at Pass 15]
+ABC:   #Luts =   577  Max Lvl =  14  Avg Lvl =   3.37  [   1.39 sec. at Pass 16]
+ABC:   #Luts =   576  Max Lvl =  13  Avg Lvl =   3.21  [   3.18 sec. at Pass 17]
+ABC:   #Luts =   570  Max Lvl =  12  Avg Lvl =   3.20  [   1.37 sec. at Pass 18]
+ABC:   #Luts =   570  Max Lvl =  12  Avg Lvl =   3.20  [   3.50 sec. at Pass 19]
+ABC:   #Luts =   570  Max Lvl =  12  Avg Lvl =   3.20  [   1.34 sec. at Pass 20]
+ABC:   #Luts =   570  Max Lvl =  12  Avg Lvl =   3.20  [   3.29 sec. at Pass 21]
+ABC:   #Luts =   563  Max Lvl =  12  Avg Lvl =   3.11  [  19.11 sec. at Pass 22]
+ABC:   #Luts =   563  Max Lvl =  12  Avg Lvl =   3.11  [   1.39 sec. at Pass 23]
+ABC:   #Luts =   563  Max Lvl =  12  Avg Lvl =   3.11  [   3.86 sec. at Pass 24]
+ABC:   #Luts =   561  Max Lvl =  12  Avg Lvl =   3.18  [   1.36 sec. at Pass 25]
+ABC:   #Luts =   561  Max Lvl =  12  Avg Lvl =   3.18  [   3.89 sec. at Pass 26]
+ABC:   #Luts =   561  Max Lvl =  12  Avg Lvl =   3.18  [   1.42 sec. at Pass 27]
+ABC:   #Luts =   561  Max Lvl =  12  Avg Lvl =   3.18  [   4.01 sec. at Pass 28]
+ABC:   #Luts =   556  Max Lvl =  12  Avg Lvl =   3.17  [  20.21 sec. at Pass 29]
+ABC:   #Luts =   556  Max Lvl =  12  Avg Lvl =   3.17  [   1.43 sec. at Pass 30]
+ABC:   #Luts =   556  Max Lvl =  12  Avg Lvl =   3.17  [   4.23 sec. at Pass 31]
+ABC:   #Luts =   554  Max Lvl =  13  Avg Lvl =   3.19  [   1.61 sec. at Pass 32]
+ABC:   #Luts =   554  Max Lvl =  13  Avg Lvl =   3.19  [   4.10 sec. at Pass 33]
+ABC:   #Luts =   554  Max Lvl =  13  Avg Lvl =   3.19  [   1.83 sec. at Pass 34]
+ABC:   #Luts =   554  Max Lvl =  13  Avg Lvl =   3.19  [   5.27 sec. at Pass 35]
+ABC:   #Luts =   551  Max Lvl =  12  Avg Lvl =   3.05  [  25.89 sec. at Pass 36]
+ABC:   #Luts =   551  Max Lvl =  12  Avg Lvl =   3.05  [   1.80 sec. at Pass 37]
+ABC:   #Luts =   551  Max Lvl =  12  Avg Lvl =   3.05  [   4.30 sec. at Pass 38]
+ABC:   #Luts =   551  Max Lvl =  12  Avg Lvl =   3.05  [   1.70 sec. at Pass 39]
+ABC:   #Luts =   548  Max Lvl =  13  Avg Lvl =   3.10  [  21.95 sec. at Pass 40]
+ABC:   #Luts =   548  Max Lvl =  13  Avg Lvl =   3.10  [   4.36 sec. at Pass 41]
+ABC:   #Luts =   548  Max Lvl =  13  Avg Lvl =   3.10  [   1.50 sec. at Pass 42]
+ABC:   #Luts =   548  Max Lvl =  12  Avg Lvl =   3.03  [   3.45 sec. at Pass 43]
+ABC:   #Luts =   546  Max Lvl =  13  Avg Lvl =   3.08  [   1.30 sec. at Pass 44]
+ABC:   #Luts =   546  Max Lvl =  13  Avg Lvl =   3.08  [   3.90 sec. at Pass 45]
+ABC:   #Luts =   545  Max Lvl =  13  Avg Lvl =   3.09  [   1.43 sec. at Pass 46]
+ABC:   #Luts =   545  Max Lvl =  13  Avg Lvl =   3.09  [   4.09 sec. at Pass 47]
+ABC:   #Luts =   545  Max Lvl =  13  Avg Lvl =   3.09  [   1.53 sec. at Pass 48]
+ABC:   #Luts =   545  Max Lvl =  13  Avg Lvl =   3.09  [   3.67 sec. at Pass 49]
+ABC:   #Luts =   545  Max Lvl =  13  Avg Lvl =   3.09  [   0.19 sec. at Pass 50]
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+3.38.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      545
+ABC RESULTS:        internal signals:     1958
+ABC RESULTS:           input signals:      332
+ABC RESULTS:          output signals:      238
+Removing temp directory.
+
+yosys> opt
+
+3.39. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module kasumi.
+
+yosys> opt_merge -nomux
+
+3.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\kasumi'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.39.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \kasumi..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \kasumi.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.30.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.39.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.30.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \kasumi..
+Removed 0 unused cells and 6189 unused wires.
+<suppressed ~6 debug messages>
+
+yosys> opt_expr
+
+3.39.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module kasumi.
+
+3.39.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.39.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \kasumi..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.39.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \kasumi.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.39.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\kasumi'.
+Removed a total of 0 cells.
+
+yosys> opt_dff
+
+3.39.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.39.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> opt_expr
 
-3.30.15. Executing OPT_EXPR pass (perform const folding).
+3.39.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.30.16. Finished OPT passes. (There is nothing left to do.)
+3.39.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> opt_ffinv
+
+3.40. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 3 inverters.
 
 yosys> stat
 
-3.31. Printing statistics.
+3.41. Printing statistics.
 
 === kasumi ===
 
-   Number of wires:                603
-   Number of wire bits:           1743
-   Number of public wires:          61
-   Number of public wire bits:    1201
+   Number of wires:                814
+   Number of wire bits:           1695
+   Number of public wires:          44
+   Number of public wire bits:     925
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1000
-     $_SDFFE_PP0N_                  67
+   Number of cells:                841
+     $_SDFFE_PP0N_                   3
      $_SDFFE_PP0P_                 192
-     $_SDFFE_PP1N_                  64
-     $_SDFF_PP0_                   102
-     $lut                          575
+     $_SDFFE_PP1N_                   2
+     $_SDFF_PP0_                   101
+     $_SDFF_PP1_                     1
+     $lut                          542
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.32. Executing SHREGMAP pass (map shift registers).
+3.42. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.33. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.43. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.34. Printing statistics.
+3.44. Printing statistics.
 
 === kasumi ===
 
-   Number of wires:               1351
-   Number of wire bits:           2491
-   Number of public wires:          61
-   Number of public wire bits:    1201
+   Number of wires:               1310
+   Number of wire bits:           2191
+   Number of public wires:          44
+   Number of public wire bits:     925
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1748
-     $_DFF_P_                      425
-     $_MUX_                        748
-     $lut                          575
+   Number of cells:               1337
+     $_DFF_P_                      299
+     $_MUX_                        496
+     $lut                          542
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.35. Executing TECHMAP pass (map to technology primitives).
+3.45. Executing TECHMAP pass (map to technology primitives).
 
-3.35.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.45.1. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1138,7 +2422,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.35.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.45.2. Executing Verilog-2005 frontend: /home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -1207,65 +2491,65 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.35.3. Continuing TECHMAP pass.
-Using template \$_DFF_P_ for cells of type $_DFF_P_.
+3.45.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
 No more expansions possible.
-<suppressed ~1136 debug messages>
+<suppressed ~977 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.36. Executing OPT_EXPR pass (perform const folding).
+3.46. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
-<suppressed ~11994 debug messages>
+<suppressed ~11345 debug messages>
 
 yosys> simplemap
 
-3.37. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.47. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.38. Executing OPT_EXPR pass (perform const folding).
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
 yosys> opt_merge
 
-3.39. Executing OPT_MERGE pass (detect identical cells).
+3.49. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
-<suppressed ~7341 debug messages>
-Removed a total of 2447 cells.
+<suppressed ~6774 debug messages>
+Removed a total of 2258 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.40. Executing OPT_DFF pass (perform DFF optimizations).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.41. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 2552 unused wires.
+Removed 0 unused cells and 2111 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.42. Executing OPT pass (performing simple optimizations).
+3.52. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.42.1. Executing OPT_EXPR pass (perform const folding).
+3.52.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
-<suppressed ~465 debug messages>
+<suppressed ~461 debug messages>
 
 yosys> opt_merge -nomux
 
-3.42.2. Executing OPT_MERGE pass (detect identical cells).
+3.52.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
-<suppressed ~18 debug messages>
-Removed a total of 6 cells.
+<suppressed ~15 debug messages>
+Removed a total of 5 cells.
 
 yosys> opt_muxtree
 
-3.42.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1273,37 +2557,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.5. Executing OPT_MERGE pass (detect identical cells).
+3.52.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 69 unused wires.
+Removed 0 unused cells and 66 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.42.8. Executing OPT_EXPR pass (perform const folding).
+3.52.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.42.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.52.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.42.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.52.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1311,88 +2595,85 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.42.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.52.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.42.12. Executing OPT_MERGE pass (detect identical cells).
+3.52.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.42.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.52.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.42.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.52.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> opt_expr
 
-3.42.15. Executing OPT_EXPR pass (perform const folding).
+3.52.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.42.16. Finished OPT passes. (There is nothing left to do.)
+3.52.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script abc_tmp.scr
+yosys> abc -script /tmp/yosys_KmhTvn/abc_tmp_2.scr
 
-3.43. Executing ABC pass (technology mapping using ABC).
+3.53. Executing ABC pass (technology mapping using ABC).
 
-3.43.1. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
-Extracted 3575 gates and 4100 wires to a netlist network with 523 inputs and 425 outputs.
+3.53.1. Extracting gate netlist of module `\kasumi' to `<abc-temp-dir>/input.blif'..
+Extracted 3275 gates and 3674 wires to a netlist network with 397 inputs and 299 outputs.
 
-3.43.1.1. Executing ABC.
+3.53.1.1. Executing ABC.
 Running ABC command: <yosys-exe-dir>/abc -s -f <abc-temp-dir>/abc.script 2>&1
 ABC: ABC command line: "source <abc-temp-dir>/abc.script".
 ABC: 
 ABC: + read_blif <abc-temp-dir>/input.blif 
 ABC: + read_library <abc-temp-dir>/stdcells.genlib 
 ABC: Entered genlib library with 13 gates from file "<abc-temp-dir>/stdcells.genlib".
-ABC: + source /home/users/aram/yosys_verific_rs/result_04-05-2022T15-08-45/Golden_synth_rs_ade.json/nfcc/abc_tmp.scr 
-ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   3.64  [   0.72 sec. at Pass 0]
-ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   3.64  [  23.22 sec. at Pass 1]
-ABC:   #Luts =   802  Max Lvl =  13  Avg Lvl =   3.64  [   5.54 sec. at Pass 2]
-ABC:   #Luts =   799  Max Lvl =  13  Avg Lvl =   3.55  [  25.79 sec. at Pass 3]
-ABC:   #Luts =   792  Max Lvl =  13  Avg Lvl =   4.24  [   4.54 sec. at Pass 4]
-ABC:   #Luts =   788  Max Lvl =  12  Avg Lvl =   3.48  [  22.67 sec. at Pass 5]
-ABC:   #Luts =   787  Max Lvl =  14  Avg Lvl =   4.24  [   5.24 sec. at Pass 6]
-ABC:   #Luts =   787  Max Lvl =  13  Avg Lvl =   4.18  [  24.78 sec. at Pass 7]
-ABC:   #Luts =   787  Max Lvl =  13  Avg Lvl =   4.18  [   4.11 sec. at Pass 8]
-ABC:   #Luts =   785  Max Lvl =  14  Avg Lvl =   4.23  [  22.68 sec. at Pass 9]
-ABC:   #Luts =   784  Max Lvl =  14  Avg Lvl =   4.23  [   5.82 sec. at Pass 10]
-ABC:   #Luts =   784  Max Lvl =  14  Avg Lvl =   4.23  [  24.04 sec. at Pass 11]
-ABC:   #Luts =   784  Max Lvl =  14  Avg Lvl =   4.23  [   5.18 sec. at Pass 12]
-ABC:   #Luts =   784  Max Lvl =  14  Avg Lvl =   4.23  [  21.16 sec. at Pass 13]
+ABC: + source /tmp/yosys_KmhTvn/abc_tmp_2.scr 
+ABC:   #Luts =   641  Max Lvl =  14  Avg Lvl =   3.87  [   0.28 sec. at Pass 0]
+ABC:   #Luts =   641  Max Lvl =  14  Avg Lvl =   3.87  [   9.74 sec. at Pass 1]
+ABC:   #Luts =   640  Max Lvl =  14  Avg Lvl =   3.87  [   1.76 sec. at Pass 2]
+ABC:   #Luts =   638  Max Lvl =  13  Avg Lvl =   4.32  [   3.98 sec. at Pass 3]
+ABC:   #Luts =   638  Max Lvl =  13  Avg Lvl =   4.32  [   1.61 sec. at Pass 4]
+ABC:   #Luts =   638  Max Lvl =  13  Avg Lvl =   4.32  [   3.52 sec. at Pass 5]
+ABC:   #Luts =   635  Max Lvl =  13  Avg Lvl =   4.27  [   1.54 sec. at Pass 6]
+ABC:   #Luts =   635  Max Lvl =  13  Avg Lvl =   4.27  [   3.84 sec. at Pass 7]
+ABC:   #Luts =   635  Max Lvl =  13  Avg Lvl =   4.27  [   1.89 sec. at Pass 8]
+ABC:   #Luts =   635  Max Lvl =  13  Avg Lvl =   4.27  [   3.16 sec. at Pass 9]
+ABC:   #Luts =   635  Max Lvl =  13  Avg Lvl =   4.27  [   0.30 sec. at Pass 10]
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
-3.43.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:      784
-ABC RESULTS:        internal signals:     3152
-ABC RESULTS:           input signals:      523
-ABC RESULTS:          output signals:      425
+3.53.1.2. Re-integrating ABC results.
+ABC RESULTS:              $lut cells:      635
+ABC RESULTS:        internal signals:     2978
+ABC RESULTS:           input signals:      397
+ABC RESULTS:          output signals:      299
 Removing temp directory.
 
 yosys> opt
 
-3.44. Executing OPT pass (performing simple optimizations).
+3.54. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.44.1. Executing OPT_EXPR pass (perform const folding).
+3.54.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
 yosys> opt_merge -nomux
 
-3.44.2. Executing OPT_MERGE pass (detect identical cells).
+3.54.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.44.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1400,37 +2681,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.5. Executing OPT_MERGE pass (detect identical cells).
+3.54.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 2977 unused wires.
-<suppressed ~5 debug messages>
+Removed 0 unused cells and 2526 unused wires.
+<suppressed ~2 debug messages>
 
 yosys> opt_expr
 
-3.44.8. Executing OPT_EXPR pass (perform const folding).
+3.54.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.44.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.54.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.44.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.54.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \kasumi..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1438,87 +2719,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.44.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \kasumi.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.44.12. Executing OPT_MERGE pass (detect identical cells).
+3.54.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\kasumi'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.44.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.54.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.44.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.54.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
 
 yosys> opt_expr
 
-3.44.15. Executing OPT_EXPR pass (perform const folding).
+3.54.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module kasumi.
 
-3.44.16. Finished OPT passes. (There is nothing left to do.)
+3.54.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> hierarchy -check
 
-3.45. Executing HIERARCHY pass (managing design hierarchy).
+3.55. Executing HIERARCHY pass (managing design hierarchy).
 
-3.45.1. Analyzing design hierarchy..
+3.55.1. Analyzing design hierarchy..
 Top module:  \kasumi
 
-3.45.2. Analyzing design hierarchy..
+3.55.2. Analyzing design hierarchy..
 Top module:  \kasumi
 Removed 0 unused modules.
 
 yosys> stat
 
-3.46. Printing statistics.
+3.56. Printing statistics.
 
 === kasumi ===
 
-   Number of wires:                841
-   Number of wire bits:           1920
-   Number of public wires:          57
-   Number of public wire bits:    1136
+   Number of wires:                904
+   Number of wire bits:           1785
+   Number of public wires:          43
+   Number of public wire bits:     924
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1209
-     $lut                          784
-     dffsre                        425
+   Number of cells:                934
+     $lut                          635
+     dffsre                        299
 
 
 yosys> opt_clean -purge
 
-3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \kasumi..
-Removed 0 unused cells and 23 unused wires.
-<suppressed ~23 debug messages>
+Removed 0 unused cells and 31 unused wires.
+<suppressed ~31 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.48. Executing Verilog backend.
+3.58. Executing Verilog backend.
 
 yosys> bmuxmap
 
-3.48.1. Executing BMUXMAP pass.
+3.58.1. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.48.2. Executing DEMUXMAP pass.
+3.58.2. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 Dumping module `\kasumi'.
 
 Warnings: 12 unique messages, 12 total
-End of script. Logfile hash: 8a740ea6a5, CPU: user 10.14s system 0.13s, MEM: 51.96 MB peak
-Yosys 0.16+6 (git sha1 7f5477eb1, gcc 9.1.0 -fPIC -Os)
-Time spent: 99% 2x abc (2394 sec), 0% 27x opt_expr (3 sec), ...
-real 472.34
-user 2257.46
-sys 147.51
+End of script. Logfile hash: df5c8ab004, CPU: user 9.97s system 0.23s, MEM: 52.32 MB peak
+Yosys 0.16+65 (git sha1 91803ad5c, gcc 9.1.0 -fPIC -Os)
+Time spent: 99% 6x abc (2898 sec), 0% 30x opt_expr (3 sec), ...
+real 259.65
+user 2754.64
+sys 152.45
