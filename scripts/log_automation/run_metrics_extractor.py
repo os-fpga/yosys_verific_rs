@@ -52,8 +52,8 @@ parser.add_argument("--exclude_metrics", type=str, nargs="*",
         default=[
             "LUT_AS_LOGIC", 
             "LUT_AS_MEMORY", 
-            "MUXF7", 
-            "MUXF8", 
+            "MUXF7",
+            "MUXF8",
             "MAX_LOGIC_LEVEL", 
             "AVERAGE_LOGIC_LEVEL", 
             "DRAM" 
@@ -329,7 +329,6 @@ def extract_vivado_metrics():
                                         add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                         add_value(line.split()[3], design_index, "MUXF7", tool, label)
                                     if re.search(r"muxf8", line, re.IGNORECASE):
-                                        add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
                                         add_value(line.split()[3], design_index, "MUXF8", tool, label)
                                     if re.search(r"carry", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "LUT:CARRY4=1*LUT", tool, label)
@@ -344,6 +343,8 @@ def extract_vivado_metrics():
                                         add_value(line.split()[3], design_index, "BRAM", tool, label)
                                     if re.search(r"dsp", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "DSP", tool, label)
+                            metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] -= metrics.at[design_index, extract_column_name("MUXF8",tool,label)]
+
                         with open(os.path.join(task_dir, filename), 'r') as f:
                             slice_logic = re.findall(r"Slice Logic.*Site Type.*Used.*Fixed.*Available.*Util\%|\n?(.*?)\n\n?", f.read(), re.DOTALL)
                             if not slice_logic:
