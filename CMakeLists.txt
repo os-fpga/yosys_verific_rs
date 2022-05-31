@@ -26,7 +26,7 @@ option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
-set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMarch22)
+set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vApril22)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
