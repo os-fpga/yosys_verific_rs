@@ -22,7 +22,7 @@ add_subdirectory(logic_synthesis-rs)
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
-option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
+option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" ON)
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
