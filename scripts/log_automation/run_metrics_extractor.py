@@ -134,7 +134,8 @@ def metrics_to_csv():
     logger.info("Saving into : " + args.output_file)
     metrics.fillna('-', inplace=True)
     metrics.replace(to_replace='nan', value='-',inplace=True)
-    metrics.iloc[-4] = ["" for col in metrics.columns]
+    if args.base:
+        metrics.iloc[-4] = ["" for col in metrics.columns]
     metrics.to_csv(args.output_file, encoding="utf-8-sig", index=False)
 
 def get_design_index(design_name):
@@ -273,11 +274,11 @@ def extract_yosys_metrics():
                         metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[2]
                         metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[3][1:-1]
                     else:
-                        results = re.findall("ABC:   #Luts =\s+[0-9]+\s+Max Lvl =\s+[0-9]+\s+Avg Lvl =\s+[0-9\.]+", log)
+                        results = re.findall("DE:   #PIs =\s+[0-9]+\s+#Luts =\s+[0-9]+\s+Max Lvl =\s+[0-9]+\s+Avg Lvl =\s+[0-9\.]+", log)
                         if results:
                             results = results[-1].split()
-                            metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[7]
-                            metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[11]
+                            metrics.at[design_index, extract_column_name("MAX_LOGIC_LEVEL",tool,label)] = results[10]
+                            metrics.at[design_index, extract_column_name("AVERAGE_LOGIC_LEVEL",tool,label)] = results[14]
             except OSError as e:
                 error_exit(e.strerror)
             except ValueError as e:
@@ -456,6 +457,8 @@ def calc_percentage(metrics_list):
             for i in range(0, len(metrics['Benchmarks'])):
                 for metric in vivado_metrics:
                     try:
+                        if metrics.at[i, extract_column_name(metric, "Vivado", label)] == 0:
+                            raise 
                         if metric in vivado_lut_metrics:
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Vivado", label)] = format((float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]), '.1f')
@@ -472,6 +475,8 @@ def calc_percentage(metrics_list):
             for i in range(0, len(metrics['Benchmarks'])):
                 for metric in yosys_metrics:
                     try:
+                        if metrics.at[i, extract_column_name(metric, "Yosys", label)] == 0:
+                            raise 
                         metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]) - \
                         float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]), '.1f')
 
@@ -489,6 +494,8 @@ def calc_percentage(metrics_list):
                 for i in range(0, len(metrics['Benchmarks'])):
                     for metric in vivado_metrics:
                         try:
+                            if metrics.at[i, extract_column_name(metric, "Vivado", label)] == 0:
+                                raise 
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = format(((metrics.at[i, extract_column_name(metric, "Vivado", label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, "Vivado", label_base)]), '.1f')
                         except Exception:
@@ -499,10 +506,14 @@ def calc_percentage(metrics_list):
             for i in range(0, len(metrics['Benchmarks'])):
                 for metric in vivado_metrics:
                     try:
+                        if metrics.at[i, extract_column_name(lut_label, "Yosys", label)] == 0:
+                            raise 
                         if metric in vivado_lut_metrics:
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(lut_label, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
                         else:
+                            if metrics.at[i, extract_column_name(metric, "Yosys", label)] == 0:
+                                raise 
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
                     except Exception:
