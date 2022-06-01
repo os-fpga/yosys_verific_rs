@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 34)
+set(VERSION_PATCH 35)
 
 project(yosys_verific_rs)
 
@@ -22,7 +22,11 @@ add_subdirectory(logic_synthesis-rs)
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
-option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" ON)
+if (APPLE)
+    option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
+else()
+    option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" ON)
+endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
