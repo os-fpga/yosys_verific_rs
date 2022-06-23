@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.47
- Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.49
+ Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,7 +35,7 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
@@ -44,7 +44,7 @@ yosys> read -vlog2k baud_generator.v ql_clkgate_x4.v ql_mux2_x2.v registers.v se
 yosys> verific -vlog2k baud_generator.v ql_clkgate_x4.v ql_mux2_x2.v registers.v serializer_deserializer.v spi_master_top.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'baud_generator.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ql_clkgate_x4.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ql_mux2_x2.v'
@@ -54,7 +54,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'spi_master_top.v'
 
 yosys> synth_rs -top spi_master_top -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.57
+3. Executing synth_rs pass: v0.4.58
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -227,83 +227,103 @@ Optimizing module registers.
 <suppressed ~4 debug messages>
 Optimizing module spi_master_top.
 
+yosys> bmuxmap
+
+3.5. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.6. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
 yosys> flatten
 
-3.5. Executing FLATTEN pass (flatten design).
-Deleting now unused module ql_mux2_x2.
-Deleting now unused module ql_clkgate_x4.
+3.7. Executing FLATTEN pass (flatten design).
 Deleting now unused module baud_generator.
-Deleting now unused module serializer_deserializer.
+Deleting now unused module ql_clkgate_x4.
+Deleting now unused module ql_mux2_x2.
 Deleting now unused module registers.
+Deleting now unused module serializer_deserializer.
 <suppressed ~5 debug messages>
+
+yosys> bmuxmap
+
+3.8. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.9. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> tribuf -logic
 
-3.6. Executing TRIBUF pass.
+3.10. Executing TRIBUF pass.
 
 yosys> deminout
 
-3.7. Executing DEMINOUT pass (demote inout ports to input or output).
+3.11. Executing DEMINOUT pass (demote inout ports to input or output).
 
 yosys> opt_expr
 
-3.8. Executing OPT_EXPR pass (perform const folding).
+3.12. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~1 debug messages>
+<suppressed ~25 debug messages>
 
 yosys> opt_clean
 
-3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 290 unused wires.
+Removed 0 unused cells and 298 unused wires.
 <suppressed ~86 debug messages>
 
 yosys> check
 
-3.10. Executing CHECK pass (checking for obvious problems).
+3.14. Executing CHECK pass (checking for obvious problems).
 Checking module spi_master_top...
 Found and reported 0 problems.
 
 yosys> opt -nodffe -nosdff
 
-3.11. Executing OPT pass (performing simple optimizations).
+3.15. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.11.1. Executing OPT_EXPR pass (perform const folding).
+3.15.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.11.2. Executing OPT_MERGE pass (detect identical cells).
+3.15.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~35 debug messages>
+<suppressed ~33 debug messages>
 
 yosys> opt_reduce
 
-3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.5. Executing OPT_MERGE pass (detect identical cells).
+3.15.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
 Changing const-value async load to async reset on $verific$wb_ack_i_reg$spi_master_top.v:109$19 ($aldff) from module spi_master_top.
 Changing const-value async load to async reset on $flatten\spi_register.$verific$tx_reg_reg$registers.v:214$362 ($aldff) from module spi_master_top.
 Changing const-value async load to async reset on $flatten\spi_register.$verific$ss_reg_reg$registers.v:214$363 ($aldff) from module spi_master_top.
@@ -335,131 +355,281 @@ Changing const-value async load to async reset on $flatten\ser_des.$verific$FSM_
 
 yosys> opt_clean
 
-3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.11.8. Executing OPT_EXPR pass (perform const folding).
+3.15.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~35 debug messages>
+<suppressed ~33 debug messages>
 
 yosys> opt_reduce
 
-3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.12. Executing OPT_MERGE pass (detect identical cells).
+3.15.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.11.15. Executing OPT_EXPR pass (perform const folding).
+3.15.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.11.16. Finished OPT passes. (There is nothing left to do.)
+3.15.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> fsm -encoding binary
 
-3.12. Executing FSM pass (extract and optimize FSM).
+3.16. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
+Found FSM state register spi_master_top.ser_des.FSM_spi_state.
 
 yosys> fsm_extract
 
-3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\ser_des.FSM_spi_state' from module `\spi_master_top'.
+  found $adff cell for state register: $flatten\ser_des.$verific$FSM_spi_state_reg$serializer_deserializer.v:283$636
+  root of input selection tree: $flatten\ser_des.$verific$n285$499
+  found reset state: 3'000 (from async reset)
+  found ctrl input: \wb_rst_i
+  found ctrl input: \ser_des.FSM_spi_state [2]
+  found ctrl input: \ser_des.FSM_spi_state [1]
+  found ctrl input: \ser_des.FSM_spi_state [0]
+  found ctrl input: \ser_des.start
+  found ctrl input: \ser_des.stop
+  found state code: 3'010
+  found state code: 3'001
+  found ctrl input: \spi_register.cmd_reg32 [0]
+  found ctrl input: \spi_register.cmd_reg32 [1]
+  found state code: 3'101
+  found state code: 3'011
+  found ctrl input: \spi_register.spi_clk_cnt_reg [7]
+  found state code: 3'111
+  found ctrl input: $flatten\ser_des.$verific$n129$440
+  found state code: 3'100
+  found state code: 3'110
+  found ctrl input: $flatten\ser_des.$verific$n268$454
+  found ctrl output: $flatten\ser_des.$verific$n32$406
+  found ctrl output: $flatten\ser_des.$verific$n33$407
+  found ctrl output: $flatten\ser_des.$verific$n35$409
+  found ctrl output: $flatten\ser_des.$verific$n46$411
+  found ctrl output: \spi_register.trnfer_cmplte_i
+  found ctrl output: \spi_register.IRQ_write_i
+  found ctrl output: $flatten\ser_des.$verific$n122$437
+  found ctrl output: $flatten\ser_des.$verific$n138$444
+  ctrl inputs: { \ser_des.stop \ser_des.start \ser_des.FSM_spi_state $flatten\ser_des.$verific$n268$454 $flatten\ser_des.$verific$n129$440 \spi_register.spi_clk_cnt_reg [7] \spi_register.cmd_reg32 \wb_rst_i }
+  ctrl outputs: { $flatten\ser_des.$verific$n46$411 $flatten\ser_des.$verific$n35$409 $flatten\ser_des.$verific$n33$407 $flatten\ser_des.$verific$n32$406 $flatten\ser_des.$verific$n285$499 $flatten\ser_des.$verific$n138$444 $flatten\ser_des.$verific$n122$437 \spi_register.trnfer_cmplte_i \spi_register.IRQ_write_i }
+  transition:      3'000 11'00000-----0 ->      3'000 11'10000000000
+  transition:      3'000 11'10000-----0 ->      3'010 11'10000100000
+  transition:      3'000 11'-1000-----0 ->      3'001 11'10000010000
+  transition:      3'000 11'--000-----1 ->      3'000 11'10000000000
+  transition:      3'100 11'00100-----0 ->      3'000 11'00000000001
+  transition:      3'100 11'10100-----0 ->      3'000 11'00000000001
+  transition:      3'100 11'-1100-----0 ->      3'100 11'00001000001
+  transition:      3'100 11'--100-----1 ->      3'000 11'00000000001
+  transition:      3'010 11'--010--0--0 ->      3'000 11'00000000010
+  transition:      3'010 11'--010--1--0 ->      3'111 11'00001110010
+  transition:      3'010 11'--010-----1 ->      3'000 11'00000000010
+  transition:      3'110 11'00110-----0 ->      3'000 11'00000000100
+  transition:      3'110 11'10110-----0 ->      3'000 11'00000000100
+  transition:      3'110 11'-1110-----0 ->      3'110 11'00001100100
+  transition:      3'110 11'--110-----1 ->      3'000 11'00000000100
+  transition:      3'001 11'--001---000 ->      3'000 11'00000001000
+  transition:      3'001 11'--001---100 ->      3'101 11'00001011000
+  transition:      3'001 11'--001----10 ->      3'011 11'00000111000
+  transition:      3'001 11'--001-----1 ->      3'000 11'00000001000
+  transition:      3'101 11'--101-0---0 ->      3'101 11'00101010000
+  transition:      3'101 11'--101-1---0 ->      3'110 11'00101100000
+  transition:      3'101 11'--101-----1 ->      3'000 11'00100000000
+  transition:      3'011 11'--011-0---0 ->      3'011 11'00010110000
+  transition:      3'011 11'--011-1---0 ->      3'100 11'00011000000
+  transition:      3'011 11'--011-----1 ->      3'000 11'00010000000
+  transition:      3'111 11'--1110----0 ->      3'111 11'01001110000
+  transition:      3'111 11'--1111----0 ->      3'000 11'01000000000
+  transition:      3'111 11'--111-----1 ->      3'000 11'01000000000
 
 yosys> fsm_opt
 
-3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\ser_des.FSM_spi_state$788' from module `\spi_master_top'.
+  Merging pattern 11'00100-----0 and 11'10100-----0 from group (1 0 11'00000000001).
+  Merging pattern 11'10100-----0 and 11'00100-----0 from group (1 0 11'00000000001).
+  Merging pattern 11'00110-----0 and 11'10110-----0 from group (3 0 11'00000000100).
+  Merging pattern 11'10110-----0 and 11'00110-----0 from group (3 0 11'00000000100).
 
 yosys> opt_clean
 
-3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
+Removed 23 unused cells and 22 unused wires.
+<suppressed ~24 debug messages>
 
 yosys> fsm_opt
 
-3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\ser_des.FSM_spi_state$788' from module `\spi_master_top'.
 
 yosys> fsm_recode -encoding binary
 
-3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+Recoding FSM `$fsm$\ser_des.FSM_spi_state$788' from module `\spi_master_top' using `auto' encoding:
+  mapping auto encoding to `binary` for this FSM.
+  existing encoding is already a packed binary encoding.
 
 yosys> fsm_info
 
-3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+FSM `$fsm$\ser_des.FSM_spi_state$788' from module `spi_master_top':
+-------------------------------------
+
+  Information on FSM $fsm$\ser_des.FSM_spi_state$788 (\ser_des.FSM_spi_state):
+
+  Number of input signals:   11
+  Number of output signals:  11
+  Number of state bits:       3
+
+  Input signals:
+    0: \wb_rst_i
+    1: \spi_register.cmd_reg32 [0]
+    2: \spi_register.cmd_reg32 [1]
+    3: \spi_register.spi_clk_cnt_reg [7]
+    4: $flatten\ser_des.$verific$n129$440
+    5: $flatten\ser_des.$verific$n268$454
+    6: $fsm$oldstate\ser_des.FSM_spi_state [0]
+    7: $fsm$oldstate\ser_des.FSM_spi_state [1]
+    8: $fsm$oldstate\ser_des.FSM_spi_state [2]
+    9: \ser_des.start
+   10: \ser_des.stop
+
+  Output signals:
+    0: \spi_register.IRQ_write_i
+    1: \spi_register.trnfer_cmplte_i
+    2: $flatten\ser_des.$verific$n122$437
+    3: $flatten\ser_des.$verific$n138$444
+    4: $flatten\ser_des.$verific$n285$499 [0]
+    5: $flatten\ser_des.$verific$n285$499 [1]
+    6: $flatten\ser_des.$verific$n285$499 [2]
+    7: $flatten\ser_des.$verific$n32$406
+    8: $flatten\ser_des.$verific$n33$407
+    9: $flatten\ser_des.$verific$n35$409
+   10: $flatten\ser_des.$verific$n46$411
+
+  State encoding:
+    0:      3'000  <RESET STATE>
+    1:      3'100
+    2:      3'010
+    3:      3'110
+    4:      3'001
+    5:      3'101
+    6:      3'011
+    7:      3'111
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 11'00000-----0   ->     0 11'10000000000
+      1:     0 11'--000-----1   ->     0 11'10000000000
+      2:     0 11'10000-----0   ->     2 11'10000100000
+      3:     0 11'-1000-----0   ->     4 11'10000010000
+      4:     1 11'-0100-----0   ->     0 11'00000000001
+      5:     1 11'--100-----1   ->     0 11'00000000001
+      6:     1 11'-1100-----0   ->     1 11'00001000001
+      7:     2 11'--010--0--0   ->     0 11'00000000010
+      8:     2 11'--010-----1   ->     0 11'00000000010
+      9:     2 11'--010--1--0   ->     7 11'00001110010
+     10:     3 11'-0110-----0   ->     0 11'00000000100
+     11:     3 11'--110-----1   ->     0 11'00000000100
+     12:     3 11'-1110-----0   ->     3 11'00001100100
+     13:     4 11'--001---000   ->     0 11'00000001000
+     14:     4 11'--001-----1   ->     0 11'00000001000
+     15:     4 11'--001---100   ->     5 11'00001011000
+     16:     4 11'--001----10   ->     6 11'00000111000
+     17:     5 11'--101-----1   ->     0 11'00100000000
+     18:     5 11'--101-1---0   ->     3 11'00101100000
+     19:     5 11'--101-0---0   ->     5 11'00101010000
+     20:     6 11'--011-----1   ->     0 11'00010000000
+     21:     6 11'--011-1---0   ->     1 11'00011000000
+     22:     6 11'--011-0---0   ->     6 11'00010110000
+     23:     7 11'--1111----0   ->     0 11'01000000000
+     24:     7 11'--111-----1   ->     0 11'01000000000
+     25:     7 11'--1110----0   ->     7 11'01001110000
+
+-------------------------------------
 
 yosys> fsm_map
 
-3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+Mapping FSM `$fsm$\ser_des.FSM_spi_state$788' from module `\spi_master_top'.
 
 yosys> opt -sat
 
-3.13. Executing OPT pass (performing simple optimizations).
+3.17. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.13.1. Executing OPT_EXPR pass (perform const folding).
+3.17.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
+<suppressed ~2 debug messages>
 
 yosys> opt_merge -nomux
 
-3.13.2. Executing OPT_MERGE pass (detect identical cells).
+3.17.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
+<suppressed ~132 debug messages>
+Removed a total of 44 cells.
 
 yosys> opt_muxtree
 
-3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~35 debug messages>
+<suppressed ~31 debug messages>
 
 yosys> opt_reduce
 
-3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.5. Executing OPT_MERGE pass (detect identical cells).
+3.17.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $flatten\spi_register.$verific$tx_reg_reg$registers.v:214$362 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256, Q = \spi_register.tx_reg).
 Adding EN signal on $flatten\spi_register.$verific$ss_reg_reg$registers.v:214$363 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257, Q = \spi_register.ss_reg).
 Adding EN signal on $flatten\spi_register.$verific$spi_ctrl_reg_reg$registers.v:214$364 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258, Q = \spi_register.spi_ctrl_reg).
@@ -469,357 +639,386 @@ Adding EN signal on $flatten\spi_register.$verific$cmd_reg32_reg$registers.v:275
 Adding EN signal on $flatten\spi_register.$verific$cmd_reg1_reg$registers.v:255$380 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n550$224, Q = \spi_register.cmd_reg1).
 Adding EN signal on $flatten\spi_register.$verific$cmd_reg0_reg$registers.v:235$374 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n538$219, Q = \spi_register.cmd_reg0).
 Adding EN signal on $flatten\spi_register.$verific$SPICR1_reg$registers.v:214$361 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255, Q = \spi_register.SPICR1).
-Adding EN signal on $flatten\spi_register.$verific$SPIBR_reg$registers.v:214$360 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254, Q = \spi_register.SPIBR).
+Adding EN signal on $flatten\spi_register.$verific$SPIBR_reg$registers.v:214$360 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [15:8], Q = \spi_register.SPIBR [15:8]).
+Adding EN signal on $flatten\spi_register.$verific$SPIBR_reg$registers.v:214$360 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [7:0], Q = \spi_register.SPIBR [7:0]).
 Adding EN signal on $flatten\spi_register.$verific$INTR_write_reg$registers.v:163$324 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n112$205, Q = \spi_register.INTR_write).
 Adding EN signal on $flatten\spi_register.$verific$INTR_read_reg$registers.v:149$320 ($adff) from module spi_master_top (D = $flatten\spi_register.$verific$n103$202, Q = \spi_register.INTR_read).
 Adding EN signal on $flatten\ser_des.\BG.$verific$Baud_Rate_r_reg$baud_generator.v:62$698 ($adff) from module spi_master_top (D = $flatten\ser_des.\BG.$verific$n162$674, Q = \ser_des.BG.Baud_Rate_r).
 Adding EN signal on $flatten\ser_des.$verific$bit_count_reg$serializer_deserializer.v:132$562 ($adff) from module spi_master_top (D = $flatten\ser_des.$verific$n59$469, Q = \ser_des.bit_count).
 Adding EN signal on $flatten\ser_des.$verific$SS_bar_reg$serializer_deserializer.v:153$572 ($adff) from module spi_master_top (D = $flatten\ser_des.$verific$n90$419, Q = \ser_des.SS_bar).
 Adding EN signal on $flatten\ser_des.$verific$SPI_Read_Data_reg$serializer_deserializer.v:338$662 ($adff) from module spi_master_top (D = $flatten\ser_des.$verific$n473$512, Q = \ser_des.SPI_Read_Data).
-Setting constant 0-bit at position 1 on $auto$ff.cc:262:slice$748 ($adffe) from module spi_master_top.
-Setting constant 0-bit at position 3 on $auto$ff.cc:262:slice$717 ($adffe) from module spi_master_top.
-Setting constant 0-bit at position 4 on $auto$ff.cc:262:slice$717 ($adffe) from module spi_master_top.
-Setting constant 0-bit at position 5 on $auto$ff.cc:262:slice$717 ($adffe) from module spi_master_top.
-Setting constant 0-bit at position 6 on $auto$ff.cc:262:slice$717 ($adffe) from module spi_master_top.
+Setting constant 0-bit at position 1 on $auto$ff.cc:262:slice$1084 ($adffe) from module spi_master_top.
+Setting constant 0-bit at position 3 on $auto$ff.cc:262:slice$1045 ($adffe) from module spi_master_top.
+Setting constant 0-bit at position 4 on $auto$ff.cc:262:slice$1045 ($adffe) from module spi_master_top.
+Setting constant 0-bit at position 5 on $auto$ff.cc:262:slice$1045 ($adffe) from module spi_master_top.
+Setting constant 0-bit at position 6 on $auto$ff.cc:262:slice$1045 ($adffe) from module spi_master_top.
 
 yosys> opt_clean
 
-3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
+Removed 29 unused cells and 78 unused wires.
+<suppressed ~30 debug messages>
 
 yosys> opt_expr
 
-3.13.8. Executing OPT_EXPR pass (perform const folding).
+3.17.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~16 debug messages>
+<suppressed ~17 debug messages>
 
-3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.17.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~35 debug messages>
+<suppressed ~31 debug messages>
 
 yosys> opt_reduce
 
-3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.12. Executing OPT_MERGE pass (detect identical cells).
+3.17.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-<suppressed ~33 debug messages>
-Removed a total of 11 cells.
+<suppressed ~63 debug messages>
+Removed a total of 21 cells.
 
 yosys> opt_dff -sat
 
-3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 11 unused wires.
+Removed 0 unused cells and 21 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.13.15. Executing OPT_EXPR pass (perform const folding).
+3.17.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.13.16. Rerunning OPT passes. (Maybe there is more to do..)
+3.17.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.13.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~36 debug messages>
+<suppressed ~33 debug messages>
 
 yosys> opt_reduce
 
-3.13.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.19. Executing OPT_MERGE pass (detect identical cells).
+3.17.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.13.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.13.22. Executing OPT_EXPR pass (perform const folding).
+3.17.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.13.23. Finished OPT passes. (There is nothing left to do.)
+3.17.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> wreduce -keepdc
 
-3.14. Executing WREDUCE pass (reducing word size of cells).
-Removed top 16 bits (of 17) from port B of cell spi_master_top.$flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689 ($add).
+3.18. Executing WREDUCE pass (reducing word size of cells).
+Removed top 2 bits (of 6) from port B of cell spi_master_top.$auto$fsm_map.cc:77:implement_pattern_cache$980 ($eq).
+Removed top 1 bits (of 5) from port B of cell spi_master_top.$auto$fsm_map.cc:77:implement_pattern_cache$984 ($eq).
+Removed top 1 bits (of 5) from port B of cell spi_master_top.$auto$fsm_map.cc:77:implement_pattern_cache$996 ($eq).
+Removed top 2 bits (of 5) from port B of cell spi_master_top.$auto$fsm_map.cc:77:implement_pattern_cache$951 ($eq).
+Removed top 1 bits (of 5) from port B of cell spi_master_top.$auto$fsm_map.cc:77:implement_pattern_cache$959 ($eq).
+Removed top 1 bits (of 3) from port B of cell spi_master_top.$auto$fsm_map.cc:215:map_fsm$807 ($eq).
+Removed top 1 bits (of 3) from port B of cell spi_master_top.$auto$fsm_map.cc:215:map_fsm$803 ($eq).
+Removed top 2 bits (of 3) from port B of cell spi_master_top.$auto$fsm_map.cc:215:map_fsm$805 ($eq).
 Removed top 1 bits (of 17) from port B of cell spi_master_top.$flatten\ser_des.\BG.$verific$equal_20$baud_generator.v:58$693 ($eq).
-Removed top 1 bits (of 6) from mux cell spi_master_top.$flatten\ser_des.$verific$mux_220$serializer_deserializer.v:261$632 ($mux).
-Removed top 1 bits (of 3) from mux cell spi_master_top.$flatten\ser_des.$verific$mux_113$serializer_deserializer.v:219$621 ($mux).
-Removed top 2 bits (of 3) from port B of cell spi_master_top.$flatten\ser_des.$verific$equal_90$serializer_deserializer.v:201$609 ($eq).
+Removed top 16 bits (of 17) from port B of cell spi_master_top.$flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689 ($add).
 Removed top 2 bits (of 3) from port B of cell spi_master_top.$flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556 ($add).
-Removed top 1 bits (of 3) from port B of cell spi_master_top.$flatten\ser_des.$verific$equal_14$serializer_deserializer.v:129$551 ($eq).
-Removed top 1 bits (of 3) from port B of cell spi_master_top.$flatten\ser_des.$verific$equal_5$serializer_deserializer.v:95$517 ($eq).
-Removed top 1 bits (of 3) from wire spi_master_top.$flatten\ser_des.$verific$n176$473.
-Removed top 1 bits (of 3) from wire spi_master_top.$flatten\ser_des.$verific$n251$491.
 
 yosys> peepopt
 
-3.15. Executing PEEPOPT pass (run peephole optimizers).
-
-yosys> pmuxtree
-
-3.16. Executing PMUXTREE pass.
+3.19. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> opt_clean
 
-3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 2 unused wires.
-<suppressed ~1 debug messages>
+
+yosys> bmuxmap
+
+3.21. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.22. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> alumacc
 
-3.18. Executing ALUMACC pass (create $alu and $macc cells).
+3.23. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module spi_master_top:
   creating $macc model for $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556 ($add).
   creating $macc model for $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689 ($add).
   creating $alu model for $macc $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689.
   creating $alu model for $macc $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556.
-  creating $alu cell for $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556: $auto$alumacc.cc:485:replace_alu$776
-  creating $alu cell for $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689: $auto$alumacc.cc:485:replace_alu$779
+  creating $alu cell for $flatten\ser_des.$verific$add_19$serializer_deserializer.v:130$556: $auto$alumacc.cc:485:replace_alu$1137
+  creating $alu cell for $flatten\ser_des.\BG.$verific$add_12$baud_generator.v:45$689: $auto$alumacc.cc:485:replace_alu$1140
   created 2 $alu and 0 $macc cells.
-
-yosys> opt
-
-3.19. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.19.1. Executing OPT_EXPR pass (perform const folding).
+3.24. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.19.2. Executing OPT_MERGE pass (detect identical cells).
+3.25. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.19.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~36 debug messages>
+<suppressed ~33 debug messages>
 
 yosys> opt_reduce
 
-3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.19.5. Executing OPT_MERGE pass (detect identical cells).
+3.28. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.29. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.19.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.19.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.19.8. Executing OPT_EXPR pass (perform const folding).
+3.32. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-
-3.19.9. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> stat
 
-3.20. Printing statistics.
+3.33. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                317
-   Number of wire bits:            898
+   Number of wires:                361
+   Number of wire bits:           1247
    Number of public wires:         170
    Number of public wire bits:     463
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                191
-     $adff                          11
-     $adffe                         16
+   Number of cells:                254
+     $adff                          12
+     $adffe                         17
      $alu                            2
-     $and                           25
-     $bmux                           8
+     $and                           37
      $dff                            1
-     $eq                            12
+     $eq                            24
      $logic_not                      2
-     $mux                           72
-     $ne                             1
+     $mux                           88
+     $ne                            14
      $not                           15
      $or                            12
-     $reduce_and                     3
+     $pmux                           1
+     $reduce_and                    10
      $reduce_bool                   10
+     $reduce_or                      8
      $xor                            1
 
 
 yosys> memory -nomap
 
-3.21. Executing MEMORY pass.
+3.34. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.21.1. Executing OPT_MEM pass (optimize memories).
+3.34.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.34.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.34.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.21.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.34.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.21.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.34.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.21.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.34.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> memory_share
 
-3.21.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.34.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.21.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.34.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.21.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.34.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> memory_collect
 
-3.21.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.34.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
-3.22. Printing statistics.
+3.35. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                317
-   Number of wire bits:            898
+   Number of wires:                361
+   Number of wire bits:           1247
    Number of public wires:         170
    Number of public wire bits:     463
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                191
-     $adff                          11
-     $adffe                         16
+   Number of cells:                254
+     $adff                          12
+     $adffe                         17
      $alu                            2
-     $and                           25
-     $bmux                           8
+     $and                           37
      $dff                            1
-     $eq                            12
+     $eq                            24
      $logic_not                      2
-     $mux                           72
-     $ne                             1
+     $mux                           88
+     $ne                            14
      $not                           15
      $or                            12
-     $reduce_and                     3
+     $pmux                           1
+     $reduce_and                    10
      $reduce_bool                   10
+     $reduce_or                      8
      $xor                            1
 
 
+yosys> muxpack
+
+3.36. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converted 0 (p)mux cells into 0 pmux cells.
+<suppressed ~81 debug messages>
+
 yosys> opt_clean
 
-3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.37. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
+
+yosys> pmuxtree
+
+3.38. Executing PMUXTREE pass.
+
+yosys> muxpack
+
+3.39. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converted 0 (p)mux cells into 0 pmux cells.
+<suppressed ~87 debug messages>
+
+yosys> memory_map
+
+3.40. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.24. Printing statistics.
+3.41. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                317
-   Number of wire bits:            898
+   Number of wires:                373
+   Number of wire bits:           1273
    Number of public wires:         170
    Number of public wire bits:     463
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                191
-     $adff                          11
-     $adffe                         16
+   Number of cells:                265
+     $adff                          12
+     $adffe                         17
      $alu                            2
-     $and                           25
-     $bmux                           8
+     $and                           37
      $dff                            1
-     $eq                            12
+     $eq                            24
      $logic_not                      2
-     $mux                           72
-     $ne                             1
-     $not                           15
-     $or                            12
-     $reduce_and                     3
+     $mux                           95
+     $ne                            14
+     $not                           16
+     $or                            14
+     $reduce_and                    10
      $reduce_bool                   10
+     $reduce_or                     10
      $xor                            1
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.25. Executing TECHMAP pass (map to technology primitives).
+3.42. Executing TECHMAP pass (map to technology primitives).
 
-3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.42.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -847,79 +1046,75 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.42.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.25.3. Continuing TECHMAP pass.
+3.42.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $ne.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $adff.
-Using extmapper simplemap for cells of type $adffe.
-Using extmapper simplemap for cells of type $or.
-Using extmapper simplemap for cells of type $eq.
-Using extmapper simplemap for cells of type $bmux.
-Using extmapper simplemap for cells of type $dff.
-Using extmapper simplemap for cells of type $reduce_bool.
-Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $reduce_or.
 Using extmapper simplemap for cells of type $reduce_and.
-Using extmapper simplemap for cells of type $ne.
-Using extmapper simplemap for cells of type $xor.
+Using extmapper simplemap for cells of type $adffe.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $eq.
+Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $dff.
 Using extmapper simplemap for cells of type $logic_not.
 Using template $paramod$18205a5da979f93ffab44671dcc4a48cf14e25e2\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $pos.
+Using extmapper simplemap for cells of type $xor.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000011 for cells of type $lcu.
+Using extmapper simplemap for cells of type $pos.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000010001 for cells of type $lcu.
 No more expansions possible.
-<suppressed ~802 debug messages>
+<suppressed ~876 debug messages>
 
 yosys> stat
 
-3.26. Printing statistics.
+3.43. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                527
-   Number of wire bits:           4101
+   Number of wires:                698
+   Number of wire bits:           4320
    Number of public wires:         170
    Number of public wire bits:     463
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               1197
-     $_AND_                         90
+   Number of cells:               1250
+     $_AND_                        123
      $_DFFE_PP0P_                   62
      $_DFFE_PP1P_                    4
-     $_DFF_PP0_                     36
+     $_DFF_PP0_                     39
      $_DFF_P_                        8
-     $_MUX_                        707
-     $_NOT_                         49
-     $_OR_                         131
-     $_XOR_                        110
+     $_MUX_                        464
+     $_NOT_                         62
+     $_OR_                         259
+     $_XOR_                        229
 
-
-yosys> opt
-
-3.27. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.27.1. Executing OPT_EXPR pass (perform const folding).
+3.44. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~416 debug messages>
+<suppressed ~296 debug messages>
 
 yosys> opt_merge -nomux
 
-3.27.2. Executing OPT_MERGE pass (detect identical cells).
+3.45. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-<suppressed ~96 debug messages>
-Removed a total of 32 cells.
+<suppressed ~444 debug messages>
+Removed a total of 148 cells.
 
 yosys> opt_muxtree
 
-3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.46. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -927,84 +1122,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.47. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.27.5. Executing OPT_MERGE pass (detect identical cells).
+3.48. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.49. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $auto$ff.cc:262:slice$898 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [7], Q = \spi_register.spi_clk_cnt_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$1846 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [7], Q = \spi_register.SPICR1 [7]).
-Adding EN signal on $auto$ff.cc:262:slice$945 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [15], Q = \spi_register.SPIBR [15]).
-Adding EN signal on $auto$ff.cc:262:slice$921 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [2], Q = \spi_register.spi_ctrl_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$929 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [7], Q = \spi_register.ss_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$1585 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [7], Q = \spi_register.tx_reg [7]).
-Adding EN signal on $auto$ff.cc:262:slice$895 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [0], Q = \spi_register.spi_clk_cnt_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$896 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [1], Q = \spi_register.spi_clk_cnt_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$897 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n461$259 [2], Q = \spi_register.spi_clk_cnt_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$919 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [0], Q = \spi_register.spi_ctrl_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$920 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n457$258 [1], Q = \spi_register.spi_ctrl_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$922 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [0], Q = \spi_register.ss_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$923 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [1], Q = \spi_register.ss_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$924 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [2], Q = \spi_register.ss_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$925 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [3], Q = \spi_register.ss_reg [3]).
-Adding EN signal on $auto$ff.cc:262:slice$926 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [4], Q = \spi_register.ss_reg [4]).
-Adding EN signal on $auto$ff.cc:262:slice$927 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [5], Q = \spi_register.ss_reg [5]).
-Adding EN signal on $auto$ff.cc:262:slice$928 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n448$257 [6], Q = \spi_register.ss_reg [6]).
-Adding EN signal on $auto$ff.cc:262:slice$930 ($_DFFE_PP1P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [0], Q = \spi_register.SPIBR [0]).
-Adding EN signal on $auto$ff.cc:262:slice$931 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [1], Q = \spi_register.SPIBR [1]).
-Adding EN signal on $auto$ff.cc:262:slice$932 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [2], Q = \spi_register.SPIBR [2]).
-Adding EN signal on $auto$ff.cc:262:slice$933 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [3], Q = \spi_register.SPIBR [3]).
-Adding EN signal on $auto$ff.cc:262:slice$934 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [4], Q = \spi_register.SPIBR [4]).
-Adding EN signal on $auto$ff.cc:262:slice$935 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [5], Q = \spi_register.SPIBR [5]).
-Adding EN signal on $auto$ff.cc:262:slice$936 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [6], Q = \spi_register.SPIBR [6]).
-Adding EN signal on $auto$ff.cc:262:slice$937 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [7], Q = \spi_register.SPIBR [7]).
-Adding EN signal on $auto$ff.cc:262:slice$938 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [8], Q = \spi_register.SPIBR [8]).
-Adding EN signal on $auto$ff.cc:262:slice$939 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [9], Q = \spi_register.SPIBR [9]).
-Adding EN signal on $auto$ff.cc:262:slice$940 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [10], Q = \spi_register.SPIBR [10]).
-Adding EN signal on $auto$ff.cc:262:slice$941 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [11], Q = \spi_register.SPIBR [11]).
-Adding EN signal on $auto$ff.cc:262:slice$942 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [12], Q = \spi_register.SPIBR [12]).
-Adding EN signal on $auto$ff.cc:262:slice$943 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [13], Q = \spi_register.SPIBR [13]).
-Adding EN signal on $auto$ff.cc:262:slice$944 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n413$254 [14], Q = \spi_register.SPIBR [14]).
-Adding EN signal on $auto$ff.cc:262:slice$1843 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [4], Q = \spi_register.SPICR1 [4]).
-Adding EN signal on $auto$ff.cc:262:slice$1841 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [2], Q = \spi_register.SPICR1 [2]).
-Adding EN signal on $auto$ff.cc:262:slice$1845 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [6], Q = \spi_register.SPICR1 [6]).
-Adding EN signal on $auto$ff.cc:262:slice$1842 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [3], Q = \spi_register.SPICR1 [3]).
-Adding EN signal on $auto$ff.cc:262:slice$1840 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [0], Q = \spi_register.SPICR1 [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1844 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n430$255 [5], Q = \spi_register.SPICR1 [5]).
-Adding EN signal on $auto$ff.cc:262:slice$1578 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [0], Q = \spi_register.tx_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1579 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [1], Q = \spi_register.tx_reg [1]).
-Adding EN signal on $auto$ff.cc:262:slice$1580 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [2], Q = \spi_register.tx_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$1581 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [3], Q = \spi_register.tx_reg [3]).
-Adding EN signal on $auto$ff.cc:262:slice$1582 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [4], Q = \spi_register.tx_reg [4]).
-Adding EN signal on $auto$ff.cc:262:slice$1583 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [5], Q = \spi_register.tx_reg [5]).
-Adding EN signal on $auto$ff.cc:262:slice$1584 ($_DFFE_PP0P_) from module spi_master_top (D = $flatten\spi_register.$verific$n439$256 [6], Q = \spi_register.tx_reg [6]).
+3.50. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 24 unused cells and 346 unused wires.
-<suppressed ~25 debug messages>
+Removed 34 unused cells and 277 unused wires.
+<suppressed ~35 debug messages>
 
 yosys> opt_expr
 
-3.27.8. Executing OPT_EXPR pass (perform const folding).
+3.52. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~552 debug messages>
-
-3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.53. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1012,217 +1162,70 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.27.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-<suppressed ~2427 debug messages>
-Removed a total of 809 cells.
-
-yosys> opt_dff
-
-3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 777 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.27.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.19. Executing OPT_MERGE pass (detect identical cells).
+3.55. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.56. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.57. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.27.22. Executing OPT_EXPR pass (perform const folding).
+3.59. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-
-3.27.23. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 2
 
 yosys> opt -fast -full
 
-3.28. Executing OPT pass (performing simple optimizations).
+3.60. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-3.28.1. Executing OPT_EXPR pass (perform const folding).
+3.60.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~198 debug messages>
+<suppressed ~193 debug messages>
 
 yosys> opt_merge
 
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
+3.60.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-<suppressed ~108 debug messages>
-Removed a total of 36 cells.
+<suppressed ~105 debug messages>
+Removed a total of 35 cells.
 
 yosys> opt_dff
 
-3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
+3.60.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.60.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 38 unused wires.
+Removed 0 unused cells and 37 unused wires.
 <suppressed ~1 debug messages>
 
-3.28.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
-
-3.30. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.30.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-<suppressed ~8 debug messages>
-
-yosys> opt_merge -nomux
-
-3.30.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1473 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1456
-        $auto$simplemap.cc:312:simplemap_bmux$1448
-
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1778 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1771
-        $auto$simplemap.cc:312:simplemap_bmux$1768
-
-
-yosys> opt_dff
-
-3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr -full
-
-3.30.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-<suppressed ~2 debug messages>
-
-3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~2 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr -full
-
-3.30.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.30.18. Finished OPT passes. (There is nothing left to do.)
+3.60.5. Finished fast OPT passes.
 
 yosys> techmap -map +/techmap.v
 
-3.31. Executing TECHMAP pass (map to technology primitives).
+3.61. Executing TECHMAP pass (map to technology primitives).
 
-3.31.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.61.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1250,29 +1253,28 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.31.2. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $mux.
+3.61.2. Continuing TECHMAP pass.
 No more expansions possible.
-<suppressed ~73 debug messages>
+<suppressed ~71 debug messages>
 
 yosys> opt -sat
 
-3.32. Executing OPT pass (performing simple optimizations).
+3.62. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.32.1. Executing OPT_EXPR pass (perform const folding).
+3.62.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.32.2. Executing OPT_MERGE pass (detect identical cells).
+3.62.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.32.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.62.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1280,614 +1282,613 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.32.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.62.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.32.5. Executing OPT_MERGE pass (detect identical cells).
+3.62.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.32.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.62.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.32.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.62.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.32.8. Executing OPT_EXPR pass (perform const folding).
+3.62.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.32.9. Finished OPT passes. (There is nothing left to do.)
+3.62.9. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-3.33. Executing ABC pass (technology mapping using ABC).
+3.63. Executing ABC pass (technology mapping using ABC).
 
-3.33.1. Summary of detected clock domains:
-  7 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$755, arst=\arst_i, srst={ }
-  9 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$725, arst=\arst_i, srst={ }
-  11 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$739, arst=\arst_i, srst={ }
-  17 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$732, arst=\arst_i, srst={ }
-  39 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$3319, arst=\arst_i, srst={ }
-  30 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2656, arst=\arst_i, srst={ }
-  39 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2605, arst=\arst_i, srst={ }
-  18 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2554, arst=\arst_i, srst={ }
-  42 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2503, arst=\arst_i, srst={ }
-  60 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2452, arst=\arst_i, srst={ }
-  17 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$2401, arst=\arst_i, srst={ }
-  8 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$767, arst=\arst_i, srst={ }
-  24 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$770, arst=\arst_i, srst={ }
-  61 cells in clk=\ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
-  19 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$764, arst=\arst_i, srst={ }
-  27 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$761, arst=\arst_i, srst={ }
-  3 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$758, arst=\arst_i, srst={ }
-  115 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
+3.63.1. Summary of detected clock domains:
+  23 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$1130, arst=\arst_i, srst={ }
+  34 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$1133, arst=\arst_i, srst={ }
+  42 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1093, arst=\arst_i, srst={ }
+  24 cells in clk=\ser_des.Baud_Rate, en=$auto$opt_dff.cc:194:make_patterns_logic$1127, arst=\arst_i, srst={ }
+  168 cells in clk=\ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
+  28 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1032, arst=\arst_i, srst={ }
+  18 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1043, arst=\arst_i, srst={ }
+  8 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1061, arst=\arst_i, srst={ }
+  9 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1075, arst=\arst_i, srst={ }
+  16 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1068, arst=\arst_i, srst={ }
+  11 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1054, arst=\arst_i, srst={ }
+  29 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1104, arst=\arst_i, srst={ }
+  5 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$1118, arst=\arst_i, srst={ }
+  4 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$1121, arst=\arst_i, srst={ }
+  27 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$1124, arst=\arst_i, srst={ }
   32 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
+  24 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1021, arst=\arst_i, srst={ }
+  19 cells in clk=\wb_clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1115, arst=\arst_i, srst={ }
+  147 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
 
-3.33.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$755, asynchronously reset by \arst_i
-Extracted 7 gates and 14 wires to a netlist network with 6 inputs and 4 outputs.
+3.63.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1130, asynchronously reset by \arst_i
+Extracted 23 gates and 36 wires to a netlist network with 12 inputs and 10 outputs.
 
-3.33.2.1. Executing ABC.
+3.63.2.1. Executing ABC.
 
-3.33.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$725, asynchronously reset by \arst_i
-Extracted 9 gates and 17 wires to a netlist network with 7 inputs and 3 outputs.
+3.63.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1133, asynchronously reset by \arst_i
+Extracted 34 gates and 48 wires to a netlist network with 13 inputs and 9 outputs.
 
-3.33.3.1. Executing ABC.
+3.63.3.1. Executing ABC.
 
-3.33.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$739, asynchronously reset by \arst_i
-Extracted 11 gates and 18 wires to a netlist network with 6 inputs and 5 outputs.
+3.63.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1093, asynchronously reset by \arst_i
+Extracted 42 gates and 69 wires to a netlist network with 26 inputs and 27 outputs.
 
-3.33.4.1. Executing ABC.
+3.63.4.1. Executing ABC.
 
-3.33.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$732, asynchronously reset by \arst_i
-Extracted 17 gates and 28 wires to a netlist network with 10 inputs and 5 outputs.
+3.63.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1127, asynchronously reset by \arst_i
+Extracted 24 gates and 36 wires to a netlist network with 11 inputs and 8 outputs.
 
-3.33.5.1. Executing ABC.
+3.63.5.1. Executing ABC.
 
-3.33.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$3319, asynchronously reset by \arst_i
-Extracted 39 gates and 66 wires to a netlist network with 26 inputs and 33 outputs.
+3.63.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \ser_des.Baud_Rate, asynchronously reset by \arst_i
+Extracted 168 gates and 204 wires to a netlist network with 35 inputs and 23 outputs.
 
-3.33.6.1. Executing ABC.
+3.63.6.1. Executing ABC.
 
-3.33.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2656, asynchronously reset by \arst_i
-Extracted 30 gates and 56 wires to a netlist network with 25 inputs and 19 outputs.
+3.63.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1032, asynchronously reset by \arst_i
+Extracted 28 gates and 49 wires to a netlist network with 20 inputs and 21 outputs.
 
-3.33.7.1. Executing ABC.
+3.63.7.1. Executing ABC.
 
-3.33.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2605, asynchronously reset by \arst_i
-Extracted 39 gates and 59 wires to a netlist network with 20 inputs and 19 outputs.
+3.63.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1043, asynchronously reset by \arst_i
+Extracted 18 gates and 33 wires to a netlist network with 15 inputs and 12 outputs.
 
-3.33.8.1. Executing ABC.
+3.63.8.1. Executing ABC.
 
-3.33.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2554, asynchronously reset by \arst_i
-Extracted 18 gates and 34 wires to a netlist network with 16 inputs and 11 outputs.
+3.63.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1061, asynchronously reset by \arst_i
+Extracted 8 gates and 15 wires to a netlist network with 6 inputs and 2 outputs.
 
-3.33.9.1. Executing ABC.
+3.63.9.1. Executing ABC.
 
-3.33.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2503, asynchronously reset by \arst_i
-Extracted 42 gates and 73 wires to a netlist network with 31 inputs and 32 outputs.
+3.63.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1075, asynchronously reset by \arst_i
+Extracted 9 gates and 16 wires to a netlist network with 6 inputs and 5 outputs.
 
-3.33.10.1. Executing ABC.
+3.63.10.1. Executing ABC.
 
-3.33.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2452, asynchronously reset by \arst_i
-Extracted 60 gates and 103 wires to a netlist network with 43 inputs and 34 outputs.
+3.63.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1068, asynchronously reset by \arst_i
+Extracted 16 gates and 24 wires to a netlist network with 7 inputs and 6 outputs.
 
-3.33.11.1. Executing ABC.
+3.63.11.1. Executing ABC.
 
-3.33.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2401, asynchronously reset by \arst_i
-Extracted 17 gates and 36 wires to a netlist network with 19 inputs and 11 outputs.
+3.63.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1054, asynchronously reset by \arst_i
+Extracted 11 gates and 22 wires to a netlist network with 11 inputs and 6 outputs.
 
-3.33.12.1. Executing ABC.
+3.63.12.1. Executing ABC.
 
-3.33.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$767, asynchronously reset by \arst_i
-Extracted 8 gates and 16 wires to a netlist network with 7 inputs and 4 outputs.
+3.63.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1104, asynchronously reset by \arst_i
+Extracted 29 gates and 52 wires to a netlist network with 23 inputs and 26 outputs.
 
-3.33.13.1. Executing ABC.
+3.63.13.1. Executing ABC.
 
-3.33.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$770, asynchronously reset by \arst_i
-Extracted 24 gates and 40 wires to a netlist network with 15 inputs and 13 outputs.
+3.63.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1118, asynchronously reset by \arst_i
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 4 outputs.
 
-3.33.14.1. Executing ABC.
+3.63.14.1. Executing ABC.
 
-3.33.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, asynchronously reset by \arst_i
-Extracted 61 gates and 84 wires to a netlist network with 22 inputs and 23 outputs.
+3.63.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1121, asynchronously reset by \arst_i
+Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
 
-3.33.15.1. Executing ABC.
+3.63.15.1. Executing ABC.
 
-3.33.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, enabled by $auto$opt_dff.cc:194:make_patterns_logic$764, asynchronously reset by \arst_i
-Extracted 19 gates and 26 wires to a netlist network with 6 inputs and 5 outputs.
-
-3.33.16.1. Executing ABC.
-
-3.33.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$761, asynchronously reset by \arst_i
+3.63.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1124, asynchronously reset by \arst_i
 Extracted 27 gates and 53 wires to a netlist network with 26 inputs and 3 outputs.
 
-3.33.17.1. Executing ABC.
+3.63.16.1. Executing ABC.
 
-3.33.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, asynchronously reset by \arst_i
-Extracted 3 gates and 6 wires to a netlist network with 2 inputs and 2 outputs.
-
-3.33.18.1. Executing ABC.
-
-3.33.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
-Extracted 115 gates and 143 wires to a netlist network with 26 inputs and 25 outputs.
-
-3.33.19.1. Executing ABC.
-
-3.33.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+3.63.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i
 Extracted 32 gates and 63 wires to a netlist network with 30 inputs and 8 outputs.
 
-3.33.20.1. Executing ABC.
+3.63.17.1. Executing ABC.
 
-yosys> abc -dff
+3.63.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1021, asynchronously reset by \arst_i
+Extracted 24 gates and 48 wires to a netlist network with 24 inputs and 12 outputs.
 
-3.34. Executing ABC pass (technology mapping using ABC).
+3.63.18.1. Executing ABC.
 
-3.34.1. Summary of detected clock domains:
-  7 cells in clk=\wb_clk_i, en=$abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, arst=\arst_i, srst={ }
-  13 cells in clk=\wb_clk_i, en=$abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, arst=\arst_i, srst={ }
-  20 cells in clk=\wb_clk_i, en=$abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, arst=\arst_i, srst={ }
-  8 cells in clk=\ser_des.Baud_Rate, en=$abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, arst=\arst_i, srst={ }
-  32 cells in clk=\wb_clk_i, en=$abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, arst=\arst_i, srst={ }
-  49 cells in clk=\wb_clk_i, en=$abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, arst=\arst_i, srst={ }
-  38 cells in clk=\wb_clk_i, en=$abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, arst=\arst_i, srst={ }
-  30 cells in clk=\wb_clk_i, en=$abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, arst=\arst_i, srst={ }
-  8 cells in clk=\wb_clk_i, en=$abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, arst=\arst_i, srst={ }
-  10 cells in clk=\wb_clk_i, en=$abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, arst=\arst_i, srst={ }
-  4 cells in clk=\wb_clk_i, en=$abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, arst=\arst_i, srst={ }
-  35 cells in clk=\wb_clk_i, en=$abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, arst=\arst_i, srst={ }
-  21 cells in clk=$abc$5661$ser_des.Baud_Rate, en=$abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, arst=\arst_i, srst={ }
-  41 cells in clk=\wb_clk_i, en=$abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, arst=\arst_i, srst={ }
-  118 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
-  16 cells in clk=$abc$5661$ser_des.Baud_Rate, en=$abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, arst=\arst_i, srst={ }
-  83 cells in clk=$abc$5661$ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
-  16 cells in clk=\wb_clk_i, en=$abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, arst=\arst_i, srst={ }
-  37 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
+3.63.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1115, asynchronously reset by \arst_i
+Extracted 19 gates and 34 wires to a netlist network with 15 inputs and 14 outputs.
 
-3.34.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, asynchronously reset by \arst_i
-Extracted 7 gates and 13 wires to a netlist network with 6 inputs and 4 outputs.
+3.63.19.1. Executing ABC.
 
-3.34.2.1. Executing ABC.
-
-3.34.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, asynchronously reset by \arst_i
-Extracted 13 gates and 21 wires to a netlist network with 8 inputs and 5 outputs.
-
-3.34.3.1. Executing ABC.
-
-3.34.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, asynchronously reset by \arst_i
-Extracted 20 gates and 34 wires to a netlist network with 14 inputs and 10 outputs.
-
-3.34.4.1. Executing ABC.
-
-3.34.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, enabled by $abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, asynchronously reset by \arst_i
-Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 4 outputs.
-
-3.34.5.1. Executing ABC.
-
-3.34.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, asynchronously reset by \arst_i
-Extracted 32 gates and 51 wires to a netlist network with 19 inputs and 22 outputs.
-
-3.34.6.1. Executing ABC.
-
-3.34.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, asynchronously reset by \arst_i
-Extracted 49 gates and 88 wires to a netlist network with 39 inputs and 34 outputs.
-
-3.34.7.1. Executing ABC.
-
-3.34.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, asynchronously reset by \arst_i
-Extracted 38 gates and 68 wires to a netlist network with 30 inputs and 31 outputs.
-
-3.34.8.1. Executing ABC.
-
-3.34.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, asynchronously reset by \arst_i
-Extracted 30 gates and 51 wires to a netlist network with 21 inputs and 23 outputs.
-
-3.34.9.1. Executing ABC.
-
-3.34.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, asynchronously reset by \arst_i
-Extracted 8 gates and 15 wires to a netlist network with 7 inputs and 3 outputs.
-
-3.34.10.1. Executing ABC.
-
-3.34.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, asynchronously reset by \arst_i
-Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 4 outputs.
-
-3.34.11.1. Executing ABC.
-
-3.34.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, asynchronously reset by \arst_i
-Extracted 4 gates and 7 wires to a netlist network with 3 inputs and 3 outputs.
-
-3.34.12.1. Executing ABC.
-
-3.34.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, asynchronously reset by \arst_i
-Extracted 35 gates and 63 wires to a netlist network with 28 inputs and 16 outputs.
-
-3.34.13.1. Executing ABC.
-
-3.34.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, enabled by $abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, asynchronously reset by \arst_i
-Extracted 21 gates and 34 wires to a netlist network with 13 inputs and 11 outputs.
-
-3.34.14.1. Executing ABC.
-
-3.34.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, asynchronously reset by \arst_i
-Extracted 41 gates and 82 wires to a netlist network with 41 inputs and 3 outputs.
-
-3.34.15.1. Executing ABC.
-
-3.34.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+3.63.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
-Extracted 118 gates and 138 wires to a netlist network with 20 inputs and 34 outputs.
+Extracted 147 gates and 174 wires to a netlist network with 25 inputs and 23 outputs.
 
-3.34.16.1. Executing ABC.
-
-3.34.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, enabled by $abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, asynchronously reset by \arst_i
-Extracted 16 gates and 22 wires to a netlist network with 6 inputs and 7 outputs.
-
-3.34.17.1. Executing ABC.
-
-3.34.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$5661$ser_des.Baud_Rate, asynchronously reset by \arst_i
-Extracted 83 gates and 113 wires to a netlist network with 30 inputs and 23 outputs.
-
-3.34.18.1. Executing ABC.
-
-3.34.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, asynchronously reset by \arst_i
-Extracted 16 gates and 33 wires to a netlist network with 17 inputs and 9 outputs.
-
-3.34.19.1. Executing ABC.
-
-3.34.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i
-Extracted 37 gates and 67 wires to a netlist network with 30 inputs and 8 outputs.
-
-3.34.20.1. Executing ABC.
+3.63.20.1. Executing ABC.
 
 yosys> abc -dff
 
-3.35. Executing ABC pass (technology mapping using ABC).
+3.64. Executing ABC pass (technology mapping using ABC).
 
-3.35.1. Summary of detected clock domains:
-  6 cells in clk=\wb_clk_i, en=$abc$6017$abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, arst=\arst_i, srst={ }
-  14 cells in clk=\wb_clk_i, en=$abc$6025$abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, arst=\arst_i, srst={ }
-  18 cells in clk=\wb_clk_i, en=$abc$6040$abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, arst=\arst_i, srst={ }
-  7 cells in clk=$abc$5661$ser_des.Baud_Rate, en=$abc$6060$abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, arst=\arst_i, srst={ }
-  33 cells in clk=\wb_clk_i, en=$abc$6070$abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, arst=\arst_i, srst={ }
-  55 cells in clk=\wb_clk_i, en=$abc$6111$abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, arst=\arst_i, srst={ }
-  35 cells in clk=\wb_clk_i, en=$abc$6171$abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, arst=\arst_i, srst={ }
-  9 cells in clk=\wb_clk_i, en=$abc$6267$abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, arst=\arst_i, srst={ }
-  10 cells in clk=\wb_clk_i, en=$abc$6277$abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, arst=\arst_i, srst={ }
-  4 cells in clk=\wb_clk_i, en=$abc$6289$abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, arst=\arst_i, srst={ }
-  36 cells in clk=\wb_clk_i, en=$abc$6295$abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, arst=\arst_i, srst={ }
-  26 cells in clk=$abc$5661$ser_des.Baud_Rate, en=$abc$6333$abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, arst=\arst_i, srst={ }
-  17 cells in clk=\wb_clk_i, en=$abc$6649$abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, arst=\arst_i, srst={ }
-  41 cells in clk=\wb_clk_i, en=$abc$6363$abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, arst=\arst_i, srst={ }
-  118 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
-  16 cells in clk=$abc$5661$ser_des.Baud_Rate, en=$abc$6535$abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, arst=\arst_i, srst={ }
-  74 cells in clk=$abc$5661$ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
-  38 cells in clk=\wb_clk_i, en=$abc$6222$abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, arst=\arst_i, srst={ }
+3.64.1. Summary of detected clock domains:
+  8 cells in clk=\wb_clk_i, en=$abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, arst=\arst_i, srst={ }
+  50 cells in clk=\wb_clk_i, en=$abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, arst=\arst_i, srst={ }
+  6 cells in clk=\wb_clk_i, en=$abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, arst=\arst_i, srst={ }
+  9 cells in clk=\wb_clk_i, en=$abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, arst=\arst_i, srst={ }
+  4 cells in clk=\wb_clk_i, en=$abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, arst=\arst_i, srst={ }
+  20 cells in clk=\wb_clk_i, en=$abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, arst=\arst_i, srst={ }
+  14 cells in clk=\wb_clk_i, en=$abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, arst=\arst_i, srst={ }
   37 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
+  71 cells in clk=\wb_clk_i, en=$abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, arst=\arst_i, srst={ }
+  43 cells in clk=\wb_clk_i, en=$abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, arst=\arst_i, srst={ }
+  27 cells in clk=\wb_clk_i, en=$abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, arst=\arst_i, srst={ }
+  9 cells in clk=\ser_des.Baud_Rate, en=$abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, arst=\arst_i, srst={ }
+  18 cells in clk=\wb_clk_i, en=$abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, arst=\arst_i, srst={ }
+  19 cells in clk=\ser_des.Baud_Rate, en=$abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, arst=\arst_i, srst={ }
+  29 cells in clk=\wb_clk_i, en=$abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, arst=\arst_i, srst={ }
+  49 cells in clk=\wb_clk_i, en=$abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, arst=\arst_i, srst={ }
+  95 cells in clk=\ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
+  23 cells in clk=\ser_des.Baud_Rate, en=$abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, arst=\arst_i, srst={ }
+  103 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
 
-3.35.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6017$abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, asynchronously reset by \arst_i
+3.64.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, asynchronously reset by \arst_i
+Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 2 outputs.
+
+3.64.2.1. Executing ABC.
+
+3.64.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, asynchronously reset by \arst_i
+Extracted 50 gates and 102 wires to a netlist network with 52 inputs and 4 outputs.
+
+3.64.3.1. Executing ABC.
+
+3.64.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, asynchronously reset by \arst_i
 Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 4 outputs.
 
-3.35.2.1. Executing ABC.
+3.64.4.1. Executing ABC.
 
-3.35.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6025$abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, asynchronously reset by \arst_i
-Extracted 14 gates and 23 wires to a netlist network with 9 inputs and 5 outputs.
+3.64.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, asynchronously reset by \arst_i
+Extracted 9 gates and 18 wires to a netlist network with 9 inputs and 4 outputs.
 
-3.35.3.1. Executing ABC.
+3.64.5.1. Executing ABC.
 
-3.35.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6040$abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, asynchronously reset by \arst_i
-Extracted 18 gates and 31 wires to a netlist network with 13 inputs and 9 outputs.
-
-3.35.4.1. Executing ABC.
-
-3.35.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$6060$abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, asynchronously reset by \arst_i
-Extracted 7 gates and 12 wires to a netlist network with 5 inputs and 3 outputs.
-
-3.35.5.1. Executing ABC.
-
-3.35.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6070$abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, asynchronously reset by \arst_i
-Extracted 33 gates and 51 wires to a netlist network with 18 inputs and 23 outputs.
-
-3.35.6.1. Executing ABC.
-
-3.35.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6111$abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, asynchronously reset by \arst_i
-Extracted 55 gates and 98 wires to a netlist network with 43 inputs and 34 outputs.
-
-3.35.7.1. Executing ABC.
-
-3.35.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6171$abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, asynchronously reset by \arst_i
-Extracted 35 gates and 59 wires to a netlist network with 24 inputs and 24 outputs.
-
-3.35.8.1. Executing ABC.
-
-3.35.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6267$abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, asynchronously reset by \arst_i
-Extracted 9 gates and 17 wires to a netlist network with 8 inputs and 3 outputs.
-
-3.35.9.1. Executing ABC.
-
-3.35.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6277$abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, asynchronously reset by \arst_i
-Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 4 outputs.
-
-3.35.10.1. Executing ABC.
-
-3.35.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6289$abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, asynchronously reset by \arst_i
+3.64.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, asynchronously reset by \arst_i
 Extracted 4 gates and 7 wires to a netlist network with 3 inputs and 3 outputs.
 
-3.35.11.1. Executing ABC.
+3.64.6.1. Executing ABC.
 
-3.35.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6295$abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, asynchronously reset by \arst_i
-Extracted 36 gates and 64 wires to a netlist network with 28 inputs and 16 outputs.
+3.64.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, asynchronously reset by \arst_i
+Extracted 20 gates and 37 wires to a netlist network with 17 inputs and 12 outputs.
 
-3.35.12.1. Executing ABC.
+3.64.7.1. Executing ABC.
 
-3.35.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$6333$abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, asynchronously reset by \arst_i
-Extracted 26 gates and 43 wires to a netlist network with 17 inputs and 15 outputs.
+3.64.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, asynchronously reset by \arst_i
+Extracted 14 gates and 21 wires to a netlist network with 7 inputs and 6 outputs.
 
-3.35.13.1. Executing ABC.
+3.64.8.1. Executing ABC.
 
-3.35.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6649$abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, asynchronously reset by \arst_i
-Extracted 17 gates and 35 wires to a netlist network with 18 inputs and 11 outputs.
-
-3.35.14.1. Executing ABC.
-
-3.35.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6363$abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, asynchronously reset by \arst_i
-Extracted 41 gates and 82 wires to a netlist network with 41 inputs and 3 outputs.
-
-3.35.15.1. Executing ABC.
-
-3.35.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
-Extracted 118 gates and 142 wires to a netlist network with 24 inputs and 34 outputs.
-
-3.35.16.1. Executing ABC.
-
-3.35.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$6535$abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, asynchronously reset by \arst_i
-Extracted 16 gates and 22 wires to a netlist network with 6 inputs and 7 outputs.
-
-3.35.17.1. Executing ABC.
-
-3.35.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, asynchronously reset by \arst_i
-Extracted 74 gates and 99 wires to a netlist network with 25 inputs and 19 outputs.
-
-3.35.18.1. Executing ABC.
-
-3.35.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6222$abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, asynchronously reset by \arst_i
-Extracted 38 gates and 63 wires to a netlist network with 25 inputs and 29 outputs.
-
-3.35.19.1. Executing ABC.
-
-3.35.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+3.64.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i
 Extracted 37 gates and 67 wires to a netlist network with 30 inputs and 8 outputs.
 
-3.35.20.1. Executing ABC.
+3.64.9.1. Executing ABC.
+
+3.64.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, asynchronously reset by \arst_i
+Extracted 71 gates and 117 wires to a netlist network with 46 inputs and 39 outputs.
+
+3.64.10.1. Executing ABC.
+
+3.64.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, asynchronously reset by \arst_i
+Extracted 43 gates and 73 wires to a netlist network with 30 inputs and 35 outputs.
+
+3.64.11.1. Executing ABC.
+
+3.64.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, asynchronously reset by \arst_i
+Extracted 27 gates and 52 wires to a netlist network with 25 inputs and 16 outputs.
+
+3.64.12.1. Executing ABC.
+
+3.64.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$3288$ser_des.Baud_Rate, enabled by $abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, asynchronously reset by \arst_i
+Extracted 9 gates and 16 wires to a netlist network with 7 inputs and 5 outputs.
+
+3.64.13.1. Executing ABC.
+
+3.64.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, asynchronously reset by \arst_i
+Extracted 18 gates and 29 wires to a netlist network with 11 inputs and 8 outputs.
+
+3.64.14.1. Executing ABC.
+
+3.64.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$3288$ser_des.Baud_Rate, enabled by $abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, asynchronously reset by \arst_i
+Extracted 19 gates and 30 wires to a netlist network with 11 inputs and 9 outputs.
+
+3.64.15.1. Executing ABC.
+
+3.64.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, asynchronously reset by \arst_i
+Extracted 29 gates and 49 wires to a netlist network with 20 inputs and 17 outputs.
+
+3.64.16.1. Executing ABC.
+
+3.64.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, asynchronously reset by \arst_i
+Extracted 49 gates and 77 wires to a netlist network with 28 inputs and 38 outputs.
+
+3.64.17.1. Executing ABC.
+
+3.64.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, asynchronously reset by \arst_i
+Extracted 95 gates and 122 wires to a netlist network with 27 inputs and 21 outputs.
+
+3.64.18.1. Executing ABC.
+
+3.64.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, asynchronously reset by \arst_i
+Extracted 23 gates and 37 wires to a netlist network with 14 inputs and 12 outputs.
+
+3.64.19.1. Executing ABC.
+
+3.64.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
+Extracted 103 gates and 115 wires to a netlist network with 12 inputs and 27 outputs.
+
+3.64.20.1. Executing ABC.
 
 yosys> abc -dff
 
-3.36. Executing ABC pass (technology mapping using ABC).
+3.65. Executing ABC pass (technology mapping using ABC).
 
-3.36.1. Summary of detected clock domains:
-  41 cells in clk=\wb_clk_i, en=$abc$7319$abc$6222$abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, arst=\arst_i, srst={ }
-  6 cells in clk=\wb_clk_i, en=$abc$6718$abc$6017$abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, arst=\arst_i, srst={ }
-  14 cells in clk=\wb_clk_i, en=$abc$6725$abc$6025$abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, arst=\arst_i, srst={ }
-  21 cells in clk=\wb_clk_i, en=$abc$6740$abc$6040$abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, arst=\arst_i, srst={ }
-  8 cells in clk=$abc$6555$abc$5661$ser_des.Baud_Rate, en=$abc$6759$abc$6060$abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, arst=\arst_i, srst={ }
-  35 cells in clk=\wb_clk_i, en=$abc$6768$abc$6070$abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, arst=\arst_i, srst={ }
-  36 cells in clk=\wb_clk_i, en=$abc$6814$abc$6111$abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, arst=\arst_i, srst={ }
-  9 cells in clk=\wb_clk_i, en=$abc$6924$abc$6267$abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, arst=\arst_i, srst={ }
-  10 cells in clk=\wb_clk_i, en=$abc$6934$abc$6277$abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, arst=\arst_i, srst={ }
-  4 cells in clk=\wb_clk_i, en=$abc$6946$abc$6289$abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, arst=\arst_i, srst={ }
-  30 cells in clk=\wb_clk_i, en=$abc$6952$abc$6295$abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, arst=\arst_i, srst={ }
-  36 cells in clk=\wb_clk_i, en=$abc$6879$abc$6171$abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, arst=\arst_i, srst={ }
-  36 cells in clk=$abc$6555$abc$5661$ser_des.Baud_Rate, en=$abc$6990$abc$6333$abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, arst=\arst_i, srst={ }
-  41 cells in clk=\wb_clk_i, en=$abc$7047$abc$6363$abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, arst=\arst_i, srst={ }
-  116 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
-  17 cells in clk=$abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, en=$abc$7219$abc$6535$abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, arst=\arst_i, srst={ }
-  82 cells in clk=$abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
-  19 cells in clk=\wb_clk_i, en=$abc$7024$abc$6649$abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, arst=\arst_i, srst={ }
+3.65.1. Summary of detected clock domains:
+  8 cells in clk=\wb_clk_i, en=$abc$3892$abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, arst=\arst_i, srst={ }
+  52 cells in clk=\wb_clk_i, en=$abc$3901$abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, arst=\arst_i, srst={ }
+  6 cells in clk=\wb_clk_i, en=$abc$3952$abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, arst=\arst_i, srst={ }
+  10 cells in clk=\wb_clk_i, en=$abc$3959$abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, arst=\arst_i, srst={ }
+  4 cells in clk=\wb_clk_i, en=$abc$3970$abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, arst=\arst_i, srst={ }
+  15 cells in clk=\wb_clk_i, en=$abc$4002$abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, arst=\arst_i, srst={ }
   37 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
+  51 cells in clk=\wb_clk_i, en=$abc$4064$abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, arst=\arst_i, srst={ }
+  53 cells in clk=\wb_clk_i, en=$abc$4137$abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, arst=\arst_i, srst={ }
+  9 cells in clk=$abc$3288$ser_des.Baud_Rate, en=$abc$4228$abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, arst=\arst_i, srst={ }
+  19 cells in clk=\wb_clk_i, en=$abc$4239$abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, arst=\arst_i, srst={ }
+  31 cells in clk=\wb_clk_i, en=$abc$4192$abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, arst=\arst_i, srst={ }
+  19 cells in clk=\wb_clk_i, en=$abc$3976$abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, arst=\arst_i, srst={ }
+  18 cells in clk=$abc$3288$ser_des.Baud_Rate, en=$abc$4259$abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, arst=\arst_i, srst={ }
+  29 cells in clk=\wb_clk_i, en=$abc$4281$abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, arst=\arst_i, srst={ }
+  46 cells in clk=\wb_clk_i, en=$abc$4321$abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, arst=\arst_i, srst={ }
+  94 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
+  30 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en=$abc$4477$abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, arst=\arst_i, srst={ }
+  102 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
 
-3.36.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$7319$abc$6222$abc$5362$auto$opt_dff.cc:219:make_patterns_logic$3319, asynchronously reset by \arst_i
-Extracted 41 gates and 68 wires to a netlist network with 27 inputs and 28 outputs.
+3.65.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3892$abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, asynchronously reset by \arst_i
+Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 2 outputs.
 
-3.36.2.1. Executing ABC.
+3.65.2.1. Executing ABC.
 
-3.36.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6718$abc$6017$abc$5322$auto$opt_dff.cc:194:make_patterns_logic$758, asynchronously reset by \arst_i
+3.65.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3901$abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, asynchronously reset by \arst_i
+Extracted 52 gates and 105 wires to a netlist network with 53 inputs and 4 outputs.
+
+3.65.3.1. Executing ABC.
+
+3.65.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3952$abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, asynchronously reset by \arst_i
 Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 4 outputs.
 
-3.36.3.1. Executing ABC.
+3.65.4.1. Executing ABC.
 
-3.36.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6725$abc$6025$abc$5344$auto$opt_dff.cc:219:make_patterns_logic$732, asynchronously reset by \arst_i
-Extracted 14 gates and 23 wires to a netlist network with 9 inputs and 5 outputs.
+3.65.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3959$abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, asynchronously reset by \arst_i
+Extracted 10 gates and 20 wires to a netlist network with 10 inputs and 4 outputs.
 
-3.36.4.1. Executing ABC.
+3.65.5.1. Executing ABC.
 
-3.36.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6740$abc$6040$abc$5497$auto$opt_dff.cc:219:make_patterns_logic$2554, asynchronously reset by \arst_i
-Extracted 21 gates and 35 wires to a netlist network with 14 inputs and 11 outputs.
-
-3.36.5.1. Executing ABC.
-
-3.36.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$6759$abc$6060$abc$5661$auto$opt_dff.cc:194:make_patterns_logic$767, asynchronously reset by \arst_i
-Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 4 outputs.
-
-3.36.6.1. Executing ABC.
-
-3.36.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6768$abc$6070$abc$5456$auto$opt_dff.cc:219:make_patterns_logic$2605, asynchronously reset by \arst_i
-Extracted 35 gates and 54 wires to a netlist network with 19 inputs and 20 outputs.
-
-3.36.7.1. Executing ABC.
-
-3.36.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6814$abc$6111$abc$5572$auto$opt_dff.cc:219:make_patterns_logic$2452, asynchronously reset by \arst_i
-Extracted 36 gates and 65 wires to a netlist network with 29 inputs and 20 outputs.
-
-3.36.8.1. Executing ABC.
-
-3.36.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6924$abc$6267$abc$5322$auto$opt_dff.cc:219:make_patterns_logic$725, asynchronously reset by \arst_i
-Extracted 9 gates and 17 wires to a netlist network with 8 inputs and 3 outputs.
-
-3.36.9.1. Executing ABC.
-
-3.36.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6934$abc$6277$abc$5333$auto$opt_dff.cc:219:make_patterns_logic$739, asynchronously reset by \arst_i
-Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 4 outputs.
-
-3.36.10.1. Executing ABC.
-
-3.36.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6946$abc$6289$abc$5314$auto$opt_dff.cc:194:make_patterns_logic$755, asynchronously reset by \arst_i
+3.65.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3970$abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, asynchronously reset by \arst_i
 Extracted 4 gates and 7 wires to a netlist network with 3 inputs and 3 outputs.
 
-3.36.11.1. Executing ABC.
+3.65.6.1. Executing ABC.
 
-3.36.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6952$abc$6295$abc$5417$auto$opt_dff.cc:219:make_patterns_logic$2656, asynchronously reset by \arst_i
-Extracted 30 gates and 56 wires to a netlist network with 26 inputs and 11 outputs.
+3.65.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4002$abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, asynchronously reset by \arst_i
+Extracted 15 gates and 23 wires to a netlist network with 8 inputs and 6 outputs.
 
-3.36.12.1. Executing ABC.
+3.65.7.1. Executing ABC.
 
-3.36.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$6879$abc$6171$abc$5520$auto$opt_dff.cc:219:make_patterns_logic$2503, asynchronously reset by \arst_i
-Extracted 36 gates and 60 wires to a netlist network with 24 inputs and 25 outputs.
-
-3.36.13.1. Executing ABC.
-
-3.36.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$6990$abc$6333$abc$5671$auto$opt_dff.cc:194:make_patterns_logic$770, asynchronously reset by \arst_i
-Extracted 36 gates and 51 wires to a netlist network with 15 inputs and 12 outputs.
-
-3.36.14.1. Executing ABC.
-
-3.36.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$7047$abc$6363$abc$5804$auto$opt_dff.cc:194:make_patterns_logic$761, asynchronously reset by \arst_i
-Extracted 41 gates and 82 wires to a netlist network with 41 inputs and 3 outputs.
-
-3.36.15.1. Executing ABC.
-
-3.36.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
-Extracted 116 gates and 138 wires to a netlist network with 22 inputs and 36 outputs.
-
-3.36.16.1. Executing ABC.
-
-3.36.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$7712$abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, enabled by $abc$7219$abc$6535$abc$5785$auto$opt_dff.cc:194:make_patterns_logic$764, asynchronously reset by \arst_i
-Extracted 17 gates and 24 wires to a netlist network with 7 inputs and 6 outputs.
-
-3.36.17.1. Executing ABC.
-
-3.36.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: $abc$7712$abc$6990$abc$6555$abc$5661$ser_des.Baud_Rate, asynchronously reset by \arst_i
-Extracted 82 gates and 108 wires to a netlist network with 26 inputs and 22 outputs.
-
-3.36.18.1. Executing ABC.
-
-3.36.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \wb_clk_i, enabled by $abc$7024$abc$6649$abc$5636$auto$opt_dff.cc:219:make_patterns_logic$2401, asynchronously reset by \arst_i
-Extracted 19 gates and 35 wires to a netlist network with 16 inputs and 12 outputs.
-
-3.36.19.1. Executing ABC.
-
-3.36.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+3.65.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \wb_clk_i
 Extracted 37 gates and 67 wires to a netlist network with 30 inputs and 8 outputs.
 
-3.36.20.1. Executing ABC.
+3.65.8.1. Executing ABC.
+
+3.65.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4064$abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, asynchronously reset by \arst_i
+Extracted 51 gates and 89 wires to a netlist network with 38 inputs and 26 outputs.
+
+3.65.9.1. Executing ABC.
+
+3.65.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4137$abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, asynchronously reset by \arst_i
+Extracted 53 gates and 85 wires to a netlist network with 32 inputs and 42 outputs.
+
+3.65.10.1. Executing ABC.
+
+3.65.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$4228$abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, asynchronously reset by \arst_i
+Extracted 9 gates and 16 wires to a netlist network with 7 inputs and 5 outputs.
+
+3.65.11.1. Executing ABC.
+
+3.65.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4239$abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, asynchronously reset by \arst_i
+Extracted 19 gates and 30 wires to a netlist network with 11 inputs and 8 outputs.
+
+3.65.12.1. Executing ABC.
+
+3.65.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4192$abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, asynchronously reset by \arst_i
+Extracted 31 gates and 58 wires to a netlist network with 27 inputs and 14 outputs.
+
+3.65.13.1. Executing ABC.
+
+3.65.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$3976$abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, asynchronously reset by \arst_i
+Extracted 19 gates and 36 wires to a netlist network with 17 inputs and 11 outputs.
+
+3.65.14.1. Executing ABC.
+
+3.65.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$4259$abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, asynchronously reset by \arst_i
+Extracted 18 gates and 26 wires to a netlist network with 8 inputs and 7 outputs.
+
+3.65.15.1. Executing ABC.
+
+3.65.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4281$abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, asynchronously reset by \arst_i
+Extracted 29 gates and 50 wires to a netlist network with 21 inputs and 17 outputs.
+
+3.65.16.1. Executing ABC.
+
+3.65.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4321$abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, asynchronously reset by \arst_i
+Extracted 46 gates and 70 wires to a netlist network with 24 inputs and 36 outputs.
+
+3.65.17.1. Executing ABC.
+
+3.65.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, asynchronously reset by \arst_i
+Extracted 94 gates and 122 wires to a netlist network with 28 inputs and 25 outputs.
+
+3.65.18.1. Executing ABC.
+
+3.65.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$4477$abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, asynchronously reset by \arst_i
+Extracted 30 gates and 44 wires to a netlist network with 14 inputs and 10 outputs.
+
+3.65.19.1. Executing ABC.
+
+3.65.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
+Extracted 102 gates and 114 wires to a netlist network with 12 inputs and 28 outputs.
+
+3.65.20.1. Executing ABC.
+
+yosys> abc -dff
+
+3.66. Executing ABC pass (technology mapping using ABC).
+
+3.66.1. Summary of detected clock domains:
+  8 cells in clk=\wb_clk_i, en=$abc$4632$abc$3892$abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, arst=\arst_i, srst={ }
+  52 cells in clk=\wb_clk_i, en=$abc$4641$abc$3901$abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, arst=\arst_i, srst={ }
+  22 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en=$abc$5203$abc$4477$abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, arst=\arst_i, srst={ }
+  6 cells in clk=\wb_clk_i, en=$abc$4694$abc$3952$abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, arst=\arst_i, srst={ }
+  9 cells in clk=\wb_clk_i, en=$abc$4701$abc$3959$abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, arst=\arst_i, srst={ }
+  4 cells in clk=\wb_clk_i, en=$abc$4712$abc$3970$abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, arst=\arst_i, srst={ }
+  14 cells in clk=\wb_clk_i, en=$abc$4718$abc$4002$abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, arst=\arst_i, srst={ }
+  37 cells in clk=\wb_clk_i, en={ }, arst={ }, srst={ }
+  68 cells in clk=\wb_clk_i, en=$abc$4780$abc$4064$abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, arst=\arst_i, srst={ }
+  52 cells in clk=\wb_clk_i, en=$abc$4836$abc$4137$abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, arst=\arst_i, srst={ }
+  9 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en=$abc$4898$abc$4228$abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, arst=\arst_i, srst={ }
+  19 cells in clk=\wb_clk_i, en=$abc$4909$abc$4239$abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, arst=\arst_i, srst={ }
+  32 cells in clk=\wb_clk_i, en=$abc$4929$abc$4192$abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, arst=\arst_i, srst={ }
+  20 cells in clk=\wb_clk_i, en=$abc$4963$abc$3976$abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, arst=\arst_i, srst={ }
+  20 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en=$abc$4988$abc$4259$abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, arst=\arst_i, srst={ }
+  31 cells in clk=\wb_clk_i, en=$abc$5008$abc$4281$abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, arst=\arst_i, srst={ }
+  49 cells in clk=\wb_clk_i, en=$abc$5048$abc$4321$abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, arst=\arst_i, srst={ }
+  83 cells in clk=$abc$4259$abc$3288$ser_des.Baud_Rate, en={ }, arst=\arst_i, srst={ }
+  102 cells in clk=\wb_clk_i, en={ }, arst=\arst_i, srst={ }
+
+3.66.2. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4632$abc$3892$abc$3467$auto$opt_dff.cc:219:make_patterns_logic$1061, asynchronously reset by \arst_i
+Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 2 outputs.
+
+3.66.2.1. Executing ABC.
+
+3.66.3. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4641$abc$3901$abc$3580$auto$opt_dff.cc:194:make_patterns_logic$1124, asynchronously reset by \arst_i
+Extracted 52 gates and 105 wires to a netlist network with 53 inputs and 4 outputs.
+
+3.66.3.1. Executing ABC.
+
+3.66.4. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$5203$abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$5203$abc$4477$abc$3173$auto$opt_dff.cc:194:make_patterns_logic$1133, asynchronously reset by \arst_i
+Extracted 22 gates and 36 wires to a netlist network with 14 inputs and 11 outputs.
+
+3.66.4.1. Executing ABC.
+
+3.66.5. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4694$abc$3952$abc$3574$auto$opt_dff.cc:194:make_patterns_logic$1121, asynchronously reset by \arst_i
+Extracted 6 gates and 12 wires to a netlist network with 6 inputs and 4 outputs.
+
+3.66.5.1. Executing ABC.
+
+3.66.6. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4701$abc$3959$abc$3476$auto$opt_dff.cc:219:make_patterns_logic$1075, asynchronously reset by \arst_i
+Extracted 9 gates and 18 wires to a netlist network with 9 inputs and 4 outputs.
+
+3.66.6.1. Executing ABC.
+
+3.66.7. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4712$abc$3970$abc$3567$auto$opt_dff.cc:194:make_patterns_logic$1118, asynchronously reset by \arst_i
+Extracted 4 gates and 7 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.66.7.1. Executing ABC.
+
+3.66.8. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4718$abc$4002$abc$3486$auto$opt_dff.cc:219:make_patterns_logic$1068, asynchronously reset by \arst_i
+Extracted 14 gates and 21 wires to a netlist network with 7 inputs and 6 outputs.
+
+3.66.8.1. Executing ABC.
+
+3.66.9. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i
+Extracted 37 gates and 67 wires to a netlist network with 30 inputs and 8 outputs.
+
+3.66.9.1. Executing ABC.
+
+3.66.10. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4780$abc$4064$abc$3213$auto$opt_dff.cc:219:make_patterns_logic$1093, asynchronously reset by \arst_i
+Extracted 68 gates and 114 wires to a netlist network with 46 inputs and 37 outputs.
+
+3.66.10.1. Executing ABC.
+
+3.66.11. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4836$abc$4137$abc$3521$auto$opt_dff.cc:219:make_patterns_logic$1104, asynchronously reset by \arst_i
+Extracted 52 gates and 82 wires to a netlist network with 30 inputs and 37 outputs.
+
+3.66.11.1. Executing ABC.
+
+3.66.12. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$5203$abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$4898$abc$4228$abc$3157$auto$opt_dff.cc:194:make_patterns_logic$1130, asynchronously reset by \arst_i
+Extracted 9 gates and 16 wires to a netlist network with 7 inputs and 5 outputs.
+
+3.66.12.1. Executing ABC.
+
+3.66.13. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4909$abc$4239$abc$3444$auto$opt_dff.cc:219:make_patterns_logic$1043, asynchronously reset by \arst_i
+Extracted 19 gates and 30 wires to a netlist network with 11 inputs and 7 outputs.
+
+3.66.13.1. Executing ABC.
+
+3.66.14. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4929$abc$4192$abc$3653$auto$opt_dff.cc:219:make_patterns_logic$1021, asynchronously reset by \arst_i
+Extracted 32 gates and 59 wires to a netlist network with 27 inputs and 16 outputs.
+
+3.66.14.1. Executing ABC.
+
+3.66.15. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$4963$abc$3976$abc$3502$auto$opt_dff.cc:219:make_patterns_logic$1054, asynchronously reset by \arst_i
+Extracted 20 gates and 35 wires to a netlist network with 15 inputs and 12 outputs.
+
+3.66.15.1. Executing ABC.
+
+3.66.16. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$5203$abc$4259$abc$3288$ser_des.Baud_Rate, enabled by $abc$4988$abc$4259$abc$3267$auto$opt_dff.cc:194:make_patterns_logic$1127, asynchronously reset by \arst_i
+Extracted 20 gates and 30 wires to a netlist network with 10 inputs and 9 outputs.
+
+3.66.16.1. Executing ABC.
+
+3.66.17. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5008$abc$4281$abc$3399$auto$opt_dff.cc:219:make_patterns_logic$1032, asynchronously reset by \arst_i
+Extracted 31 gates and 52 wires to a netlist network with 21 inputs and 19 outputs.
+
+3.66.17.1. Executing ABC.
+
+3.66.18. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, enabled by $abc$5048$abc$4321$abc$3686$auto$opt_dff.cc:219:make_patterns_logic$1115, asynchronously reset by \arst_i
+Extracted 49 gates and 75 wires to a netlist network with 26 inputs and 36 outputs.
+
+3.66.18.1. Executing ABC.
+
+3.66.19. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: $abc$5203$abc$4259$abc$3288$ser_des.Baud_Rate, asynchronously reset by \arst_i
+Extracted 83 gates and 113 wires to a netlist network with 30 inputs and 21 outputs.
+
+3.66.19.1. Executing ABC.
+
+3.66.20. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \wb_clk_i, asynchronously reset by \arst_i
+Extracted 102 gates and 114 wires to a netlist network with 12 inputs and 28 outputs.
+
+3.66.20.1. Executing ABC.
 
 yosys> opt_ffinv
 
-3.37. Executing OPT_FFINV pass (push inverters through FFs).
+3.67. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> opt -sat
 
-3.38. Executing OPT pass (performing simple optimizations).
+3.68. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.38.1. Executing OPT_EXPR pass (perform const folding).
+3.68.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~1 debug messages>
 
 yosys> opt_merge -nomux
 
-3.38.2. Executing OPT_MERGE pass (detect identical cells).
+3.68.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 <suppressed ~120 debug messages>
 Removed a total of 40 cells.
 
 yosys> opt_muxtree
 
-3.38.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.68.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1895,37 +1896,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.38.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.68.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.38.5. Executing OPT_MERGE pass (detect identical cells).
+3.68.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.38.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.68.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.38.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.68.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 3812 unused wires.
-<suppressed ~29 debug messages>
+Removed 0 unused cells and 4007 unused wires.
+<suppressed ~31 debug messages>
 
 yosys> opt_expr
 
-3.38.8. Executing OPT_EXPR pass (perform const folding).
+3.68.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.38.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.68.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.38.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.68.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1933,77 +1934,82 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.38.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.68.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.38.12. Executing OPT_MERGE pass (detect identical cells).
+3.68.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.38.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.68.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.38.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.68.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.38.15. Executing OPT_EXPR pass (perform const folding).
+3.68.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.38.16. Finished OPT passes. (There is nothing left to do.)
+3.68.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script /home/users/temp_dir/yosys_phIi1z/abc_tmp_1.scr
+yosys> bmuxmap
 
-3.39. Executing ABC pass (technology mapping using ABC).
+3.69. Executing BMUXMAP pass.
 
-3.39.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Extracted 456 gates and 577 wires to a netlist network with 121 inputs and 104 outputs.
+yosys> demuxmap
 
-3.39.1.1. Executing ABC.
-DE:   #PIs = 121  #Luts =   159  Max Lvl =   6  Avg Lvl =   2.32  [   0.12 sec. at Pass 0]
-DE:   #PIs = 121  #Luts =   156  Max Lvl =   5  Avg Lvl =   2.26  [   0.78 sec. at Pass 1]
-DE:   #PIs = 121  #Luts =   156  Max Lvl =   5  Avg Lvl =   2.26  [   0.29 sec. at Pass 2]
-DE:   #PIs = 121  #Luts =   152  Max Lvl =   5  Avg Lvl =   2.10  [   0.24 sec. at Pass 3]
-DE:   #PIs = 121  #Luts =   152  Max Lvl =   5  Avg Lvl =   2.10  [   0.34 sec. at Pass 4]
-DE:   #PIs = 121  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.07  [   0.51 sec. at Pass 5]
-DE:   #PIs = 121  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.07  [   0.49 sec. at Pass 6]
-DE:   #PIs = 121  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.07  [   0.49 sec. at Pass 7]
-DE:   #PIs = 121  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.07  [   0.48 sec. at Pass 8]
-DE:   #PIs = 121  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.08  [   2.02 sec. at Pass 9]
-DE:   #PIs = 121  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.08  [   0.66 sec. at Pass 10]
-DE:   #PIs = 121  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.08  [   0.41 sec. at Pass 11]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   0.41 sec. at Pass 12]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   0.43 sec. at Pass 13]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   0.73 sec. at Pass 14]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   0.27 sec. at Pass 15]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   1.93 sec. at Pass 16]
-DE:   #PIs = 121  #Luts =   149  Max Lvl =   4  Avg Lvl =   2.08  [   0.16 sec. at Pass 17]
+3.70. Executing DEMUXMAP pass.
 
-yosys> opt
+yosys> clean_zerowidth
 
-3.40. Executing OPT pass (performing simple optimizations).
+yosys> abc -script /home/users/temp_dir/yosys_c0pa7T/abc_tmp_1.scr
+
+3.71. Executing ABC pass (technology mapping using ABC).
+
+3.71.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Extracted 490 gates and 612 wires to a netlist network with 122 inputs and 105 outputs.
+
+3.71.1.1. Executing ABC.
+DE:   #PIs = 122  #Luts =   169  Max Lvl =   6  Avg Lvl =   2.37  [   0.24 sec. at Pass 0]
+DE:   #PIs = 122  #Luts =   158  Max Lvl =   5  Avg Lvl =   2.32  [   0.91 sec. at Pass 1]
+DE:   #PIs = 122  #Luts =   156  Max Lvl =   5  Avg Lvl =   2.31  [   0.28 sec. at Pass 2]
+DE:   #PIs = 122  #Luts =   155  Max Lvl =   5  Avg Lvl =   2.12  [   1.16 sec. at Pass 3]
+DE:   #PIs = 122  #Luts =   155  Max Lvl =   5  Avg Lvl =   2.12  [   0.63 sec. at Pass 4]
+DE:   #PIs = 122  #Luts =   154  Max Lvl =   5  Avg Lvl =   2.27  [   0.87 sec. at Pass 5]
+DE:   #PIs = 122  #Luts =   154  Max Lvl =   5  Avg Lvl =   2.27  [   0.76 sec. at Pass 6]
+DE:   #PIs = 122  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.08  [   0.91 sec. at Pass 7]
+DE:   #PIs = 122  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.08  [   0.89 sec. at Pass 8]
+DE:   #PIs = 122  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.08  [   0.73 sec. at Pass 9]
+DE:   #PIs = 122  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.08  [   0.82 sec. at Pass 10]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   2.29 sec. at Pass 11]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   1.03 sec. at Pass 12]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   0.84 sec. at Pass 13]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   1.17 sec. at Pass 14]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   3.23 sec. at Pass 15]
+DE:   #PIs = 122  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.09  [   0.35 sec. at Pass 16]
 
 yosys> opt_expr
 
-3.40.1. Executing OPT_EXPR pass (perform const folding).
+3.72. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
+3.73. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.74. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2011,130 +2017,97 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.75. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
+3.76. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.77. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.78. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.79. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 577 unused wires.
+Removed 0 unused cells and 610 unused wires.
 <suppressed ~10 debug messages>
 
 yosys> opt_expr
 
-3.40.8. Executing OPT_EXPR pass (perform const folding).
+3.80. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr
-
-3.40.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.40.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> opt_ffinv
 
-3.41. Executing OPT_FFINV pass (push inverters through FFs).
+3.81. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> stat
 
-3.42. Printing statistics.
+3.82. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                355
-   Number of wire bits:            639
-   Number of public wires:         133
-   Number of public wire bits:     417
+   Number of wires:                361
+   Number of wire bits:            627
+   Number of public wires:         131
+   Number of public wire bits:     397
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                259
+   Number of cells:                263
      $_DFFE_PP0P_                   66
-     $_DFF_PP0_                     36
+     $_DFF_PP0_                     37
      $_DFF_P_                        8
-     $lut                          149
+     $lut                          152
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.43. Executing SHREGMAP pass (map shift registers).
+3.83. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.44. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.84. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.45. Printing statistics.
+3.85. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                355
-   Number of wire bits:            639
-   Number of public wires:         133
-   Number of public wire bits:     417
+   Number of wires:                361
+   Number of wire bits:            627
+   Number of public wires:         131
+   Number of public wire bits:     397
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                259
+   Number of cells:                263
      $_DFFE_PP0P_                   66
-     $_DFF_PP0_                     36
+     $_DFF_PP0_                     37
      $_DFF_P_                        8
-     $lut                          149
+     $lut                          152
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.46. Executing TECHMAP pass (map to technology primitives).
+3.86. Executing TECHMAP pass (map to technology primitives).
 
-3.46.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.86.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -2162,7 +2135,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.46.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.86.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -2231,67 +2204,68 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.46.3. Continuing TECHMAP pass.
-Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
+3.86.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
-Using template \$_DFF_PP0_ for cells of type $_DFF_PP0_.
+Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
+Using template \$_DFF_PP0_ for cells of type $_DFF_PP0_.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~497 debug messages>
+<suppressed ~502 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.47. Executing OPT_EXPR pass (perform const folding).
+3.87. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~3543 debug messages>
+<suppressed ~3571 debug messages>
 
 yosys> simplemap
 
-3.48. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.88. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.49. Executing OPT_EXPR pass (perform const folding).
+3.89. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge
 
-3.50. Executing OPT_MERGE pass (detect identical cells).
+3.90. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-<suppressed ~1128 debug messages>
-Removed a total of 376 cells.
+<suppressed ~1158 debug messages>
+Removed a total of 386 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.51. Executing OPT_DFF pass (perform DFF optimizations).
+3.91. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.52. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.92. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 905 unused wires.
+Removed 0 unused cells and 903 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.53. Executing OPT pass (performing simple optimizations).
+3.93. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.53.1. Executing OPT_EXPR pass (perform const folding).
+3.93.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-<suppressed ~36 debug messages>
+<suppressed ~42 debug messages>
 
 yosys> opt_merge -nomux
 
-3.53.2. Executing OPT_MERGE pass (detect identical cells).
+3.93.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-3.53.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.93.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2299,37 +2273,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.93.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.5. Executing OPT_MERGE pass (detect identical cells).
+3.93.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.93.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.93.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 10 unused wires.
+Removed 0 unused cells and 14 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.53.8. Executing OPT_EXPR pass (perform const folding).
+3.93.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.53.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.93.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.53.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.93.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2337,67 +2311,70 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.93.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.12. Executing OPT_MERGE pass (detect identical cells).
+3.93.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.93.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.93.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
 
 yosys> opt_expr
 
-3.53.15. Executing OPT_EXPR pass (perform const folding).
+3.93.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
-3.53.16. Finished OPT passes. (There is nothing left to do.)
+3.93.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script /home/users/temp_dir/yosys_phIi1z/abc_tmp_2.scr
+yosys> abc -script /home/users/temp_dir/yosys_c0pa7T/abc_tmp_2.scr
 
-3.54. Executing ABC pass (technology mapping using ABC).
+3.94. Executing ABC pass (technology mapping using ABC).
 
-3.54.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
-Extracted 568 gates and 692 wires to a netlist network with 122 inputs and 105 outputs.
+3.94.1. Extracting gate netlist of module `\spi_master_top' to `<abc-temp-dir>/input.blif'..
+Extracted 605 gates and 730 wires to a netlist network with 123 inputs and 106 outputs.
 
-3.54.1.1. Executing ABC.
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   5  Avg Lvl =   2.09  [   0.10 sec. at Pass 0]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.96 sec. at Pass 1]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.32 sec. at Pass 2]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.38 sec. at Pass 3]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.41 sec. at Pass 4]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.52 sec. at Pass 5]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   1.64 sec. at Pass 6]
-DE:   #PIs = 122  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.06  [   0.19 sec. at Pass 7]
-
-yosys> opt
-
-3.55. Executing OPT pass (performing simple optimizations).
+3.94.1.1. Executing ABC.
+DE:   #PIs = 123  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.07  [   0.25 sec. at Pass 0]
+DE:   #PIs = 123  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.07  [   1.75 sec. at Pass 1]
+DE:   #PIs = 123  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.07  [   0.44 sec. at Pass 2]
+DE:   #PIs = 123  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.07  [   1.34 sec. at Pass 3]
+DE:   #PIs = 123  #Luts =   153  Max Lvl =   4  Avg Lvl =   2.07  [   0.94 sec. at Pass 4]
+DE:   #PIs = 123  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.07  [   1.55 sec. at Pass 5]
+DE:   #PIs = 123  #Luts =   152  Max Lvl =   4  Avg Lvl =   2.07  [   0.77 sec. at Pass 6]
+DE:   #PIs = 123  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.10  [   1.03 sec. at Pass 7]
+DE:   #PIs = 123  #Luts =   151  Max Lvl =   4  Avg Lvl =   2.10  [   0.73 sec. at Pass 8]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   1.75 sec. at Pass 9]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   0.80 sec. at Pass 10]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   1.44 sec. at Pass 11]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   0.69 sec. at Pass 12]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   2.65 sec. at Pass 13]
+DE:   #PIs = 123  #Luts =   150  Max Lvl =   4  Avg Lvl =   2.10  [   0.51 sec. at Pass 14]
 
 yosys> opt_expr
 
-3.55.1. Executing OPT_EXPR pass (perform const folding).
+3.95. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
 
 yosys> opt_merge -nomux
 
-3.55.2. Executing OPT_MERGE pass (detect identical cells).
+3.96. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.55.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.97. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \spi_master_top..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2405,115 +2382,82 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.55.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.98. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \spi_master_top.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55.5. Executing OPT_MERGE pass (detect identical cells).
+3.99. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\spi_master_top'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.100. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.55.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.101. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.55.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.102. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 588 unused wires.
+Removed 0 unused cells and 609 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.55.8. Executing OPT_EXPR pass (perform const folding).
+3.103. Executing OPT_EXPR pass (perform const folding).
 Optimizing module spi_master_top.
-
-3.55.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.55.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \spi_master_top..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.55.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \spi_master_top.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.55.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\spi_master_top'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.55.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.55.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \spi_master_top..
-
-yosys> opt_expr
-
-3.55.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module spi_master_top.
-
-3.55.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.56. Executing HIERARCHY pass (managing design hierarchy).
+3.104. Executing HIERARCHY pass (managing design hierarchy).
 
-3.56.1. Analyzing design hierarchy..
+3.104.1. Analyzing design hierarchy..
 Top module:  \spi_master_top
 
-3.56.2. Analyzing design hierarchy..
+3.104.2. Analyzing design hierarchy..
 Top module:  \spi_master_top
 Removed 0 unused modules.
 
 yosys> stat
 
-3.57. Printing statistics.
+3.105. Printing statistics.
 
 === spi_master_top ===
 
-   Number of wires:                356
-   Number of wire bits:            640
-   Number of public wires:         133
-   Number of public wire bits:     417
+   Number of wires:                359
+   Number of wire bits:            625
+   Number of public wires:         131
+   Number of public wire bits:     397
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                260
+   Number of cells:                261
      $lut                          150
-     dffsre                        110
+     dffsre                        111
 
 
 yosys> opt_clean -purge
 
-3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.106. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \spi_master_top..
-Removed 0 unused cells and 99 unused wires.
-<suppressed ~99 debug messages>
+Removed 0 unused cells and 100 unused wires.
+<suppressed ~100 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.59. Executing Verilog backend.
+3.107. Executing Verilog backend.
 Dumping module `\spi_master_top'.
 
 Warnings: 27 unique messages, 27 total
-End of script. Logfile hash: 5505d3fbb1, CPU: user 4.03s system 0.40s, MEM: 30.43 MB peak
-Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
-Time spent: 97% 6x abc (123 sec), 0% 39x opt_expr (1 sec), ...
-real 35.07
-user 112.04
-sys 15.51
+End of script. Logfile hash: 206e942779, CPU: user 4.33s system 0.72s, MEM: 30.69 MB peak
+Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+Time spent: 97% 6x abc (167 sec), 0% 33x opt_expr (1 sec), ...
+real 74.91
+user 148.26
+sys 23.49
