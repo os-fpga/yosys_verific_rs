@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.47
- Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.49
+ Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,7 +35,7 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
@@ -44,7 +44,7 @@ yosys> read -vhdl sha256_control.vhd sha256_hash_core.vhd sha256_Ki_rom.vhd sha2
 yosys> verific -vhdl sha256_control.vhd sha256_hash_core.vhd sha256_Ki_rom.vhd sha256_Kt_rom.vhd sha256_msg_sch.vhd sha256_padding.vhd sha256_regs.vhd gv_sha256.vhd
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 VERIFIC-INFO [VHDL-1504] default VHDL library search path is now "/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/share/yosys/verific/vhdl_vdbs_2008"
 VERIFIC-COMMENT [VHDL-1481] Analyzing VHDL file 'sha256_control.vhd'
 VERIFIC-COMMENT [VHDL-1493] Restoring VHDL unit 'ieee.std_logic_1164' from file '/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/share/yosys/verific/vhdl_vdbs_2008/ieee/std_logic_1164.vdb'
@@ -77,7 +77,7 @@ VERIFIC-INFO [VHDL-1010] gv_sha256.vhd:108: analyzing architecture 'rtl'
 
 yosys> synth_rs -top gv_sha256 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.57
+3. Executing synth_rs pass: v0.4.58
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -234,86 +234,112 @@ Optimizing module sha256_control(rtl).
 <suppressed ~16 debug messages>
 Optimizing module gv_sha256.
 
+yosys> bmuxmap
+
+3.5. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.6. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
 yosys> flatten
 
-3.5. Executing FLATTEN pass (flatten design).
-Deleting now unused module sha256_regs(rtl).
-Deleting now unused module sha256_padding(rtl).
-Deleting now unused module sha256_msg_sch(rtl).
-Deleting now unused module sha256_kt_rom(behavioral).
-Deleting now unused module sha256_ki_rom(behavioral).
-Deleting now unused module sha256_hash_core(rtl).
+3.7. Executing FLATTEN pass (flatten design).
 Deleting now unused module sha256_control(rtl).
+Deleting now unused module sha256_hash_core(rtl).
+Deleting now unused module sha256_ki_rom(behavioral).
+Deleting now unused module sha256_kt_rom(behavioral).
+Deleting now unused module sha256_msg_sch(rtl).
+Deleting now unused module sha256_padding(rtl).
+Deleting now unused module sha256_regs(rtl).
 <suppressed ~7 debug messages>
+
+yosys> bmuxmap
+
+3.8. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.9. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> tribuf -logic
 
-3.6. Executing TRIBUF pass.
+3.10. Executing TRIBUF pass.
 
 yosys> deminout
 
-3.7. Executing DEMINOUT pass (demote inout ports to input or output).
+3.11. Executing DEMINOUT pass (demote inout ports to input or output).
 
 yosys> opt_expr
 
-3.8. Executing OPT_EXPR pass (perform const folding).
+3.12. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
+<suppressed ~30 debug messages>
 
 yosys> opt_clean
 
-3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 265 unused wires.
+Removed 0 unused cells and 284 unused wires.
 <suppressed ~202 debug messages>
 
 yosys> check
 
-3.10. Executing CHECK pass (checking for obvious problems).
+3.14. Executing CHECK pass (checking for obvious problems).
 Checking module gv_sha256...
 Found and reported 0 problems.
 
 yosys> opt -nodffe -nosdff
 
-3.11. Executing OPT pass (performing simple optimizations).
+3.15. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.11.1. Executing OPT_EXPR pass (perform const folding).
+3.15.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge -nomux
 
-3.11.2. Executing OPT_MERGE pass (detect identical cells).
+3.15.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~12 debug messages>
-Removed a total of 4 cells.
+Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
+      Replacing known input bits on port A of cell $flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1205: \Inst_sha256_control.hash_control_st_reg -> 3'110
+      Replacing known input bits on port B of cell $flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1204: \Inst_sha256_control.hash_control_st_reg -> 3'101
+      Replacing known input bits on port A of cell $flatten\Inst_sha256_control.$verific$mux_116$sha256_control.vhd:537$278: \Inst_sha256_control.hash_control_st_reg -> 3'100
+      Replacing known input bits on port A of cell $flatten\Inst_sha256_control.$verific$mux_81$sha256_control.vhd:492$263: \Inst_sha256_control.hash_control_st_reg -> 3'010
+      Replacing known input bits on port A of cell $flatten\Inst_sha256_control.$verific$mux_74$sha256_control.vhd:481$260: \Inst_sha256_control.hash_control_st_reg -> 3'001
+      Replacing known input bits on port A of cell $flatten\Inst_sha256_control.$verific$mux_72$sha256_control.vhd:480$258: \Inst_sha256_control.hash_control_st_reg -> 3'001
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~57 debug messages>
+<suppressed ~66 debug messages>
 
 yosys> opt_reduce
 
-3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.5. Executing OPT_MERGE pass (detect identical cells).
+3.15.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
+<suppressed ~117 debug messages>
+Removed a total of 39 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
 Removing never-active async load on $flatten\Inst_sha256_regs.$verific$reg_H7_reg$sha256_regs.vhd:144$1048 ($aldff) from module gv_sha256.
 Removing never-active async load on $flatten\Inst_sha256_regs.$verific$reg_H6_reg$sha256_regs.vhd:144$1047 ($aldff) from module gv_sha256.
 Removing never-active async load on $flatten\Inst_sha256_regs.$verific$reg_H5_reg$sha256_regs.vhd:144$1046 ($aldff) from module gv_sha256.
@@ -352,133 +378,136 @@ Removing never-active async load on $flatten\Inst_sha256_control.$verific$hash_c
 
 yosys> opt_clean
 
-3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 2 unused wires.
+Removed 0 unused cells and 13 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.11.8. Executing OPT_EXPR pass (perform const folding).
+3.15.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~58 debug messages>
+<suppressed ~70 debug messages>
 
 yosys> opt_reduce
 
-3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.12. Executing OPT_MERGE pass (detect identical cells).
+3.15.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.11.15. Executing OPT_EXPR pass (perform const folding).
+3.15.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.11.16. Finished OPT passes. (There is nothing left to do.)
+3.15.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> fsm -encoding binary
 
-3.12. Executing FSM pass (extract and optimize FSM).
+3.16. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
+Not marking gv_sha256.Inst_sha256_control.hash_control_st_reg as FSM state register:
+    Users of register don't seem to benefit from recoding.
+    Register has an initialization value.
 
 yosys> fsm_extract
 
-3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 
 yosys> fsm_opt
 
-3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> opt_clean
 
-3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> fsm_opt
 
-3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> fsm_recode -encoding binary
 
-3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
 yosys> fsm_info
 
-3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 yosys> fsm_map
 
-3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 
 yosys> opt -sat
 
-3.13. Executing OPT pass (performing simple optimizations).
+3.17. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.13.1. Executing OPT_EXPR pass (perform const folding).
+3.17.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge -nomux
 
-3.13.2. Executing OPT_MERGE pass (detect identical cells).
+3.17.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~58 debug messages>
+<suppressed ~70 debug messages>
 
 yosys> opt_reduce
 
-3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.5. Executing OPT_MERGE pass (detect identical cells).
+3.17.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $flatten\Inst_sha256_regs.$verific$reg_H7_reg$sha256_regs.vhd:144$1048 ($dff) from module gv_sha256 (D = \Inst_sha256_hash_core.H_i, Q = \Inst_sha256_regs.reg_H7).
 Adding EN signal on $flatten\Inst_sha256_regs.$verific$reg_H6_reg$sha256_regs.vhd:144$1047 ($dff) from module gv_sha256 (D = \Inst_sha256_hash_core.G_i, Q = \Inst_sha256_regs.reg_H6).
 Adding EN signal on $flatten\Inst_sha256_regs.$verific$reg_H5_reg$sha256_regs.vhd:144$1046 ($dff) from module gv_sha256 (D = \Inst_sha256_hash_core.F_i, Q = \Inst_sha256_regs.reg_H5).
@@ -512,145 +541,210 @@ Adding EN signal on $flatten\Inst_sha256_hash_core.$verific$reg_c_reg$sha256_has
 Adding EN signal on $flatten\Inst_sha256_hash_core.$verific$reg_b_reg$sha256_hash_core.vhd:142$435 ($dff) from module gv_sha256 (D = \Inst_sha256_hash_core.next_reg_b, Q = \Inst_sha256_hash_core.reg_b).
 Adding EN signal on $flatten\Inst_sha256_hash_core.$verific$reg_a_reg$sha256_hash_core.vhd:142$434 ($dff) from module gv_sha256 (D = \Inst_sha256_hash_core.next_reg_a, Q = \Inst_sha256_hash_core.reg_a).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$st_cnt_reg_reg$sha256_control.vhd:403$243 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n386$171, Q = \Inst_sha256_control.st_cnt_reg, rval = 7'0000000).
-Adding EN signal on $auto$ff.cc:262:slice$1129 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.st_cnt_next, Q = \Inst_sha256_control.st_cnt_reg).
+Adding EN signal on $auto$ff.cc:262:slice$1313 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.st_cnt_next, Q = \Inst_sha256_control.st_cnt_reg).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$sha_last_blk_reg_reg$sha256_control.vhd:377$229 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n36$115, Q = \Inst_sha256_control.sha_last_blk_reg, rval = 1'0).
-Adding EN signal on $auto$ff.cc:262:slice$1131 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.sha_last_blk_next, Q = \Inst_sha256_control.sha_last_blk_reg).
+Adding EN signal on $auto$ff.cc:262:slice$1315 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.sha_last_blk_next, Q = \Inst_sha256_control.sha_last_blk_reg).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$padding_reg_reg$sha256_control.vhd:377$230 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n38$117, Q = \Inst_sha256_control.padding_reg, rval = 1'0).
-Adding EN signal on $auto$ff.cc:262:slice$1133 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.padding_next, Q = \Inst_sha256_control.padding_reg).
+Adding EN signal on $auto$ff.cc:262:slice$1317 ($sdff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$auto$bmuxmap.cc:58:execute$1156 [1], Q = \Inst_sha256_control.padding_reg).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$pad_one_reg_reg$sha256_control.vhd:417$249 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n413$124, Q = \Inst_sha256_control.pad_one_reg, rval = 1'1).
-Adding EN signal on $auto$ff.cc:262:slice$1135 ($sdff) from module gv_sha256 (D = 1'0, Q = \Inst_sha256_control.pad_one_reg).
+Adding EN signal on $auto$ff.cc:262:slice$1325 ($sdff) from module gv_sha256 (D = 1'0, Q = \Inst_sha256_control.pad_one_reg).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$msg_bit_cnt_reg_reg$sha256_control.vhd:390$236 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n173$167, Q = \Inst_sha256_control.msg_bit_cnt_reg, rval = 64'0000000000000000000000000000000000000000000000000000000000000000).
-Adding EN signal on $auto$ff.cc:262:slice$1139 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.msg_bit_cnt_next, Q = \Inst_sha256_control.msg_bit_cnt_reg).
+Adding EN signal on $auto$ff.cc:262:slice$1329 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.msg_bit_cnt_next, Q = \Inst_sha256_control.msg_bit_cnt_reg).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$hash_control_st_reg_reg$sha256_control.vhd:365$221 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [2:1], Q = \Inst_sha256_control.hash_control_st_reg [2:1], rval = 2'00).
 Adding SRST signal on $flatten\Inst_sha256_control.$verific$hash_control_st_reg_reg$sha256_control.vhd:365$221 ($dff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n16$162 [0], Q = \Inst_sha256_control.hash_control_st_reg [0], rval = 1'0).
-Adding EN signal on $auto$ff.cc:262:slice$1142 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.hash_control_st_next [0], Q = \Inst_sha256_control.hash_control_st_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1141 ($sdff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [2:1], Q = \Inst_sha256_control.hash_control_st_reg [2:1]).
-Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$1140 ($sdffe) from module gv_sha256.
-Setting constant 0-bit at position 1 on $auto$ff.cc:262:slice$1140 ($sdffe) from module gv_sha256.
-Setting constant 0-bit at position 2 on $auto$ff.cc:262:slice$1140 ($sdffe) from module gv_sha256.
+Adding EN signal on $auto$ff.cc:262:slice$1332 ($sdff) from module gv_sha256 (D = \Inst_sha256_control.hash_control_st_next [0], Q = \Inst_sha256_control.hash_control_st_reg [0]).
+Adding EN signal on $auto$ff.cc:262:slice$1331 ($sdff) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [2:1], Q = \Inst_sha256_control.hash_control_st_reg [2:1]).
+Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$1330 ($sdffe) from module gv_sha256.
+Setting constant 0-bit at position 1 on $auto$ff.cc:262:slice$1330 ($sdffe) from module gv_sha256.
+Setting constant 0-bit at position 2 on $auto$ff.cc:262:slice$1330 ($sdffe) from module gv_sha256.
 
 yosys> opt_clean
 
-3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 44 unused cells and 44 unused wires.
-<suppressed ~46 debug messages>
+Removed 45 unused cells and 45 unused wires.
+<suppressed ~48 debug messages>
 
 yosys> opt_expr
 
-3.13.8. Executing OPT_EXPR pass (perform const folding).
+3.17.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~1 debug messages>
+<suppressed ~2 debug messages>
 
-3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.17.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~29 debug messages>
+<suppressed ~43 debug messages>
 
 yosys> opt_reduce
 
-3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.12. Executing OPT_MERGE pass (detect identical cells).
+3.17.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+yosys> opt_dff -sat
+
+3.17.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.17.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> opt_expr
+
+3.17.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.17.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.17.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~43 debug messages>
+
+yosys> opt_reduce
+
+3.17.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.17.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.20. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.21. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.13.15. Executing OPT_EXPR pass (perform const folding).
+3.17.22. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.13.16. Finished OPT passes. (There is nothing left to do.)
+3.17.23. Finished OPT passes. (There is nothing left to do.)
 
 yosys> wreduce -keepdc
 
-3.14. Executing WREDUCE pass (reducing word size of cells).
-Removed top 6 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327 ($add).
-Removed top 58 bits (of 64) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321 ($add).
-Removed top 1 bits (of 2) from mux cell gv_sha256.$flatten\Inst_sha256_control.$verific$mux_114$sha256_control.vhd:537$276 ($mux).
-Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_112$sha256_control.vhd:535$275 ($eq).
-Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_108$sha256_control.vhd:532$272 ($eq).
-Removed top 2 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_93$sha256_control.vhd:513$267 ($eq).
-Removed top 1 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_79$sha256_control.vhd:490$261 ($eq).
-Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_70$sha256_control.vhd:478$256 ($eq).
+3.18. Executing WREDUCE pass (reducing word size of cells).
 Removed top 1 bits (of 2) from port A of cell gv_sha256.$flatten\Inst_sha256_padding.$verific$equal_35$sha256_padding.vhd:138$968 ($eq).
-Removed top 10 bits (of 32) from port A of cell gv_sha256.$flatten\Inst_sha256_msg_sch.$verific$xor_80$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:3548$901 ($xor).
 Removed top 3 bits (of 32) from port A of cell gv_sha256.$flatten\Inst_sha256_msg_sch.$verific$xor_75$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:3548$896 ($xor).
-Removed top 1 bits (of 32) from mux cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_68$sha256_Kt_rom.vhd:139$712 ($mux).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_35$sha256_Kt_rom.vhd:109$680 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_34$sha256_Kt_rom.vhd:108$679 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_33$sha256_Kt_rom.vhd:107$678 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_32$sha256_Kt_rom.vhd:106$677 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_31$sha256_Kt_rom.vhd:105$676 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_30$sha256_Kt_rom.vhd:104$675 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_29$sha256_Kt_rom.vhd:103$674 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_28$sha256_Kt_rom.vhd:102$673 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_27$sha256_Kt_rom.vhd:101$672 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_26$sha256_Kt_rom.vhd:100$671 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_25$sha256_Kt_rom.vhd:99$670 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_24$sha256_Kt_rom.vhd:98$669 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_23$sha256_Kt_rom.vhd:97$668 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_22$sha256_Kt_rom.vhd:96$667 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_21$sha256_Kt_rom.vhd:95$666 ($eq).
-Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_20$sha256_Kt_rom.vhd:94$665 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_19$sha256_Kt_rom.vhd:93$664 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_18$sha256_Kt_rom.vhd:92$663 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_17$sha256_Kt_rom.vhd:91$662 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_16$sha256_Kt_rom.vhd:90$661 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_15$sha256_Kt_rom.vhd:89$660 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_14$sha256_Kt_rom.vhd:88$659 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_13$sha256_Kt_rom.vhd:87$658 ($eq).
-Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_12$sha256_Kt_rom.vhd:86$657 ($eq).
-Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_11$sha256_Kt_rom.vhd:85$656 ($eq).
+Removed top 10 bits (of 32) from port A of cell gv_sha256.$flatten\Inst_sha256_msg_sch.$verific$xor_80$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:3548$901 ($xor).
 Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_10$sha256_Kt_rom.vhd:84$655 ($eq).
-Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_9$sha256_Kt_rom.vhd:83$654 ($eq).
-Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_8$sha256_Kt_rom.vhd:82$653 ($eq).
-Removed top 4 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_7$sha256_Kt_rom.vhd:81$652 ($eq).
-Removed top 4 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_6$sha256_Kt_rom.vhd:80$651 ($eq).
+Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_11$sha256_Kt_rom.vhd:85$656 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_12$sha256_Kt_rom.vhd:86$657 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_13$sha256_Kt_rom.vhd:87$658 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_14$sha256_Kt_rom.vhd:88$659 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_15$sha256_Kt_rom.vhd:89$660 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_16$sha256_Kt_rom.vhd:90$661 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_17$sha256_Kt_rom.vhd:91$662 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_18$sha256_Kt_rom.vhd:92$663 ($eq).
+Removed top 2 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_19$sha256_Kt_rom.vhd:93$664 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_20$sha256_Kt_rom.vhd:94$665 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_21$sha256_Kt_rom.vhd:95$666 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_22$sha256_Kt_rom.vhd:96$667 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_23$sha256_Kt_rom.vhd:97$668 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_24$sha256_Kt_rom.vhd:98$669 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_25$sha256_Kt_rom.vhd:99$670 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_26$sha256_Kt_rom.vhd:100$671 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_27$sha256_Kt_rom.vhd:101$672 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_28$sha256_Kt_rom.vhd:102$673 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_29$sha256_Kt_rom.vhd:103$674 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_30$sha256_Kt_rom.vhd:104$675 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_31$sha256_Kt_rom.vhd:105$676 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_32$sha256_Kt_rom.vhd:106$677 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_33$sha256_Kt_rom.vhd:107$678 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_34$sha256_Kt_rom.vhd:108$679 ($eq).
+Removed top 1 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_35$sha256_Kt_rom.vhd:109$680 ($eq).
 Removed top 5 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_5$sha256_Kt_rom.vhd:79$650 ($eq).
+Removed top 4 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_6$sha256_Kt_rom.vhd:80$651 ($eq).
+Removed top 4 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_7$sha256_Kt_rom.vhd:81$652 ($eq).
+Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_8$sha256_Kt_rom.vhd:82$653 ($eq).
+Removed top 3 bits (of 6) from port A of cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$equal_9$sha256_Kt_rom.vhd:83$654 ($eq).
+Removed top 1 bits (of 32) from mux cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_68$sha256_Kt_rom.vhd:139$712 ($mux).
+Removed top 1 bits (of 32) from mux cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_69$sha256_Kt_rom.vhd:138$713 ($mux).
+Removed top 1 bits (of 32) from mux cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_70$sha256_Kt_rom.vhd:137$714 ($mux).
+Removed top 1 bits (of 32) from mux cell gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_71$sha256_Kt_rom.vhd:136$715 ($mux).
+Removed top 1 bits (of 2) from port B of cell gv_sha256.$auto$opt_dff.cc:195:make_patterns_logic$1322 ($ne).
+Removed top 2 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1098 ($mux).
+Removed top 1 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1099 ($mux).
+Removed top 1 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1101 ($mux).
+Removed top 1 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1107 ($mux).
+Removed top 1 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1108 ($mux).
+Removed top 1 bits (of 6) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1112 ($mux).
+Removed top 1 bits (of 4) from mux cell gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:60:execute$1118 ($mux).
+Removed top 58 bits (of 64) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321 ($add).
+Removed top 6 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327 ($add).
+Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_108$sha256_control.vhd:532$272 ($eq).
+Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_112$sha256_control.vhd:535$275 ($eq).
+Removed top 3 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_70$sha256_control.vhd:478$256 ($eq).
+Removed top 1 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_79$sha256_control.vhd:490$261 ($eq).
+Removed top 2 bits (of 7) from port B of cell gv_sha256.$flatten\Inst_sha256_control.$verific$equal_93$sha256_control.vhd:513$267 ($eq).
+Removed top 1 bits (of 2) from mux cell gv_sha256.$flatten\Inst_sha256_control.$verific$mux_114$sha256_control.vhd:537$276 ($mux).
+Removed top 1 bits (of 3) from mux cell gv_sha256.$flatten\Inst_sha256_control.$verific$mux_72$sha256_control.vhd:480$258 ($mux).
+Removed top 2 bits (of 3) from mux cell gv_sha256.$flatten\Inst_sha256_control.$verific$mux_81$sha256_control.vhd:492$263 ($mux).
+Removed top 1 bits (of 8) from wire gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:58:execute$1116.
+Removed top 1 bits (of 4) from wire gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:58:execute$1151.
+Removed top 1 bits (of 4) from wire gv_sha256.$flatten\Inst_sha256_control.$auto$bmuxmap.cc:58:execute$1161.
+Removed top 1 bits (of 3) from wire gv_sha256.$flatten\Inst_sha256_control.$verific$n463$178.
+Removed top 2 bits (of 3) from wire gv_sha256.$flatten\Inst_sha256_control.$verific$n484$182.
 Removed top 1 bits (of 2) from wire gv_sha256.$flatten\Inst_sha256_control.$verific$n547$192.
 Removed top 1 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n107$583.
-Removed top 8 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n140$584.
+Removed top 1 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n140$584.
+Removed top 1 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n173$585.
+Removed top 1 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n206$586.
 Removed top 17 bits (of 32) from wire gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$n74$582.
 
 yosys> peepopt
 
-3.15. Executing PEEPOPT pass (run peephole optimizers).
-
-yosys> pmuxtree
-
-3.16. Executing PMUXTREE pass.
+3.19. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> opt_clean
 
-3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 4 unused wires.
+Removed 0 unused cells and 12 unused wires.
 <suppressed ~1 debug messages>
+
+yosys> bmuxmap
+
+3.21. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.22. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> alumacc
 
-3.18. Executing ALUMACC pass (create $alu and $macc cells).
+3.23. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module gv_sha256:
   creating $macc model for $flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321 ($add).
   creating $macc model for $flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327 ($add).
@@ -689,141 +783,141 @@ Extracting $alu and $macc cells in module gv_sha256:
   creating $alu model for $macc $flatten\Inst_sha256_regs.$verific$add_57$sha256_regs.vhd:165$1079.
   creating $alu model for $macc $flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327.
   creating $alu model for $macc $flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321.
-  creating $macc cell for $flatten\Inst_sha256_hash_core.$verific$add_43$sha256_hash_core.vhd:161$458: $auto$alumacc.cc:365:replace_macc$1154
-  creating $macc cell for $flatten\Inst_sha256_msg_sch.$verific$add_69$sha256_msg_sch.vhd:166$890: $auto$alumacc.cc:365:replace_macc$1155
-  creating $macc cell for $flatten\Inst_sha256_hash_core.$verific$add_49$sha256_hash_core.vhd:164$464: $auto$alumacc.cc:365:replace_macc$1156
-  creating $alu cell for $flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321: $auto$alumacc.cc:485:replace_alu$1157
-  creating $alu cell for $flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327: $auto$alumacc.cc:485:replace_alu$1160
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_57$sha256_regs.vhd:165$1079: $auto$alumacc.cc:485:replace_alu$1163
-  creating $alu cell for $flatten\Inst_sha256_hash_core.$verific$add_47$sha256_hash_core.vhd:163$462: $auto$alumacc.cc:485:replace_alu$1166
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_55$sha256_regs.vhd:164$1077: $auto$alumacc.cc:485:replace_alu$1169
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_53$sha256_regs.vhd:163$1075: $auto$alumacc.cc:485:replace_alu$1172
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_51$sha256_regs.vhd:162$1073: $auto$alumacc.cc:485:replace_alu$1175
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_49$sha256_regs.vhd:161$1071: $auto$alumacc.cc:485:replace_alu$1178
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_47$sha256_regs.vhd:160$1069: $auto$alumacc.cc:485:replace_alu$1181
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_43$sha256_regs.vhd:158$1065: $auto$alumacc.cc:485:replace_alu$1184
-  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_45$sha256_regs.vhd:159$1067: $auto$alumacc.cc:485:replace_alu$1187
+  creating $macc cell for $flatten\Inst_sha256_hash_core.$verific$add_43$sha256_hash_core.vhd:161$458: $auto$alumacc.cc:365:replace_macc$1351
+  creating $macc cell for $flatten\Inst_sha256_msg_sch.$verific$add_69$sha256_msg_sch.vhd:166$890: $auto$alumacc.cc:365:replace_macc$1352
+  creating $macc cell for $flatten\Inst_sha256_hash_core.$verific$add_49$sha256_hash_core.vhd:164$464: $auto$alumacc.cc:365:replace_macc$1353
+  creating $alu cell for $flatten\Inst_sha256_control.$verific$add_175$sha256_control.vhd:607$321: $auto$alumacc.cc:485:replace_alu$1354
+  creating $alu cell for $flatten\Inst_sha256_control.$verific$add_184$../vhdl_packages/vhdl_2008/src/numeric_std-body.vhdl:482$327: $auto$alumacc.cc:485:replace_alu$1357
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_57$sha256_regs.vhd:165$1079: $auto$alumacc.cc:485:replace_alu$1360
+  creating $alu cell for $flatten\Inst_sha256_hash_core.$verific$add_47$sha256_hash_core.vhd:163$462: $auto$alumacc.cc:485:replace_alu$1363
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_55$sha256_regs.vhd:164$1077: $auto$alumacc.cc:485:replace_alu$1366
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_53$sha256_regs.vhd:163$1075: $auto$alumacc.cc:485:replace_alu$1369
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_51$sha256_regs.vhd:162$1073: $auto$alumacc.cc:485:replace_alu$1372
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_49$sha256_regs.vhd:161$1071: $auto$alumacc.cc:485:replace_alu$1375
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_47$sha256_regs.vhd:160$1069: $auto$alumacc.cc:485:replace_alu$1378
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_43$sha256_regs.vhd:158$1065: $auto$alumacc.cc:485:replace_alu$1381
+  creating $alu cell for $flatten\Inst_sha256_regs.$verific$add_45$sha256_regs.vhd:159$1067: $auto$alumacc.cc:485:replace_alu$1384
   created 11 $alu and 3 $macc cells.
-
-yosys> opt
-
-3.19. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.19.1. Executing OPT_EXPR pass (perform const folding).
+3.24. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge -nomux
 
-3.19.2. Executing OPT_MERGE pass (detect identical cells).
+3.25. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.19.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~29 debug messages>
+<suppressed ~43 debug messages>
 
 yosys> opt_reduce
 
-3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.19.5. Executing OPT_MERGE pass (detect identical cells).
+3.28. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.29. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.19.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.19.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 Removed 6 unused cells and 6 unused wires.
 <suppressed ~12 debug messages>
 
 yosys> opt_expr
 
-3.19.8. Executing OPT_EXPR pass (perform const folding).
+3.32. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-
-3.19.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.19.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
   Analyzing evaluation results.
 Removed 0 multiplexer ports.
-<suppressed ~29 debug messages>
+<suppressed ~43 debug messages>
 
 yosys> opt_reduce
 
-3.19.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.34. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.19.12. Executing OPT_MERGE pass (detect identical cells).
+3.35. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.36. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.19.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.37. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.19.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.38. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.19.15. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-
-3.19.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 2
 
 yosys> stat
 
-3.20. Printing statistics.
+3.40. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:                523
-   Number of wire bits:           9992
-   Number of public wires:         304
-   Number of public wire bits:    6755
+   Number of wires:                549
+   Number of wire bits:          10159
+   Number of public wires:         303
+   Number of public wire bits:    6754
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                304
+   Number of cells:                350
      $alu                           11
      $and                           24
-     $bmux                          16
      $dffe                          32
      $eq                            70
      $logic_not                      1
      $macc                           3
-     $mux                          107
-     $ne                             1
+     $mux                          166
+     $ne                             3
      $not                            9
      $or                             8
-     $reduce_and                     1
+     $reduce_and                     2
      $reduce_bool                    2
      $reduce_or                      1
      $sdffe                          7
@@ -832,1413 +926,52 @@ yosys> stat
 
 yosys> memory -nomap
 
-3.21. Executing MEMORY pass.
+3.41. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.21.1. Executing OPT_MEM pass (optimize memories).
+3.41.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.41.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.41.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.21.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.41.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.21.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1205'[0] in module `\gv_sha256': no output FF found.
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1202'[0] in module `\gv_sha256': no output FF found.
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1199'[0] in module `\gv_sha256': no output FF found.
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1196'[0] in module `\gv_sha256': no output FF found.
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1193'[0] in module `\gv_sha256': no output FF found.
-Checking read port `$auto$memory_bmux2rom.cc:63:execute$1190'[0] in module `\gv_sha256': no output FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1205'[0] in module `\gv_sha256': no address FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1202'[0] in module `\gv_sha256': no address FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1199'[0] in module `\gv_sha256': no address FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1196'[0] in module `\gv_sha256': no address FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1193'[0] in module `\gv_sha256': no address FF found.
-Checking read port address `$auto$memory_bmux2rom.cc:63:execute$1190'[0] in module `\gv_sha256': no address FF found.
+3.41.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.21.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.41.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> memory_share
 
-3.21.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.41.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.21.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.41.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.21.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.41.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> memory_collect
 
-3.21.10. Executing MEMORY_COLLECT pass (generating $mem cells).
-
-yosys> stat
-
-3.22. Printing statistics.
-
-=== gv_sha256 ===
-
-   Number of wires:                523
-   Number of wire bits:           9992
-   Number of public wires:         304
-   Number of public wire bits:    6755
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:                304
-     $alu                           11
-     $and                           24
-     $bmux                          10
-     $dffe                          32
-     $eq                            70
-     $logic_not                      1
-     $macc                           3
-     $mem_v2                         6
-     $mux                          107
-     $ne                             1
-     $not                            9
-     $or                             8
-     $reduce_and                     1
-     $reduce_bool                    2
-     $reduce_or                      1
-     $sdffe                          7
-     $xor                           11
-
-
-yosys> opt_clean
-
-3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> stat
-
-3.24. Printing statistics.
-
-=== gv_sha256 ===
-
-   Number of wires:                523
-   Number of wire bits:           9992
-   Number of public wires:         304
-   Number of public wire bits:    6755
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:                304
-     $alu                           11
-     $and                           24
-     $bmux                          10
-     $dffe                          32
-     $eq                            70
-     $logic_not                      1
-     $macc                           3
-     $mem_v2                         6
-     $mux                          107
-     $ne                             1
-     $not                            9
-     $or                             8
-     $reduce_and                     1
-     $reduce_bool                    2
-     $reduce_or                      1
-     $sdffe                          7
-     $xor                           11
-
-
-yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
-
-3.25. Executing TECHMAP pass (map to technology primitives).
-
-3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
-Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
-Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
-Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
-Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
-Generating RTLIL representation for module `\_90_simplemap_various'.
-Generating RTLIL representation for module `\_90_simplemap_registers'.
-Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
-Generating RTLIL representation for module `\_90_shift_shiftx'.
-Generating RTLIL representation for module `\_90_fa'.
-Generating RTLIL representation for module `\_90_lcu'.
-Generating RTLIL representation for module `\_90_alu'.
-Generating RTLIL representation for module `\_90_macc'.
-Generating RTLIL representation for module `\_90_alumacc'.
-Generating RTLIL representation for module `\$__div_mod_u'.
-Generating RTLIL representation for module `\$__div_mod_trunc'.
-Generating RTLIL representation for module `\_90_div'.
-Generating RTLIL representation for module `\_90_mod'.
-Generating RTLIL representation for module `\$__div_mod_floor'.
-Generating RTLIL representation for module `\_90_divfloor'.
-Generating RTLIL representation for module `\_90_modfloor'.
-Generating RTLIL representation for module `\_90_pow'.
-Generating RTLIL representation for module `\_90_pmux'.
-Generating RTLIL representation for module `\_90_demux'.
-Generating RTLIL representation for module `\_90_lut'.
-Successfully finished Verilog frontend.
-
-3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
-Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
-Generating RTLIL representation for module `\_80_rs_alu'.
-Successfully finished Verilog frontend.
-
-3.25.3. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $dffe.
-Using extmapper simplemap for cells of type $or.
-Using extmapper simplemap for cells of type $and.
-Using extmapper simplemap for cells of type $not.
-Using extmapper simplemap for cells of type $reduce_bool.
-Using template $paramod$be80489e44a49c29884f59fd81c31ed03229cfc1\_80_rs_alu for cells of type $alu.
-Using template $paramod$103b4016182df467cceab67bcf3e18e6361ec0fd\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $mux.
-Using extmapper simplemap for cells of type $bmux.
-Using extmapper simplemap for cells of type $ne.
-Using extmapper simplemap for cells of type $reduce_or.
-Using extmapper simplemap for cells of type $eq.
-Using extmapper simplemap for cells of type $reduce_and.
-Using extmapper simplemap for cells of type $sdffe.
-Using extmapper simplemap for cells of type $xor.
-Using extmapper maccmap for cells of type $macc.
-  add \Inst_sha256_hash_core.reg_h (32 bits, unsigned)
-  add \Inst_sha256_hash_core.SIG1 (32 bits, unsigned)
-  add \Inst_sha256_hash_core.Wt_i (32 bits, unsigned)
-  add \Inst_sha256_hash_core.Kt_i (32 bits, unsigned)
-  add \Inst_sha256_hash_core.Ch (32 bits, unsigned)
-Using template $paramod$e598a152554f0e84fd1ae44a5db9971b90dff028\_90_alu for cells of type $alu.
-  add \Inst_sha256_msg_sch.r10 (32 bits, unsigned)
-  add \Inst_sha256_msg_sch.r1 (32 bits, unsigned)
-  add \Inst_sha256_msg_sch.s0 (32 bits, unsigned)
-  add \Inst_sha256_msg_sch.s1 (32 bits, unsigned)
-  add \Inst_sha256_hash_core.SIG0 (32 bits, unsigned)
-  add \Inst_sha256_hash_core.sum3 (32 bits, unsigned)
-  add \Inst_sha256_hash_core.Maj (32 bits, unsigned)
-Using extmapper simplemap for cells of type $logic_not.
-Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000100000 for cells of type $fa.
-Using template $paramod$fbc7873bff55778c0b3173955b7e4bce1d9d6834\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $pos.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000111 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000001000000 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000100000 for cells of type $lcu.
-No more expansions possible.
-<suppressed ~2138 debug messages>
-
-yosys> stat
-
-3.26. Printing statistics.
-
-=== gv_sha256 ===
-
-   Number of wires:               1904
-   Number of wire bits:          27350
-   Number of public wires:         304
-   Number of public wire bits:    6755
-   Number of memories:               0
-   Number of memory bits:            0
-   Number of processes:              0
-   Number of cells:               9021
-     $_AND_                       1174
-     $_DFFE_PP_                   1024
-     $_MUX_                       3233
-     $_NOT_                        566
-     $_OR_                         858
-     $_SDFFE_PP0P_                  73
-     $_SDFFE_PP1P_                   1
-     $_XOR_                       1798
-     $mem_v2                         6
-     adder_carry                   288
-
-
-yosys> opt
-
-3.27. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.27.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~3395 debug messages>
-
-yosys> opt_merge -nomux
-
-3.27.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~1758 debug messages>
-Removed a total of 586 cells.
-
-yosys> opt_muxtree
-
-3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $auto$ff.cc:262:slice$1656 ($_SDFFE_PP0P_) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [2], Q = \Inst_sha256_control.hash_control_st_reg [2]).
-Adding EN signal on $auto$ff.cc:262:slice$1655 ($_SDFFE_PP0P_) from module gv_sha256 (D = $flatten\Inst_sha256_control.$verific$n20$163 [1], Q = \Inst_sha256_control.hash_control_st_reg [1]).
-
-yosys> opt_clean
-
-3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 526 unused cells and 1167 unused wires.
-<suppressed ~527 debug messages>
-
-yosys> opt_expr
-
-3.27.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~46 debug messages>
-
-3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~123 debug messages>
-Removed a total of 41 cells.
-
-yosys> opt_dff
-
-3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $auto$ff.cc:262:slice$1669 ($_SDFFE_PP0P_) from module gv_sha256 (D = \Inst_sha256_control.hash_control_st_next [0], Q = \Inst_sha256_control.hash_control_st_reg [0]).
-Adding EN signal on $auto$ff.cc:262:slice$1667 ($_SDFFE_PP0P_) from module gv_sha256 (D = $auto$simplemap.cc:309:simplemap_bmux$1446 [1], Q = \Inst_sha256_control.padding_reg).
-
-yosys> opt_clean
-
-3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 1 unused cells and 49 unused wires.
-<suppressed ~3 debug messages>
-
-yosys> opt_expr
-
-3.27.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~20 debug messages>
-
-3.27.16. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.27.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.19. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~45 debug messages>
-Removed a total of 15 cells.
-
-yosys> opt_dff
-
-3.27.20. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.27.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 17 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.27.22. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.27.23. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.27.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.27.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.27.26. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.27.27. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.27.28. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr
-
-3.27.29. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.27.30. Finished OPT passes. (There is nothing left to do.)
-
-yosys> opt -fast -full
-
-3.28. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.28.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~1198 debug messages>
-
-yosys> opt_merge
-
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~3 debug messages>
-Removed a total of 1 cells.
-
-yosys> opt_dff
-
-3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 6 unused wires.
-<suppressed ~1 debug messages>
-
-3.28.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1190 in module \gv_sha256:
-  created 8 $dff cells and 0 static cells of width 1.
-  read interface: 0 $dff and 7 $mux cells.
-  write interface: 0 write mux blocks.
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1193 in module \gv_sha256:
-  created 8 $dff cells and 0 static cells of width 1.
-  read interface: 0 $dff and 7 $mux cells.
-  write interface: 0 write mux blocks.
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1196 in module \gv_sha256:
-  created 8 $dff cells and 0 static cells of width 1.
-  read interface: 0 $dff and 7 $mux cells.
-  write interface: 0 write mux blocks.
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1199 in module \gv_sha256:
-  created 8 $dff cells and 0 static cells of width 1.
-  read interface: 0 $dff and 7 $mux cells.
-  write interface: 0 write mux blocks.
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1202 in module \gv_sha256:
-  created 8 $dff cells and 0 static cells of width 1.
-  read interface: 0 $dff and 7 $mux cells.
-  write interface: 0 write mux blocks.
-Mapping memory $auto$memory_bmux2rom.cc:63:execute$1205 in module \gv_sha256:
-  created 16 $dff cells and 0 static cells of width 6.
-  read interface: 0 $dff and 15 $mux cells.
-  write interface: 0 write mux blocks.
-
-yosys> opt -full
-
-3.30. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.30.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~2 debug messages>
-
-yosys> opt_merge -nomux
-
-3.30.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~6 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:312:simplemap_bmux$1487 in front of them:
-        $auto$simplemap.cc:312:simplemap_bmux$1477
-        $auto$simplemap.cc:312:simplemap_bmux$1474
-
-
-yosys> opt_dff
-
-3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[0]$12004 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[1]$12006 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[2]$12008 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[3]$12010 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[4]$12012 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[5]$12014 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[6]$12016 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1190[7]$12018 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[0]$12041 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[1]$12043 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[2]$12045 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[3]$12047 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[4]$12049 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[5]$12051 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[6]$12053 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1193[7]$12055 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[0]$12078 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[1]$12080 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[2]$12082 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[3]$12084 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[4]$12086 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[5]$12088 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[6]$12090 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1196[7]$12092 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[0]$12115 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[1]$12117 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[2]$12119 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[3]$12121 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[4]$12123 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[5]$12125 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[6]$12127 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1199[7]$12129 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[0]$12152 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[1]$12154 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[2]$12156 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[3]$12158 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[4]$12160 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[5]$12162 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[6]$12164 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1202[7]$12166 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[0]$12189 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[1]$12191 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[2]$12193 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[3]$12195 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[4]$12197 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[5]$12199 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[6]$12201 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[7]$12203 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[8]$12205 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[9]$12207 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[10]$12209 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[11]$12211 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[12]$12213 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[13]$12215 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[14]$12217 ($dff) from module gv_sha256 (removing D path).
-Handling const CLK on $memory$auto$memory_bmux2rom.cc:63:execute$1205[15]$12219 ($dff) from module gv_sha256 (removing D path).
-
-yosys> opt_clean
-
-3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 168 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr -full
-
-3.30.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~30 debug messages>
-
-3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~7 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][3][0]$12242:
-      Old ports: A=6'000000, B=6'001000, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231
-      New ports: A=1'0, B=1'1, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231 [3]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231 [5:4] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231 [2:0] } = 5'00000
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][3][1]$12245:
-      Old ports: A=6'000000, B=6'010000, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232
-      New ports: A=1'0, B=1'1, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232 [4]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232 [5] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232 [3:0] } = 5'00000
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][3][3]$12251:
-      Old ports: A=6'000000, B=6'011000, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235
-      New ports: A=1'0, B=1'1, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235 [3]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235 [5:4] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235 [2:0] } = { 1'0 $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235 [3] 3'000 }
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][3][7]$12263:
-      Old ports: A=6'000000, B=6'100000, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$b$12241
-      New ports: A=1'0, B=1'1, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$b$12241 [5]
-      New connections: $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$b$12241 [4:0] = 5'00000
-  Optimizing cells in module \gv_sha256.
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$12230:
-      Old ports: A=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225
-      New ports: A={ 1'0 $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$a$12231 [3] }, B={ $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][0]$b$12232 [4] 1'0 }, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225 [4:3]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225 [5] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225 [2:0] } = 4'0000
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$12233:
-      Old ports: A=6'000000, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226
-      New ports: A=1'0, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][1]$b$12235 [3], Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [3]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [5:4] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [2:0] } = { 1'0 $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [3] 3'000 }
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$12239:
-      Old ports: A=6'000000, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$b$12241, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$b$12229
-      New ports: A=1'0, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][2][3]$b$12241 [5], Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$b$12229 [5]
-      New connections: $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$b$12229 [4:0] = 5'00000
-  Optimizing cells in module \gv_sha256.
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$12224:
-      Old ports: A=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222
-      New ports: A=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$a$12225 [4:3], B={ $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [3] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][0]$b$12226 [3] }, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222 [4:3]
-      New connections: { $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222 [5] $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222 [2:0] } = 4'0000
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$12227:
-      Old ports: A=6'000000, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$b$12229, Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$b$12223
-      New ports: A=1'0, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][1][1]$b$12229 [5], Y=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$b$12223 [5]
-      New connections: $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$b$12223 [4:0] = 5'00000
-  Optimizing cells in module \gv_sha256.
-    Consolidated identical input bits for $mux cell $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$12221:
-      Old ports: A=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222, B=$memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$b$12223, Y=\Inst_sha256_control.bits_to_add
-      New ports: A={ 1'0 $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$a$12222 [4:3] }, B={ $memory$auto$memory_bmux2rom.cc:63:execute$1205$rdmux[0][0][0]$b$12223 [5] 2'00 }, Y=\Inst_sha256_control.bits_to_add [5:3]
-      New connections: \Inst_sha256_control.bits_to_add [2:0] = 3'000
-  Optimizing cells in module \gv_sha256.
-Performed a total of 10 changes.
-
-yosys> opt_merge
-
-3.30.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~21 debug messages>
-Removed a total of 7 cells.
-
-yosys> opt_share
-
-3.30.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 33 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr -full
-
-3.30.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~5 debug messages>
-
-3.30.18. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~8 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.21. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.22. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.23. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.24. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 2 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr -full
-
-3.30.25. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.30.26. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.27. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~8 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.28. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.29. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.30. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.31. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.32. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr -full
-
-3.30.33. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.30.34. Finished OPT passes. (There is nothing left to do.)
-
-yosys> techmap -map +/techmap.v
-
-3.31. Executing TECHMAP pass (map to technology primitives).
-
-3.31.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
-Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
-Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
-Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
-Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
-Generating RTLIL representation for module `\_90_simplemap_various'.
-Generating RTLIL representation for module `\_90_simplemap_registers'.
-Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
-Generating RTLIL representation for module `\_90_shift_shiftx'.
-Generating RTLIL representation for module `\_90_fa'.
-Generating RTLIL representation for module `\_90_lcu'.
-Generating RTLIL representation for module `\_90_alu'.
-Generating RTLIL representation for module `\_90_macc'.
-Generating RTLIL representation for module `\_90_alumacc'.
-Generating RTLIL representation for module `\$__div_mod_u'.
-Generating RTLIL representation for module `\$__div_mod_trunc'.
-Generating RTLIL representation for module `\_90_div'.
-Generating RTLIL representation for module `\_90_mod'.
-Generating RTLIL representation for module `\$__div_mod_floor'.
-Generating RTLIL representation for module `\_90_divfloor'.
-Generating RTLIL representation for module `\_90_modfloor'.
-Generating RTLIL representation for module `\_90_pow'.
-Generating RTLIL representation for module `\_90_pmux'.
-Generating RTLIL representation for module `\_90_demux'.
-Generating RTLIL representation for module `\_90_lut'.
-Successfully finished Verilog frontend.
-
-3.31.2. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $not.
-Using extmapper simplemap for cells of type $and.
-Using extmapper simplemap for cells of type $mux.
-No more expansions possible.
-<suppressed ~87 debug messages>
-
-yosys> opt -sat
-
-3.32. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.32.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-yosys> opt_merge -nomux
-
-3.32.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~9 debug messages>
-Removed a total of 3 cells.
-
-yosys> opt_muxtree
-
-3.32.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.32.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.32.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat
-
-3.32.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.32.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 3 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.32.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.32.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.32.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.32.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.32.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat
-
-3.32.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.32.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr
-
-3.32.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.32.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -dff
-
-3.33. Executing ABC pass (technology mapping using ABC).
-
-3.33.1. Summary of detected clock domains:
-  368 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=\Inst_sha256_control.oregs_ld
-  4046 cells in clk=\clk_i, en=\Inst_sha256_control.core_ce, arst={ }, srst={ }
-  1186 cells in clk=\clk_i, en=\Inst_sha256_control.sch_ce, arst={ }, srst={ }
-  16 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=\Inst_sha256_control.oregs_ld
-  41 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$flatten\Inst_sha256_control.$verific$n368$120
-  18 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=\Inst_sha256_control.oregs_ld
-  1017 cells in clk=\clk_i, en=\Inst_sha256_control.core_ld, arst={ }, srst={ }
-  4 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$11979, arst={ }, srst=\Inst_sha256_control.oregs_ld
-  41 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$11951, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$1143
-  77 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$11763, arst={ }, srst=\start_i
-
-3.33.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by \Inst_sha256_control.oregs_ld
-Extracted 368 gates and 415 wires to a netlist network with 46 inputs and 41 outputs.
-
-3.33.2.1. Executing ABC.
-
-3.33.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.core_ce
-Extracted 4014 gates and 4386 wires to a netlist network with 371 inputs and 317 outputs.
-
-3.33.3.1. Executing ABC.
-
-3.33.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.sch_ce
-Extracted 1186 gates and 1222 wires to a netlist network with 36 inputs and 33 outputs.
-
-3.33.4.1. Executing ABC.
-
-3.33.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$12366$Inst_sha256_control.oregs_ld
-Extracted 16 gates and 29 wires to a netlist network with 12 inputs and 6 outputs.
-
-3.33.5.1. Executing ABC.
-
-3.33.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $flatten\Inst_sha256_control.$verific$n368$120
-Extracted 41 gates and 45 wires to a netlist network with 4 inputs and 19 outputs.
-
-3.33.6.1. Executing ABC.
-
-3.33.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$12366$Inst_sha256_control.oregs_ld
-Extracted 18 gates and 25 wires to a netlist network with 6 inputs and 10 outputs.
-
-3.33.7.1. Executing ABC.
-
-3.33.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \Inst_sha256_control.core_ld
-Extracted 761 gates and 1239 wires to a netlist network with 477 inputs and 723 outputs.
-
-3.33.8.1. Executing ABC.
-
-3.33.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$11979, synchronously reset by $abc$12366$Inst_sha256_control.oregs_ld
-Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
-
-3.33.9.1. Executing ABC.
-
-3.33.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$11951, synchronously reset by $auto$opt_dff.cc:253:combine_resets$1143
-Extracted 41 gates and 67 wires to a netlist network with 24 inputs and 23 outputs.
-
-3.33.10.1. Executing ABC.
-
-3.33.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$11763, synchronously reset by \start_i
-Extracted 77 gates and 118 wires to a netlist network with 39 inputs and 26 outputs.
-
-3.33.11.1. Executing ABC.
-
-yosys> abc -dff
-
-3.34. Executing ABC pass (technology mapping using ABC).
-
-3.34.1. Summary of detected clock domains:
-  20 cells in clk=\clk_i, en=$abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=$abc$12366$Inst_sha256_control.oregs_ld
-  5 cells in clk=\clk_i, en=$abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, arst={ }, srst=$abc$12366$Inst_sha256_control.oregs_ld
-  12 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$12366$Inst_sha256_control.oregs_ld
-  38 cells in clk=\clk_i, en=$abc$17607$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-  37 cells in clk=\clk_i, en=$abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, arst={ }, srst=$abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-  3583 cells in clk=\clk_i, en=$abc$12672$Inst_sha256_control.core_ce, arst={ }, srst={ }
-  295 cells in clk=\clk_i, en=$abc$12366$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$12366$Inst_sha256_control.oregs_ld
-  1141 cells in clk=\clk_i, en=$abc$15945$Inst_sha256_control.sch_ce, arst={ }, srst={ }
-  837 cells in clk=\clk_i, en=$abc$17665$Inst_sha256_control.core_ld, arst={ }, srst={ }
-  67 cells in clk=\clk_i, en=$abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, arst={ }, srst=\start_i
-
-3.34.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$12366$Inst_sha256_control.oregs_ld
-Extracted 20 gates and 32 wires to a netlist network with 11 inputs and 10 outputs.
-
-3.34.2.1. Executing ABC.
-
-3.34.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, synchronously reset by $abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
-
-3.34.3.1. Executing ABC.
-
-3.34.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 12 gates and 21 wires to a netlist network with 9 inputs and 6 outputs.
-
-3.34.4.1. Executing ABC.
-
-3.34.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$17607$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
-
-3.34.5.1. Executing ABC.
-
-3.34.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, synchronously reset by $abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-Extracted 37 gates and 59 wires to a netlist network with 22 inputs and 21 outputs.
-
-3.34.6.1. Executing ABC.
-
-3.34.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$12672$Inst_sha256_control.core_ce
-Extracted 3551 gates and 4178 wires to a netlist network with 627 inputs and 323 outputs.
-
-3.34.7.1. Executing ABC.
-
-3.34.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$12366$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 295 gates and 343 wires to a netlist network with 48 inputs and 40 outputs.
-
-3.34.8.1. Executing ABC.
-
-3.34.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$15945$Inst_sha256_control.sch_ce
-Extracted 1141 gates and 1185 wires to a netlist network with 44 inputs and 37 outputs.
-
-3.34.9.1. Executing ABC.
-
-3.34.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$17665$Inst_sha256_control.core_ld
-Extracted 581 gates and 866 wires to a netlist network with 285 inputs and 298 outputs.
-
-3.34.10.1. Executing ABC.
-
-3.34.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, synchronously reset by \start_i
-Extracted 67 gates and 97 wires to a netlist network with 30 inputs and 25 outputs.
-
-3.34.11.1. Executing ABC.
-
-yosys> abc -dff
-
-3.35. Executing ABC pass (technology mapping using ABC).
-
-3.35.1. Summary of detected clock domains:
-  10 cells in clk=\clk_i, en=$abc$19091$abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  11 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  4 cells in clk=\clk_i, en=$abc$19113$abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, arst={ }, srst=$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  39 cells in clk=\clk_i, en=$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-  310 cells in clk=\clk_i, en=$abc$23030$abc$12366$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  36 cells in clk=\clk_i, en=$abc$19174$abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, arst={ }, srst=$abc$19174$abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-  3818 cells in clk=\clk_i, en=$abc$19213$abc$12672$Inst_sha256_control.core_ce, arst={ }, srst={ }
-  1142 cells in clk=\clk_i, en=$abc$23330$abc$15945$Inst_sha256_control.sch_ce, arst={ }, srst={ }
-  854 cells in clk=\clk_i, en=$abc$24953$abc$17665$Inst_sha256_control.core_ld, arst={ }, srst={ }
-  63 cells in clk=\clk_i, en=$abc$25793$abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, arst={ }, srst=\start_i
-
-3.35.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19091$abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 10 gates and 19 wires to a netlist network with 8 inputs and 6 outputs.
-
-3.35.2.1. Executing ABC.
-
-3.35.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 11 gates and 20 wires to a netlist network with 9 inputs and 4 outputs.
-
-3.35.3.1. Executing ABC.
-
-3.35.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19113$abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, synchronously reset by $abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
-
-3.35.4.1. Executing ABC.
-
-3.35.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-Extracted 39 gates and 43 wires to a netlist network with 4 inputs and 19 outputs.
-
-3.35.5.1. Executing ABC.
-
-3.35.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$23030$abc$12366$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 310 gates and 356 wires to a netlist network with 46 inputs and 42 outputs.
-
-3.35.6.1. Executing ABC.
-
-3.35.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19174$abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, synchronously reset by $abc$19174$abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-Extracted 36 gates and 57 wires to a netlist network with 21 inputs and 17 outputs.
-
-3.35.7.1. Executing ABC.
-
-3.35.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$19213$abc$12672$Inst_sha256_control.core_ce
-Extracted 3786 gates and 4398 wires to a netlist network with 612 inputs and 323 outputs.
-
-3.35.8.1. Executing ABC.
-
-3.35.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$23330$abc$15945$Inst_sha256_control.sch_ce
-Extracted 1142 gates and 1186 wires to a netlist network with 44 inputs and 37 outputs.
-
-3.35.9.1. Executing ABC.
-
-3.35.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$24953$abc$17665$Inst_sha256_control.core_ld
-Extracted 598 gates and 897 wires to a netlist network with 299 inputs and 312 outputs.
-
-3.35.10.1. Executing ABC.
-
-3.35.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$25793$abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, synchronously reset by \start_i
-Extracted 63 gates and 90 wires to a netlist network with 27 inputs and 25 outputs.
-
-3.35.11.1. Executing ABC.
-
-yosys> abc -dff
-
-3.36. Executing ABC pass (technology mapping using ABC).
-
-3.36.1. Summary of detected clock domains:
-  13 cells in clk=\clk_i, en=$abc$25856$abc$19091$abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, arst={ }, srst=$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  12 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  4 cells in clk=\clk_i, en=$abc$25880$abc$19113$abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, arst={ }, srst=$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  39 cells in clk=\clk_i, en=$abc$25887$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$25887$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-  320 cells in clk=\clk_i, en=$abc$25927$abc$23030$abc$12366$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-  38 cells in clk=\clk_i, en=$abc$26252$abc$19174$abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, arst={ }, srst=$abc$26252$abc$19174$abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-  3797 cells in clk=\clk_i, en=$abc$26288$abc$19213$abc$12672$Inst_sha256_control.core_ce, arst={ }, srst={ }
-  1142 cells in clk=\clk_i, en=$abc$30097$abc$23330$abc$15945$Inst_sha256_control.sch_ce, arst={ }, srst={ }
-  867 cells in clk=\clk_i, en=$abc$31720$abc$24953$abc$17665$Inst_sha256_control.core_ld, arst={ }, srst={ }
-  55 cells in clk=\clk_i, en=$abc$32575$abc$25793$abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, arst={ }, srst=\start_i
-
-3.36.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$25856$abc$19091$abc$17646$auto$opt_dff.cc:219:make_patterns_logic$1137, synchronously reset by $abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 13 gates and 24 wires to a netlist network with 10 inputs and 7 outputs.
-
-3.36.2.1. Executing ABC.
-
-3.36.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$32636$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 12 gates and 21 wires to a netlist network with 9 inputs and 4 outputs.
-
-3.36.3.1. Executing ABC.
-
-3.36.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$25880$abc$19113$abc$18974$auto$opt_dff.cc:219:make_patterns_logic$11979, synchronously reset by $abc$32636$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
-
-3.36.4.1. Executing ABC.
-
-3.36.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$25887$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$25887$abc$19134$abc$17607$flatten\Inst_sha256_control.$verific$n368$120
-Extracted 39 gates and 43 wires to a netlist network with 4 inputs and 19 outputs.
-
-3.36.5.1. Executing ABC.
-
-3.36.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$25927$abc$23030$abc$12366$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$32636$abc$25856$abc$19091$abc$12366$Inst_sha256_control.oregs_ld
-Extracted 320 gates and 367 wires to a netlist network with 47 inputs and 41 outputs.
-
-3.36.6.1. Executing ABC.
-
-3.36.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$26252$abc$19174$abc$18981$auto$opt_dff.cc:219:make_patterns_logic$11951, synchronously reset by $abc$26252$abc$19174$abc$18981$auto$opt_dff.cc:253:combine_resets$1143
-Extracted 38 gates and 62 wires to a netlist network with 24 inputs and 20 outputs.
-
-3.36.7.1. Executing ABC.
-
-3.36.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$26288$abc$19213$abc$12672$Inst_sha256_control.core_ce
-Extracted 3765 gates and 4363 wires to a netlist network with 598 inputs and 324 outputs.
-
-3.36.8.1. Executing ABC.
-
-3.36.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$30097$abc$23330$abc$15945$Inst_sha256_control.sch_ce
-Extracted 1142 gates and 1186 wires to a netlist network with 44 inputs and 37 outputs.
-
-3.36.9.1. Executing ABC.
-
-3.36.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$31720$abc$24953$abc$17665$Inst_sha256_control.core_ld
-Extracted 611 gates and 926 wires to a netlist network with 315 inputs and 327 outputs.
-
-3.36.10.1. Executing ABC.
-
-3.36.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk_i, enabled by $abc$32575$abc$25793$abc$19022$auto$opt_dff.cc:219:make_patterns_logic$11763, synchronously reset by \start_i
-Extracted 55 gates and 77 wires to a netlist network with 22 inputs and 22 outputs.
-
-3.36.11.1. Executing ABC.
-
-yosys> opt_ffinv
-
-3.37. Executing OPT_FFINV pass (push inverters through FFs).
-Discovering LUTs.
-Pushed 0 inverters.
-
-yosys> opt -sat
-
-3.38. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.38.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-<suppressed ~37 debug messages>
-
-yosys> opt_merge -nomux
-
-3.38.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-<suppressed ~138 debug messages>
-Removed a total of 46 cells.
-
-yosys> opt_muxtree
-
-3.38.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.38.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.38.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat
-
-3.38.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.38.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 26740 unused wires.
-<suppressed ~149 debug messages>
-
-yosys> opt_expr
-
-3.38.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.38.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.38.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.38.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.38.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat
-
-3.38.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.38.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr
-
-3.38.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.38.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script /home/users/temp_dir/yosys_kkkIRY/abc_tmp_1.scr
-
-3.39. Executing ABC pass (technology mapping using ABC).
-
-3.39.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Extracted 4859 gates and 5890 wires to a netlist network with 1031 inputs and 931 outputs.
-
-3.39.1.1. Executing ABC.
-DE:   #PIs = 1031  #Luts =  1603  Max Lvl =  42  Avg Lvl =   5.46  [   0.20 sec. at Pass 0]
-DE:   #PIs = 1031  #Luts =  1560  Max Lvl =  37  Avg Lvl =   4.75  [  18.24 sec. at Pass 1]
-DE:   #PIs = 1031  #Luts =  1527  Max Lvl =  33  Avg Lvl =   4.48  [   2.25 sec. at Pass 2]
-DE:   #PIs = 1031  #Luts =  1527  Max Lvl =  33  Avg Lvl =   4.48  [   4.87 sec. at Pass 3]
-DE:   #PIs = 1031  #Luts =  1516  Max Lvl =  34  Avg Lvl =   4.62  [   2.65 sec. at Pass 4]
-DE:   #PIs = 1031  #Luts =  1516  Max Lvl =  33  Avg Lvl =   4.34  [   5.50 sec. at Pass 5]
-DE:   #PIs = 1031  #Luts =  1513  Max Lvl =  33  Avg Lvl =   4.50  [   3.95 sec. at Pass 6]
-DE:   #PIs = 1031  #Luts =  1513  Max Lvl =  33  Avg Lvl =   4.50  [   6.59 sec. at Pass 7]
-DE:   #PIs = 1031  #Luts =  1513  Max Lvl =  33  Avg Lvl =   4.50  [   2.88 sec. at Pass 8]
-DE:   #PIs = 1031  #Luts =  1513  Max Lvl =  33  Avg Lvl =   4.50  [   4.96 sec. at Pass 9]
-DE:   #PIs = 1031  #Luts =  1513  Max Lvl =  33  Avg Lvl =   4.50  [   0.42 sec. at Pass 10]
-
-yosys> opt
-
-3.40. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr
-
-3.40.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-yosys> opt_merge -nomux
-
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 5867 unused wires.
-<suppressed ~18 debug messages>
-
-yosys> opt_expr
-
-3.40.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
-
-yosys> opt_dff
-
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-
-yosys> opt_expr
-
-3.40.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.40.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> opt_ffinv
-
-3.41. Executing OPT_FFINV pass (push inverters through FFs).
-Discovering LUTs.
-Pushed 0 inverters.
+3.41.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
@@ -2246,55 +979,110 @@ yosys> stat
 
 === gv_sha256 ===
 
-   Number of wires:               2209
-   Number of wire bits:           5319
-   Number of public wires:         138
-   Number of public wire bits:    2681
+   Number of wires:                549
+   Number of wire bits:          10159
+   Number of public wires:         303
+   Number of public wire bits:    6754
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               2899
-     $_DFFE_PP_                   1024
-     $_SDFFE_PP0P_                  74
-     $lut                         1513
-     adder_carry                   288
+   Number of cells:                350
+     $alu                           11
+     $and                           24
+     $dffe                          32
+     $eq                            70
+     $logic_not                      1
+     $macc                           3
+     $mux                          166
+     $ne                             3
+     $not                            9
+     $or                             8
+     $reduce_and                     2
+     $reduce_bool                    2
+     $reduce_or                      1
+     $sdffe                          7
+     $xor                           11
 
 
-yosys> shregmap -minlen 8 -maxlen 20
+yosys> muxpack
 
-3.43. Executing SHREGMAP pass (map shift registers).
-Converted 0 dff cells into 0 shift registers.
+3.43. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converting gv_sha256.$flatten\Inst_sha256_control.$verific$i120$sha256_control.vhd:537$281 ... gv_sha256.$flatten\Inst_sha256_control.$verific$i127$sha256_control.vhd:538$287 to a pmux with 2 cases.
+Converting gv_sha256.$flatten\Inst_sha256_control.$verific$mux_115$sha256_control.vhd:537$277 ... gv_sha256.$flatten\Inst_sha256_control.$verific$mux_125$sha256_control.vhd:538$286 to a pmux with 2 cases.
+Converting gv_sha256.$flatten\Inst_sha256_control.$verific$mux_116$sha256_control.vhd:537$278 ... gv_sha256.$flatten\Inst_sha256_control.$verific$mux_124$sha256_control.vhd:538$285 to a pmux with 2 cases.
+Converting gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_68$sha256_Kt_rom.vhd:139$712 ... gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_71$sha256_Kt_rom.vhd:136$715 to a pmux with 4 cases.
+Converting gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_72$sha256_Kt_rom.vhd:135$716 ... gv_sha256.$flatten\Inst_sha256_kt_rom.$verific$mux_129$sha256_Kt_rom.vhd:141$773 to a pmux with 58 cases.
+Converting gv_sha256.$flatten\Inst_sha256_padding.$verific$mux_37$sha256_padding.vhd:139$970 ... gv_sha256.$flatten\Inst_sha256_padding.$verific$mux_38$sha256_padding.vhd:140$971 to a pmux with 2 cases.
+Converted 70 (p)mux cells into 6 pmux cells.
+<suppressed ~148 debug messages>
 
-yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+yosys> opt_clean
 
-3.44. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 64 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> pmuxtree
+
+3.45. Executing PMUXTREE pass.
+
+yosys> muxpack
+
+3.46. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1601 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1603 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1549 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1551 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1509 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1511 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1465 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1467 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1445 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1447 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1429 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1431 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1417 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1419 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1407 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1409 to a pmux with 2 cases.
+Converting gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1391 ... gv_sha256.$auto$pmuxtree.cc:65:recursive_mux_generator$1393 to a pmux with 2 cases.
+Converted 18 (p)mux cells into 9 pmux cells.
+<suppressed ~148 debug messages>
+
+yosys> memory_map
+
+3.47. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.45. Printing statistics.
+3.48. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:               2357
-   Number of wire bits:           5467
-   Number of public wires:         138
-   Number of public wire bits:    2681
+   Number of wires:                594
+   Number of wire bits:          10296
+   Number of public wires:         303
+   Number of public wire bits:    6754
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               3047
-     $_DFFE_PP0P_                 1024
-     $_DFF_P_                       74
-     $_MUX_                        148
-     $lut                         1513
-     adder_carry                   288
+   Number of cells:                380
+     $alu                           11
+     $and                           24
+     $dffe                          32
+     $eq                            70
+     $logic_not                      1
+     $macc                           3
+     $mux                          148
+     $ne                             3
+     $not                           15
+     $or                            20
+     $pmux                           9
+     $reduce_and                     2
+     $reduce_bool                    2
+     $reduce_or                     22
+     $sdffe                          7
+     $xor                           11
 
 
-yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.46. Executing TECHMAP pass (map to technology primitives).
+3.49. Executing TECHMAP pass (map to technology primitives).
 
-3.46.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.49.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -2322,7 +1110,906 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.46.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.49.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_rs_alu'.
+Successfully finished Verilog frontend.
+
+3.49.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $mux.
+Using template $paramod$8fabc56b80a569262acfc42757a02ca0b8e91278\_90_pmux for cells of type $pmux.
+Using template $paramod$be80489e44a49c29884f59fd81c31ed03229cfc1\_80_rs_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $dffe.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper maccmap for cells of type $macc.
+  add \Inst_sha256_hash_core.reg_h (32 bits, unsigned)
+  add \Inst_sha256_hash_core.SIG1 (32 bits, unsigned)
+  add \Inst_sha256_hash_core.Wt_i (32 bits, unsigned)
+  add \Inst_sha256_hash_core.Kt_i (32 bits, unsigned)
+  add \Inst_sha256_hash_core.Ch (32 bits, unsigned)
+Using extmapper simplemap for cells of type $xor.
+Using template $paramod$32e7c4d6f92ff4337599ece53082d2e88a82a9f2\_90_pmux for cells of type $pmux.
+Using template $paramod$f08cf4b531f7b2bd95251b79857dfb970a6679fc\_90_pmux for cells of type $pmux.
+  add \Inst_sha256_hash_core.SIG0 (32 bits, unsigned)
+  add \Inst_sha256_hash_core.sum3 (32 bits, unsigned)
+  add \Inst_sha256_hash_core.Maj (32 bits, unsigned)
+Using extmapper simplemap for cells of type $logic_not.
+  add \Inst_sha256_msg_sch.r10 (32 bits, unsigned)
+  add \Inst_sha256_msg_sch.r1 (32 bits, unsigned)
+  add \Inst_sha256_msg_sch.s0 (32 bits, unsigned)
+  add \Inst_sha256_msg_sch.s1 (32 bits, unsigned)
+Using template $paramod$e598a152554f0e84fd1ae44a5db9971b90dff028\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $ne.
+Using extmapper simplemap for cells of type $reduce_and.
+Using template $paramod$c5c783b17ab1d780abfad8cfe6563a0a7b47a3b0\_90_pmux for cells of type $pmux.
+Using template $paramod$103b4016182df467cceab67bcf3e18e6361ec0fd\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000100000 for cells of type $fa.
+Using template $paramod$fbc7873bff55778c0b3173955b7e4bce1d9d6834\_90_alu for cells of type $alu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000001000000 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000111 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000100000 for cells of type $lcu.
+No more expansions possible.
+<suppressed ~2535 debug messages>
+
+yosys> stat
+
+3.50. Printing statistics.
+
+=== gv_sha256 ===
+
+   Number of wires:               2779
+   Number of wire bits:          30894
+   Number of public wires:         303
+   Number of public wire bits:    6754
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               9646
+     $_AND_                       1631
+     $_DFFE_PP_                   1024
+     $_MUX_                       3042
+     $_NOT_                        572
+     $_OR_                        1213
+     $_SDFFE_PP0P_                  73
+     $_SDFFE_PP1P_                   1
+     $_XOR_                       1802
+     adder_carry                   288
+
+
+yosys> opt_expr
+
+3.51. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~3226 debug messages>
+
+yosys> opt_merge -nomux
+
+3.52. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+<suppressed ~3093 debug messages>
+Removed a total of 1031 cells.
+
+yosys> opt_muxtree
+
+3.53. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.54. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.55. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.56. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.57. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 573 unused cells and 1962 unused wires.
+<suppressed ~574 debug messages>
+
+yosys> opt_expr
+
+3.59. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~1 debug messages>
+
+yosys> opt_muxtree
+
+3.60. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.61. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.62. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.63. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.64. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:262:slice$7192 ($_SDFFE_PP0P_) from module gv_sha256 (D = \Inst_sha256_control.hash_control_st_next [0], Q = \Inst_sha256_control.hash_control_st_reg [0]).
+
+yosys> opt_clean
+
+3.65. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.66. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~2 debug messages>
+
+yosys> opt_muxtree
+
+3.67. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.68. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.69. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.70. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.71. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.72. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> opt_expr
+
+3.73. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+MAX OPT ITERATION = 3
+
+yosys> opt -fast -full
+
+3.74. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr -full
+
+3.74.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~299 debug messages>
+
+yosys> opt_merge
+
+3.74.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+yosys> opt_dff
+
+3.74.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.74.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 10 unused wires.
+<suppressed ~1 debug messages>
+
+3.74.5. Finished fast OPT passes.
+
+yosys> techmap -map +/techmap.v
+
+3.75. Executing TECHMAP pass (map to technology primitives).
+
+3.75.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.75.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~71 debug messages>
+
+yosys> opt -sat
+
+3.76. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.76.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+yosys> opt_merge -nomux
+
+3.76.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.76.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.76.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.76.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.76.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.76.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> opt_expr
+
+3.76.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.76.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> abc -dff
+
+3.77. Executing ABC pass (technology mapping using ABC).
+
+3.77.1. Summary of detected clock domains:
+  41 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$flatten\Inst_sha256_control.$verific$n368$120
+  19 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=\Inst_sha256_control.sha_init
+  4 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1323, arst={ }, srst=\Inst_sha256_control.sha_init
+  26 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$1327, arst={ }, srst=\Inst_sha256_control.sha_init
+  38 cells in clk=\clk_i, en=$auto$opt_dff.cc:194:make_patterns_logic$1337, arst={ }, srst=\start_i
+  324 cells in clk=\clk_i, en=$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=\Inst_sha256_control.sha_init
+  3412 cells in clk=\clk_i, en=\Inst_sha256_hash_core.ce_i, arst={ }, srst={ }
+  560 cells in clk=\clk_i, en=\Inst_sha256_hash_core.ld_i, arst={ }, srst={ }
+  1279 cells in clk=\clk_i, en=\Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  57 cells in clk=\clk_i, en=$auto$opt_dff.cc:219:make_patterns_logic$13067, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$1333
+
+3.77.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $flatten\Inst_sha256_control.$verific$n368$120
+Extracted 41 gates and 45 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.77.2.1. Executing ABC.
+
+3.77.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by \Inst_sha256_control.sha_init
+Extracted 19 gates and 35 wires to a netlist network with 14 inputs and 9 outputs.
+
+3.77.3.1. Executing ABC.
+
+3.77.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1323, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 4 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.77.4.1. Executing ABC.
+
+3.77.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$1327, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 26 gates and 36 wires to a netlist network with 9 inputs and 14 outputs.
+
+3.77.5.1. Executing ABC.
+
+3.77.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:194:make_patterns_logic$1337, synchronously reset by \start_i
+Extracted 38 gates and 56 wires to a netlist network with 16 inputs and 19 outputs.
+
+3.77.6.1. Executing ABC.
+
+3.77.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 324 gates and 337 wires to a netlist network with 12 inputs and 70 outputs.
+
+3.77.7.1. Executing ABC.
+
+3.77.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_hash_core.ce_i
+Extracted 3124 gates and 3695 wires to a netlist network with 569 inputs and 504 outputs.
+
+3.77.8.1. Executing ABC.
+
+3.77.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_hash_core.ld_i
+Extracted 560 gates and 864 wires to a netlist network with 303 inputs and 543 outputs.
+
+3.77.9.1. Executing ABC.
+
+3.77.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_control.sch_ce
+Extracted 1279 gates and 1383 wires to a netlist network with 104 inputs and 32 outputs.
+
+3.77.10.1. Executing ABC.
+
+3.77.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $auto$opt_dff.cc:219:make_patterns_logic$13067, synchronously reset by $auto$opt_dff.cc:253:combine_resets$1333
+Extracted 57 gates and 97 wires to a netlist network with 38 inputs and 26 outputs.
+
+3.77.11.1. Executing ABC.
+
+yosys> abc -dff
+
+3.78. Executing ABC pass (technology mapping using ABC).
+
+3.78.1. Summary of detected clock domains:
+  38 cells in clk=\clk_i, en=$abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, arst={ }, srst=\start_i
+  17 cells in clk=\clk_i, en=$abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, arst={ }, srst=$abc$13189$Inst_sha256_control.sha_init
+  5 cells in clk=\clk_i, en=$abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, arst={ }, srst=$abc$13189$Inst_sha256_control.sha_init
+  15 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$13189$Inst_sha256_control.sha_init
+  38 cells in clk=\clk_i, en=$abc$13150$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+  271 cells in clk=\clk_i, en=$abc$13292$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$13189$Inst_sha256_control.sha_init
+  697 cells in clk=\clk_i, en=$abc$13245$Inst_sha256_hash_core.ld_i, arst={ }, srst={ }
+  3393 cells in clk=\clk_i, en=$abc$13245$Inst_sha256_hash_core.ce_i, arst={ }, srst={ }
+  1247 cells in clk=\clk_i, en=$abc$13245$Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  48 cells in clk=\clk_i, en=$abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, arst={ }, srst=$abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+
+3.78.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, synchronously reset by \start_i
+Extracted 38 gates and 47 wires to a netlist network with 9 inputs and 16 outputs.
+
+3.78.2.1. Executing ABC.
+
+3.78.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 17 gates and 27 wires to a netlist network with 9 inputs and 12 outputs.
+
+3.78.3.1. Executing ABC.
+
+3.78.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.78.4.1. Executing ABC.
+
+3.78.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 15 gates and 25 wires to a netlist network with 10 inputs and 7 outputs.
+
+3.78.5.1. Executing ABC.
+
+3.78.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13150$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.78.6.1. Executing ABC.
+
+3.78.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13292$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$13189$Inst_sha256_control.sha_init
+Extracted 271 gates and 290 wires to a netlist network with 19 inputs and 69 outputs.
+
+3.78.7.1. Executing ABC.
+
+3.78.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_hash_core.ld_i
+Extracted 690 gates and 1092 wires to a netlist network with 402 inputs and 403 outputs.
+
+3.78.8.1. Executing ABC.
+
+3.78.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_hash_core.ce_i
+Extracted 3112 gates and 3608 wires to a netlist network with 496 inputs and 404 outputs.
+
+3.78.9.1. Executing ABC.
+
+3.78.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$13245$Inst_sha256_control.sch_ce
+Extracted 1247 gates and 1359 wires to a netlist network with 112 inputs and 67 outputs.
+
+3.78.10.1. Executing ABC.
+
+3.78.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, synchronously reset by $abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+Extracted 48 gates and 78 wires to a netlist network with 30 inputs and 20 outputs.
+
+3.78.11.1. Executing ABC.
+
+yosys> abc -dff
+
+3.79. Executing ABC pass (technology mapping using ABC).
+
+3.79.1. Summary of detected clock domains:
+  35 cells in clk=\clk_i, en=$abc$19627$abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, arst={ }, srst=\start_i
+  18 cells in clk=\clk_i, en=$abc$19664$abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, arst={ }, srst=$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  5 cells in clk=\clk_i, en=$abc$19683$abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, arst={ }, srst=$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  20 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  38 cells in clk=\clk_i, en=$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+  269 cells in clk=\clk_i, en=$abc$19746$abc$13292$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  3599 cells in clk=\clk_i, en=$abc$20973$abc$13245$Inst_sha256_hash_core.ce_i, arst={ }, srst={ }
+  756 cells in clk=\clk_i, en=$abc$20018$abc$13245$Inst_sha256_hash_core.ld_i, arst={ }, srst={ }
+  1262 cells in clk=\clk_i, en=$abc$24590$abc$13245$Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  35 cells in clk=\clk_i, en=$abc$26332$abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, arst={ }, srst=$abc$26332$abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+
+3.79.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19627$abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, synchronously reset by \start_i
+Extracted 35 gates and 45 wires to a netlist network with 10 inputs and 15 outputs.
+
+3.79.2.1. Executing ABC.
+
+3.79.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19664$abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, synchronously reset by $abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 18 gates and 27 wires to a netlist network with 8 inputs and 10 outputs.
+
+3.79.3.1. Executing ABC.
+
+3.79.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19683$abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, synchronously reset by $abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.79.4.1. Executing ABC.
+
+3.79.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 20 gates and 32 wires to a netlist network with 12 inputs and 12 outputs.
+
+3.79.5.1. Executing ABC.
+
+3.79.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.79.6.1. Executing ABC.
+
+3.79.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$19746$abc$13292$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 269 gates and 283 wires to a netlist network with 14 inputs and 68 outputs.
+
+3.79.7.1. Executing ABC.
+
+3.79.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$20973$abc$13245$Inst_sha256_hash_core.ce_i
+Extracted 3319 gates and 3771 wires to a netlist network with 452 inputs and 363 outputs.
+
+3.79.8.1. Executing ABC.
+
+3.79.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$20018$abc$13245$Inst_sha256_hash_core.ld_i
+Extracted 748 gates and 1183 wires to a netlist network with 435 inputs and 440 outputs.
+
+3.79.9.1. Executing ABC.
+
+3.79.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$24590$abc$13245$Inst_sha256_control.sch_ce
+Extracted 1262 gates and 1375 wires to a netlist network with 113 inputs and 68 outputs.
+
+3.79.10.1. Executing ABC.
+
+3.79.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26332$abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, synchronously reset by $abc$26332$abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+Extracted 35 gates and 61 wires to a netlist network with 26 inputs and 14 outputs.
+
+3.79.11.1. Executing ABC.
+
+yosys> abc -dff
+
+3.80. Executing ABC pass (technology mapping using ABC).
+
+3.80.1. Summary of detected clock domains:
+  34 cells in clk=\clk_i, en=$abc$26375$abc$19627$abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, arst={ }, srst=\start_i
+  18 cells in clk=\clk_i, en=$abc$26411$abc$19664$abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, arst={ }, srst=$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  721 cells in clk=\clk_i, en=$abc$30337$abc$20018$abc$13245$Inst_sha256_hash_core.ld_i, arst={ }, srst={ }
+  5 cells in clk=\clk_i, en=$abc$26431$abc$19683$abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, arst={ }, srst=$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  18 cells in clk=\clk_i, en=\ce_i, arst={ }, srst=$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  38 cells in clk=\clk_i, en=$abc$26460$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n377$121, arst={ }, srst=$abc$26460$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+  273 cells in clk=\clk_i, en=$abc$26499$abc$19746$abc$13292$flatten\Inst_sha256_control.$verific$n107$119, arst={ }, srst=$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+  3624 cells in clk=\clk_i, en=$abc$26768$abc$20973$abc$13245$Inst_sha256_hash_core.ce_i, arst={ }, srst={ }
+  1242 cells in clk=\clk_i, en=$abc$31336$abc$24590$abc$13245$Inst_sha256_control.sch_ce, arst={ }, srst={ }
+  33 cells in clk=\clk_i, en=$abc$33061$abc$26332$abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, arst={ }, srst=$abc$33061$abc$26332$abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+
+3.80.2. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26375$abc$19627$abc$13245$auto$opt_dff.cc:194:make_patterns_logic$1337, synchronously reset by \start_i
+Extracted 34 gates and 44 wires to a netlist network with 10 inputs and 14 outputs.
+
+3.80.2.1. Executing ABC.
+
+3.80.3. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26411$abc$19664$abc$13219$auto$opt_dff.cc:219:make_patterns_logic$1327, synchronously reset by $abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 18 gates and 29 wires to a netlist network with 10 inputs and 11 outputs.
+
+3.80.3.1. Executing ABC.
+
+3.80.4. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$30337$abc$20018$abc$13245$Inst_sha256_hash_core.ld_i
+Extracted 713 gates and 1126 wires to a netlist network with 413 inputs and 416 outputs.
+
+3.80.4.1. Executing ABC.
+
+3.80.5. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26431$abc$19683$abc$13212$auto$opt_dff.cc:219:make_patterns_logic$1323, synchronously reset by $abc$33132$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 5 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.80.5.1. Executing ABC.
+
+3.80.6. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by \ce_i, synchronously reset by $abc$33132$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 11 outputs.
+
+3.80.6.1. Executing ABC.
+
+3.80.7. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26460$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n377$121, synchronously reset by $abc$26460$abc$19707$abc$13150$flatten\Inst_sha256_control.$verific$n368$120
+Extracted 38 gates and 42 wires to a netlist network with 4 inputs and 19 outputs.
+
+3.80.7.1. Executing ABC.
+
+3.80.8. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26499$abc$19746$abc$13292$flatten\Inst_sha256_control.$verific$n107$119, synchronously reset by $abc$33132$abc$26375$abc$19746$abc$13189$Inst_sha256_control.sha_init
+Extracted 273 gates and 289 wires to a netlist network with 16 inputs and 70 outputs.
+
+3.80.8.1. Executing ABC.
+
+3.80.9. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$26768$abc$20973$abc$13245$Inst_sha256_hash_core.ce_i
+Extracted 3344 gates and 3823 wires to a netlist network with 479 inputs and 389 outputs.
+
+3.80.9.1. Executing ABC.
+
+3.80.10. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$31336$abc$24590$abc$13245$Inst_sha256_control.sch_ce
+Extracted 1242 gates and 1353 wires to a netlist network with 111 inputs and 67 outputs.
+
+3.80.10.1. Executing ABC.
+
+3.80.11. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk_i, enabled by $abc$33061$abc$26332$abc$19576$auto$opt_dff.cc:219:make_patterns_logic$13067, synchronously reset by $abc$33061$abc$26332$abc$19576$auto$opt_dff.cc:253:combine_resets$1333
+Extracted 33 gates and 59 wires to a netlist network with 26 inputs and 14 outputs.
+
+3.80.11.1. Executing ABC.
+
+yosys> opt_ffinv
+
+3.81. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> opt -sat
+
+3.82. Executing OPT pass (performing simple optimizations).
+
+yosys> opt_expr
+
+3.82.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+<suppressed ~3 debug messages>
+
+yosys> opt_merge -nomux
+
+3.82.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+<suppressed ~120 debug messages>
+Removed a total of 40 cells.
+
+yosys> opt_muxtree
+
+3.82.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.82.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.82.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.82.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $abc$34133$auto$blifparse.cc:362:parse_blif$34134 ($_SDFFE_PP0P_) from module gv_sha256 (D = $abc$34133$abc$26438$new_n43_, Q = $abc$34133$lo0).
+
+yosys> opt_clean
+
+3.82.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 1 unused cells and 26938 unused wires.
+<suppressed ~122 debug messages>
+
+yosys> opt_expr
+
+3.82.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.82.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+yosys> opt_muxtree
+
+3.82.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.82.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.82.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_dff -sat
+
+3.82.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.82.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+
+yosys> opt_expr
+
+3.82.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+3.82.16. Finished OPT passes. (There is nothing left to do.)
+
+yosys> bmuxmap
+
+3.83. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.84. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
+yosys> abc -script /home/users/temp_dir/yosys_EByoyZ/abc_tmp_1.scr
+
+3.85. Executing ABC pass (technology mapping using ABC).
+
+3.85.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Extracted 4585 gates and 5616 wires to a netlist network with 1031 inputs and 902 outputs.
+
+3.85.1.1. Executing ABC.
+DE:   #PIs = 1031  #Luts =  1612  Max Lvl =  42  Avg Lvl =   5.39  [   0.86 sec. at Pass 0]
+DE:   #PIs = 1031  #Luts =  1560  Max Lvl =  34  Avg Lvl =   4.22  [  30.86 sec. at Pass 1]
+DE:   #PIs = 1031  #Luts =  1522  Max Lvl =  28  Avg Lvl =   3.79  [   3.74 sec. at Pass 2]
+DE:   #PIs = 1031  #Luts =  1516  Max Lvl =  29  Avg Lvl =   3.81  [   6.57 sec. at Pass 3]
+DE:   #PIs = 1031  #Luts =  1510  Max Lvl =  30  Avg Lvl =   3.85  [   6.30 sec. at Pass 4]
+DE:   #PIs = 1031  #Luts =  1510  Max Lvl =  30  Avg Lvl =   3.85  [  13.28 sec. at Pass 5]
+DE:   #PIs = 1031  #Luts =  1507  Max Lvl =  30  Avg Lvl =   3.88  [   6.41 sec. at Pass 6]
+DE:   #PIs = 1031  #Luts =  1507  Max Lvl =  30  Avg Lvl =   3.88  [   8.78 sec. at Pass 7]
+DE:   #PIs = 1031  #Luts =  1507  Max Lvl =  30  Avg Lvl =   3.88  [   5.47 sec. at Pass 8]
+DE:   #PIs = 1031  #Luts =  1507  Max Lvl =  30  Avg Lvl =   3.88  [  10.04 sec. at Pass 9]
+DE:   #PIs = 1031  #Luts =  1507  Max Lvl =  30  Avg Lvl =   3.88  [   1.02 sec. at Pass 10]
+
+yosys> opt_expr
+
+3.86. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+
+yosys> opt_merge -nomux
+
+3.87. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.88. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gv_sha256..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.89. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gv_sha256.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.90. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gv_sha256'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.91. Executing OPT_SHARE pass.
+
+yosys> opt_dff
+
+3.92. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.93. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 5560 unused wires.
+<suppressed ~16 debug messages>
+
+yosys> opt_expr
+
+3.94. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gv_sha256.
+MAX OPT ITERATION = 1
+
+yosys> opt_ffinv
+
+3.95. Executing OPT_FFINV pass (push inverters through FFs).
+Discovering LUTs.
+Pushed 0 inverters.
+
+yosys> stat
+
+3.96. Printing statistics.
+
+=== gv_sha256 ===
+
+   Number of wires:               2025
+   Number of wire bits:           6096
+   Number of public wires:         168
+   Number of public wire bits:    3672
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               2893
+     $_DFFE_PP_                   1024
+     $_SDFFE_PP0P_                  74
+     $lut                         1507
+     adder_carry                   288
+
+
+yosys> shregmap -minlen 8 -maxlen 20
+
+3.97. Executing SHREGMAP pass (map shift registers).
+Converted 0 dff cells into 0 shift registers.
+
+yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
+
+3.98. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+yosys> stat
+
+3.99. Printing statistics.
+
+=== gv_sha256 ===
+
+   Number of wires:               2173
+   Number of wire bits:           6244
+   Number of public wires:         168
+   Number of public wire bits:    3672
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:               3041
+     $_DFFE_PP0P_                 1024
+     $_DFF_P_                       74
+     $_MUX_                        148
+     $lut                         1507
+     adder_carry                   288
+
+
+yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
+
+3.100. Executing TECHMAP pass (map to technology primitives).
+
+3.100.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+3.100.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -2391,67 +2078,67 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.46.3. Continuing TECHMAP pass.
+3.100.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~3771 debug messages>
+<suppressed ~3765 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.47. Executing OPT_EXPR pass (perform const folding).
+3.101. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~16001 debug messages>
+<suppressed ~15722 debug messages>
 
 yosys> simplemap
 
-3.48. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.102. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.49. Executing OPT_EXPR pass (perform const folding).
+3.103. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge
 
-3.50. Executing OPT_MERGE pass (detect identical cells).
+3.104. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
-<suppressed ~18885 debug messages>
-Removed a total of 6295 cells.
+<suppressed ~18846 debug messages>
+Removed a total of 6282 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.51. Executing OPT_DFF pass (perform DFF optimizations).
+3.105. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.52. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.106. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 9098 unused wires.
+Removed 0 unused cells and 9102 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.53. Executing OPT pass (performing simple optimizations).
+3.107. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.53.1. Executing OPT_EXPR pass (perform const folding).
+3.107.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-<suppressed ~189 debug messages>
+<suppressed ~211 debug messages>
 
 yosys> opt_merge -nomux
 
-3.53.2. Executing OPT_MERGE pass (detect identical cells).
+3.107.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 <suppressed ~9 debug messages>
 Removed a total of 3 cells.
 
 yosys> opt_muxtree
 
-3.53.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.107.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2459,37 +2146,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.107.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.5. Executing OPT_MERGE pass (detect identical cells).
+3.107.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.107.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.107.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 27 unused wires.
+Removed 0 unused cells and 30 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.53.8. Executing OPT_EXPR pass (perform const folding).
+3.107.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.53.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.107.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.53.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.107.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2497,75 +2184,69 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.107.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.12. Executing OPT_MERGE pass (detect identical cells).
+3.107.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.107.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.107.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
 
 yosys> opt_expr
 
-3.53.15. Executing OPT_EXPR pass (perform const folding).
+3.107.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
-3.53.16. Finished OPT passes. (There is nothing left to do.)
+3.107.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script /home/users/temp_dir/yosys_kkkIRY/abc_tmp_2.scr
+yosys> abc -script /home/users/temp_dir/yosys_EByoyZ/abc_tmp_2.scr
 
-3.54. Executing ABC pass (technology mapping using ABC).
+3.108. Executing ABC pass (technology mapping using ABC).
 
-3.54.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
-Extracted 6469 gates and 7502 wires to a netlist network with 1031 inputs and 924 outputs.
+3.108.1. Extracting gate netlist of module `\gv_sha256' to `<abc-temp-dir>/input.blif'..
+Extracted 6497 gates and 7530 wires to a netlist network with 1031 inputs and 894 outputs.
 
-3.54.1.1. Executing ABC.
-DE:   #PIs = 1031  #Luts =  1540  Max Lvl =  33  Avg Lvl =   4.62  [   0.46 sec. at Pass 0]
-DE:   #PIs = 1031  #Luts =  1540  Max Lvl =  33  Avg Lvl =   4.62  [  23.11 sec. at Pass 1]
-DE:   #PIs = 1031  #Luts =  1532  Max Lvl =  33  Avg Lvl =   4.46  [   3.78 sec. at Pass 2]
-DE:   #PIs = 1031  #Luts =  1531  Max Lvl =  32  Avg Lvl =   4.46  [   6.04 sec. at Pass 3]
-DE:   #PIs = 1031  #Luts =  1530  Max Lvl =  33  Avg Lvl =   4.40  [   3.22 sec. at Pass 4]
-DE:   #PIs = 1031  #Luts =  1529  Max Lvl =  32  Avg Lvl =   4.23  [   6.46 sec. at Pass 5]
-DE:   #PIs = 1031  #Luts =  1524  Max Lvl =  34  Avg Lvl =   4.27  [   3.83 sec. at Pass 6]
-DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  31  Avg Lvl =   4.23  [   5.91 sec. at Pass 7]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  32  Avg Lvl =   4.33  [   3.75 sec. at Pass 8]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  32  Avg Lvl =   4.33  [   6.42 sec. at Pass 9]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  32  Avg Lvl =   4.33  [   3.25 sec. at Pass 10]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.32  [   6.10 sec. at Pass 11]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.32  [   3.17 sec. at Pass 12]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.32  [   6.67 sec. at Pass 13]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.32  [   4.23 sec. at Pass 14]
-DE:   #PIs = 1031  #Luts =  1517  Max Lvl =  30  Avg Lvl =   4.32  [   0.76 sec. at Pass 15]
-
-yosys> opt
-
-3.55. Executing OPT pass (performing simple optimizations).
+3.108.1.1. Executing ABC.
+DE:   #PIs = 1031  #Luts =  1540  Max Lvl =  30  Avg Lvl =   3.98  [   1.00 sec. at Pass 0]
+DE:   #PIs = 1031  #Luts =  1540  Max Lvl =  30  Avg Lvl =   3.98  [  32.37 sec. at Pass 1]
+DE:   #PIs = 1031  #Luts =  1530  Max Lvl =  29  Avg Lvl =   4.01  [   5.29 sec. at Pass 2]
+DE:   #PIs = 1031  #Luts =  1526  Max Lvl =  29  Avg Lvl =   3.82  [   7.63 sec. at Pass 3]
+DE:   #PIs = 1031  #Luts =  1525  Max Lvl =  30  Avg Lvl =   3.91  [   6.79 sec. at Pass 4]
+DE:   #PIs = 1031  #Luts =  1523  Max Lvl =  29  Avg Lvl =   3.85  [  12.34 sec. at Pass 5]
+DE:   #PIs = 1031  #Luts =  1523  Max Lvl =  29  Avg Lvl =   3.85  [   6.87 sec. at Pass 6]
+DE:   #PIs = 1031  #Luts =  1523  Max Lvl =  29  Avg Lvl =   3.85  [   9.00 sec. at Pass 7]
+DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  30  Avg Lvl =   4.07  [   7.59 sec. at Pass 8]
+DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  28  Avg Lvl =   3.85  [  10.63 sec. at Pass 9]
+DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  28  Avg Lvl =   3.85  [   5.56 sec. at Pass 10]
+DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  28  Avg Lvl =   3.85  [  12.18 sec. at Pass 11]
+DE:   #PIs = 1031  #Luts =  1521  Max Lvl =  28  Avg Lvl =   3.85  [   7.16 sec. at Pass 12]
+DE:   #PIs = 1031  #Luts =  1520  Max Lvl =  29  Avg Lvl =   3.97  [   1.38 sec. at Pass 13]
 
 yosys> opt_expr
 
-3.55.1. Executing OPT_EXPR pass (perform const folding).
+3.109. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
 
 yosys> opt_merge -nomux
 
-3.55.2. Executing OPT_MERGE pass (detect identical cells).
+3.110. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.55.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.111. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gv_sha256..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2573,115 +2254,82 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.55.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.112. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gv_sha256.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55.5. Executing OPT_MERGE pass (detect identical cells).
+3.113. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gv_sha256'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_share
 
-3.55.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.55.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 5179 unused wires.
-<suppressed ~8 debug messages>
-
-yosys> opt_expr
-
-3.55.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gv_sha256.
-
-3.55.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.55.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gv_sha256..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.55.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gv_sha256.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.55.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gv_sha256'.
-Removed a total of 0 cells.
+3.114. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.55.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.115. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.55.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.116. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
+Removed 0 unused cells and 5173 unused wires.
+<suppressed ~7 debug messages>
 
 yosys> opt_expr
 
-3.55.15. Executing OPT_EXPR pass (perform const folding).
+3.117. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gv_sha256.
-
-3.55.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.56. Executing HIERARCHY pass (managing design hierarchy).
+3.118. Executing HIERARCHY pass (managing design hierarchy).
 
-3.56.1. Analyzing design hierarchy..
+3.118.1. Analyzing design hierarchy..
 Top module:  \gv_sha256
 
-3.56.2. Analyzing design hierarchy..
+3.118.2. Analyzing design hierarchy..
 Top module:  \gv_sha256
 Removed 0 unused modules.
 
 yosys> stat
 
-3.57. Printing statistics.
+3.119. Printing statistics.
 
 === gv_sha256 ===
 
-   Number of wires:               2209
-   Number of wire bits:           5313
-   Number of public wires:         131
-   Number of public wire bits:    2668
+   Number of wires:               2034
+   Number of wire bits:           6099
+   Number of public wires:         162
+   Number of public wire bits:    3660
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:               2903
-     $lut                         1517
+   Number of cells:               2906
+     $lut                         1520
      adder_carry                   288
      dffsre                       1098
 
 
 yosys> opt_clean -purge
 
-3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.120. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gv_sha256..
-Removed 0 unused cells and 99 unused wires.
-<suppressed ~99 debug messages>
+Removed 0 unused cells and 123 unused wires.
+<suppressed ~123 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.59. Executing Verilog backend.
+3.121. Executing Verilog backend.
 Dumping module `\gv_sha256'.
 
-End of script. Logfile hash: c540c94670, CPU: user 51.15s system 0.51s, MEM: 93.55 MB peak
-Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
-Time spent: 95% 6x abc (1105 sec), 1% 29x opt_dff (19 sec), ...
-real 209.46
-user 1067.46
-sys 86.86
+End of script. Logfile hash: a88b1338c7, CPU: user 48.68s system 0.79s, MEM: 92.51 MB peak
+Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+Time spent: 95% 6x abc (1004 sec), 1% 22x opt_dff (20 sec), ...
+real 335.68
+user 970.40
+sys 79.24

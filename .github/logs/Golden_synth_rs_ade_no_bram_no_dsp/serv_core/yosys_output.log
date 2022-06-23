@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.47
- Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.49
+ Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,7 +35,7 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
@@ -44,7 +44,7 @@ yosys> read -vlog2k serv_alu.v serv_bufreg.v serv_bufreg2.v serv_csr.v serv_ctrl
 yosys> verific -vlog2k serv_alu.v serv_bufreg.v serv_bufreg2.v serv_csr.v serv_ctrl.v serv_decode.v serv_immdec.v serv_mem_if.v serv_rf_if.v serv_rf_ram.v serv_rf_ram_if.v serv_rf_top.v serv_state.v serv_synth_wrapper.v serv_top.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific Apr22_SW_Release, released at Thu Apr 28 20:08:21 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 05:39:28 2022.
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'serv_alu.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'serv_bufreg.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'serv_bufreg2.v'
@@ -63,7 +63,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'serv_top.v'
 
 yosys> synth_rs -top serv_synth_wrapper -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.57
+3. Executing synth_rs pass: v0.4.58
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
@@ -249,69 +249,89 @@ Optimizing module serv_rf_ram_if(width=2).
 <suppressed ~1 debug messages>
 Optimizing module serv_synth_wrapper.
 
+yosys> bmuxmap
+
+3.5. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.6. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
 yosys> flatten
 
-3.5. Executing FLATTEN pass (flatten design).
-Deleting now unused module serv_state(WITH_CSR=1'b1,MDU=1'b0).
-Deleting now unused module serv_rf_if.
-Deleting now unused module serv_mem_if(WITH_CSR=1'b1).
-Deleting now unused module serv_immdec.
-Deleting now unused module serv_decode(PRE_REGISTER=1'b1,MDU=1'b0).
-Deleting now unused module serv_ctrl.
-Deleting now unused module serv_csr.
-Deleting now unused module serv_bufreg2.
-Deleting now unused module serv_bufreg(MDU=1'b0).
+3.7. Executing FLATTEN pass (flatten design).
 Deleting now unused module serv_alu.
-Deleting now unused module serv_top.
+Deleting now unused module serv_bufreg(MDU=1'b0).
+Deleting now unused module serv_bufreg2.
+Deleting now unused module serv_csr.
+Deleting now unused module serv_ctrl.
+Deleting now unused module serv_decode(PRE_REGISTER=1'b1,MDU=1'b0).
+Deleting now unused module serv_immdec.
+Deleting now unused module serv_mem_if(WITH_CSR=1'b1).
+Deleting now unused module serv_rf_if.
 Deleting now unused module serv_rf_ram_if(width=2).
+Deleting now unused module serv_state(WITH_CSR=1'b1,MDU=1'b0).
+Deleting now unused module serv_top.
 <suppressed ~12 debug messages>
+
+yosys> bmuxmap
+
+3.8. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.9. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> tribuf -logic
 
-3.6. Executing TRIBUF pass.
+3.10. Executing TRIBUF pass.
 
 yosys> deminout
 
-3.7. Executing DEMINOUT pass (demote inout ports to input or output).
+3.11. Executing DEMINOUT pass (demote inout ports to input or output).
 
 yosys> opt_expr
 
-3.8. Executing OPT_EXPR pass (perform const folding).
+3.12. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_clean
 
-3.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.13. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 Removed 2 unused cells and 1026 unused wires.
 <suppressed ~252 debug messages>
 
 yosys> check
 
-3.10. Executing CHECK pass (checking for obvious problems).
+3.14. Executing CHECK pass (checking for obvious problems).
 Checking module serv_synth_wrapper...
 Found and reported 0 problems.
 
 yosys> opt -nodffe -nosdff
 
-3.11. Executing OPT pass (performing simple optimizations).
+3.15. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.11.1. Executing OPT_EXPR pass (perform const folding).
+3.15.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 <suppressed ~9 debug messages>
 
 yosys> opt_merge -nomux
 
-3.11.2. Executing OPT_MERGE pass (detect identical cells).
+3.15.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 <suppressed ~39 debug messages>
 Removed a total of 13 cells.
 
 yosys> opt_muxtree
 
-3.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -321,19 +341,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.5. Executing OPT_MERGE pass (detect identical cells).
+3.15.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
 Removing never-active async load on $flatten\rf_ram_if.$verific$wdata1_r_reg$serv_rf_ram_if.v:88$362 ($aldff) from module serv_synth_wrapper.
 Removing never-active async load on $flatten\rf_ram_if.$verific$rdata0_reg$serv_rf_ram_if.v:146$389 ($aldff) from module serv_synth_wrapper.
 Removing never-active async load on $flatten\rf_ram_if.$verific$rcnt_reg$serv_rf_ram_if.v:146$386 ($aldff) from module serv_synth_wrapper.
@@ -353,21 +373,21 @@ Removing never-active async load on $flatten\cpu.\bufreg.$verific$data_reg$serv_
 
 yosys> opt_clean
 
-3.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 Removed 0 unused cells and 22 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.11.8. Executing OPT_EXPR pass (perform const folding).
+3.15.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.11.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.11.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -377,87 +397,87 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.11.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.11.12. Executing OPT_MERGE pass (detect identical cells).
+3.15.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.11.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.11.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.11.15. Executing OPT_EXPR pass (perform const folding).
+3.15.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.11.16. Finished OPT passes. (There is nothing left to do.)
+3.15.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> fsm -encoding binary
 
-3.12. Executing FSM pass (extract and optimize FSM).
+3.16. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
 
 yosys> fsm_extract
 
-3.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 
 yosys> fsm_opt
 
-3.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> opt_clean
 
-3.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> fsm_opt
 
-3.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> fsm_recode -encoding binary
 
-3.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
 yosys> fsm_info
 
-3.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 yosys> fsm_map
 
-3.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 
 yosys> opt -sat
 
-3.13. Executing OPT pass (performing simple optimizations).
+3.17. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.13.1. Executing OPT_EXPR pass (perform const folding).
+3.17.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.13.2. Executing OPT_MERGE pass (detect identical cells).
+3.17.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -467,19 +487,19 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.5. Executing OPT_MERGE pass (detect identical cells).
+3.17.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
 Adding SRST signal on $flatten\rf_ram_if.$verific$rreq_r_reg$serv_rf_ram_if.v:146$387 ($dff) from module serv_synth_wrapper (D = \rf_ram_if.i_rreq, Q = \rf_ram_if.rreq_r, rval = 1'0).
 Adding SRST signal on $flatten\rf_ram_if.$verific$rgnt_reg$serv_rf_ram_if.v:146$388 ($dff) from module serv_synth_wrapper (D = \rf_ram_if.rreq_r, Q = \rf_ram_if.rgnt, rval = 1'0).
 Adding EN signal on $flatten\rf_ram_if.$verific$rdata1_reg[0]$serv_rf_ram_if.v:122$372 ($dff) from module serv_synth_wrapper (D = \i_rdata [1], Q = \rf_ram_if.rdata1).
@@ -529,21 +549,21 @@ Adding EN signal on $flatten\cpu.\alu.$verific$cmp_r_reg$serv_alu.v:66$996 ($dff
 
 yosys> opt_clean
 
-3.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 Removed 44 unused cells and 44 unused wires.
 <suppressed ~45 debug messages>
 
 yosys> opt_expr
 
-3.13.8. Executing OPT_EXPR pass (perform const folding).
+3.17.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.17.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -553,78 +573,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.17.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.13.12. Executing OPT_MERGE pass (detect identical cells).
+3.17.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.17.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.17.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.13.15. Executing OPT_EXPR pass (perform const folding).
+3.17.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.13.16. Finished OPT passes. (There is nothing left to do.)
+3.17.16. Finished OPT passes. (There is nothing left to do.)
 
 yosys> wreduce -keepdc
 
-3.14. Executing WREDUCE pass (reducing word size of cells).
-Removed top 1 bits (of 2) from mux cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$mux_53$serv_rf_ram_if.v:138$381 ($mux).
-Removed top 3 bits (of 5) from mux cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$mux_46$serv_rf_ram_if.v:129$376 ($mux).
+3.18. Executing WREDUCE pass (reducing word size of cells).
 Removed top 4 bits (of 5) from port B of cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$add_43$serv_rf_ram_if.v:127$374 ($add).
+Removed top 3 bits (of 5) from mux cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$mux_46$serv_rf_ram_if.v:129$376 ($mux).
+Removed top 1 bits (of 2) from mux cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$mux_53$serv_rf_ram_if.v:138$381 ($mux).
 Removed top 1 bits (of 6) from port A of cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$sub_20$serv_rf_ram_if.v:80$354 ($sub).
 Removed top 4 bits (of 6) from port B of cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$sub_20$serv_rf_ram_if.v:80$354 ($sub).
 Removed top 1 bits (of 6) from port Y of cell serv_synth_wrapper.$flatten\rf_ram_if.$verific$sub_20$serv_rf_ram_if.v:80$354 ($sub).
-Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\genblk1.csr.$verific$equal_5$serv_csr.v:56$1184 ($eq).
-Removed top 1 bits (of 2) from port A of cell serv_synth_wrapper.$flatten\cpu.\rf_if.$verific$or_36$serv_rf_if.v:115$1880 ($or).
 Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\alu.$verific$add_10$serv_alu.v:34$964 ($add).
-Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\ctrl.$verific$add_7$serv_ctrl.v:49$1291 ($add).
-Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\ctrl.$verific$add_24$serv_ctrl.v:61$1308 ($add).
-Removed top 1 bits (of 7) from port A of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087 ($sub).
-Removed top 6 bits (of 7) from port B of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087 ($sub).
+Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\bufreg.$verific$add_10$serv_bufreg.v:33$1028 ($add).
 Removed top 26 bits (of 32) from mux cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$mux_14$serv_bufreg2.v:47$1091 ($mux).
 Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$equal_23$serv_bufreg2.v:55$1101 ($eq).
-Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\bufreg.$verific$add_10$serv_bufreg.v:33$1028 ($add).
-Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\decode.$verific$equal_183$serv_decode.v:222$1577 ($eq).
+Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\ctrl.$verific$add_7$serv_ctrl.v:49$1291 ($add).
+Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\ctrl.$verific$add_24$serv_ctrl.v:61$1308 ($add).
 Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\decode.$verific$equal_192$serv_decode.v:227$1581 ($eq).
+Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\decode.$verific$equal_183$serv_decode.v:222$1577 ($eq).
+Removed top 1 bits (of 2) from port B of cell serv_synth_wrapper.$flatten\cpu.\genblk1.csr.$verific$equal_5$serv_csr.v:56$1184 ($eq).
+Removed top 1 bits (of 2) from port A of cell serv_synth_wrapper.$flatten\cpu.\rf_if.$verific$or_36$serv_rf_if.v:115$1880 ($or).
 Removed top 2 bits (of 3) from port B of cell serv_synth_wrapper.$flatten\cpu.\state.$verific$equal_26$serv_state.v:78$2005 ($eq).
 Removed top 2 bits (of 3) from port B of cell serv_synth_wrapper.$flatten\cpu.\state.$verific$add_95$serv_state.v:167$2069 ($add).
+Removed top 1 bits (of 7) from port A of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087 ($sub).
+Removed top 6 bits (of 7) from port B of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087 ($sub).
 Removed top 1 bits (of 7) from port Y of cell serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087 ($sub).
 Removed top 1 bits (of 7) from wire serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$n11$1072.
+Removed top 10 bits (of 32) from wire serv_synth_wrapper.$flatten\cpu.\bufreg2.$verific$n111$1074.
 Removed top 3 bits (of 5) from wire serv_synth_wrapper.$flatten\rf_ram_if.$verific$n126$329.
+Removed top 1 bits (of 2) from wire serv_synth_wrapper.$flatten\rf_ram_if.$verific$n152$334.
 Removed top 4 bits (of 6) from wire serv_synth_wrapper.wreg1.
 
 yosys> peepopt
 
-3.15. Executing PEEPOPT pass (run peephole optimizers).
-
-yosys> pmuxtree
-
-3.16. Executing PMUXTREE pass.
+3.19. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> opt_clean
 
-3.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 5 unused wires.
+Removed 0 unused cells and 7 unused wires.
 <suppressed ~1 debug messages>
+
+yosys> bmuxmap
+
+3.21. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.22. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
 
 yosys> alumacc
 
-3.18. Executing ALUMACC pass (create $alu and $macc cells).
+3.23. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module serv_synth_wrapper:
   creating $macc model for $flatten\cpu.\alu.$verific$add_10$serv_alu.v:34$964 ($add).
   creating $macc model for $flatten\cpu.\alu.$verific$add_13$serv_alu.v:36$967 ($add).
@@ -654,35 +682,31 @@ Extracting $alu and $macc cells in module serv_synth_wrapper:
   creating $alu model for $macc $flatten\cpu.\alu.$verific$add_14$serv_alu.v:36$968.
   creating $alu model for $macc $flatten\rf_ram_if.$verific$add_43$serv_rf_ram_if.v:127$374.
   creating $alu model for $macc $flatten\cpu.\alu.$verific$add_10$serv_alu.v:34$964.
-  creating $alu cell for $flatten\cpu.\alu.$verific$add_10$serv_alu.v:34$964: $auto$alumacc.cc:485:replace_alu$2155
-  creating $alu cell for $flatten\rf_ram_if.$verific$add_43$serv_rf_ram_if.v:127$374: $auto$alumacc.cc:485:replace_alu$2158
-  creating $alu cell for $flatten\cpu.\alu.$verific$add_14$serv_alu.v:36$968: $auto$alumacc.cc:485:replace_alu$2161
-  creating $alu cell for $flatten\rf_ram_if.$verific$sub_20$serv_rf_ram_if.v:80$354: $auto$alumacc.cc:485:replace_alu$2164
-  creating $alu cell for $flatten\cpu.\bufreg.$verific$add_10$serv_bufreg.v:33$1028: $auto$alumacc.cc:485:replace_alu$2167
-  creating $alu cell for $flatten\cpu.\state.$verific$add_95$serv_state.v:167$2069: $auto$alumacc.cc:485:replace_alu$2170
-  creating $alu cell for $flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087: $auto$alumacc.cc:485:replace_alu$2173
-  creating $alu cell for $flatten\cpu.\ctrl.$verific$add_7$serv_ctrl.v:49$1291: $auto$alumacc.cc:485:replace_alu$2176
-  creating $alu cell for $flatten\cpu.\ctrl.$verific$add_24$serv_ctrl.v:61$1308: $auto$alumacc.cc:485:replace_alu$2179
+  creating $alu cell for $flatten\cpu.\alu.$verific$add_10$serv_alu.v:34$964: $auto$alumacc.cc:485:replace_alu$2157
+  creating $alu cell for $flatten\rf_ram_if.$verific$add_43$serv_rf_ram_if.v:127$374: $auto$alumacc.cc:485:replace_alu$2160
+  creating $alu cell for $flatten\cpu.\alu.$verific$add_14$serv_alu.v:36$968: $auto$alumacc.cc:485:replace_alu$2163
+  creating $alu cell for $flatten\rf_ram_if.$verific$sub_20$serv_rf_ram_if.v:80$354: $auto$alumacc.cc:485:replace_alu$2166
+  creating $alu cell for $flatten\cpu.\bufreg.$verific$add_10$serv_bufreg.v:33$1028: $auto$alumacc.cc:485:replace_alu$2169
+  creating $alu cell for $flatten\cpu.\state.$verific$add_95$serv_state.v:167$2069: $auto$alumacc.cc:485:replace_alu$2172
+  creating $alu cell for $flatten\cpu.\bufreg2.$verific$sub_10$serv_bufreg2.v:45$1087: $auto$alumacc.cc:485:replace_alu$2175
+  creating $alu cell for $flatten\cpu.\ctrl.$verific$add_7$serv_ctrl.v:49$1291: $auto$alumacc.cc:485:replace_alu$2178
+  creating $alu cell for $flatten\cpu.\ctrl.$verific$add_24$serv_ctrl.v:61$1308: $auto$alumacc.cc:485:replace_alu$2181
   created 9 $alu and 0 $macc cells.
-
-yosys> opt
-
-3.19. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.19.1. Executing OPT_EXPR pass (perform const folding).
+3.24. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.19.2. Executing OPT_MERGE pass (detect identical cells).
+3.25. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.19.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -692,37 +716,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.19.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.19.5. Executing OPT_MERGE pass (detect identical cells).
+3.28. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.29. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.19.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.30. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.19.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 Removed 5 unused cells and 9 unused wires.
 <suppressed ~6 debug messages>
 
 yosys> opt_expr
 
-3.19.8. Executing OPT_EXPR pass (perform const folding).
+3.32. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.19.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.19.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.33. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -732,35 +758,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.19.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.34. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.19.12. Executing OPT_MERGE pass (detect identical cells).
+3.35. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.36. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.19.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.37. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.19.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.38. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.19.15. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.19.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 2
 
 yosys> stat
 
-3.20. Printing statistics.
+3.40. Printing statistics.
 
 === serv_synth_wrapper ===
 
@@ -790,56 +819,56 @@ yosys> stat
 
 yosys> memory -nomap
 
-3.21. Executing MEMORY pass.
+3.41. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.21.1. Executing OPT_MEM pass (optimize memories).
+3.41.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.21.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.41.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.21.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.41.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.21.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.41.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.21.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.41.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.21.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.41.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> memory_share
 
-3.21.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.41.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.21.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.41.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.21.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.41.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> memory_collect
 
-3.21.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.41.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
-3.22. Printing statistics.
+3.42. Printing statistics.
 
 === serv_synth_wrapper ===
 
@@ -867,14 +896,38 @@ yosys> stat
      $xor                            3
 
 
+yosys> muxpack
+
+3.43. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converting serv_synth_wrapper.$flatten\cpu.\genblk1.csr.$verific$i13$serv_csr.v:60$1191 ... serv_synth_wrapper.$flatten\cpu.\genblk1.csr.$verific$i15$serv_csr.v:60$1193 to a pmux with 3 cases.
+Converted 3 (p)mux cells into 1 pmux cells.
+<suppressed ~41 debug messages>
+
 yosys> opt_clean
 
-3.23. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.44. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+yosys> pmuxtree
+
+3.45. Executing PMUXTREE pass.
+
+yosys> muxpack
+
+3.46. Executing MUXPACK pass ($mux cell cascades to $pmux).
+Converting serv_synth_wrapper.$auto$pmuxtree.cc:65:recursive_mux_generator$2184 ... serv_synth_wrapper.$auto$pmuxtree.cc:65:recursive_mux_generator$2186 to a pmux with 2 cases.
+Converted 2 (p)mux cells into 1 pmux cells.
+<suppressed ~40 debug messages>
+
+yosys> memory_map
+
+3.47. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.24. Printing statistics.
+3.48. Printing statistics.
 
 === serv_synth_wrapper ===
 
@@ -885,16 +938,17 @@ yosys> stat
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                409
+   Number of cells:                407
      $alu                            9
      $and                          155
      $dff                           10
      $dffe                          25
      $eq                            13
      $logic_not                     10
-     $mux                           42
+     $mux                           39
      $not                           39
      $or                            84
+     $pmux                           1
      $reduce_or                      4
      $sdff                           9
      $sdffce                         1
@@ -904,9 +958,9 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.25. Executing TECHMAP pass (map to technology primitives).
+3.49. Executing TECHMAP pass (map to technology primitives).
 
-3.25.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.49.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -934,68 +988,69 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.25.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+3.49.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.25.3. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $sdff.
-Using extmapper simplemap for cells of type $dffe.
-Using extmapper simplemap for cells of type $dff.
-Using extmapper simplemap for cells of type $mux.
+3.49.3. Continuing TECHMAP pass.
 Using template $paramod$1d1e68f77481583066c6d429218f48ea9d5739b3\_90_alu for cells of type $alu.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:80: Warning: Range [-1:-1] select out of bounds on signal `\C': Setting 1 LSB bits to undef.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:88: Warning: Range [-1:-1] select out of bounds on signal `\Y': Setting 1 LSB bits to undef.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:88: Warning: Range [-1:-1] select out of bounds on signal `\S': Setting 1 LSB bits to undef.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:88: Warning: Ignoring assignment to constant bits:
-    old assignment: 1'x = $xor$/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:88$2292_Y
+    old assignment: 1'x = $xor$/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:88$2287_Y
     new assignment: { } = { }.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:89: Warning: Range [-1:-1] select out of bounds on signal `\S': Setting 1 LSB bits to undef.
 /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v:89: Warning: Range [-1:-1] select out of bounds on signal `\AA': Setting 1 LSB bits to undef.
 Using template $paramod$fc972a7a46956c1788f3cb5257b53c8f1df2d0cc\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $or.
 Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $dffe.
+Using extmapper simplemap for cells of type $dff.
 Using extmapper simplemap for cells of type $reduce_or.
-Using extmapper simplemap for cells of type $eq.
-Using extmapper simplemap for cells of type $logic_not.
-Using extmapper simplemap for cells of type $sdffe.
+Using template $paramod$c5c783b17ab1d780abfad8cfe6563a0a7b47a3b0\_90_pmux for cells of type $pmux.
 Using extmapper simplemap for cells of type $xor.
-Using template $paramod$672a140277c71df8314410f22acc08d55222c3c7\_90_alu for cells of type $alu.
 Using template $paramod$eae5c6d909a05153739c7821f34da2cbc0422532\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $sdffce.
+Using template $paramod$672a140277c71df8314410f22acc08d55222c3c7\_90_alu for cells of type $alu.
 Using template $paramod$3ef7d3dd227da7627a99c5e5a6a4deb817573e39\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $sdffce.
+Using extmapper simplemap for cells of type $sdffe.
 Using template $paramod$a04dd9d4d8b430140c4ff94b50470fb380fda2a0\_90_alu for cells of type $alu.
-Using extmapper simplemap for cells of type $pos.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000110 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000011 for cells of type $lcu.
+Using extmapper simplemap for cells of type $pos.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
-Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000101 for cells of type $lcu.
 Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000001 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000101 for cells of type $lcu.
+Using template $paramod\_90_lcu\WIDTH=32'00000000000000000000000000000011 for cells of type $lcu.
 No more expansions possible.
-<suppressed ~1734 debug messages>
+<suppressed ~1750 debug messages>
 
 yosys> stat
 
-3.26. Printing statistics.
+3.50. Printing statistics.
 
 === serv_synth_wrapper ===
 
-   Number of wires:               1135
-   Number of wire bits:          12341
+   Number of wires:               1149
+   Number of wire bits:          12359
    Number of public wires:         546
    Number of public wire bits:    1527
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                912
-     $_AND_                        227
+   Number of cells:                914
+     $_AND_                        229
      $_DFFE_PP_                    116
      $_DFF_P_                       11
-     $_MUX_                        145
+     $_MUX_                        143
      $_NOT_                         90
-     $_OR_                         171
+     $_OR_                         173
      $_SDFFCE_PP0P_                 32
      $_SDFFE_PP0P_                   5
      $_SDFF_PN0_                     1
@@ -1004,26 +1059,22 @@ yosys> stat
      $_XOR_                         98
 
 
-yosys> opt
-
-3.27. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.27.1. Executing OPT_EXPR pass (perform const folding).
+3.51. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-<suppressed ~178 debug messages>
+<suppressed ~175 debug messages>
 
 yosys> opt_merge -nomux
 
-3.27.2. Executing OPT_MERGE pass (detect identical cells).
+3.52. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 <suppressed ~114 debug messages>
 Removed a total of 38 cells.
 
 yosys> opt_muxtree
 
-3.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.53. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1031,37 +1082,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.54. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.27.5. Executing OPT_MERGE pass (detect identical cells).
+3.55. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.56. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.27.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.57. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 25 unused cells and 327 unused wires.
-<suppressed ~30 debug messages>
+Removed 24 unused cells and 340 unused wires.
+<suppressed ~29 debug messages>
 
 yosys> opt_expr
 
-3.27.8. Executing OPT_EXPR pass (perform const folding).
+3.59. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.27.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.27.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.60. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1069,216 +1122,67 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.61. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.27.12. Executing OPT_MERGE pass (detect identical cells).
+3.62. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
+yosys> opt_share
+
+3.63. Executing OPT_SHARE pass.
+
 yosys> opt_dff
 
-3.27.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.64. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.27.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.65. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.27.15. Executing OPT_EXPR pass (perform const folding).
+3.66. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.27.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 2
 
 yosys> opt -fast -full
 
-3.28. Executing OPT pass (performing simple optimizations).
+3.67. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr -full
 
-3.28.1. Executing OPT_EXPR pass (perform const folding).
+3.67.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-<suppressed ~10 debug messages>
+<suppressed ~9 debug messages>
 
 yosys> opt_merge
 
-3.28.2. Executing OPT_MERGE pass (detect identical cells).
+3.67.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff
 
-3.28.3. Executing OPT_DFF pass (perform DFF optimizations).
+3.67.3. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.28.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 1 unused wires.
-<suppressed ~1 debug messages>
-
-3.28.5. Finished fast OPT passes.
-
-yosys> memory_map
-
-3.29. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
-
-yosys> opt -full
-
-3.30. Executing OPT pass (performing simple optimizations).
-
-yosys> opt_expr -full
-
-3.30.1. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-
-yosys> opt_merge -nomux
-
-3.30.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.30.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \serv_synth_wrapper..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce -full
-
-3.30.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \serv_synth_wrapper.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.6. Executing OPT_SHARE pass.
-    Found cells that share an operand and can be merged by moving the $_MUX_ $auto$simplemap.cc:278:simplemap_mux$2318 in front of them:
-        $auto$simplemap.cc:278:simplemap_mux$2468
-        $auto$simplemap.cc:278:simplemap_mux$2474
-
-
-yosys> opt_dff
-
-3.30.7. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.67.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
-yosys> opt_expr -full
-
-3.30.9. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-<suppressed ~3 debug messages>
-
-3.30.10. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \serv_synth_wrapper..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \serv_synth_wrapper.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.13. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.14. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.15. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.16. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 1 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr -full
-
-3.30.17. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-
-3.30.18. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.30.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \serv_synth_wrapper..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~1 debug messages>
-
-yosys> opt_reduce -full
-
-3.30.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \serv_synth_wrapper.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.30.21. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
-
-yosys> opt_share
-
-3.30.22. Executing OPT_SHARE pass.
-
-yosys> opt_dff
-
-3.30.23. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.30.24. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \serv_synth_wrapper..
-
-yosys> opt_expr -full
-
-3.30.25. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-
-3.30.26. Finished OPT passes. (There is nothing left to do.)
+3.67.5. Finished fast OPT passes.
 
 yosys> techmap -map +/techmap.v
 
-3.31. Executing TECHMAP pass (map to technology primitives).
+3.68. Executing TECHMAP pass (map to technology primitives).
 
-3.31.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.68.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -1306,29 +1210,28 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.31.2. Continuing TECHMAP pass.
-Using extmapper simplemap for cells of type $mux.
+3.68.2. Continuing TECHMAP pass.
 No more expansions possible.
-<suppressed ~72 debug messages>
+<suppressed ~71 debug messages>
 
 yosys> opt -sat
 
-3.32. Executing OPT pass (performing simple optimizations).
+3.69. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.32.1. Executing OPT_EXPR pass (perform const folding).
+3.69.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.32.2. Executing OPT_MERGE pass (detect identical cells).
+3.69.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.32.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.69.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1336,837 +1239,837 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.32.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.69.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.32.5. Executing OPT_MERGE pass (detect identical cells).
+3.69.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.32.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.69.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.32.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.69.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.32.8. Executing OPT_EXPR pass (perform const folding).
+3.69.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.32.9. Finished OPT passes. (There is nothing left to do.)
+3.69.9. Finished OPT passes. (There is nothing left to do.)
 
 yosys> abc -dff
 
-3.33. Executing ABC pass (technology mapping using ABC).
+3.70. Executing ABC pass (technology mapping using ABC).
 
-3.33.1. Summary of detected clock domains:
+3.70.1. Summary of detected clock domains:
+  4 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
+  3 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
+  6 cells in clk=\clk, en=\cpu.mem_if.dat_valid, arst={ }, srst={ }
   5 cells in clk=\clk, en=$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
   26 cells in clk=\clk, en=\cpu.state.o_cnt_done, arst={ }, srst=\i_rst
-  6 cells in clk=\clk, en=\cpu.mem_if.dat_valid, arst={ }, srst={ }
-  116 cells in clk=\clk, en=$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
   3 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
+  27 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
   39 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
-  21 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
-  25 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
+  19 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
   15 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
-  39 cells in clk=\clk, en=\cpu.bufreg.i_en, arst={ }, srst={ }
-  13 cells in clk=\clk, en=\cpu.alu.i_en, arst={ }, srst={ }
-  20 cells in clk=\clk, en=$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
-  44 cells in clk=\clk, en=$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
-  4 cells in clk=\clk, en=$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
-  110 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
   3 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
-  8 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
-  19 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
-  15 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
-  8 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
-  3 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
+  20 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
+  18 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
+  11 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
+  7 cells in clk=\clk, en=$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
+  113 cells in clk=\clk, en=$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
+  112 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
+  43 cells in clk=\clk, en=$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
+  13 cells in clk=\clk, en=$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
+  13 cells in clk=\clk, en=\cpu.alu.i_en, arst={ }, srst={ }
+  46 cells in clk=\clk, en=\cpu.bufreg.i_en, arst={ }, srst={ }
   11 cells in clk=\clk, en={ }, arst={ }, srst=\rf_ram_if.i_wreq
-  1 cells in clk=\clk, en={ }, arst={ }, srst=!\rf_ram_if.rcnt [0]
   70 cells in clk=\clk, en={ }, arst={ }, srst={ }
-  56 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
   1 cells in clk=\clk, en=\rf_ram_if.rtrig1, arst={ }, srst={ }
-  33 cells in clk=\clk, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$2109
+  1 cells in clk=\clk, en={ }, arst={ }, srst=!\rf_ram_if.rcnt [0]
+  35 cells in clk=\clk, en={ }, arst={ }, srst=$auto$opt_dff.cc:253:combine_resets$2109
+  55 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
 
-3.33.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\state.$verific$n82$1943
-Extracted 5 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
-
-3.33.2.1. Executing ABC.
-
-3.33.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \cpu.state.o_cnt_done, synchronously reset by \i_rst
-Extracted 26 gates and 42 wires to a netlist network with 16 inputs and 9 outputs.
-
-3.33.3.1. Executing ABC.
-
-3.33.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \cpu.mem_if.dat_valid
-Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 3 outputs.
-
-3.33.4.1. Executing ABC.
-
-3.33.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\bufreg2.$verific$n110$1071
-Extracted 116 gates and 161 wires to a netlist network with 45 inputs and 42 outputs.
-
-3.33.5.1. Executing ABC.
-
-3.33.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n35$1140
-Extracted 3 gates and 5 wires to a netlist network with 2 inputs and 2 outputs.
-
-3.33.6.1. Executing ABC.
-
-3.33.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n30$1660
-Extracted 39 gates and 69 wires to a netlist network with 30 inputs and 10 outputs.
-
-3.33.7.1. Executing ABC.
-
-3.33.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n92$1671
-Extracted 21 gates and 36 wires to a netlist network with 15 inputs and 8 outputs.
-
-3.33.8.1. Executing ABC.
-
-3.33.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n112$1673
-Extracted 25 gates and 41 wires to a netlist network with 15 inputs and 9 outputs.
-
-3.33.9.1. Executing ABC.
-
-3.33.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n67$1667
-Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
-
-3.33.10.1. Executing ABC.
-
-3.33.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \cpu.bufreg.i_en
-Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 33 outputs.
-
-3.33.11.1. Executing ABC.
-
-3.33.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \cpu.alu.i_en
-Extracted 13 gates and 24 wires to a netlist network with 11 inputs and 4 outputs.
-
-3.33.12.1. Executing ABC.
-
-3.33.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\bufreg.$verific$n88$1010
-Extracted 20 gates and 33 wires to a netlist network with 13 inputs and 11 outputs.
-
-3.33.13.1. Executing ABC.
-
-3.33.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
-Extracted 44 gates and 54 wires to a netlist network with 10 inputs and 38 outputs.
-
-3.33.14.1. Executing ABC.
-
-3.33.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n62$1662
 Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
 
-3.33.15.1. Executing ABC.
+3.70.2.1. Executing ABC.
 
-3.33.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
-Extracted 110 gates and 147 wires to a netlist network with 37 inputs and 72 outputs.
+3.70.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n45$1150
+Extracted 3 gates and 8 wires to a netlist network with 5 inputs and 2 outputs.
 
-3.33.16.1. Executing ABC.
+3.70.3.1. Executing ABC.
 
-3.33.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \cpu.mem_if.dat_valid
+Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 3 outputs.
+
+3.70.4.1. Executing ABC.
+
+3.70.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\state.$verific$n82$1943
+Extracted 5 gates and 8 wires to a netlist network with 3 inputs and 3 outputs.
+
+3.70.5.1. Executing ABC.
+
+3.70.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \cpu.state.o_cnt_done, synchronously reset by \i_rst
+Extracted 26 gates and 42 wires to a netlist network with 16 inputs and 9 outputs.
+
+3.70.6.1. Executing ABC.
+
+3.70.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n35$1140
+Extracted 3 gates and 5 wires to a netlist network with 2 inputs and 2 outputs.
+
+3.70.7.1. Executing ABC.
+
+3.70.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n112$1673
+Extracted 27 gates and 44 wires to a netlist network with 16 inputs and 9 outputs.
+
+3.70.8.1. Executing ABC.
+
+3.70.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n30$1660
+Extracted 39 gates and 70 wires to a netlist network with 31 inputs and 9 outputs.
+
+3.70.9.1. Executing ABC.
+
+3.70.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n92$1671
+Extracted 19 gates and 31 wires to a netlist network with 12 inputs and 8 outputs.
+
+3.70.10.1. Executing ABC.
+
+3.70.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\immdec.$verific$n67$1667
+Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
+
+3.70.11.1. Executing ABC.
+
+3.70.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n90$1167
 Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
 
-3.33.17.1. Executing ABC.
+3.70.12.1. Executing ABC.
 
-3.33.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n48$1153
-Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 4 outputs.
-
-3.33.18.1. Executing ABC.
-
-3.33.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n60$1162
-Extracted 19 gates and 32 wires to a netlist network with 13 inputs and 4 outputs.
-
-3.33.19.1. Executing ABC.
-
-3.33.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
-Extracted 15 gates and 29 wires to a netlist network with 14 inputs and 4 outputs.
+Extracted 20 gates and 34 wires to a netlist network with 14 inputs and 4 outputs.
 
-3.33.20.1. Executing ABC.
+3.70.13.1. Executing ABC.
 
-3.33.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n60$1162
+Extracted 18 gates and 31 wires to a netlist network with 13 inputs and 3 outputs.
+
+3.70.14.1. Executing ABC.
+
+3.70.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n48$1153
+Extracted 11 gates and 20 wires to a netlist network with 9 inputs and 7 outputs.
+
+3.70.15.1. Executing ABC.
+
+3.70.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
-Extracted 8 gates and 14 wires to a netlist network with 6 inputs and 6 outputs.
+Extracted 7 gates and 13 wires to a netlist network with 6 inputs and 5 outputs.
 
-3.33.21.1. Executing ABC.
+3.70.16.1. Executing ABC.
 
-3.33.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\genblk1.csr.$verific$n45$1150
-Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
+3.70.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\bufreg2.$verific$n110$1071
+Extracted 113 gates and 160 wires to a netlist network with 47 inputs and 40 outputs.
 
-3.33.22.1. Executing ABC.
+3.70.17.1. Executing ABC.
 
-3.33.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
+Extracted 112 gates and 146 wires to a netlist network with 34 inputs and 74 outputs.
+
+3.70.18.1. Executing ABC.
+
+3.70.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
+Extracted 43 gates and 53 wires to a netlist network with 10 inputs and 37 outputs.
+
+3.70.19.1. Executing ABC.
+
+3.70.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $flatten\cpu.\bufreg.$verific$n88$1010
+Extracted 13 gates and 21 wires to a netlist network with 8 inputs and 10 outputs.
+
+3.70.20.1. Executing ABC.
+
+3.70.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \cpu.alu.i_en
+Extracted 13 gates and 24 wires to a netlist network with 11 inputs and 4 outputs.
+
+3.70.21.1. Executing ABC.
+
+3.70.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \cpu.bufreg.i_en
+Extracted 46 gates and 61 wires to a netlist network with 15 inputs and 34 outputs.
+
+3.70.22.1. Executing ABC.
+
+3.70.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, synchronously reset by \rf_ram_if.i_wreq
 Extracted 11 gates and 21 wires to a netlist network with 9 inputs and 4 outputs.
 
-3.33.23.1. Executing ABC.
+3.70.23.1. Executing ABC.
 
-3.33.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by !\rf_ram_if.rcnt [0]
-Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.33.24.1. Executing ABC.
-
-3.33.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
 Extracted 70 gates and 115 wires to a netlist network with 45 inputs and 18 outputs.
 
-3.33.25.1. Executing ABC.
+3.70.24.1. Executing ABC.
 
-3.33.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by \i_rst
-Extracted 56 gates and 68 wires to a netlist network with 12 inputs and 26 outputs.
-
-3.33.26.1. Executing ABC.
-
-3.33.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4277$lo00
+3.70.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4283$lo00
 Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
 
-3.33.27.1. Executing ABC.
+3.70.25.1. Executing ABC.
 
-3.33.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by !\rf_ram_if.rcnt [0]
+Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
+
+3.70.26.1. Executing ABC.
+
+3.70.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, synchronously reset by $auto$opt_dff.cc:253:combine_resets$2109
-Extracted 33 gates and 46 wires to a netlist network with 11 inputs and 16 outputs.
+Extracted 35 gates and 50 wires to a netlist network with 13 inputs and 17 outputs.
 
-3.33.28.1. Executing ABC.
+3.70.27.1. Executing ABC.
 
-yosys> abc -dff
-
-3.34. Executing ABC pass (technology mapping using ABC).
-
-3.34.1. Summary of detected clock domains:
-  9 cells in clk=\clk, en=$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
-  19 cells in clk=\clk, en=$abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
-  2 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$4421$lo0
-  5 cells in clk=\clk, en=$abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
-  9 cells in clk=\clk, en=$abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
-  6 cells in clk=\clk, en=$abc$3583$cpu.mem_if.dat_valid, arst={ }, srst={ }
-  2 cells in clk=\clk, en=$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
-  21 cells in clk=\clk, en=$abc$3766$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
-  3 cells in clk=\clk, en=$abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
-  36 cells in clk=\clk, en=$abc$3727$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
-  14 cells in clk=\clk, en=$abc$3942$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
-  13 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4260$rf_ram_if.i_wreq
-  92 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
-  19 cells in clk=\clk, en=$abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
-  96 cells in clk=\clk, en=$abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
-  41 cells in clk=\clk, en=$abc$3830$cpu.bufreg.i_en, arst={ }, srst={ }
-  23 cells in clk=\clk, en=$abc$3787$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
-  44 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
-  14 cells in clk=\clk, en=$abc$3928$cpu.alu.i_en, arst={ }, srst={ }
-  15 cells in clk=\clk, en=$abc$3813$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
-  83 cells in clk=\clk, en={ }, arst={ }, srst={ }
-  1 cells in clk=\clk, en=$abc$4277$lo00, arst={ }, srst={ }
-  5 cells in clk=\clk, en=$abc$3553$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
-  26 cells in clk=\clk, en=$abc$4360$lo10, arst={ }, srst=\i_rst
-  43 cells in clk=\clk, en=$abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
-  4 cells in clk=\clk, en=$abc$4070$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
-  25 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4421$auto$opt_dff.cc:253:combine_resets$2109
-
-3.34.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
-Extracted 9 gates and 19 wires to a netlist network with 10 inputs and 6 outputs.
-
-3.34.2.1. Executing ABC.
-
-3.34.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
-Extracted 19 gates and 35 wires to a netlist network with 16 inputs and 6 outputs.
-
-3.34.3.1. Executing ABC.
-
-3.34.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by !$abc$4421$lo0
-Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
-
-3.34.4.1. Executing ABC.
-
-3.34.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150
-Extracted 5 gates and 11 wires to a netlist network with 6 inputs and 4 outputs.
-
-3.34.5.1. Executing ABC.
-
-3.34.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153
-Extracted 9 gates and 17 wires to a netlist network with 8 inputs and 4 outputs.
-
-3.34.6.1. Executing ABC.
-
-3.34.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3583$cpu.mem_if.dat_valid
-Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
-
-3.34.7.1. Executing ABC.
-
-3.34.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140
-Extracted 2 gates and 3 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.34.8.1. Executing ABC.
-
-3.34.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3766$flatten\cpu.\immdec.$verific$n92$1671
-Extracted 21 gates and 37 wires to a netlist network with 16 inputs and 8 outputs.
-
-3.34.9.1. Executing ABC.
-
-3.34.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167
-Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
-
-3.34.10.1. Executing ABC.
-
-3.34.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3727$flatten\cpu.\immdec.$verific$n30$1660
-Extracted 36 gates and 67 wires to a netlist network with 31 inputs and 8 outputs.
-
-3.34.11.1. Executing ABC.
-
-3.34.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3942$flatten\cpu.\bufreg.$verific$n88$1010
-Extracted 14 gates and 22 wires to a netlist network with 8 inputs and 11 outputs.
-
-3.34.12.1. Executing ABC.
-
-3.34.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$4260$rf_ram_if.i_wreq
-Extracted 13 gates and 23 wires to a netlist network with 10 inputs and 4 outputs.
-
-3.34.13.1. Executing ABC.
-
-3.34.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
-Extracted 92 gates and 124 wires to a netlist network with 32 inputs and 65 outputs.
-
-3.34.14.1. Executing ABC.
-
-3.34.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162
-Extracted 19 gates and 31 wires to a netlist network with 12 inputs and 3 outputs.
-
-3.34.15.1. Executing ABC.
-
-3.34.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071
-Extracted 96 gates and 143 wires to a netlist network with 47 inputs and 40 outputs.
-
-3.34.16.1. Executing ABC.
-
-3.34.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3830$cpu.bufreg.i_en
-Extracted 41 gates and 54 wires to a netlist network with 13 inputs and 33 outputs.
-
-3.34.17.1. Executing ABC.
-
-3.34.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3787$flatten\cpu.\immdec.$verific$n112$1673
-Extracted 23 gates and 38 wires to a netlist network with 15 inputs and 10 outputs.
-
-3.34.18.1. Executing ABC.
-
-3.34.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.70.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, synchronously reset by \i_rst
-Extracted 44 gates and 55 wires to a netlist network with 11 inputs and 20 outputs.
+Extracted 55 gates and 66 wires to a netlist network with 11 inputs and 25 outputs.
 
-3.34.19.1. Executing ABC.
-
-3.34.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3928$cpu.alu.i_en
-Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 5 outputs.
-
-3.34.20.1. Executing ABC.
-
-3.34.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3813$flatten\cpu.\immdec.$verific$n67$1667
-Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
-
-3.34.21.1. Executing ABC.
-
-3.34.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk
-Extracted 83 gates and 134 wires to a netlist network with 51 inputs and 21 outputs.
-
-3.34.22.1. Executing ABC.
-
-3.34.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5067$lo10
-Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.34.23.1. Executing ABC.
-
-3.34.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3553$flatten\cpu.\state.$verific$n82$1943
-Extracted 5 gates and 9 wires to a netlist network with 4 inputs and 3 outputs.
-
-3.34.24.1. Executing ABC.
-
-3.34.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4986$lo00, synchronously reset by \i_rst
-Extracted 26 gates and 43 wires to a netlist network with 17 inputs and 8 outputs.
-
-3.34.25.1. Executing ABC.
-
-3.34.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
-Extracted 43 gates and 56 wires to a netlist network with 13 inputs and 39 outputs.
-
-3.34.26.1. Executing ABC.
-
-3.34.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4070$flatten\cpu.\immdec.$verific$n62$1662
-Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
-
-3.34.27.1. Executing ABC.
-
-3.34.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$4421$auto$opt_dff.cc:253:combine_resets$2109
-Extracted 25 gates and 37 wires to a netlist network with 12 inputs and 17 outputs.
-
-3.34.28.1. Executing ABC.
+3.70.28.1. Executing ABC.
 
 yosys> abc -dff
 
-3.35. Executing ABC pass (technology mapping using ABC).
+3.71. Executing ABC pass (technology mapping using ABC).
 
-3.35.1. Summary of detected clock domains:
-  4 cells in clk=\clk, en=$abc$5301$abc$4070$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
-  9 cells in clk=\clk, en=$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
-  19 cells in clk=\clk, en=$abc$4461$abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
-  1 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$5306$lo0
-  4 cells in clk=\clk, en=$abc$4484$abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
-  8 cells in clk=\clk, en=$abc$4491$abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
-  6 cells in clk=\clk, en=$abc$4501$abc$3583$cpu.mem_if.dat_valid, arst={ }, srst={ }
-  2 cells in clk=\clk, en=$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
-  20 cells in clk=\clk, en=$abc$4512$abc$3766$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
-  3 cells in clk=\clk, en=$abc$4534$abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
-  35 cells in clk=\clk, en=$abc$4539$abc$3727$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
-  13 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4593$abc$4260$rf_ram_if.i_wreq
-  18 cells in clk=\clk, en=$abc$4712$abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
-  98 cells in clk=\clk, en=$abc$4731$abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
-  81 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
-  23 cells in clk=\clk, en=$abc$4961$abc$3787$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
-  38 cells in clk=\clk, en=$abc$4860$abc$3830$cpu.bufreg.i_en, arst={ }, srst={ }
-  44 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
-  14 cells in clk=\clk, en=$abc$5036$abc$3928$cpu.alu.i_en, arst={ }, srst={ }
-  15 cells in clk=\clk, en=$abc$5050$abc$3813$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
-  1 cells in clk=\clk, en=$abc$5067$lo10, arst={ }, srst={ }
-  6 cells in clk=\clk, en=$abc$5162$abc$3553$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
-  18 cells in clk=\clk, en=$abc$4576$abc$3942$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
-  26 cells in clk=\clk, en=$abc$4986$lo00, arst={ }, srst=\i_rst
-  88 cells in clk=\clk, en={ }, arst={ }, srst={ }
-  39 cells in clk=\clk, en=$abc$5194$abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
-  26 cells in clk=\clk, en={ }, arst={ }, srst=$abc$5306$abc$4421$auto$opt_dff.cc:253:combine_resets$2109
+3.71.1. Summary of detected clock domains:
+  10 cells in clk=\clk, en=$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
+  15 cells in clk=\clk, en=$abc$4153$cpu.alu.i_en, arst={ }, srst={ }
+  14 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4270$rf_ram_if.i_wreq
+  8 cells in clk=\clk, en=$abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
+  2 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$4374$lo0
+  1 cells in clk=\clk, en=$abc$4283$lo00, arst={ }, srst={ }
+  20 cells in clk=\clk, en=$abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
+  84 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
+  39 cells in clk=\clk, en=$abc$4167$cpu.bufreg.i_en, arst={ }, srst={ }
+  21 cells in clk=\clk, en=$abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
+  17 cells in clk=\clk, en=$abc$3702$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
+  14 cells in clk=\clk, en=$abc$4137$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
+  3 cells in clk=\clk, en=$abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
+  87 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  40 cells in clk=\clk, en=$abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
+  4 cells in clk=\clk, en=$abc$3564$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
+  5 cells in clk=\clk, en=$abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
+  6 cells in clk=\clk, en=$abc$3574$cpu.mem_if.dat_valid, arst={ }, srst={ }
+  29 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+  5 cells in clk=\clk, en=$abc$3582$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
+  22 cells in clk=\clk, en=$abc$4408$lo07, arst={ }, srst=\i_rst
+  2 cells in clk=\clk, en=$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
+  25 cells in clk=\clk, en=$abc$3617$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
+  32 cells in clk=\clk, en=$abc$3644$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
+  18 cells in clk=\clk, en=$abc$3682$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
+  100 cells in clk=\clk, en=$abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
+  50 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
 
-3.35.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5301$abc$4070$flatten\cpu.\immdec.$verific$n62$1662
-Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
+3.71.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
+Extracted 10 gates and 20 wires to a netlist network with 10 inputs and 7 outputs.
 
-3.35.2.1. Executing ABC.
+3.71.2.1. Executing ABC.
 
-3.35.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
-Extracted 9 gates and 19 wires to a netlist network with 10 inputs and 6 outputs.
+3.71.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4153$cpu.alu.i_en
+Extracted 15 gates and 27 wires to a netlist network with 12 inputs and 6 outputs.
 
-3.35.3.1. Executing ABC.
+3.71.3.1. Executing ABC.
 
-3.35.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4461$abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
-Extracted 19 gates and 36 wires to a netlist network with 17 inputs and 7 outputs.
+3.71.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$4270$rf_ram_if.i_wreq
+Extracted 14 gates and 25 wires to a netlist network with 11 inputs and 5 outputs.
 
-3.35.4.1. Executing ABC.
+3.71.4.1. Executing ABC.
 
-3.35.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by !$abc$5306$lo0
-Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.35.5.1. Executing ABC.
-
-3.35.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4484$abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150
-Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 3 outputs.
-
-3.35.6.1. Executing ABC.
-
-3.35.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4491$abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153
+3.71.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153
 Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 4 outputs.
 
-3.35.7.1. Executing ABC.
+3.71.5.1. Executing ABC.
 
-3.35.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4501$abc$3583$cpu.mem_if.dat_valid
-Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
-
-3.35.8.1. Executing ABC.
-
-3.35.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5341$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140
-Extracted 2 gates and 3 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.35.9.1. Executing ABC.
-
-3.35.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4512$abc$3766$flatten\cpu.\immdec.$verific$n92$1671
-Extracted 20 gates and 34 wires to a netlist network with 14 inputs and 8 outputs.
-
-3.35.10.1. Executing ABC.
-
-3.35.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4534$abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167
-Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
-
-3.35.11.1. Executing ABC.
-
-3.35.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4539$abc$3727$flatten\cpu.\immdec.$verific$n30$1660
-Extracted 35 gates and 64 wires to a netlist network with 29 inputs and 8 outputs.
-
-3.35.12.1. Executing ABC.
-
-3.35.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$4593$abc$4260$rf_ram_if.i_wreq
-Extracted 13 gates and 23 wires to a netlist network with 10 inputs and 4 outputs.
-
-3.35.13.1. Executing ABC.
-
-3.35.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4712$abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162
-Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 3 outputs.
-
-3.35.14.1. Executing ABC.
-
-3.35.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4731$abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071
-Extracted 98 gates and 145 wires to a netlist network with 47 inputs and 40 outputs.
-
-3.35.15.1. Executing ABC.
-
-3.35.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
-Extracted 81 gates and 110 wires to a netlist network with 29 inputs and 63 outputs.
-
-3.35.16.1. Executing ABC.
-
-3.35.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4961$abc$3787$flatten\cpu.\immdec.$verific$n112$1673
-Extracted 23 gates and 38 wires to a netlist network with 15 inputs and 10 outputs.
-
-3.35.17.1. Executing ABC.
-
-3.35.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4860$abc$3830$cpu.bufreg.i_en
-Extracted 38 gates and 47 wires to a netlist network with 9 inputs and 31 outputs.
-
-3.35.18.1. Executing ABC.
-
-3.35.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by \i_rst
-Extracted 44 gates and 55 wires to a netlist network with 11 inputs and 20 outputs.
-
-3.35.19.1. Executing ABC.
-
-3.35.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5036$abc$3928$cpu.alu.i_en
-Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 6 outputs.
-
-3.35.20.1. Executing ABC.
-
-3.35.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5050$abc$3813$flatten\cpu.\immdec.$verific$n67$1667
-Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
-
-3.35.21.1. Executing ABC.
-
-3.35.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5067$lo10
-Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.35.22.1. Executing ABC.
-
-3.35.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5162$abc$3553$flatten\cpu.\state.$verific$n82$1943
-Extracted 6 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
-
-3.35.23.1. Executing ABC.
-
-3.35.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$4576$abc$3942$flatten\cpu.\bufreg.$verific$n88$1010
-Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 13 outputs.
-
-3.35.24.1. Executing ABC.
-
-3.35.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5852$lo00, synchronously reset by \i_rst
-Extracted 26 gates and 44 wires to a netlist network with 18 inputs and 9 outputs.
-
-3.35.25.1. Executing ABC.
-
-3.35.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk
-Extracted 88 gates and 142 wires to a netlist network with 54 inputs and 21 outputs.
-
-3.35.26.1. Executing ABC.
-
-3.35.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5194$abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
-Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 35 outputs.
-
-3.35.27.1. Executing ABC.
-
-3.35.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$5306$abc$4421$auto$opt_dff.cc:253:combine_resets$2109
-Extracted 26 gates and 38 wires to a netlist network with 12 inputs and 17 outputs.
-
-3.35.28.1. Executing ABC.
-
-yosys> abc -dff
-
-3.36. Executing ABC pass (technology mapping using ABC).
-
-3.36.1. Summary of detected clock domains:
-  4 cells in clk=\clk, en=$abc$5336$abc$5301$abc$4070$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
-  9 cells in clk=\clk, en=$abc$5341$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
-  19 cells in clk=\clk, en=$abc$5351$abc$4461$abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
-  2 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$6189$lo0
-  4 cells in clk=\clk, en=$abc$5375$abc$4484$abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
-  8 cells in clk=\clk, en=$abc$5381$abc$4491$abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
-  6 cells in clk=\clk, en=$abc$5391$abc$4501$abc$3583$cpu.mem_if.dat_valid, arst={ }, srst={ }
-  2 cells in clk=\clk, en=$abc$5341$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
-  20 cells in clk=\clk, en=$abc$5402$abc$4512$abc$3766$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
-  3 cells in clk=\clk, en=$abc$5424$abc$4534$abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
-  35 cells in clk=\clk, en=$abc$5429$abc$4539$abc$3727$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
-  13 cells in clk=\clk, en={ }, arst={ }, srst=$abc$5466$abc$4593$abc$4260$rf_ram_if.i_wreq
-  18 cells in clk=\clk, en=$abc$5480$abc$4712$abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
-  96 cells in clk=\clk, en=$abc$5499$abc$4731$abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
-  85 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
-  23 cells in clk=\clk, en=$abc$5729$abc$4961$abc$3787$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
-  39 cells in clk=\clk, en=$abc$5754$abc$4860$abc$3830$cpu.bufreg.i_en, arst={ }, srst={ }
-  44 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
-  14 cells in clk=\clk, en=$abc$5902$abc$5036$abc$3928$cpu.alu.i_en, arst={ }, srst={ }
-  25 cells in clk=\clk, en=$abc$5852$lo00, arst={ }, srst=\i_rst
-  15 cells in clk=\clk, en=$abc$5918$abc$5050$abc$3813$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
-  2 cells in clk=\clk, en=$abc$5994$lo08, arst={ }, srst={ }
-  5 cells in clk=\clk, en=$abc$5939$abc$5162$abc$3553$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
-  13 cells in clk=\clk, en=$abc$5945$abc$4576$abc$3942$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
-  90 cells in clk=\clk, en={ }, arst={ }, srst={ }
-  39 cells in clk=\clk, en=$abc$6086$abc$5194$abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
-  25 cells in clk=\clk, en={ }, arst={ }, srst=$abc$6189$abc$5306$abc$4421$auto$opt_dff.cc:253:combine_resets$2109
-
-3.36.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5336$abc$5301$abc$4070$flatten\cpu.\immdec.$verific$n62$1662
-Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
-
-3.36.2.1. Executing ABC.
-
-3.36.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5341$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
-Extracted 9 gates and 19 wires to a netlist network with 10 inputs and 6 outputs.
-
-3.36.3.1. Executing ABC.
-
-3.36.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5351$abc$4461$abc$4227$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
-Extracted 19 gates and 36 wires to a netlist network with 17 inputs and 7 outputs.
-
-3.36.4.1. Executing ABC.
-
-3.36.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by !$abc$6189$lo0
+3.71.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by !$abc$4374$lo0
 Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
 
-3.36.5.1. Executing ABC.
+3.71.6.1. Executing ABC.
 
-3.36.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5375$abc$4484$abc$4360$flatten\cpu.\genblk1.csr.$verific$n45$1150
-Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 3 outputs.
+3.71.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4283$lo00
+Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
 
-3.36.6.1. Executing ABC.
+3.71.7.1. Executing ABC.
 
-3.36.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5381$abc$4491$abc$4197$flatten\cpu.\genblk1.csr.$verific$n48$1153
-Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 4 outputs.
+3.71.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162
+Extracted 20 gates and 32 wires to a netlist network with 12 inputs and 3 outputs.
 
-3.36.7.1. Executing ABC.
+3.71.8.1. Executing ABC.
 
-3.36.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5391$abc$4501$abc$3583$cpu.mem_if.dat_valid
-Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
-
-3.36.8.1. Executing ABC.
-
-3.36.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$6225$abc$5341$abc$4451$abc$4360$flatten\cpu.\genblk1.csr.$verific$n35$1140
-Extracted 2 gates and 3 wires to a netlist network with 1 inputs and 1 outputs.
-
-3.36.9.1. Executing ABC.
-
-3.36.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5402$abc$4512$abc$3766$flatten\cpu.\immdec.$verific$n92$1671
-Extracted 20 gates and 34 wires to a netlist network with 14 inputs and 8 outputs.
-
-3.36.10.1. Executing ABC.
-
-3.36.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5424$abc$4534$abc$4192$flatten\cpu.\genblk1.csr.$verific$n90$1167
-Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
-
-3.36.11.1. Executing ABC.
-
-3.36.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5429$abc$4539$abc$3727$flatten\cpu.\immdec.$verific$n30$1660
-Extracted 35 gates and 64 wires to a netlist network with 29 inputs and 8 outputs.
-
-3.36.12.1. Executing ABC.
-
-3.36.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$5466$abc$4593$abc$4260$rf_ram_if.i_wreq
-Extracted 13 gates and 23 wires to a netlist network with 10 inputs and 4 outputs.
-
-3.36.13.1. Executing ABC.
-
-3.36.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5480$abc$4712$abc$4207$flatten\cpu.\genblk1.csr.$verific$n60$1162
-Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 3 outputs.
-
-3.36.14.1. Executing ABC.
-
-3.36.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5499$abc$4731$abc$3591$flatten\cpu.\bufreg2.$verific$n110$1071
-Extracted 96 gates and 142 wires to a netlist network with 46 inputs and 39 outputs.
-
-3.36.15.1. Executing ABC.
-
-3.36.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.71.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
-Extracted 85 gates and 118 wires to a netlist network with 33 inputs and 64 outputs.
+Extracted 84 gates and 116 wires to a netlist network with 32 inputs and 63 outputs.
 
-3.36.16.1. Executing ABC.
+3.71.9.1. Executing ABC.
 
-3.36.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5729$abc$4961$abc$3787$flatten\cpu.\immdec.$verific$n112$1673
-Extracted 23 gates and 38 wires to a netlist network with 15 inputs and 10 outputs.
-
-3.36.17.1. Executing ABC.
-
-3.36.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5754$abc$4860$abc$3830$cpu.bufreg.i_en
+3.71.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4167$cpu.bufreg.i_en
 Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 32 outputs.
 
-3.36.18.1. Executing ABC.
+3.71.10.1. Executing ABC.
 
-3.36.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by \i_rst
-Extracted 44 gates and 55 wires to a netlist network with 11 inputs and 20 outputs.
+3.71.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
+Extracted 21 gates and 38 wires to a netlist network with 17 inputs and 7 outputs.
 
-3.36.19.1. Executing ABC.
+3.71.11.1. Executing ABC.
 
-3.36.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5902$abc$5036$abc$3928$cpu.alu.i_en
-Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 6 outputs.
+3.71.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3702$flatten\cpu.\immdec.$verific$n67$1667
+Extracted 17 gates and 30 wires to a netlist network with 13 inputs and 3 outputs.
 
-3.36.20.1. Executing ABC.
+3.71.12.1. Executing ABC.
 
-3.36.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$6737$lo00, synchronously reset by \i_rst
-Extracted 25 gates and 44 wires to a netlist network with 19 inputs and 10 outputs.
+3.71.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4137$flatten\cpu.\bufreg.$verific$n88$1010
+Extracted 14 gates and 22 wires to a netlist network with 8 inputs and 12 outputs.
 
-3.36.21.1. Executing ABC.
+3.71.13.1. Executing ABC.
 
-3.36.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5918$abc$5050$abc$3813$flatten\cpu.\immdec.$verific$n67$1667
-Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
+3.71.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167
+Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
 
-3.36.22.1. Executing ABC.
+3.71.14.1. Executing ABC.
 
-3.36.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5994$lo08
-Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
+3.71.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 87 gates and 137 wires to a netlist network with 50 inputs and 21 outputs.
 
-3.36.23.1. Executing ABC.
+3.71.15.1. Executing ABC.
 
-3.36.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5939$abc$5162$abc$3553$flatten\cpu.\state.$verific$n82$1943
+3.71.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
+Extracted 40 gates and 50 wires to a netlist network with 10 inputs and 36 outputs.
+
+3.71.16.1. Executing ABC.
+
+3.71.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3564$flatten\cpu.\immdec.$verific$n62$1662
+Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
+
+3.71.17.1. Executing ABC.
+
+3.71.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150
+Extracted 5 gates and 12 wires to a netlist network with 7 inputs and 4 outputs.
+
+3.71.18.1. Executing ABC.
+
+3.71.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3574$cpu.mem_if.dat_valid
+Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
+
+3.71.19.1. Executing ABC.
+
+3.71.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+Extracted 29 gates and 43 wires to a netlist network with 14 inputs and 17 outputs.
+
+3.71.20.1. Executing ABC.
+
+3.71.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3582$flatten\cpu.\state.$verific$n82$1943
 Extracted 5 gates and 9 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.36.24.1. Executing ABC.
+3.71.21.1. Executing ABC.
 
-3.36.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$5945$abc$4576$abc$3942$flatten\cpu.\bufreg.$verific$n88$1010
-Extracted 13 gates and 21 wires to a netlist network with 8 inputs and 11 outputs.
+3.71.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4408$lo07, synchronously reset by \i_rst
+Extracted 22 gates and 38 wires to a netlist network with 16 inputs and 9 outputs.
 
-3.36.25.1. Executing ABC.
+3.71.22.1. Executing ABC.
 
-3.36.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+3.71.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140
+Extracted 2 gates and 3 wires to a netlist network with 1 inputs and 1 outputs.
+
+3.71.23.1. Executing ABC.
+
+3.71.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3617$flatten\cpu.\immdec.$verific$n112$1673
+Extracted 25 gates and 42 wires to a netlist network with 17 inputs and 10 outputs.
+
+3.71.24.1. Executing ABC.
+
+3.71.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3644$flatten\cpu.\immdec.$verific$n30$1660
+Extracted 32 gates and 59 wires to a netlist network with 27 inputs and 8 outputs.
+
+3.71.25.1. Executing ABC.
+
+3.71.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3682$flatten\cpu.\immdec.$verific$n92$1671
+Extracted 18 gates and 29 wires to a netlist network with 11 inputs and 8 outputs.
+
+3.71.26.1. Executing ABC.
+
+3.71.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071
+Extracted 100 gates and 147 wires to a netlist network with 47 inputs and 41 outputs.
+
+3.71.27.1. Executing ABC.
+
+3.71.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \i_rst
+Extracted 50 gates and 67 wires to a netlist network with 17 inputs and 21 outputs.
+
+3.71.28.1. Executing ABC.
+
+yosys> abc -dff
+
+3.72. Executing ABC pass (technology mapping using ABC).
+
+3.72.1. Summary of detected clock domains:
+  10 cells in clk=\clk, en=$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
+  14 cells in clk=\clk, en=$abc$4475$abc$4153$cpu.alu.i_en, arst={ }, srst={ }
+  14 cells in clk=\clk, en={ }, arst={ }, srst=$abc$4491$abc$4270$rf_ram_if.i_wreq
+  8 cells in clk=\clk, en=$abc$4506$abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
+  2 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$5021$lo1
+  2 cells in clk=\clk, en=$abc$4804$lo06, arst={ }, srst={ }
+  35 cells in clk=\clk, en=$abc$5116$abc$3644$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
+  18 cells in clk=\clk, en=$abc$4524$abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
+  83 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
+  15 cells in clk=\clk, en=$abc$4742$abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
+  17 cells in clk=\clk, en=$abc$4763$abc$3702$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
+  12 cells in clk=\clk, en=$abc$4781$abc$4137$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
+  3 cells in clk=\clk, en=$abc$4799$abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
+  94 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  98 cells in clk=\clk, en=$abc$5172$abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
+  18 cells in clk=\clk, en=$abc$5150$abc$3682$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
+  4 cells in clk=\clk, en=$abc$5002$abc$3564$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
+  5 cells in clk=\clk, en=$abc$5007$abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
+  39 cells in clk=\clk, en=$abc$4898$abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
+  6 cells in clk=\clk, en=$abc$5014$abc$3574$cpu.mem_if.dat_valid, arst={ }, srst={ }
+  28 cells in clk=\clk, en={ }, arst={ }, srst=$abc$5021$abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+  6 cells in clk=\clk, en=$abc$5056$abc$3582$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
+  39 cells in clk=\clk, en=$abc$4643$abc$4167$cpu.bufreg.i_en, arst={ }, srst={ }
+  23 cells in clk=\clk, en=$abc$5303$lo07, arst={ }, srst=\i_rst
+  2 cells in clk=\clk, en=$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
+  24 cells in clk=\clk, en=$abc$5089$abc$3617$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
+  49 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
+
+3.72.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
+Extracted 10 gates and 20 wires to a netlist network with 10 inputs and 7 outputs.
+
+3.72.2.1. Executing ABC.
+
+3.72.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4475$abc$4153$cpu.alu.i_en
+Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 6 outputs.
+
+3.72.3.1. Executing ABC.
+
+3.72.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$4491$abc$4270$rf_ram_if.i_wreq
+Extracted 14 gates and 25 wires to a netlist network with 11 inputs and 5 outputs.
+
+3.72.4.1. Executing ABC.
+
+3.72.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4506$abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153
+Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 4 outputs.
+
+3.72.5.1. Executing ABC.
+
+3.72.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by !$abc$5021$lo1
+Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
+
+3.72.6.1. Executing ABC.
+
+3.72.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4804$lo06
+Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
+
+3.72.7.1. Executing ABC.
+
+3.72.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5116$abc$3644$flatten\cpu.\immdec.$verific$n30$1660
+Extracted 35 gates and 64 wires to a netlist network with 29 inputs and 9 outputs.
+
+3.72.8.1. Executing ABC.
+
+3.72.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4524$abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162
+Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 3 outputs.
+
+3.72.9.1. Executing ABC.
+
+3.72.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
+Extracted 83 gates and 115 wires to a netlist network with 32 inputs and 63 outputs.
+
+3.72.10.1. Executing ABC.
+
+3.72.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4742$abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
+Extracted 15 gates and 27 wires to a netlist network with 12 inputs and 6 outputs.
+
+3.72.11.1. Executing ABC.
+
+3.72.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4763$abc$3702$flatten\cpu.\immdec.$verific$n67$1667
+Extracted 17 gates and 30 wires to a netlist network with 13 inputs and 3 outputs.
+
+3.72.12.1. Executing ABC.
+
+3.72.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4781$abc$4137$flatten\cpu.\bufreg.$verific$n88$1010
+Extracted 12 gates and 19 wires to a netlist network with 7 inputs and 10 outputs.
+
+3.72.13.1. Executing ABC.
+
+3.72.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4799$abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167
+Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
+
+3.72.14.1. Executing ABC.
+
+3.72.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
-Extracted 90 gates and 140 wires to a netlist network with 50 inputs and 22 outputs.
+Extracted 94 gates and 146 wires to a netlist network with 52 inputs and 22 outputs.
 
-3.36.26.1. Executing ABC.
+3.72.15.1. Executing ABC.
 
-3.36.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, enabled by $abc$6086$abc$5194$abc$3553$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
+3.72.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5172$abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071
+Extracted 98 gates and 145 wires to a netlist network with 47 inputs and 40 outputs.
+
+3.72.16.1. Executing ABC.
+
+3.72.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5150$abc$3682$flatten\cpu.\immdec.$verific$n92$1671
+Extracted 18 gates and 29 wires to a netlist network with 11 inputs and 8 outputs.
+
+3.72.17.1. Executing ABC.
+
+3.72.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5002$abc$3564$flatten\cpu.\immdec.$verific$n62$1662
+Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
+
+3.72.18.1. Executing ABC.
+
+3.72.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5007$abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150
+Extracted 5 gates and 12 wires to a netlist network with 7 inputs and 4 outputs.
+
+3.72.19.1. Executing ABC.
+
+3.72.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4898$abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
 Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 35 outputs.
 
-3.36.27.1. Executing ABC.
+3.72.20.1. Executing ABC.
 
-3.36.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Found matching posedge clock domain: \clk, synchronously reset by $abc$6189$abc$5306$abc$4421$auto$opt_dff.cc:253:combine_resets$2109
-Extracted 25 gates and 37 wires to a netlist network with 12 inputs and 17 outputs.
+3.72.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5014$abc$3574$cpu.mem_if.dat_valid
+Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
 
-3.36.28.1. Executing ABC.
+3.72.21.1. Executing ABC.
+
+3.72.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$5021$abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+Extracted 28 gates and 41 wires to a netlist network with 13 inputs and 18 outputs.
+
+3.72.22.1. Executing ABC.
+
+3.72.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5056$abc$3582$flatten\cpu.\state.$verific$n82$1943
+Extracted 6 gates and 10 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.72.23.1. Executing ABC.
+
+3.72.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$4643$abc$4167$cpu.bufreg.i_en
+Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 32 outputs.
+
+3.72.24.1. Executing ABC.
+
+3.72.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5303$lo07, synchronously reset by \i_rst
+Extracted 23 gates and 39 wires to a netlist network with 16 inputs and 9 outputs.
+
+3.72.25.1. Executing ABC.
+
+3.72.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5359$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140
+Extracted 2 gates and 3 wires to a netlist network with 1 inputs and 1 outputs.
+
+3.72.26.1. Executing ABC.
+
+3.72.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5089$abc$3617$flatten\cpu.\immdec.$verific$n112$1673
+Extracted 24 gates and 39 wires to a netlist network with 15 inputs and 10 outputs.
+
+3.72.27.1. Executing ABC.
+
+3.72.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \i_rst
+Extracted 49 gates and 66 wires to a netlist network with 17 inputs and 21 outputs.
+
+3.72.28.1. Executing ABC.
+
+yosys> abc -dff
+
+3.73. Executing ABC pass (technology mapping using ABC).
+
+3.73.1. Summary of detected clock domains:
+  9 cells in clk=\clk, en=$abc$5359$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst=\i_rst
+  14 cells in clk=\clk, en=$abc$5370$abc$4475$abc$4153$cpu.alu.i_en, arst={ }, srst={ }
+  25 cells in clk=\clk, en=$abc$6166$abc$5089$abc$3617$flatten\cpu.\immdec.$verific$n112$1673, arst={ }, srst={ }
+  13 cells in clk=\clk, en={ }, arst={ }, srst=$abc$5386$abc$4491$abc$4270$rf_ram_if.i_wreq
+  8 cells in clk=\clk, en=$abc$5401$abc$4506$abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153, arst={ }, srst={ }
+  2 cells in clk=\clk, en={ }, arst={ }, srst=!$abc$6002$lo1
+  2 cells in clk=\clk, en=$abc$5630$lo06, arst={ }, srst={ }
+  25 cells in clk=\clk, en=$abc$5419$abc$5116$abc$3644$flatten\cpu.\immdec.$verific$n30$1660, arst={ }, srst={ }
+  18 cells in clk=\clk, en=$abc$5456$abc$4524$abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162, arst={ }, srst={ }
+  3 cells in clk=\clk, en=$abc$5359$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, arst={ }, srst={ }
+  82 cells in clk=\clk, en=\i_ibus_ack, arst={ }, srst={ }
+  14 cells in clk=\clk, en=$abc$5575$abc$4742$abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, arst={ }, srst=\i_rst
+  15 cells in clk=\clk, en=$abc$5591$abc$4763$abc$3702$flatten\cpu.\immdec.$verific$n67$1667, arst={ }, srst={ }
+  12 cells in clk=\clk, en=$abc$5609$abc$4781$abc$4137$flatten\cpu.\bufreg.$verific$n88$1010, arst={ }, srst={ }
+  3 cells in clk=\clk, en=$abc$5625$abc$4799$abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167, arst={ }, srst={ }
+  90 cells in clk=\clk, en={ }, arst={ }, srst={ }
+  97 cells in clk=\clk, en=$abc$5729$abc$5172$abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071, arst={ }, srst={ }
+  20 cells in clk=\clk, en=$abc$5859$abc$5150$abc$3682$flatten\cpu.\immdec.$verific$n92$1671, arst={ }, srst={ }
+  4 cells in clk=\clk, en=$abc$5880$abc$5002$abc$3564$flatten\cpu.\immdec.$verific$n62$1662, arst={ }, srst={ }
+  5 cells in clk=\clk, en=$abc$5885$abc$5007$abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150, arst={ }, srst={ }
+  6 cells in clk=\clk, en=$abc$5995$abc$5014$abc$3574$cpu.mem_if.dat_valid, arst={ }, srst={ }
+  42 cells in clk=\clk, en={ }, arst={ }, srst=$abc$6002$abc$5021$abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+  5 cells in clk=\clk, en=$abc$6034$abc$5056$abc$3582$flatten\cpu.\state.$verific$n82$1943, arst={ }, srst={ }
+  40 cells in clk=\clk, en=$abc$5892$abc$4898$abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, arst={ }, srst=\i_rst
+  39 cells in clk=\clk, en=$abc$6040$abc$4643$abc$4167$cpu.bufreg.i_en, arst={ }, srst={ }
+  22 cells in clk=\clk, en=$abc$6192$lo07, arst={ }, srst=\i_rst
+  49 cells in clk=\clk, en={ }, arst={ }, srst=\i_rst
+
+3.73.2. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5359$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140, synchronously reset by \i_rst
+Extracted 9 gates and 19 wires to a netlist network with 10 inputs and 6 outputs.
+
+3.73.2.1. Executing ABC.
+
+3.73.3. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5370$abc$4475$abc$4153$cpu.alu.i_en
+Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 6 outputs.
+
+3.73.3.1. Executing ABC.
+
+3.73.4. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6166$abc$5089$abc$3617$flatten\cpu.\immdec.$verific$n112$1673
+Extracted 25 gates and 41 wires to a netlist network with 16 inputs and 10 outputs.
+
+3.73.4.1. Executing ABC.
+
+3.73.5. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$5386$abc$4491$abc$4270$rf_ram_if.i_wreq
+Extracted 13 gates and 23 wires to a netlist network with 10 inputs and 4 outputs.
+
+3.73.5.1. Executing ABC.
+
+3.73.6. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5401$abc$4506$abc$3762$flatten\cpu.\genblk1.csr.$verific$n48$1153
+Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 4 outputs.
+
+3.73.6.1. Executing ABC.
+
+3.73.7. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by !$abc$6002$lo1
+Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
+
+3.73.7.1. Executing ABC.
+
+3.73.8. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5630$lo06
+Extracted 2 gates and 5 wires to a netlist network with 3 inputs and 1 outputs.
+
+3.73.8.1. Executing ABC.
+
+3.73.9. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5419$abc$5116$abc$3644$flatten\cpu.\immdec.$verific$n30$1660
+Extracted 25 gates and 45 wires to a netlist network with 20 inputs and 7 outputs.
+
+3.73.9.1. Executing ABC.
+
+3.73.10. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5456$abc$4524$abc$3743$flatten\cpu.\genblk1.csr.$verific$n60$1162
+Extracted 18 gates and 30 wires to a netlist network with 12 inputs and 3 outputs.
+
+3.73.10.1. Executing ABC.
+
+3.73.11. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6248$abc$5359$abc$4464$abc$4408$flatten\cpu.\genblk1.csr.$verific$n35$1140
+Extracted 3 gates and 5 wires to a netlist network with 2 inputs and 1 outputs.
+
+3.73.11.1. Executing ABC.
+
+3.73.12. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by \i_ibus_ack
+Extracted 82 gates and 113 wires to a netlist network with 31 inputs and 63 outputs.
+
+3.73.12.1. Executing ABC.
+
+3.73.13. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5575$abc$4742$abc$3724$flatten\cpu.\genblk1.csr.$verific$n42$1147, synchronously reset by \i_rst
+Extracted 14 gates and 26 wires to a netlist network with 12 inputs and 6 outputs.
+
+3.73.13.1. Executing ABC.
+
+3.73.14. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5591$abc$4763$abc$3702$flatten\cpu.\immdec.$verific$n67$1667
+Extracted 15 gates and 26 wires to a netlist network with 11 inputs and 2 outputs.
+
+3.73.14.1. Executing ABC.
+
+3.73.15. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5609$abc$4781$abc$4137$flatten\cpu.\bufreg.$verific$n88$1010
+Extracted 12 gates and 19 wires to a netlist network with 7 inputs and 10 outputs.
+
+3.73.15.1. Executing ABC.
+
+3.73.16. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5625$abc$4799$abc$3719$flatten\cpu.\genblk1.csr.$verific$n90$1167
+Extracted 3 gates and 7 wires to a netlist network with 4 inputs and 2 outputs.
+
+3.73.16.1. Executing ABC.
+
+3.73.17. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk
+Extracted 90 gates and 143 wires to a netlist network with 53 inputs and 24 outputs.
+
+3.73.17.1. Executing ABC.
+
+3.73.18. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5729$abc$5172$abc$3784$flatten\cpu.\bufreg2.$verific$n110$1071
+Extracted 97 gates and 144 wires to a netlist network with 47 inputs and 40 outputs.
+
+3.73.18.1. Executing ABC.
+
+3.73.19. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5859$abc$5150$abc$3682$flatten\cpu.\immdec.$verific$n92$1671
+Extracted 20 gates and 34 wires to a netlist network with 14 inputs and 9 outputs.
+
+3.73.19.1. Executing ABC.
+
+3.73.20. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5880$abc$5002$abc$3564$flatten\cpu.\immdec.$verific$n62$1662
+Extracted 4 gates and 10 wires to a netlist network with 6 inputs and 2 outputs.
+
+3.73.20.1. Executing ABC.
+
+3.73.21. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5885$abc$5007$abc$3569$flatten\cpu.\genblk1.csr.$verific$n45$1150
+Extracted 5 gates and 12 wires to a netlist network with 7 inputs and 4 outputs.
+
+3.73.21.1. Executing ABC.
+
+3.73.22. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5995$abc$5014$abc$3574$cpu.mem_if.dat_valid
+Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 4 outputs.
+
+3.73.22.1. Executing ABC.
+
+3.73.23. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by $abc$6002$abc$5021$abc$4374$auto$opt_dff.cc:253:combine_resets$2109
+Extracted 42 gates and 71 wires to a netlist network with 29 inputs and 24 outputs.
+
+3.73.23.1. Executing ABC.
+
+3.73.24. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6034$abc$5056$abc$3582$flatten\cpu.\state.$verific$n82$1943
+Extracted 5 gates and 9 wires to a netlist network with 4 inputs and 3 outputs.
+
+3.73.24.1. Executing ABC.
+
+3.73.25. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$5892$abc$4898$abc$3582$flatten\cpu.\ctrl.$verific$n49$1277, synchronously reset by \i_rst
+Extracted 40 gates and 51 wires to a netlist network with 11 inputs and 36 outputs.
+
+3.73.25.1. Executing ABC.
+
+3.73.26. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6040$abc$4643$abc$4167$cpu.bufreg.i_en
+Extracted 39 gates and 49 wires to a netlist network with 10 inputs and 32 outputs.
+
+3.73.26.1. Executing ABC.
+
+3.73.27. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, enabled by $abc$6192$lo07, synchronously reset by \i_rst
+Extracted 22 gates and 38 wires to a netlist network with 16 inputs and 9 outputs.
+
+3.73.27.1. Executing ABC.
+
+3.73.28. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Found matching posedge clock domain: \clk, synchronously reset by \i_rst
+Extracted 49 gates and 66 wires to a netlist network with 17 inputs and 21 outputs.
+
+3.73.28.1. Executing ABC.
 
 yosys> opt_ffinv
 
-3.37. Executing OPT_FFINV pass (push inverters through FFs).
+3.74. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> opt -sat
 
-3.38. Executing OPT pass (performing simple optimizations).
+3.75. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.38.1. Executing OPT_EXPR pass (perform const folding).
+3.75.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.38.2. Executing OPT_MERGE pass (detect identical cells).
+3.75.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 <suppressed ~21 debug messages>
 Removed a total of 7 cells.
 
 yosys> opt_muxtree
 
-3.38.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.75.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2174,37 +2077,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.38.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.75.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.38.5. Executing OPT_MERGE pass (detect identical cells).
+3.75.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.38.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.75.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.38.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.75.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 4986 unused wires.
-<suppressed ~231 debug messages>
+Removed 0 unused cells and 4997 unused wires.
+<suppressed ~201 debug messages>
 
 yosys> opt_expr
 
-3.38.8. Executing OPT_EXPR pass (perform const folding).
+3.75.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.38.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.75.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.38.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.75.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2212,80 +2115,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.38.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.75.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.38.12. Executing OPT_MERGE pass (detect identical cells).
+3.75.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -sat
 
-3.38.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.75.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.38.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.75.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.38.15. Executing OPT_EXPR pass (perform const folding).
+3.75.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.38.16. Finished OPT passes. (There is nothing left to do.)
+3.75.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script /home/users/temp_dir/yosys_yRfDqM/abc_tmp_1.scr
+yosys> bmuxmap
 
-3.39. Executing ABC pass (technology mapping using ABC).
+3.76. Executing BMUXMAP pass.
 
-3.39.1. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Extracted 470 gates and 652 wires to a netlist network with 182 inputs and 142 outputs.
+yosys> demuxmap
 
-3.39.1.1. Executing ABC.
-DE:   #PIs = 182  #Luts =   203  Max Lvl =  10  Avg Lvl =   2.73  [   0.12 sec. at Pass 0]
-DE:   #PIs = 182  #Luts =   201  Max Lvl =  10  Avg Lvl =   2.71  [   1.28 sec. at Pass 1]
-DE:   #PIs = 182  #Luts =   198  Max Lvl =   9  Avg Lvl =   2.37  [   0.53 sec. at Pass 2]
-DE:   #PIs = 182  #Luts =   196  Max Lvl =   9  Avg Lvl =   2.37  [   0.50 sec. at Pass 3]
-DE:   #PIs = 182  #Luts =   196  Max Lvl =   9  Avg Lvl =   2.37  [   0.56 sec. at Pass 4]
-DE:   #PIs = 182  #Luts =   196  Max Lvl =   9  Avg Lvl =   2.37  [   0.61 sec. at Pass 5]
-DE:   #PIs = 182  #Luts =   196  Max Lvl =   9  Avg Lvl =   2.37  [   0.45 sec. at Pass 6]
-DE:   #PIs = 182  #Luts =   194  Max Lvl =   9  Avg Lvl =   2.31  [   1.36 sec. at Pass 7]
-DE:   #PIs = 182  #Luts =   193  Max Lvl =   9  Avg Lvl =   2.30  [   0.65 sec. at Pass 8]
-DE:   #PIs = 182  #Luts =   193  Max Lvl =   9  Avg Lvl =   2.30  [   0.37 sec. at Pass 9]
-DE:   #PIs = 182  #Luts =   193  Max Lvl =   9  Avg Lvl =   2.30  [   0.62 sec. at Pass 10]
-DE:   #PIs = 182  #Luts =   193  Max Lvl =   9  Avg Lvl =   2.30  [   0.42 sec. at Pass 11]
-DE:   #PIs = 182  #Luts =   192  Max Lvl =   9  Avg Lvl =   2.29  [   1.08 sec. at Pass 12]
-DE:   #PIs = 182  #Luts =   192  Max Lvl =   9  Avg Lvl =   2.29  [   0.50 sec. at Pass 13]
-DE:   #PIs = 182  #Luts =   192  Max Lvl =   9  Avg Lvl =   2.29  [   0.54 sec. at Pass 14]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.49 sec. at Pass 15]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.36 sec. at Pass 16]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.71 sec. at Pass 17]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.32 sec. at Pass 18]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.96 sec. at Pass 19]
-DE:   #PIs = 182  #Luts =   191  Max Lvl =   9  Avg Lvl =   2.30  [   0.33 sec. at Pass 20]
+3.77. Executing DEMUXMAP pass.
 
-yosys> opt
+yosys> clean_zerowidth
 
-3.40. Executing OPT pass (performing simple optimizations).
+yosys> abc -script /home/users/temp_dir/yosys_TH72LV/abc_tmp_1.scr
+
+3.78. Executing ABC pass (technology mapping using ABC).
+
+3.78.1. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Extracted 477 gates and 659 wires to a netlist network with 182 inputs and 142 outputs.
+
+3.78.1.1. Executing ABC.
+DE:   #PIs = 182  #Luts =   204  Max Lvl =  11  Avg Lvl =   2.76  [   0.28 sec. at Pass 0]
+DE:   #PIs = 182  #Luts =   200  Max Lvl =   9  Avg Lvl =   2.64  [   1.61 sec. at Pass 1]
+DE:   #PIs = 182  #Luts =   198  Max Lvl =   8  Avg Lvl =   2.58  [   0.54 sec. at Pass 2]
+DE:   #PIs = 182  #Luts =   198  Max Lvl =   8  Avg Lvl =   2.58  [   1.04 sec. at Pass 3]
+DE:   #PIs = 182  #Luts =   197  Max Lvl =   9  Avg Lvl =   2.51  [   0.81 sec. at Pass 4]
+DE:   #PIs = 182  #Luts =   196  Max Lvl =   8  Avg Lvl =   2.30  [   1.01 sec. at Pass 5]
+DE:   #PIs = 182  #Luts =   196  Max Lvl =   8  Avg Lvl =   2.30  [   0.83 sec. at Pass 6]
+DE:   #PIs = 182  #Luts =   194  Max Lvl =   8  Avg Lvl =   2.25  [   1.05 sec. at Pass 7]
+DE:   #PIs = 182  #Luts =   194  Max Lvl =   8  Avg Lvl =   2.25  [   0.81 sec. at Pass 8]
+DE:   #PIs = 182  #Luts =   194  Max Lvl =   8  Avg Lvl =   2.25  [   1.30 sec. at Pass 9]
+DE:   #PIs = 182  #Luts =   194  Max Lvl =   8  Avg Lvl =   2.25  [   0.84 sec. at Pass 10]
+DE:   #PIs = 182  #Luts =   193  Max Lvl =   8  Avg Lvl =   2.44  [   1.84 sec. at Pass 11]
+DE:   #PIs = 182  #Luts =   193  Max Lvl =   8  Avg Lvl =   2.44  [   1.22 sec. at Pass 12]
+DE:   #PIs = 182  #Luts =   193  Max Lvl =   8  Avg Lvl =   2.44  [   0.73 sec. at Pass 13]
+DE:   #PIs = 182  #Luts =   193  Max Lvl =   8  Avg Lvl =   2.44  [   1.03 sec. at Pass 14]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   2.20 sec. at Pass 15]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   0.72 sec. at Pass 16]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   1.14 sec. at Pass 17]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   0.78 sec. at Pass 18]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   2.67 sec. at Pass 19]
+DE:   #PIs = 182  #Luts =   192  Max Lvl =   7  Avg Lvl =   2.25  [   0.42 sec. at Pass 20]
 
 yosys> opt_expr
 
-3.40.1. Executing OPT_EXPR pass (perform const folding).
+3.79. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.40.2. Executing OPT_MERGE pass (detect identical cells).
+3.80. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.40.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.81. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2293,132 +2202,99 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.40.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.82. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.40.5. Executing OPT_MERGE pass (detect identical cells).
+3.83. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_share
 
-3.40.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.40.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 743 unused wires.
-<suppressed ~145 debug messages>
-
-yosys> opt_expr
-
-3.40.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-
-3.40.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.40.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \serv_synth_wrapper..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.40.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \serv_synth_wrapper.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.40.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
+3.84. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.40.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.85. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.40.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.86. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
+Removed 0 unused cells and 762 unused wires.
+<suppressed ~158 debug messages>
 
 yosys> opt_expr
 
-3.40.15. Executing OPT_EXPR pass (perform const folding).
+3.87. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.40.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> opt_ffinv
 
-3.41. Executing OPT_FFINV pass (push inverters through FFs).
+3.88. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> stat
 
-3.42. Printing statistics.
+3.89. Printing statistics.
 
 === serv_synth_wrapper ===
 
-   Number of wires:                400
-   Number of wire bits:           1267
-   Number of public wires:         168
-   Number of public wire bits:    1035
+   Number of wires:                417
+   Number of wire bits:           1276
+   Number of public wires:         185
+   Number of public wire bits:    1044
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                372
+   Number of cells:                373
      $_DFFE_PP_                    116
      $_DFF_P_                       11
      $_SDFFE_PP0P_                  37
      $_SDFF_PN0_                     1
      $_SDFF_PP0_                    16
-     $lut                          191
+     $lut                          192
 
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.43. Executing SHREGMAP pass (map shift registers).
+3.90. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.44. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.91. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.45. Printing statistics.
+3.92. Printing statistics.
 
 === serv_synth_wrapper ===
 
-   Number of wires:                491
-   Number of wire bits:           1358
-   Number of public wires:         168
-   Number of public wire bits:    1035
+   Number of wires:                508
+   Number of wire bits:           1367
+   Number of public wires:         185
+   Number of public wire bits:    1044
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                463
+   Number of cells:                464
      $_DFFE_PP0P_                  116
      $_DFF_P_                       65
      $_MUX_                         91
-     $lut                          191
+     $lut                          192
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.46. Executing TECHMAP pass (map to technology primitives).
+3.93. Executing TECHMAP pass (map to technology primitives).
 
-3.46.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+3.93.1. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
@@ -2446,7 +2322,7 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.46.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+3.93.2. Executing Verilog-2005 frontend: /home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
 Parsing Verilog input from `/home/users/aram/Workspace/clean_repo/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
@@ -2515,66 +2391,66 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.46.3. Continuing TECHMAP pass.
+3.93.3. Continuing TECHMAP pass.
+Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using extmapper simplemap for cells of type $lut.
-Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~624 debug messages>
+<suppressed ~625 debug messages>
 
 yosys> opt_expr -mux_undef
 
-3.47. Executing OPT_EXPR pass (perform const folding).
+3.94. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-<suppressed ~3558 debug messages>
+<suppressed ~3630 debug messages>
 
 yosys> simplemap
 
-3.48. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.95. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.49. Executing OPT_EXPR pass (perform const folding).
+3.96. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge
 
-3.50. Executing OPT_MERGE pass (detect identical cells).
+3.97. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
-<suppressed ~900 debug messages>
-Removed a total of 300 cells.
+<suppressed ~837 debug messages>
+Removed a total of 279 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.51. Executing OPT_DFF pass (perform DFF optimizations).
+3.98. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.52. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.99. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 1319 unused wires.
+Removed 0 unused cells and 1315 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt -nodffe -nosdff
 
-3.53. Executing OPT pass (performing simple optimizations).
+3.100. Executing OPT pass (performing simple optimizations).
 
 yosys> opt_expr
 
-3.53.1. Executing OPT_EXPR pass (perform const folding).
+3.100.1. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-<suppressed ~63 debug messages>
+<suppressed ~60 debug messages>
 
 yosys> opt_merge -nomux
 
-3.53.2. Executing OPT_MERGE pass (detect identical cells).
+3.100.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.53.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.100.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2582,37 +2458,37 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.100.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.5. Executing OPT_MERGE pass (detect identical cells).
+3.100.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.100.6. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.100.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 23 unused wires.
+Removed 0 unused cells and 16 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.53.8. Executing OPT_EXPR pass (perform const folding).
+3.100.8. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.53.9. Rerunning OPT passes. (Maybe there is more to do..)
+3.100.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.53.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.100.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2620,67 +2496,63 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.53.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.100.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.53.12. Executing OPT_MERGE pass (detect identical cells).
+3.100.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.53.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.100.13. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.53.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.100.14. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
 
 yosys> opt_expr
 
-3.53.15. Executing OPT_EXPR pass (perform const folding).
+3.100.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
-3.53.16. Finished OPT passes. (There is nothing left to do.)
+3.100.16. Finished OPT passes. (There is nothing left to do.)
 
-yosys> abc -script /home/users/temp_dir/yosys_yRfDqM/abc_tmp_2.scr
+yosys> abc -script /home/users/temp_dir/yosys_TH72LV/abc_tmp_2.scr
 
-3.54. Executing ABC pass (technology mapping using ABC).
+3.101. Executing ABC pass (technology mapping using ABC).
 
-3.54.1. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
-Extracted 681 gates and 898 wires to a netlist network with 215 inputs and 175 outputs.
+3.101.1. Extracting gate netlist of module `\serv_synth_wrapper' to `<abc-temp-dir>/input.blif'..
+Extracted 688 gates and 905 wires to a netlist network with 215 inputs and 175 outputs.
 
-3.54.1.1. Executing ABC.
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   0.11 sec. at Pass 0]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   1.21 sec. at Pass 1]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   0.45 sec. at Pass 2]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   0.76 sec. at Pass 3]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   1.01 sec. at Pass 4]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   1.04 sec. at Pass 5]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   1.90 sec. at Pass 6]
-DE:   #PIs = 215  #Luts =   231  Max Lvl =   9  Avg Lvl =   2.74  [   0.33 sec. at Pass 7]
-
-yosys> opt
-
-3.55. Executing OPT pass (performing simple optimizations).
+3.101.1.1. Executing ABC.
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   0.39 sec. at Pass 0]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   2.01 sec. at Pass 1]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   0.70 sec. at Pass 2]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   1.33 sec. at Pass 3]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   0.74 sec. at Pass 4]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   1.18 sec. at Pass 5]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   2.26 sec. at Pass 6]
+DE:   #PIs = 215  #Luts =   232  Max Lvl =   7  Avg Lvl =   2.71  [   0.46 sec. at Pass 7]
 
 yosys> opt_expr
 
-3.55.1. Executing OPT_EXPR pass (perform const folding).
+3.102. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
 
 yosys> opt_merge -nomux
 
-3.55.2. Executing OPT_MERGE pass (detect identical cells).
+3.103. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.55.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.104. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \serv_synth_wrapper..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2688,115 +2560,82 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.55.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.105. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \serv_synth_wrapper.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55.5. Executing OPT_MERGE pass (detect identical cells).
+3.106. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\serv_synth_wrapper'.
 Removed a total of 0 cells.
 
-yosys> opt_dff
+yosys> opt_share
 
-3.55.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.55.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 813 unused wires.
-<suppressed ~18 debug messages>
-
-yosys> opt_expr
-
-3.55.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module serv_synth_wrapper.
-
-3.55.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.55.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \serv_synth_wrapper..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.55.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \serv_synth_wrapper.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.55.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\serv_synth_wrapper'.
-Removed a total of 0 cells.
+3.107. Executing OPT_SHARE pass.
 
 yosys> opt_dff
 
-3.55.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.108. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.55.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.109. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
+Removed 0 unused cells and 822 unused wires.
+<suppressed ~13 debug messages>
 
 yosys> opt_expr
 
-3.55.15. Executing OPT_EXPR pass (perform const folding).
+3.110. Executing OPT_EXPR pass (perform const folding).
 Optimizing module serv_synth_wrapper.
-
-3.55.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.56. Executing HIERARCHY pass (managing design hierarchy).
+3.111. Executing HIERARCHY pass (managing design hierarchy).
 
-3.56.1. Analyzing design hierarchy..
+3.111.1. Analyzing design hierarchy..
 Top module:  \serv_synth_wrapper
 
-3.56.2. Analyzing design hierarchy..
+3.111.2. Analyzing design hierarchy..
 Top module:  \serv_synth_wrapper
 Removed 0 unused modules.
 
 yosys> stat
 
-3.57. Printing statistics.
+3.112. Printing statistics.
 
 === serv_synth_wrapper ===
 
-   Number of wires:                428
-   Number of wire bits:           1295
-   Number of public wires:         151
-   Number of public wire bits:    1018
+   Number of wires:                449
+   Number of wire bits:           1308
+   Number of public wires:         173
+   Number of public wire bits:    1032
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:                412
-     $lut                          231
+   Number of cells:                413
+     $lut                          232
      dffsre                        181
 
 
 yosys> opt_clean -purge
 
-3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.113. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \serv_synth_wrapper..
-Removed 0 unused cells and 119 unused wires.
-<suppressed ~119 debug messages>
+Removed 0 unused cells and 139 unused wires.
+<suppressed ~139 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.59. Executing Verilog backend.
+3.114. Executing Verilog backend.
 Dumping module `\serv_synth_wrapper'.
 
 Warnings: 7 unique messages, 8 total
-End of script. Logfile hash: 342afa8d3a, CPU: user 4.01s system 0.79s, MEM: 32.16 MB peak
-Yosys 0.18+10 (git sha1 8217e4c48, gcc 9.1.0 -fPIC -Os)
-Time spent: 97% 6x abc (137 sec), 0% 45x opt_expr (1 sec), ...
-real 45.11
-user 120.53
-sys 20.88
+End of script. Logfile hash: e0c57c3556, CPU: user 5.37s system 0.34s, MEM: 32.46 MB peak
+Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+Time spent: 96% 6x abc (139 sec), 0% 39x opt_expr (1 sec), ...
+real 85.19
+user 123.46
+sys 20.15
