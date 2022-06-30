@@ -9,6 +9,10 @@ on:
         description: 'Json config files'
         required: true
         default: 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'
+      base:
+        description: 'Base for comparision'
+        required: true
+        default: '.github/logs/Golden_synth_rs_ade_no_bram_no_dsp'
 
 jobs:
   build:
@@ -83,8 +87,10 @@ jobs:
         continue-on-error: true
         run: |
           python3 scripts/synth/synthesis.py --config_files ${{ inputs.config_files }}
-          cd result*/
-          rm -r -v ./*/*/!('yosys_output.log')
+
+      - name: Prepare logs
+        run: |
+          find result*/ -type f -not -name *.log | xargs rm -f
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
@@ -95,11 +101,9 @@ jobs:
       - name: Execute metrics extraction
         continue-on-error: true
         run: |
-          if ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'}}; then
-            python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/Golden_synth_rs_ade_no_bram_no_dsp.json .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log --base .github/logs/Golden_synth_rs_ade_no_bram_no_dsp
-          else 
-            python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/*.json .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log 
-          fi
+          var=`find result*/ -name *json`
+          echo $var
+          python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log  --base ${{ inputs.base }}
 
       - name: Upload csv file
         uses: actions/upload-artifact@v2
@@ -108,6 +112,6 @@ jobs:
           path: Golden_synth_rs_ade_no_bram_no_dsp.csv
 
       - name: Compare QoR
-        if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'}}
+        if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json' && inputs.base == '.github/logs/Golden_synth_rs_ade_no_bram_no_dsp' }}
         run: |
           python3 scripts/log_automation/result_comparision.py Golden_synth_rs_ade_no_bram_no_dsp.csv
