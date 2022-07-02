@@ -9,10 +9,11 @@ on:
         description: 'Json config files'
         required: true
         default: 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'
-      base:
-        description: 'Base for comparision'
+      conditional:
+        type: boolean
+        description: 'Choose base'
         required: true
-        default: '.github/logs/Golden_synth_rs_ade_no_bram_no_dsp'
+        default: true
 
 jobs:
   build:
@@ -102,16 +103,20 @@ jobs:
         continue-on-error: true
         run: |
           var=`find result*/ -name *json`
-          base_file=`find result*/ -name "$(basename -- ${{inputs.base}})"`
-          python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log  --base $base_file
+          if ${{inputs.conditional == 'true'}}; then
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log --base .github/logs/Golden_synth_rs_ade_no_bram_no_dsp
+          else
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
+          fi
+
 
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
           name: QoR
-          path: Golden_synth_rs_ade_no_bram_no_dsp.csv
+          path: Golden_synth_rs_ade_no_bram_no_dsp.csv or synth_rs.csv
 
       - name: Compare QoR
-        if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json' && inputs.base == '.github/logs/Golden_synth_rs_ade_no_bram_no_dsp' }}
+        if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json' && inputs.conditional == 'true' }}
         run: |
           python3 scripts/log_automation/result_comparision.py Golden_synth_rs_ade_no_bram_no_dsp.csv
