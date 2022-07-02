@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 52)
+set(VERSION_PATCH 53)
 
 project(yosys_verific_rs)
 
@@ -67,6 +67,13 @@ endif()
 list(APPEND YOSYS_RS_PLUGIN_MK_ARGS
     "YOSYS_PATH=${YOSYS_PATH}"
 )
+
+if (NOT RAPTOR)
+    list(APPEND YOSYS_RS_PLUGIN_MK_ARGS
+        "EXTRA_FLAGS=-DDEV_BUILD"
+    )
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_DEBUG=1"
