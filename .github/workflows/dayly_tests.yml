@@ -11,7 +11,7 @@ on:
         default: 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'
       conditional:
         type: boolean
-        description: 'Choose base for comparision'
+        description: 'Base'
         required: true
         default: true
 
@@ -109,12 +109,16 @@ jobs:
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
           fi
 
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
           name: QoR
-          path: Golden_synth_rs_ade_no_bram_no_dsp.csv or synth_rs.csv
+          path: |
+            Golden_synth_rs_ade_no_bram_no_dsp.csv
+            synth_rs.csv
 
       - name: Compare QoR
         if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json' && inputs.conditional == 'true' }}
