@@ -20,6 +20,13 @@ project(yosys_verific_rs)
 
 add_subdirectory(logic_synthesis-rs)
 
+get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+if (LICENSE_ON)
+    add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+endif()
+
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 if (APPLE)
@@ -55,6 +62,14 @@ if (ENABLE_VERIFIC)
         "ENABLE_VERIFIC=1"
         "DISABLE_VERIFIC_EXTENSIONS=1"
         "VERIFIC_DIR=${VERIFIC_DIR}"
+    )
+endif()
+
+if (LICENSE_ON)
+    list(APPEND YOSYS_MK_ARGS
+        "ENABLE_LICENSE=1"
+        "FLEX_LM_BIN_DIR=${CMAKE_CURRENT_BINARY_DIR}/Flex_LM"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DLICENSE_ON"
     )
 endif()
 
@@ -113,6 +128,10 @@ if (ENABLE_VERIFIC)
     )
     add_dependencies(yosys verific)
     add_dependencies(verific_clean yosys_clean)
+endif()
+
+if (LICENSE_ON)
+    add_dependencies(yosys rs_licenseManager)
 endif()
 
 if (BUILD_YOSYS_PLUGINS)

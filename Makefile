@@ -10,7 +10,7 @@ ifeq ($(CPU_CORES),)
 	endif
 endif
 
-ADDITIONAL_CMAKE_OPTIONS ?=
+ADDITIONAL_CMAKE_OPTIONS ?= -DLICENSE_ON=1
 PREFIX ?= /usr/local
 RULE_MESSAGES ?= off
 
