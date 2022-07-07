@@ -66,10 +66,20 @@ if (ENABLE_VERIFIC)
 endif()
 
 if (LICENSE_ON)
+    string(CONCAT FLEX_LM_LDLIBS 
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+        "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
+    )
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_LICENSE=1"
-        "FLEX_LM_BIN_DIR=${CMAKE_CURRENT_BINARY_DIR}/Flex_LM"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
         "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DLICENSE_ON"
+        "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
+        "EXTRA_LD_FLAGS=-Wl,--copy-dt-needed-entries"
     )
 endif()
 
