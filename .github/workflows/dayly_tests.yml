@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: "30 19 * * 1,2,3,4,5"
   workflow_dispatch:
+    inputs:
+      config_files:
+        description: 'Json config files'
+        required: true
+        default: 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json'
+      conditional:
+        type: boolean
+        description: 'Base'
+        required: true
+        default: true
 
 jobs:
   build:
@@ -77,7 +87,11 @@ jobs:
       - name: Execute Python script
         continue-on-error: true
         run: |
-          python3 scripts/synth/synthesis.py --config_files suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json
+          python3 scripts/synth/synthesis.py --config_files ${{ inputs.config_files }}
+
+      - name: Prepare logs
+        run: |
+          find result*/ -type f -not -name *.log | xargs rm -f
 
       - name: Upload logs
         uses: actions/upload-artifact@v2
@@ -87,15 +101,23 @@ jobs:
 
       - name: Execute metrics extraction
         continue-on-error: true
-        run:
-          python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/Golden_synth_rs_ade_no_bram_no_dsp.json .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log --base .github/logs/Golden_synth_rs_ade_no_bram_no_dsp
+        run: |
+          var=`find result*/ -name *json`
+          if ${{inputs.conditional == 'true'}}; then
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Golden_synth_rs_ade_no_bram_no_dsp --output_file Golden_synth_rs_ade_no_bram_no_dsp.csv --run_log result*/run.log .github/logs/Golden_synth_rs_ade_no_bram_no_dsp/run.log --base .github/logs/Golden_synth_rs_ade_no_bram_no_dsp
+          else
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
+          fi
 
       - name: Upload csv file
         uses: actions/upload-artifact@v2
         with:
           name: QoR
-          path: Golden_synth_rs_ade_no_bram_no_dsp.csv
+          path: |
+            Golden_synth_rs_ade_no_bram_no_dsp.csv
+            synth_rs.csv
 
       - name: Compare QoR
+        if: ${{inputs.config_files == 'suites/Golden/Golden_synth_rs_ade_no_bram_no_dsp.json' && inputs.conditional == 'true' }}
         run: |
           python3 scripts/log_automation/result_comparision.py Golden_synth_rs_ade_no_bram_no_dsp.csv
