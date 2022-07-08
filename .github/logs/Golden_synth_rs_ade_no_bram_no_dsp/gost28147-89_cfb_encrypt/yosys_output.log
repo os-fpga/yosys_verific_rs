@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.50
- Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.53
+ Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,30 +35,30 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
-yosys> read -vlog2k gost89_cfb_encrypt.v gost89_ecb_encrypt.v gost89_round.v gost89_sbox.v
+yosys> read -vlog2k gost89_ecb_encrypt.v gost89_cfb_encrypt.v gost89_sbox.v gost89_round.v
 
-yosys> verific -vlog2k gost89_cfb_encrypt.v gost89_ecb_encrypt.v gost89_round.v gost89_sbox.v
+yosys> verific -vlog2k gost89_ecb_encrypt.v gost89_cfb_encrypt.v gost89_sbox.v gost89_round.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_ecb_encrypt.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_cfb_encrypt.v'
 VERIFIC-INFO [VERI-2561] gost89_cfb_encrypt.v:17: undeclared symbol 'reset_ecb', assumed default net type 'wire'
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_ecb_encrypt.v'
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_round.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_sbox.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'gost89_round.v'
 
 yosys> synth_rs -top gost89_cfb_encrypt -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.59
+3. Executing synth_rs pass: v0.4.61
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -66,8 +66,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+3.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -242,26 +242,22 @@ yosys> check
 Checking module gost89_cfb_encrypt...
 Found and reported 0 problems.
 
-yosys> opt -nodffe -nosdff
-
-3.15. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.15.1. Executing OPT_EXPR pass (perform const folding).
+3.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~3 debug messages>
 
 yosys> opt_merge -nomux
 
-3.15.2. Executing OPT_MERGE pass (detect identical cells).
+3.16. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~3 debug messages>
 Removed a total of 1 cells.
 
 yosys> opt_muxtree
 
-3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -271,7 +267,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
     New ctrl vector for $pmux cell $flatten\ecb_encrypt.$verific$select_114$gost89_ecb_encrypt.v:80$1809: { $auto$opt_reduce.cc:134:opt_pmux$2450 $auto$opt_reduce.cc:134:opt_pmux$2448 $auto$opt_reduce.cc:134:opt_pmux$2446 $auto$opt_reduce.cc:134:opt_pmux$2444 $auto$opt_reduce.cc:134:opt_pmux$2442 $auto$opt_reduce.cc:134:opt_pmux$2440 $auto$opt_reduce.cc:134:opt_pmux$2438 $auto$opt_reduce.cc:134:opt_pmux$2436 $flatten\ecb_encrypt.$verific$n1897$1002 }
   Optimizing cells in module \gost89_cfb_encrypt.
@@ -279,13 +275,17 @@ Performed a total of 1 changes.
 
 yosys> opt_merge
 
-3.15.5. Executing OPT_MERGE pass (detect identical cells).
+3.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.20. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.21. Executing OPT_DFF pass (perform DFF optimizations).
 Removing never-active async load on $verific$out_reg$gost89_cfb_encrypt.v:38$952 ($aldff) from module gost89_cfb_encrypt.
 Removing never-active async load on $verific$in_value_reg$gost89_cfb_encrypt.v:38$951 ($aldff) from module gost89_cfb_encrypt.
 Removing never-active async load on $verific$gamma_reg$gost89_cfb_encrypt.v:38$949 ($aldff) from module gost89_cfb_encrypt.
@@ -297,22 +297,20 @@ Removing never-active async load on $flatten\ecb_encrypt.$verific$n1_reg$gost89_
 
 yosys> opt_clean
 
-3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 4 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.15.8. Executing OPT_EXPR pass (perform const folding).
+3.23. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~6 debug messages>
 
-3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
-
 yosys> opt_muxtree
 
-3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -322,37 +320,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.15.12. Executing OPT_MERGE pass (detect identical cells).
+3.26. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.28. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.29. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 1 unused cells and 2 unused wires.
 <suppressed ~2 debug messages>
 
 yosys> opt_expr
 
-3.15.15. Executing OPT_EXPR pass (perform const folding).
+3.30. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
-
-3.15.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.15.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.31. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -362,87 +362,86 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.32. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.15.19. Executing OPT_MERGE pass (detect identical cells).
+3.33. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.34. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.35. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.15.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.36. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> opt_expr
 
-3.15.22. Executing OPT_EXPR pass (perform const folding).
+3.37. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
-
-3.15.23. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 3
 
 yosys> fsm -encoding binary
 
-3.16. Executing FSM pass (extract and optimize FSM).
+3.38. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.38.1. Executing FSM_DETECT pass (finding FSMs in design).
 
 yosys> fsm_extract
 
-3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.38.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 
 yosys> fsm_opt
 
-3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.38.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> opt_clean
 
-3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.38.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> fsm_opt
 
-3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.38.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> fsm_recode -encoding binary
 
-3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.38.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
 yosys> fsm_info
 
-3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.38.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 yosys> fsm_map
 
-3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
-
-yosys> opt -sat -nosdff
-
-3.17. Executing OPT pass (performing simple optimizations).
+3.38.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 
 yosys> opt_expr
 
-3.17.1. Executing OPT_EXPR pass (perform const folding).
+3.39. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 
 yosys> opt_merge -nomux
 
-3.17.2. Executing OPT_MERGE pass (detect identical cells).
+3.40. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.41. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -452,19 +451,23 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.42. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.17.5. Executing OPT_MERGE pass (detect identical cells).
+3.43. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.44. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.45. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $verific$out_reg$gost89_cfb_encrypt.v:38$952 ($dff) from module gost89_cfb_encrypt (D = $verific$n348$20, Q = \out).
 Adding EN signal on $verific$in_value_reg$gost89_cfb_encrypt.v:38$951 ($dff) from module gost89_cfb_encrypt (D = \in, Q = \in_value).
 Adding EN signal on $verific$gamma_reg$gost89_cfb_encrypt.v:38$949 ($dff) from module gost89_cfb_encrypt (D = $verific$n609$22, Q = \gamma).
@@ -474,100 +477,21 @@ Adding EN signal on $flatten\ecb_encrypt.$verific$out_reg$gost89_ecb_encrypt.v:4
 
 yosys> opt_clean
 
-3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.46. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 4 unused cells and 4 unused wires.
 <suppressed ~5 debug messages>
 
 yosys> opt_expr
 
-3.17.8. Executing OPT_EXPR pass (perform const folding).
+3.47. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~6 debug messages>
-
-3.17.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.17.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gost89_cfb_encrypt..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~19 debug messages>
-
-yosys> opt_reduce
-
-3.17.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gost89_cfb_encrypt.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.17.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.17.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.17.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gost89_cfb_encrypt..
-Removed 0 unused cells and 1 unused wires.
-<suppressed ~1 debug messages>
-
-yosys> opt_expr
-
-3.17.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gost89_cfb_encrypt.
-
-3.17.16. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.17.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gost89_cfb_encrypt..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~19 debug messages>
-
-yosys> opt_reduce
-
-3.17.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gost89_cfb_encrypt.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.17.19. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.17.20. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.17.21. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gost89_cfb_encrypt..
-
-yosys> opt_expr
-
-3.17.22. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gost89_cfb_encrypt.
-
-3.17.23. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> wreduce -keepdc
 
-3.18. Executing WREDUCE pass (reducing word size of cells).
+3.48. Executing WREDUCE pass (reducing word size of cells).
 Removed top 5 bits (of 6) from port A of cell gost89_cfb_encrypt.$flatten\ecb_encrypt.$verific$LessThan_25$gost89_ecb_encrypt.v:34$1754 ($lt).
 Removed top 5 bits (of 6) from port B of cell gost89_cfb_encrypt.$flatten\ecb_encrypt.$verific$add_22$gost89_ecb_encrypt.v:33$1751 ($add).
 Removed top 1 bits (of 6) from port B of cell gost89_cfb_encrypt.$flatten\ecb_encrypt.$verific$equal_100$gost89_ecb_encrypt.v:67$1793 ($eq).
@@ -604,26 +528,28 @@ Removed top 1 bits (of 6) from port B of cell gost89_cfb_encrypt.$flatten\ecb_en
 
 yosys> peepopt
 
-3.19. Executing PEEPOPT pass (run peephole optimizers).
+3.49. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> opt_clean
 
-3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> bmuxmap
 
-3.21. Executing BMUXMAP pass.
+3.51. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.22. Executing DEMUXMAP pass.
+3.52. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 
 yosys> alumacc
 
-3.23. Executing ALUMACC pass (create $alu and $macc cells).
+3.53. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module gost89_cfb_encrypt:
   creating $macc model for $flatten\ecb_encrypt.$verific$add_22$gost89_ecb_encrypt.v:33$1751 ($add).
   creating $macc model for $flatten\ecb_encrypt.\rnd.$verific$add_3$gost89_round.v:12$1817 ($add).
@@ -640,19 +566,19 @@ Extracting $alu and $macc cells in module gost89_cfb_encrypt:
 
 yosys> opt_expr
 
-3.24. Executing OPT_EXPR pass (perform const folding).
+3.54. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~1 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25. Executing OPT_MERGE pass (detect identical cells).
+3.55. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.56. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -662,7 +588,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.57. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
     New input vector for $reduce_and cell $auto$opt_dff.cc:220:make_patterns_logic$2466: { $auto$alumacc.cc:501:replace_alu$2475 $auto$rtlil.cc:2369:Not$2464 }
   Optimizing cells in module \gost89_cfb_encrypt.
@@ -670,34 +596,34 @@ Performed a total of 1 changes.
 
 yosys> opt_merge
 
-3.28. Executing OPT_MERGE pass (detect identical cells).
+3.58. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.29. Executing OPT_SHARE pass.
+3.59. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.30. Executing OPT_DFF pass (perform DFF optimizations).
+3.60. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.61. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 3 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.32. Executing OPT_EXPR pass (perform const folding).
+3.62. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 MAX OPT ITERATION = 1
 
 yosys> stat
 
-3.33. Printing statistics.
+3.63. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -727,56 +653,56 @@ yosys> stat
 
 yosys> memory -nomap
 
-3.34. Executing MEMORY pass.
+3.64. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.34.1. Executing OPT_MEM pass (optimize memories).
+3.64.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.34.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.64.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.34.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.64.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.34.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.64.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.34.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.64.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.34.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.64.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> memory_share
 
-3.34.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.64.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.34.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.64.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.34.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.64.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> memory_collect
 
-3.34.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.64.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.65. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -806,22 +732,22 @@ yosys> stat
 
 yosys> muxpack
 
-3.36. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.66. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converted 0 (p)mux cells into 0 pmux cells.
 <suppressed ~138 debug messages>
 
 yosys> opt_clean
 
-3.37. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.67. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> pmuxtree
 
-3.38. Executing PMUXTREE pass.
+3.68. Executing PMUXTREE pass.
 
 yosys> muxpack
 
-3.39. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.69. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converting gost89_cfb_encrypt.$auto$pmuxtree.cc:65:recursive_mux_generator$2507 ... gost89_cfb_encrypt.$auto$pmuxtree.cc:65:recursive_mux_generator$2509 to a pmux with 2 cases.
 Converting gost89_cfb_encrypt.$auto$pmuxtree.cc:65:recursive_mux_generator$2497 ... gost89_cfb_encrypt.$auto$pmuxtree.cc:65:recursive_mux_generator$2499 to a pmux with 2 cases.
 Converted 4 (p)mux cells into 2 pmux cells.
@@ -829,11 +755,11 @@ Converted 4 (p)mux cells into 2 pmux cells.
 
 yosys> memory_map
 
-3.40. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+3.70. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.41. Printing statistics.
+3.71. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -863,10 +789,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.42. Executing TECHMAP pass (map to technology primitives).
+3.72. Executing TECHMAP pass (map to technology primitives).
 
-3.42.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.72.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -893,12 +819,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.42.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+3.72.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.42.3. Continuing TECHMAP pass.
+3.72.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $and.
 Using extmapper simplemap for cells of type $mux.
@@ -922,7 +848,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.43. Printing statistics.
+3.73. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -946,20 +872,20 @@ yosys> stat
 
 yosys> opt_expr
 
-3.44. Executing OPT_EXPR pass (perform const folding).
+3.74. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~345 debug messages>
 
 yosys> opt_merge -nomux
 
-3.45. Executing OPT_MERGE pass (detect identical cells).
+3.75. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~636 debug messages>
 Removed a total of 212 cells.
 
 yosys> opt_muxtree
 
-3.46. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.76. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -967,39 +893,39 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.47. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.77. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.48. Executing OPT_MERGE pass (detect identical cells).
+3.78. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.49. Executing OPT_SHARE pass.
+3.79. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.50. Executing OPT_DFF pass (perform DFF optimizations).
+3.80. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.81. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 50 unused cells and 556 unused wires.
 <suppressed ~51 debug messages>
 
 yosys> opt_expr
 
-3.52. Executing OPT_EXPR pass (perform const folding).
+3.82. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 
 yosys> opt_muxtree
 
-3.53. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.83. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1007,70 +933,47 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.54. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.84. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55. Executing OPT_MERGE pass (detect identical cells).
+3.85. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.56. Executing OPT_SHARE pass.
+3.86. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.57. Executing OPT_DFF pass (perform DFF optimizations).
+3.87. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.88. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 
 yosys> opt_expr
 
-3.59. Executing OPT_EXPR pass (perform const folding).
+3.89. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 MAX OPT ITERATION = 2
 
-yosys> opt -nodffe -fast -full -nosdff
-
-3.60. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr -full
 
-3.60.1. Executing OPT_EXPR pass (perform const folding).
+3.90. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~131 debug messages>
 
-yosys> opt_merge
-
-3.60.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.60.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.60.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gost89_cfb_encrypt..
-Removed 0 unused cells and 4 unused wires.
-<suppressed ~1 debug messages>
-
-3.60.5. Finished fast OPT passes.
-
 yosys> techmap -map +/techmap.v
 
-3.61. Executing TECHMAP pass (map to technology primitives).
+3.91. Executing TECHMAP pass (map to technology primitives).
 
-3.61.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.91.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1097,28 +1000,24 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.61.2. Continuing TECHMAP pass.
+3.91.2. Continuing TECHMAP pass.
 No more expansions possible.
 <suppressed ~71 debug messages>
 
-yosys> opt -nodffe -sat -nosdff
-
-3.62. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.62.1. Executing OPT_EXPR pass (perform const folding).
+3.92. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 
 yosys> opt_merge -nomux
 
-3.62.2. Executing OPT_MERGE pass (detect identical cells).
+3.93. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.62.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.94. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1126,37 +1025,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.62.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.95. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.62.5. Executing OPT_MERGE pass (detect identical cells).
+3.96. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -sat -nosdff
+yosys> opt_dff -nosdff -nodffe -sat
 
-3.62.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.97. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.62.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.98. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.62.8. Executing OPT_EXPR pass (perform const folding).
+3.99. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
-
-3.62.9. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> abc -dff
 
-3.63. Executing ABC pass (technology mapping using ABC).
+3.100. Executing ABC pass (technology mapping using ABC).
 
-3.63.1. Summary of detected clock domains:
+3.100.1. Summary of detected clock domains:
   647 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$2465, arst={ }, srst={ }
   389 cells in clk=\clk, en={ }, arst={ }, srst={ }
   67 cells in clk=\clk, en=$verific$n347$15, arst={ }, srst={ }
@@ -1165,53 +1065,53 @@ yosys> abc -dff
   561 cells in clk=\clk, en=$auto$opt_dff.cc:194:make_patterns_logic$2460, arst={ }, srst={ }
   3 cells in clk=\clk, en=$auto$opt_dff.cc:194:make_patterns_logic$2457, arst={ }, srst={ }
 
-3.63.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$2465
 Extracted 647 gates and 1326 wires to a netlist network with 679 inputs and 97 outputs.
 
-3.63.2.1. Executing ABC.
+3.100.2.1. Executing ABC.
 
-3.63.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
 Extracted 357 gates and 488 wires to a netlist network with 130 inputs and 111 outputs.
 
-3.63.3.1. Executing ABC.
+3.100.3.1. Executing ABC.
 
-3.63.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $verific$n347$15
 Extracted 67 gates and 135 wires to a netlist network with 68 inputs and 65 outputs.
 
-3.63.4.1. Executing ABC.
+3.100.4.1. Executing ABC.
 
-3.63.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by \ecb_encrypt.load_data
 Extracted 66 gates and 132 wires to a netlist network with 66 inputs and 66 outputs.
 
-3.63.5.1. Executing ABC.
+3.100.5.1. Executing ABC.
 
-3.63.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$2454
 Extracted 131 gates and 262 wires to a netlist network with 131 inputs and 66 outputs.
 
-3.63.6.1. Executing ABC.
+3.100.6.1. Executing ABC.
 
-3.63.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$2460
 Extracted 561 gates and 829 wires to a netlist network with 268 inputs and 33 outputs.
 
-3.63.7.1. Executing ABC.
+3.100.7.1. Executing ABC.
 
-3.63.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.100.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$2457
 Extracted 3 gates and 7 wires to a netlist network with 3 inputs and 2 outputs.
 
-3.63.8.1. Executing ABC.
+3.100.8.1. Executing ABC.
 
 yosys> abc -dff
 
-3.64. Executing ABC pass (technology mapping using ABC).
+3.101. Executing ABC pass (technology mapping using ABC).
 
-3.64.1. Summary of detected clock domains:
+3.101.1. Summary of detected clock domains:
   112 cells in clk=\clk, en=$abc$7138$ecb_encrypt.load_data, arst={ }, srst={ }
   84 cells in clk=\clk, en=$abc$6942$verific$n347$15, arst={ }, srst={ }
   76 cells in clk=\clk, en=$abc$5720$auto$opt_dff.cc:219:make_patterns_logic$2465, arst={ }, srst={ }
@@ -1220,53 +1120,53 @@ yosys> abc -dff
   576 cells in clk=\clk, en=$abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460, arst={ }, srst={ }
   4 cells in clk=\clk, en=$abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457, arst={ }, srst={ }
 
-3.64.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$7138$ecb_encrypt.load_data
 Extracted 112 gates and 225 wires to a netlist network with 113 inputs and 65 outputs.
 
-3.64.2.1. Executing ABC.
+3.101.2.1. Executing ABC.
 
-3.64.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$6942$verific$n347$15
 Extracted 84 gates and 167 wires to a netlist network with 83 inputs and 81 outputs.
 
-3.64.3.1. Executing ABC.
+3.101.3.1. Executing ABC.
 
-3.64.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$5720$auto$opt_dff.cc:219:make_patterns_logic$2465
 Extracted 76 gates and 153 wires to a netlist network with 77 inputs and 65 outputs.
 
-3.64.4.1. Executing ABC.
+3.101.4.1. Executing ABC.
 
-3.64.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$7333$auto$opt_dff.cc:194:make_patterns_logic$2454
 Extracted 149 gates and 300 wires to a netlist network with 151 inputs and 65 outputs.
 
-3.64.5.1. Executing ABC.
+3.101.5.1. Executing ABC.
 
-3.64.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
 Extracted 963 gates and 1601 wires to a netlist network with 638 inputs and 134 outputs.
 
-3.64.6.1. Executing ABC.
+3.101.6.1. Executing ABC.
 
-3.64.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460
 Extracted 576 gates and 846 wires to a netlist network with 270 inputs and 33 outputs.
 
-3.64.7.1. Executing ABC.
+3.101.7.1. Executing ABC.
 
-3.64.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.101.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457
 Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.64.8.1. Executing ABC.
+3.101.8.1. Executing ABC.
 
 yosys> abc -dff
 
-3.65. Executing ABC pass (technology mapping using ABC).
+3.102. Executing ABC pass (technology mapping using ABC).
 
-3.65.1. Summary of detected clock domains:
+3.102.1. Summary of detected clock domains:
   110 cells in clk=\clk, en=$abc$8141$abc$7138$ecb_encrypt.load_data, arst={ }, srst={ }
   160 cells in clk=\clk, en=$abc$8742$abc$7333$auto$opt_dff.cc:194:make_patterns_logic$2454, arst={ }, srst={ }
   72 cells in clk=\clk, en=$abc$8335$abc$6942$verific$n347$15, arst={ }, srst={ }
@@ -1275,53 +1175,53 @@ yosys> abc -dff
   535 cells in clk=\clk, en=$abc$10008$abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460, arst={ }, srst={ }
   4 cells in clk=\clk, en=$abc$10573$abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457, arst={ }, srst={ }
 
-3.65.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$8141$abc$7138$ecb_encrypt.load_data
 Extracted 110 gates and 213 wires to a netlist network with 103 inputs and 77 outputs.
 
-3.65.2.1. Executing ABC.
+3.102.2.1. Executing ABC.
 
-3.65.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$8742$abc$7333$auto$opt_dff.cc:194:make_patterns_logic$2454
 Extracted 160 gates and 298 wires to a netlist network with 138 inputs and 66 outputs.
 
-3.65.3.1. Executing ABC.
+3.102.3.1. Executing ABC.
 
-3.65.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$8335$abc$6942$verific$n347$15
 Extracted 72 gates and 145 wires to a netlist network with 73 inputs and 65 outputs.
 
-3.65.4.1. Executing ABC.
+3.102.4.1. Executing ABC.
 
-3.65.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$8546$abc$5720$auto$opt_dff.cc:219:make_patterns_logic$2465
 Extracted 238 gates and 466 wires to a netlist network with 228 inputs and 76 outputs.
 
-3.65.5.1. Executing ABC.
+3.102.5.1. Executing ABC.
 
-3.65.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
 Extracted 865 gates and 1398 wires to a netlist network with 533 inputs and 114 outputs.
 
-3.65.6.1. Executing ABC.
+3.102.6.1. Executing ABC.
 
-3.65.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$10008$abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460
 Extracted 535 gates and 806 wires to a netlist network with 271 inputs and 33 outputs.
 
-3.65.7.1. Executing ABC.
+3.102.7.1. Executing ABC.
 
-3.65.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.102.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$10573$abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457
 Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.65.8.1. Executing ABC.
+3.102.8.1. Executing ABC.
 
 yosys> abc -dff
 
-3.66. Executing ABC pass (technology mapping using ABC).
+3.103. Executing ABC pass (technology mapping using ABC).
 
-3.66.1. Summary of detected clock domains:
+3.103.1. Summary of detected clock domains:
   75 cells in clk=\clk, en=$abc$10579$abc$8141$abc$7138$ecb_encrypt.load_data, arst={ }, srst={ }
   167 cells in clk=\clk, en=$abc$10785$abc$8742$abc$7333$auto$opt_dff.cc:194:make_patterns_logic$2454, arst={ }, srst={ }
   87 cells in clk=\clk, en=$abc$10981$abc$8335$abc$6942$verific$n347$15, arst={ }, srst={ }
@@ -1330,74 +1230,70 @@ yosys> abc -dff
   562 cells in clk=\clk, en=$abc$12488$abc$10008$abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460, arst={ }, srst={ }
   4 cells in clk=\clk, en=$abc$13082$abc$10573$abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457, arst={ }, srst={ }
 
-3.66.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.2. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$10579$abc$8141$abc$7138$ecb_encrypt.load_data
 Extracted 75 gates and 151 wires to a netlist network with 76 inputs and 72 outputs.
 
-3.66.2.1. Executing ABC.
+3.103.2.1. Executing ABC.
 
-3.66.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.3. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$10785$abc$8742$abc$7333$auto$opt_dff.cc:194:make_patterns_logic$2454
 Extracted 167 gates and 305 wires to a netlist network with 138 inputs and 66 outputs.
 
-3.66.3.1. Executing ABC.
+3.103.3.1. Executing ABC.
 
-3.66.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.4. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$10981$abc$8335$abc$6942$verific$n347$15
 Extracted 87 gates and 175 wires to a netlist network with 88 inputs and 74 outputs.
 
-3.66.4.1. Executing ABC.
+3.103.4.1. Executing ABC.
 
-3.66.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.5. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$11176$abc$8546$abc$5720$auto$opt_dff.cc:219:make_patterns_logic$2465
 Extracted 322 gates and 585 wires to a netlist network with 263 inputs and 82 outputs.
 
-3.66.5.1. Executing ABC.
+3.103.5.1. Executing ABC.
 
-3.66.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.6. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk
 Extracted 868 gates and 1388 wires to a netlist network with 520 inputs and 115 outputs.
 
-3.66.6.1. Executing ABC.
+3.103.6.1. Executing ABC.
 
-3.66.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.7. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$12488$abc$10008$abc$7529$auto$opt_dff.cc:194:make_patterns_logic$2460
 Extracted 562 gates and 831 wires to a netlist network with 269 inputs and 33 outputs.
 
-3.66.7.1. Executing ABC.
+3.103.7.1. Executing ABC.
 
-3.66.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.103.8. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$13082$abc$10573$abc$8136$auto$opt_dff.cc:194:make_patterns_logic$2457
 Extracted 4 gates and 8 wires to a netlist network with 4 inputs and 3 outputs.
 
-3.66.8.1. Executing ABC.
+3.103.8.1. Executing ABC.
 
 yosys> opt_ffinv
 
-3.67. Executing OPT_FFINV pass (push inverters through FFs).
+3.104. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
-yosys> opt -sat -nosdff
-
-3.68. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.68.1. Executing OPT_EXPR pass (perform const folding).
+3.105. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~25 debug messages>
 
 yosys> opt_merge -nomux
 
-3.68.2. Executing OPT_MERGE pass (detect identical cells).
+3.106. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~105 debug messages>
 Removed a total of 35 cells.
 
 yosys> opt_muxtree
 
-3.68.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.107. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1405,19 +1301,23 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.108. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.68.5. Executing OPT_MERGE pass (detect identical cells).
+3.109. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.68.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.110. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.111. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14126 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$14084$li41_li41, Q = $abc$14084$lo41).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14120 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$14084$li35_li35, Q = $abc$14084$lo35).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14144 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$14084$li59_li59, Q = $abc$14084$lo59).
@@ -1449,22 +1349,20 @@ Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14135 ($_DFF_P_)
 
 yosys> opt_clean
 
-3.68.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.112. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 13584 unused wires.
 <suppressed ~15 debug messages>
 
 yosys> opt_expr
 
-3.68.8. Executing OPT_EXPR pass (perform const folding).
+3.113. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~56 debug messages>
 
-3.68.9. Rerunning OPT passes. (Maybe there is more to do..)
-
 yosys> opt_muxtree
 
-3.68.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.114. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1472,20 +1370,24 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.115. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.68.12. Executing OPT_MERGE pass (detect identical cells).
+3.116. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~141 debug messages>
 Removed a total of 47 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.68.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.117. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.118. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14116 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$11540$li21_li21, Q = $abc$11540$lo21).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14096 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$10785$abc$8937$li61_li61, Q = $abc$14084$lo11).
 Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14095 ($_DFF_P_) from module gost89_cfb_encrypt (D = $abc$11540$li70_li70, Q = $abc$11540$lo70).
@@ -1495,22 +1397,20 @@ Adding EN signal on $abc$14084$auto$blifparse.cc:362:parse_blif$14088 ($_DFF_P_)
 
 yosys> opt_clean
 
-3.68.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.119. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 81 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.68.15. Executing OPT_EXPR pass (perform const folding).
+3.120. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~12 debug messages>
 
-3.68.16. Rerunning OPT passes. (Maybe there is more to do..)
-
 yosys> opt_muxtree
 
-3.68.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.121. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1518,38 +1418,40 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.122. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.68.19. Executing OPT_MERGE pass (detect identical cells).
+3.123. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~24 debug messages>
 Removed a total of 8 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.68.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.124. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.125. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.68.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.126. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 14 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.68.22. Executing OPT_EXPR pass (perform const folding).
+3.127. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
-
-3.68.23. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.68.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.128. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1557,125 +1459,128 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.129. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.68.26. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.68.27. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.68.28. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gost89_cfb_encrypt..
-
-yosys> opt_expr
-
-3.68.29. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gost89_cfb_encrypt.
-
-3.68.30. Finished OPT passes. (There is nothing left to do.)
-
-yosys> bmuxmap
-
-3.69. Executing BMUXMAP pass.
-
-yosys> demuxmap
-
-3.70. Executing DEMUXMAP pass.
-
-yosys> clean_zerowidth
-
-yosys> abc -script /home/users/temp_dir/yosys_KVwW0a/abc_tmp_1.scr
-
-3.71. Executing ABC pass (technology mapping using ABC).
-
-3.71.1. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
-Extracted 1722 gates and 2884 wires to a netlist network with 1161 inputs and 302 outputs.
-
-3.71.1.1. Executing ABC.
-DE:   #PIs = 1161  #Luts =   594  Max Lvl =   5  Avg Lvl =   2.32  [   0.07 sec. at Pass 0]
-DE:   #PIs = 1161  #Luts =   561  Max Lvl =   5  Avg Lvl =   2.20  [   1.53 sec. at Pass 1]
-DE:   #PIs = 1161  #Luts =   561  Max Lvl =   5  Avg Lvl =   2.20  [   0.40 sec. at Pass 2]
-DE:   #PIs = 1161  #Luts =   560  Max Lvl =   5  Avg Lvl =   2.20  [   0.51 sec. at Pass 3]
-DE:   #PIs = 1161  #Luts =   560  Max Lvl =   5  Avg Lvl =   2.20  [   0.43 sec. at Pass 4]
-DE:   #PIs = 1161  #Luts =   552  Max Lvl =   5  Avg Lvl =   2.20  [   0.52 sec. at Pass 5]
-DE:   #PIs = 1161  #Luts =   549  Max Lvl =   5  Avg Lvl =   2.20  [   0.50 sec. at Pass 6]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.54 sec. at Pass 7]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.49 sec. at Pass 8]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.55 sec. at Pass 9]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.54 sec. at Pass 10]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   2.92 sec. at Pass 11]
-DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.15 sec. at Pass 12]
-
-yosys> opt_expr
-
-3.72. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gost89_cfb_encrypt.
-
-yosys> opt_merge -nomux
-
-3.73. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.74. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gost89_cfb_encrypt..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.75. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gost89_cfb_encrypt.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.76. Executing OPT_MERGE pass (detect identical cells).
+3.130. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.77. Executing OPT_SHARE pass.
+3.131. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -sat
 
-3.78. Executing OPT_DFF pass (perform DFF optimizations).
+3.132. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.79. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.133. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \gost89_cfb_encrypt..
+
+yosys> opt_expr
+
+3.134. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gost89_cfb_encrypt.
+MAX OPT ITERATION = 4
+
+yosys> bmuxmap
+
+3.135. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.136. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
+yosys> abc -script /tmp/yosys_QlzLHo/abc_tmp_1.scr
+
+3.137. Executing ABC pass (technology mapping using ABC).
+
+3.137.1. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+Extracted 1722 gates and 2884 wires to a netlist network with 1161 inputs and 302 outputs.
+
+3.137.1.1. Executing ABC.
+DE:   #PIs = 1161  #Luts =   594  Max Lvl =   5  Avg Lvl =   2.32  [   0.11 sec. at Pass 0]
+DE:   #PIs = 1161  #Luts =   561  Max Lvl =   5  Avg Lvl =   2.20  [   1.97 sec. at Pass 1]
+DE:   #PIs = 1161  #Luts =   561  Max Lvl =   5  Avg Lvl =   2.20  [   0.65 sec. at Pass 2]
+DE:   #PIs = 1161  #Luts =   560  Max Lvl =   5  Avg Lvl =   2.20  [   0.93 sec. at Pass 3]
+DE:   #PIs = 1161  #Luts =   560  Max Lvl =   5  Avg Lvl =   2.20  [   0.77 sec. at Pass 4]
+DE:   #PIs = 1161  #Luts =   552  Max Lvl =   5  Avg Lvl =   2.20  [   0.84 sec. at Pass 5]
+DE:   #PIs = 1161  #Luts =   549  Max Lvl =   5  Avg Lvl =   2.20  [   0.85 sec. at Pass 6]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   1.03 sec. at Pass 7]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.92 sec. at Pass 8]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   1.16 sec. at Pass 9]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   1.00 sec. at Pass 10]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   2.43 sec. at Pass 11]
+DE:   #PIs = 1161  #Luts =   539  Max Lvl =   5  Avg Lvl =   2.20  [   0.10 sec. at Pass 12]
+
+yosys> opt_expr
+
+3.138. Executing OPT_EXPR pass (perform const folding).
+Optimizing module gost89_cfb_encrypt.
+
+yosys> opt_merge -nomux
+
+3.139. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gost89_cfb_encrypt'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.140. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \gost89_cfb_encrypt..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+yosys> opt_reduce
+
+3.141. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \gost89_cfb_encrypt.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.142. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\gost89_cfb_encrypt'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.143. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.144. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.145. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 2882 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.80. Executing OPT_EXPR pass (perform const folding).
+3.146. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 MAX OPT ITERATION = 1
 
 yosys> opt_ffinv
 
-3.81. Executing OPT_FFINV pass (push inverters through FFs).
+3.147. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> stat
 
-3.82. Printing statistics.
+3.148. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -1695,16 +1600,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.83. Executing SHREGMAP pass (map shift registers).
+3.149. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.84. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.150. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.85. Printing statistics.
+3.151. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -1724,10 +1629,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.86. Executing TECHMAP pass (map to technology primitives).
+3.152. Executing TECHMAP pass (map to technology primitives).
 
-3.86.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.152.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1754,8 +1659,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.86.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.152.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1823,7 +1728,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.86.3. Continuing TECHMAP pass.
+3.152.3. Continuing TECHMAP pass.
 Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using extmapper simplemap for cells of type $lut.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
@@ -1833,56 +1738,52 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.87. Executing OPT_EXPR pass (perform const folding).
+3.153. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~15254 debug messages>
 
 yosys> simplemap
 
-3.88. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.154. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.89. Executing OPT_EXPR pass (perform const folding).
+3.155. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 
 yosys> opt_merge
 
-3.90. Executing OPT_MERGE pass (detect identical cells).
+3.156. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 <suppressed ~5118 debug messages>
 Removed a total of 1706 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.91. Executing OPT_DFF pass (perform DFF optimizations).
+3.157. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.92. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.158. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 3236 unused wires.
 <suppressed ~1 debug messages>
 
-yosys> opt -nodffe -nosdff
-
-3.93. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.93.1. Executing OPT_EXPR pass (perform const folding).
+3.159. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 <suppressed ~624 debug messages>
 
 yosys> opt_merge -nomux
 
-3.93.2. Executing OPT_MERGE pass (detect identical cells).
+3.160. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.93.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.161. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1890,101 +1791,68 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.93.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.162. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.93.5. Executing OPT_MERGE pass (detect identical cells).
+3.163. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.93.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.164. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.165. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.93.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.166. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 75 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.93.8. Executing OPT_EXPR pass (perform const folding).
+3.167. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
+MAX OPT ITERATION = 1
 
-3.93.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> abc -script /tmp/yosys_QlzLHo/abc_tmp_2.scr
 
-yosys> opt_muxtree
+3.168. Executing ABC pass (technology mapping using ABC).
 
-3.93.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \gost89_cfb_encrypt..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.93.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \gost89_cfb_encrypt.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.93.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\gost89_cfb_encrypt'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.93.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.93.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \gost89_cfb_encrypt..
-
-yosys> opt_expr
-
-3.93.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module gost89_cfb_encrypt.
-
-3.93.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script /home/users/temp_dir/yosys_KVwW0a/abc_tmp_2.scr
-
-3.94. Executing ABC pass (technology mapping using ABC).
-
-3.94.1. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
+3.168.1. Extracting gate netlist of module `\gost89_cfb_encrypt' to `<abc-temp-dir>/input.blif'..
 Extracted 2230 gates and 3393 wires to a netlist network with 1161 inputs and 300 outputs.
 
-3.94.1.1. Executing ABC.
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.12 sec. at Pass 0]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   1.90 sec. at Pass 1]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.62 sec. at Pass 2]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.56 sec. at Pass 3]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.46 sec. at Pass 4]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.57 sec. at Pass 5]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   3.01 sec. at Pass 6]
-DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.15 sec. at Pass 7]
+3.168.1.1. Executing ABC.
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.08 sec. at Pass 0]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   1.60 sec. at Pass 1]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.79 sec. at Pass 2]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.93 sec. at Pass 3]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.63 sec. at Pass 4]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.94 sec. at Pass 5]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   3.99 sec. at Pass 6]
+DE:   #PIs = 1161  #Luts =   537  Max Lvl =   5  Avg Lvl =   2.21  [   0.27 sec. at Pass 7]
 
 yosys> opt_expr
 
-3.95. Executing OPT_EXPR pass (perform const folding).
+3.169. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 
 yosys> opt_merge -nomux
 
-3.96. Executing OPT_MERGE pass (detect identical cells).
+3.170. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.97. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.171. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \gost89_cfb_encrypt..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1992,51 +1860,51 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.98. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.172. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \gost89_cfb_encrypt.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.99. Executing OPT_MERGE pass (detect identical cells).
+3.173. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\gost89_cfb_encrypt'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.100. Executing OPT_SHARE pass.
+3.174. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.101. Executing OPT_DFF pass (perform DFF optimizations).
+3.175. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.102. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.176. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 2871 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.103. Executing OPT_EXPR pass (perform const folding).
+3.177. Executing OPT_EXPR pass (perform const folding).
 Optimizing module gost89_cfb_encrypt.
 MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.104. Executing HIERARCHY pass (managing design hierarchy).
+3.178. Executing HIERARCHY pass (managing design hierarchy).
 
-3.104.1. Analyzing design hierarchy..
+3.178.1. Analyzing design hierarchy..
 Top module:  \gost89_cfb_encrypt
 
-3.104.2. Analyzing design hierarchy..
+3.178.2. Analyzing design hierarchy..
 Top module:  \gost89_cfb_encrypt
 Removed 0 unused modules.
 
 yosys> stat
 
-3.105. Printing statistics.
+3.179. Printing statistics.
 
 === gost89_cfb_encrypt ===
 
@@ -2055,20 +1923,20 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.106. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.180. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \gost89_cfb_encrypt..
 Removed 0 unused cells and 25 unused wires.
 <suppressed ~25 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.107. Executing Verilog backend.
+3.181. Executing Verilog backend.
 Dumping module `\gost89_cfb_encrypt'.
 
 Warnings: 1 unique messages, 1 total
-End of script. Logfile hash: 9fa5bba980, CPU: user 5.51s system 0.19s, MEM: 60.33 MB peak
-Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
-Time spent: 96% 6x abc (152 sec), 1% 34x opt_expr (2 sec), ...
-real 30.09
-user 142.75
-sys 14.26
+End of script. Logfile hash: 5736070d21, CPU: user 5.66s system 0.08s, MEM: 72.28 MB peak
+Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
+Time spent: 96% 6x abc (147 sec), 1% 31x opt_expr (1 sec), ...
+real 39.32
+user 141.07
+sys 11.35
