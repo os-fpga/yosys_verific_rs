@@ -18,14 +18,14 @@ set(VERSION_PATCH 55)
 
 project(yosys_verific_rs)
 
-add_subdirectory(logic_synthesis-rs)
-
-get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
-    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
 if (LICENSE_ON)
+    get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
     add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
 endif()
+
+add_subdirectory(logic_synthesis-rs)
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
