@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.50
- Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.53
+ Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,29 +35,29 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
-yosys> read -vlog2k demux.v mux.v wrapper_io_tc1.v
+yosys> read -vlog2k wrapper_io_tc1.v demux.v mux.v
 
-yosys> verific -vlog2k demux.v mux.v wrapper_io_tc1.v
+yosys> verific -vlog2k wrapper_io_tc1.v demux.v mux.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'demux.v'
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'mux.v'
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'wrapper_io_tc1.v'
 VERIFIC-INFO [VERI-2561] wrapper_io_tc1.v:15: undeclared symbol 'mux_out', assumed default net type 'wire'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'demux.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'mux.v'
 
 yosys> synth_rs -top wrapper_io_tc1 -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.59
+3. Executing synth_rs pass: v0.4.61
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -65,8 +65,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+3.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -322,24 +322,20 @@ yosys> check
 Checking module wrapper_io_tc1...
 Found and reported 0 problems.
 
-yosys> opt -nodffe -nosdff
-
-3.15. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.15.1. Executing OPT_EXPR pass (perform const folding).
+3.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.15.2. Executing OPT_MERGE pass (detect identical cells).
+3.16. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -349,19 +345,23 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.15.5. Executing OPT_MERGE pass (detect identical cells).
+3.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.20. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.21. Executing OPT_DFF pass (perform DFF optimizations).
 Removing never-active CLR on $flatten\mux0.$verific$sel_internal1_reg$mux.v:27$953 ($dlatchsr) from module wrapper_io_tc1.
 Removing never-active ARST on $flatten\mux0.$verific$sel_internal1_reg$mux.v:27$953 ($dlatchsr) from module wrapper_io_tc1.
 Removing never-active CLR on $flatten\mux0.$verific$sel_internal0_reg$mux.v:27$938 ($dlatchsr) from module wrapper_io_tc1.
@@ -377,109 +377,66 @@ Removing never-active ARST on $flatten\demux0.$verific$sel_internal0_reg$demux.v
 
 yosys> opt_clean
 
-3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> opt_expr
 
-3.15.8. Executing OPT_EXPR pass (perform const folding).
+3.23. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
-
-3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_io_tc1..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~138 debug messages>
-
-yosys> opt_reduce
-
-3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_io_tc1.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.15.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-yosys> opt_expr
-
-3.15.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_io_tc1.
-
-3.15.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> fsm -encoding binary
 
-3.16. Executing FSM pass (extract and optimize FSM).
+3.24. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.24.1. Executing FSM_DETECT pass (finding FSMs in design).
 
 yosys> fsm_extract
 
-3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.24.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 
 yosys> fsm_opt
 
-3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.24.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> opt_clean
 
-3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> fsm_opt
 
-3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.24.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 
 yosys> fsm_recode -encoding binary
 
-3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.24.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 
 yosys> fsm_info
 
-3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.24.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 yosys> fsm_map
 
-3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
-
-yosys> opt -sat -nosdff
-
-3.17. Executing OPT pass (performing simple optimizations).
+3.24.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 
 yosys> opt_expr
 
-3.17.1. Executing OPT_EXPR pass (perform const folding).
+3.25. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.17.2. Executing OPT_MERGE pass (detect identical cells).
+3.26. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.27. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -489,116 +446,119 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.28. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.17.5. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-yosys> opt_expr
-
-3.17.8. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_io_tc1.
-
-3.17.9. Finished OPT passes. (There is nothing left to do.)
-
-yosys> wreduce -keepdc
-
-3.18. Executing WREDUCE pass (reducing word size of cells).
-
-yosys> peepopt
-
-3.19. Executing PEEPOPT pass (run peephole optimizers).
-
-yosys> opt_clean
-
-3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-yosys> bmuxmap
-
-3.21. Executing BMUXMAP pass.
-
-yosys> demuxmap
-
-3.22. Executing DEMUXMAP pass.
-
-yosys> clean_zerowidth
-
-yosys> alumacc
-
-3.23. Executing ALUMACC pass (create $alu and $macc cells).
-Extracting $alu and $macc cells in module wrapper_io_tc1:
-  created 0 $alu and 0 $macc cells.
-
-yosys> opt_expr
-
-3.24. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_io_tc1.
-
-yosys> opt_merge -nomux
-
-3.25. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_muxtree
-
-3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_io_tc1..
-  Creating internal representation of mux trees.
-  Evaluating internal representation of mux trees.
-  Analyzing evaluation results.
-Removed 0 multiplexer ports.
-<suppressed ~138 debug messages>
-
-yosys> opt_reduce
-
-3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_io_tc1.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.28. Executing OPT_MERGE pass (detect identical cells).
+3.29. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.29. Executing OPT_SHARE pass.
+3.30. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -sat
 
-3.30. Executing OPT_DFF pass (perform DFF optimizations).
+3.31. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.32. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> opt_expr
 
-3.32. Executing OPT_EXPR pass (perform const folding).
+3.33. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_io_tc1.
+MAX OPT ITERATION = 1
+
+yosys> wreduce -keepdc
+
+3.34. Executing WREDUCE pass (reducing word size of cells).
+
+yosys> peepopt
+
+3.35. Executing PEEPOPT pass (run peephole optimizers).
+
+yosys> opt_clean
+
+3.36. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_io_tc1..
+
+yosys> bmuxmap
+
+3.37. Executing BMUXMAP pass.
+
+yosys> demuxmap
+
+3.38. Executing DEMUXMAP pass.
+
+yosys> clean_zerowidth
+
+yosys> alumacc
+
+3.39. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module wrapper_io_tc1:
+  created 0 $alu and 0 $macc cells.
+
+yosys> opt_expr
+
+3.40. Executing OPT_EXPR pass (perform const folding).
+Optimizing module wrapper_io_tc1.
+
+yosys> opt_merge -nomux
+
+3.41. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_io_tc1'.
+Removed a total of 0 cells.
+
+yosys> opt_muxtree
+
+3.42. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \wrapper_io_tc1..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~138 debug messages>
+
+yosys> opt_reduce
+
+3.43. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \wrapper_io_tc1.
+Performed a total of 0 changes.
+
+yosys> opt_merge
+
+3.44. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\wrapper_io_tc1'.
+Removed a total of 0 cells.
+
+yosys> opt_share
+
+3.45. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.46. Executing OPT_DFF pass (perform DFF optimizations).
+
+yosys> opt_clean
+
+3.47. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \wrapper_io_tc1..
+
+yosys> opt_expr
+
+3.48. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 MAX OPT ITERATION = 1
 
 yosys> stat
 
-3.33. Printing statistics.
+3.49. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -616,56 +576,56 @@ yosys> stat
 
 yosys> memory -nomap
 
-3.34. Executing MEMORY pass.
+3.50. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.34.1. Executing OPT_MEM pass (optimize memories).
+3.50.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.34.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.50.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.34.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.50.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.34.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.50.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.34.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.50.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.34.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> memory_share
 
-3.34.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.50.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.34.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.50.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.34.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.50.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> memory_collect
 
-3.34.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.50.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.51. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -683,32 +643,32 @@ yosys> stat
 
 yosys> muxpack
 
-3.36. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.52. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converted 0 (p)mux cells into 0 pmux cells.
 <suppressed ~511 debug messages>
 
 yosys> opt_clean
 
-3.37. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.53. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> pmuxtree
 
-3.38. Executing PMUXTREE pass.
+3.54. Executing PMUXTREE pass.
 
 yosys> muxpack
 
-3.39. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.55. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converted 0 (p)mux cells into 0 pmux cells.
 <suppressed ~511 debug messages>
 
 yosys> memory_map
 
-3.40. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+3.56. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.41. Printing statistics.
+3.57. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -726,10 +686,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.42. Executing TECHMAP pass (map to technology primitives).
+3.58. Executing TECHMAP pass (map to technology primitives).
 
-3.42.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.58.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -756,12 +716,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.42.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+3.58.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.42.3. Continuing TECHMAP pass.
+3.58.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $dlatch.
 No more expansions possible.
@@ -769,7 +729,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.43. Printing statistics.
+3.59. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -788,19 +748,19 @@ yosys> stat
 
 yosys> opt_expr
 
-3.44. Executing OPT_EXPR pass (perform const folding).
+3.60. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 <suppressed ~2 debug messages>
 
 yosys> opt_merge -nomux
 
-3.45. Executing OPT_MERGE pass (detect identical cells).
+3.61. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.46. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.62. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -808,70 +768,49 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.47. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.63. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.48. Executing OPT_MERGE pass (detect identical cells).
+3.64. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.49. Executing OPT_SHARE pass.
+3.65. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.50. Executing OPT_DFF pass (perform DFF optimizations).
+3.66. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.67. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 2 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.52. Executing OPT_EXPR pass (perform const folding).
+3.68. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 MAX OPT ITERATION = 1
 
-yosys> opt -nodffe -fast -full -nosdff
-
-3.53. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr -full
 
-3.53.1. Executing OPT_EXPR pass (perform const folding).
+3.69. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 <suppressed ~254 debug messages>
 
-yosys> opt_merge
-
-3.53.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.53.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.53.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-3.53.5. Finished fast OPT passes.
-
 yosys> techmap -map +/techmap.v
 
-3.54. Executing TECHMAP pass (map to technology primitives).
+3.70. Executing TECHMAP pass (map to technology primitives).
 
-3.54.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.70.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -898,28 +837,24 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.54.2. Continuing TECHMAP pass.
+3.70.2. Continuing TECHMAP pass.
 No more expansions possible.
 <suppressed ~71 debug messages>
 
-yosys> opt -nodffe -sat -nosdff
-
-3.55. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.55.1. Executing OPT_EXPR pass (perform const folding).
+3.71. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.55.2. Executing OPT_MERGE pass (detect identical cells).
+3.72. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.55.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.73. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -927,108 +862,103 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.55.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.74. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55.5. Executing OPT_MERGE pass (detect identical cells).
+3.75. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -sat -nosdff
+yosys> opt_dff -nosdff -nodffe -sat
 
-3.55.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.76. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.55.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.77. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 
 yosys> opt_expr
 
-3.55.8. Executing OPT_EXPR pass (perform const folding).
+3.78. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
-
-3.55.9. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> abc -dff
 
-3.56. Executing ABC pass (technology mapping using ABC).
+3.79. Executing ABC pass (technology mapping using ABC).
 
-3.56.1. Summary of detected clock domains:
+3.79.1. Summary of detected clock domains:
   1177 cells in clk={ }, en={ }, arst={ }, srst={ }
 
-3.56.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.79.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 No matching clock domain found. Not extracting any FF cells.
 Extracted 891 gates and 1180 wires to a netlist network with 288 inputs and 129 outputs.
 
-3.56.2.1. Executing ABC.
+3.79.2.1. Executing ABC.
 
 yosys> abc -dff
 
-3.57. Executing ABC pass (technology mapping using ABC).
+3.80. Executing ABC pass (technology mapping using ABC).
 
-3.57.1. Summary of detected clock domains:
+3.80.1. Summary of detected clock domains:
   1409 cells in clk={ }, en={ }, arst={ }, srst={ }
 
-3.57.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.80.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 No matching clock domain found. Not extracting any FF cells.
 Extracted 1123 gates and 1411 wires to a netlist network with 288 inputs and 129 outputs.
 
-3.57.2.1. Executing ABC.
+3.80.2.1. Executing ABC.
 
 yosys> abc -dff
 
-3.58. Executing ABC pass (technology mapping using ABC).
+3.81. Executing ABC pass (technology mapping using ABC).
 
-3.58.1. Summary of detected clock domains:
+3.81.1. Summary of detected clock domains:
   1387 cells in clk={ }, en={ }, arst={ }, srst={ }
 
-3.58.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.81.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 No matching clock domain found. Not extracting any FF cells.
 Extracted 1101 gates and 1389 wires to a netlist network with 288 inputs and 129 outputs.
 
-3.58.2.1. Executing ABC.
+3.81.2.1. Executing ABC.
 
 yosys> abc -dff
 
-3.59. Executing ABC pass (technology mapping using ABC).
+3.82. Executing ABC pass (technology mapping using ABC).
 
-3.59.1. Summary of detected clock domains:
+3.82.1. Summary of detected clock domains:
   1365 cells in clk={ }, en={ }, arst={ }, srst={ }
 
-3.59.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.82.2. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 No matching clock domain found. Not extracting any FF cells.
 Extracted 1079 gates and 1367 wires to a netlist network with 288 inputs and 129 outputs.
 
-3.59.2.1. Executing ABC.
+3.82.2.1. Executing ABC.
 
 yosys> opt_ffinv
 
-3.60. Executing OPT_FFINV pass (push inverters through FFs).
+3.83. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
-yosys> opt -sat -nosdff
-
-3.61. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.61.1. Executing OPT_EXPR pass (perform const folding).
+3.84. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.61.2. Executing OPT_MERGE pass (detect identical cells).
+3.85. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.61.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.86. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1036,138 +966,105 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.61.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.87. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.61.5. Executing OPT_MERGE pass (detect identical cells).
+3.88. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.61.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.89. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.90. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.61.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.91. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 6354 unused wires.
 <suppressed ~1771 debug messages>
 
 yosys> opt_expr
 
-3.61.8. Executing OPT_EXPR pass (perform const folding).
+3.92. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
-
-3.61.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.61.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_io_tc1..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.61.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_io_tc1.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.61.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.61.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.61.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-yosys> opt_expr
-
-3.61.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_io_tc1.
-
-3.61.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> bmuxmap
 
-3.62. Executing BMUXMAP pass.
+3.93. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.63. Executing DEMUXMAP pass.
+3.94. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 
-yosys> abc -script /home/users/temp_dir/yosys_5yjgiZ/abc_tmp_1.scr
+yosys> abc -script /tmp/yosys_rAtCqz/abc_tmp_1.scr
 
-3.64. Executing ABC pass (technology mapping using ABC).
+3.95. Executing ABC pass (technology mapping using ABC).
 
-3.64.1. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.95.1. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 Extracted 1091 gates and 1379 wires to a netlist network with 288 inputs and 129 outputs.
 
-3.64.1.1. Executing ABC.
-DE:   #PIs = 288  #Luts =   312  Max Lvl =   7  Avg Lvl =   2.04  [   0.05 sec. at Pass 0]
-DE:   #PIs = 288  #Luts =   286  Max Lvl =   6  Avg Lvl =   2.03  [   1.11 sec. at Pass 1]
-DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.29 sec. at Pass 2]
-DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.50 sec. at Pass 3]
-DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.30 sec. at Pass 4]
-DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   0.49 sec. at Pass 5]
-DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   0.35 sec. at Pass 6]
-DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   0.52 sec. at Pass 7]
-DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   0.34 sec. at Pass 8]
-DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   1.64 sec. at Pass 9]
-DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   0.64 sec. at Pass 10]
-DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   0.40 sec. at Pass 11]
-DE:   #PIs = 288  #Luts =   274  Max Lvl =   5  Avg Lvl =   2.40  [   0.60 sec. at Pass 12]
-DE:   #PIs = 288  #Luts =   274  Max Lvl =   5  Avg Lvl =   2.40  [   0.44 sec. at Pass 13]
-DE:   #PIs = 288  #Luts =   270  Max Lvl =   6  Avg Lvl =   2.20  [   0.70 sec. at Pass 14]
-DE:   #PIs = 288  #Luts =   269  Max Lvl =   6  Avg Lvl =   2.03  [   0.50 sec. at Pass 15]
-DE:   #PIs = 288  #Luts =   265  Max Lvl =   5  Avg Lvl =   2.71  [   0.80 sec. at Pass 16]
-DE:   #PIs = 288  #Luts =   265  Max Lvl =   5  Avg Lvl =   2.71  [   0.50 sec. at Pass 17]
-DE:   #PIs = 288  #Luts =   259  Max Lvl =   5  Avg Lvl =   2.46  [   0.80 sec. at Pass 18]
-DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.39 sec. at Pass 19]
-DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.83 sec. at Pass 20]
-DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.40 sec. at Pass 21]
-DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.77 sec. at Pass 22]
-DE:   #PIs = 288  #Luts =   254  Max Lvl =   5  Avg Lvl =   2.02  [   1.82 sec. at Pass 23]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   6  Avg Lvl =   2.03  [   0.43 sec. at Pass 24]
-DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.67 sec. at Pass 25]
-DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.36 sec. at Pass 26]
-DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.72 sec. at Pass 27]
-DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.31 sec. at Pass 28]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   2.15 sec. at Pass 29]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   1.34 sec. at Pass 30]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   0.66 sec. at Pass 31]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   1.06 sec. at Pass 32]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   2.29 sec. at Pass 33]
-DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   0.10 sec. at Pass 34]
+3.95.1.1. Executing ABC.
+DE:   #PIs = 288  #Luts =   312  Max Lvl =   7  Avg Lvl =   2.04  [   0.22 sec. at Pass 0]
+DE:   #PIs = 288  #Luts =   286  Max Lvl =   6  Avg Lvl =   2.03  [   1.45 sec. at Pass 1]
+DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.52 sec. at Pass 2]
+DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.74 sec. at Pass 3]
+DE:   #PIs = 288  #Luts =   285  Max Lvl =   5  Avg Lvl =   2.02  [   0.54 sec. at Pass 4]
+DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   1.36 sec. at Pass 5]
+DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   1.02 sec. at Pass 6]
+DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   1.56 sec. at Pass 7]
+DE:   #PIs = 288  #Luts =   284  Max Lvl =   5  Avg Lvl =   2.02  [   0.96 sec. at Pass 8]
+DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   3.56 sec. at Pass 9]
+DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   1.51 sec. at Pass 10]
+DE:   #PIs = 288  #Luts =   283  Max Lvl =   5  Avg Lvl =   2.02  [   0.97 sec. at Pass 11]
+DE:   #PIs = 288  #Luts =   274  Max Lvl =   5  Avg Lvl =   2.40  [   1.88 sec. at Pass 12]
+DE:   #PIs = 288  #Luts =   274  Max Lvl =   5  Avg Lvl =   2.40  [   1.51 sec. at Pass 13]
+DE:   #PIs = 288  #Luts =   270  Max Lvl =   6  Avg Lvl =   2.20  [   1.78 sec. at Pass 14]
+DE:   #PIs = 288  #Luts =   269  Max Lvl =   6  Avg Lvl =   2.03  [   1.15 sec. at Pass 15]
+DE:   #PIs = 288  #Luts =   265  Max Lvl =   5  Avg Lvl =   2.71  [   1.29 sec. at Pass 16]
+DE:   #PIs = 288  #Luts =   265  Max Lvl =   5  Avg Lvl =   2.71  [   0.51 sec. at Pass 17]
+DE:   #PIs = 288  #Luts =   259  Max Lvl =   5  Avg Lvl =   2.46  [   1.11 sec. at Pass 18]
+DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.58 sec. at Pass 19]
+DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   1.04 sec. at Pass 20]
+DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.93 sec. at Pass 21]
+DE:   #PIs = 288  #Luts =   255  Max Lvl =   5  Avg Lvl =   2.41  [   0.87 sec. at Pass 22]
+DE:   #PIs = 288  #Luts =   254  Max Lvl =   5  Avg Lvl =   2.02  [   1.72 sec. at Pass 23]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   6  Avg Lvl =   2.03  [   0.55 sec. at Pass 24]
+DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   1.02 sec. at Pass 25]
+DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.49 sec. at Pass 26]
+DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   1.08 sec. at Pass 27]
+DE:   #PIs = 288  #Luts =   251  Max Lvl =   5  Avg Lvl =   2.02  [   0.89 sec. at Pass 28]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   4.07 sec. at Pass 29]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   1.25 sec. at Pass 30]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   1.29 sec. at Pass 31]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   0.99 sec. at Pass 32]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   4.03 sec. at Pass 33]
+DE:   #PIs = 288  #Luts =   250  Max Lvl =   5  Avg Lvl =   2.02  [   0.58 sec. at Pass 34]
 
 yosys> opt_expr
 
-3.65. Executing OPT_EXPR pass (perform const folding).
+3.96. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.66. Executing OPT_MERGE pass (detect identical cells).
+3.97. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.67. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.98. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1175,46 +1072,46 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.99. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.69. Executing OPT_MERGE pass (detect identical cells).
+3.100. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.70. Executing OPT_SHARE pass.
+3.101. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.71. Executing OPT_DFF pass (perform DFF optimizations).
+3.102. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.72. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.103. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 1379 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.73. Executing OPT_EXPR pass (perform const folding).
+3.104. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 MAX OPT ITERATION = 1
 
 yosys> opt_ffinv
 
-3.74. Executing OPT_FFINV pass (push inverters through FFs).
+3.105. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
 yosys> stat
 
-3.75. Printing statistics.
+3.106. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -1233,16 +1130,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.76. Executing SHREGMAP pass (map shift registers).
+3.107. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.77. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.108. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.78. Printing statistics.
+3.109. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -1261,10 +1158,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.79. Executing TECHMAP pass (map to technology primitives).
+3.110. Executing TECHMAP pass (map to technology primitives).
 
-3.79.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.110.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1291,8 +1188,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.79.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.110.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -1360,7 +1257,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.79.3. Continuing TECHMAP pass.
+3.110.3. Continuing TECHMAP pass.
 Using template \$_DLATCHSR_PPP_ for cells of type $_DLATCHSR_PPP_.
 Using extmapper simplemap for cells of type $lut.
 Using extmapper simplemap for cells of type $logic_not.
@@ -1369,56 +1266,52 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.80. Executing OPT_EXPR pass (perform const folding).
+3.111. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 <suppressed ~11796 debug messages>
 
 yosys> simplemap
 
-3.81. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.112. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.82. Executing OPT_EXPR pass (perform const folding).
+3.113. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge
 
-3.83. Executing OPT_MERGE pass (detect identical cells).
+3.114. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 <suppressed ~6297 debug messages>
 Removed a total of 2099 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.84. Executing OPT_DFF pass (perform DFF optimizations).
+3.115. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.85. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.116. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 2882 unused wires.
 <suppressed ~1 debug messages>
 
-yosys> opt -nodffe -nosdff
-
-3.86. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.86.1. Executing OPT_EXPR pass (perform const folding).
+3.117. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 <suppressed ~390 debug messages>
 
 yosys> opt_merge -nomux
 
-3.86.2. Executing OPT_MERGE pass (detect identical cells).
+3.118. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.86.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.119. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1426,101 +1319,68 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.86.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.120. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.86.5. Executing OPT_MERGE pass (detect identical cells).
+3.121. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.86.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.122. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.123. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.86.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.124. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 5 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.86.8. Executing OPT_EXPR pass (perform const folding).
+3.125. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
+MAX OPT ITERATION = 1
 
-3.86.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> abc -script /tmp/yosys_rAtCqz/abc_tmp_2.scr
 
-yosys> opt_muxtree
+3.126. Executing ABC pass (technology mapping using ABC).
 
-3.86.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \wrapper_io_tc1..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.86.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \wrapper_io_tc1.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.86.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\wrapper_io_tc1'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.86.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.86.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \wrapper_io_tc1..
-
-yosys> opt_expr
-
-3.86.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module wrapper_io_tc1.
-
-3.86.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script /home/users/temp_dir/yosys_5yjgiZ/abc_tmp_2.scr
-
-3.87. Executing ABC pass (technology mapping using ABC).
-
-3.87.1. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
+3.126.1. Extracting gate netlist of module `\wrapper_io_tc1' to `<abc-temp-dir>/input.blif'..
 Extracted 1036 gates and 1326 wires to a netlist network with 288 inputs and 131 outputs.
 
-3.87.1.1. Executing ABC.
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.06 sec. at Pass 0]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   1.44 sec. at Pass 1]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.30 sec. at Pass 2]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.67 sec. at Pass 3]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.38 sec. at Pass 4]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   1.22 sec. at Pass 5]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   2.77 sec. at Pass 6]
-DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.32 sec. at Pass 7]
+3.126.1.1. Executing ABC.
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.22 sec. at Pass 0]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   2.83 sec. at Pass 1]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.48 sec. at Pass 2]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.86 sec. at Pass 3]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   1.12 sec. at Pass 4]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   1.75 sec. at Pass 5]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   2.84 sec. at Pass 6]
+DE:   #PIs = 288  #Luts =   252  Max Lvl =   5  Avg Lvl =   1.99  [   0.59 sec. at Pass 7]
 
 yosys> opt_expr
 
-3.88. Executing OPT_EXPR pass (perform const folding).
+3.127. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 
 yosys> opt_merge -nomux
 
-3.89. Executing OPT_MERGE pass (detect identical cells).
+3.128. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.90. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.129. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \wrapper_io_tc1..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -1528,51 +1388,51 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.91. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.130. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \wrapper_io_tc1.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.92. Executing OPT_MERGE pass (detect identical cells).
+3.131. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\wrapper_io_tc1'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.93. Executing OPT_SHARE pass.
+3.132. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.94. Executing OPT_DFF pass (perform DFF optimizations).
+3.133. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.95. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.134. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 1240 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.96. Executing OPT_EXPR pass (perform const folding).
+3.135. Executing OPT_EXPR pass (perform const folding).
 Optimizing module wrapper_io_tc1.
 MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.97. Executing HIERARCHY pass (managing design hierarchy).
+3.136. Executing HIERARCHY pass (managing design hierarchy).
 
-3.97.1. Analyzing design hierarchy..
+3.136.1. Analyzing design hierarchy..
 Top module:  \wrapper_io_tc1
 
-3.97.2. Analyzing design hierarchy..
+3.136.2. Analyzing design hierarchy..
 Top module:  \wrapper_io_tc1
 Removed 0 unused modules.
 
 yosys> stat
 
-3.98. Printing statistics.
+3.137. Printing statistics.
 
 === wrapper_io_tc1 ===
 
@@ -1590,20 +1450,20 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.99. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.138. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \wrapper_io_tc1..
 Removed 0 unused cells and 879 unused wires.
 <suppressed ~879 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.100. Executing Verilog backend.
+3.139. Executing Verilog backend.
 Dumping module `\wrapper_io_tc1'.
 
 Warnings: 2 unique messages, 2 total
-End of script. Logfile hash: 9d4df80b53, CPU: user 4.15s system 0.07s, MEM: 54.35 MB peak
-Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
-Time spent: 98% 6x abc (309 sec), 0% 26x opt_expr (1 sec), ...
-real 44.16
-user 285.86
-sys 27.15
+End of script. Logfile hash: ecf894b5ae, CPU: user 4.59s system 0.06s, MEM: 65.50 MB peak
+Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
+Time spent: 98% 6x abc (285 sec), 0% 23x opt_expr (1 sec), ...
+real 80.00
+user 269.41
+sys 20.95

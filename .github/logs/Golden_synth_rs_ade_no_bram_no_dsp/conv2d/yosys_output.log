@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.50
- Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
+ Yosys-Verific 0.0.53
+ Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -35,18 +35,20 @@ yosys> read -incdir .
 yosys> verific -vlog-incdir .
 
 1. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
 
 yosys> verilog_defaults -add -I.
 
-yosys> read -vlog2k ksa.v ksa1.v tfl.v control.v conv2d.v
+yosys> read -vlog2k conv2d.v ksa.v ksa1.v control.v tfl.v
 
-yosys> verific -vlog2k ksa.v ksa1.v tfl.v control.v conv2d.v
+yosys> verific -vlog2k conv2d.v ksa.v ksa1.v control.v tfl.v
 
 2. Executing VERIFIC (loading SystemVerilog and VHDL designs using Verific).
-Built with Verific May22_SW_Release, released at Tue May 31 17:39:28 2022.
+Built with Verific May22_SW_Release, released at Wed Jun  1 00:39:28 2022.
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'conv2d.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ksa.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'ksa1.v'
+VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'control.v'
 VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'tfl.v'
 VERIFIC-WARNING [VERI-1407] tfl.v:385: attribute target identifier 'pad' not found in this scope
 VERIFIC-WARNING [VERI-1407] tfl.v:260: attribute target identifier 'pad' not found in this scope
@@ -77,17 +79,15 @@ VERIFIC-WARNING [VERI-1407] tfl.v:144: attribute target identifier 'pad' not fou
 VERIFIC-WARNING [VERI-1407] tfl.v:129: attribute target identifier 'pad' not found in this scope
 VERIFIC-WARNING [VERI-1407] tfl.v:128: attribute target identifier 'pad' not found in this scope
 VERIFIC-WARNING [VERI-1407] tfl.v:5: attribute target identifier 'pad' not found in this scope
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'control.v'
-VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'conv2d.v'
 
 yosys> synth_rs -top conv2d -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.59
+3. Executing synth_rs pass: v0.4.61
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v
 
-3.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
+3.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/common/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\inv'.
 Generating RTLIL representation for module `\buff'.
 Generating RTLIL representation for module `\logic_0'.
@@ -95,8 +95,8 @@ Generating RTLIL representation for module `\logic_1'.
 Generating RTLIL representation for module `\gclkbuff'.
 Successfully finished Verilog frontend.
 
-3.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
+3.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/cells_sim.v' to AST representation.
 Generating RTLIL representation for module `\dffsre'.
 Generating RTLIL representation for module `\dffnsre'.
 Generating RTLIL representation for module `\latchsre'.
@@ -378,25 +378,21 @@ Warning: found logic loop in module conv2d:
     wire \pk2.c_gen [10]
 Found and reported 11 problems.
 
-yosys> opt -nodffe -nosdff
-
-3.15. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.15.1. Executing OPT_EXPR pass (perform const folding).
+3.15. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~4 debug messages>
 
 yosys> opt_merge -nomux
 
-3.15.2. Executing OPT_MERGE pass (detect identical cells).
+3.16. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -416,7 +412,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
     New ctrl vector for $pmux cell $verific$Select_1181$conv2d.v:1245$2617: { $verific$n11580$198 $verific$n11243$183 $verific$n11249$189 }
     New ctrl vector for $pmux cell $verific$Select_1184$conv2d.v:1245$2620: { $verific$n11243$183 $verific$n11249$189 }
@@ -474,14 +470,18 @@ Performed a total of 53 changes.
 
 yosys> opt_merge
 
-3.15.5. Executing OPT_MERGE pass (detect identical cells).
+3.19. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~78 debug messages>
 Removed a total of 26 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.20. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.21. Executing OPT_DFF pass (perform DFF optimizations).
 Changing const-value async load to async reset on $verific$write2_reg$conv2d.v:1246$2675 ($aldff) from module conv2d.
 Changing const-value async load to async reset on $verific$wdata2_reg$conv2d.v:785$1274 ($aldff) from module conv2d.
 Changing const-value async load to async reset on $verific$total_pixels_done_reg$conv2d.v:1246$2661 ($aldff) from module conv2d.
@@ -581,21 +581,19 @@ Changing const-value async load to async reset on $verific$acc0_reg$conv2d.v:124
 
 yosys> opt_clean
 
-3.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.22. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 3 unused cells and 32 unused wires.
 <suppressed ~4 debug messages>
 
 yosys> opt_expr
 
-3.15.8. Executing OPT_EXPR pass (perform const folding).
+3.23. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.15.9. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.15.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.24. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -605,39 +603,42 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.15.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.25. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.15.12. Executing OPT_MERGE pass (detect identical cells).
+3.26. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.15.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.27. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.28. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.15.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.29. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> opt_expr
 
-3.15.15. Executing OPT_EXPR pass (perform const folding).
+3.30. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.15.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 2
 
 yosys> fsm -encoding binary
 
-3.16. Executing FSM pass (extract and optimize FSM).
+3.31. Executing FSM pass (extract and optimize FSM).
 
 yosys> fsm_detect
 
-3.16.1. Executing FSM_DETECT pass (finding FSMs in design).
+3.31.1. Executing FSM_DETECT pass (finding FSMs in design).
 Not marking conv2d.fract_select as FSM state register:
     Users of register don't seem to benefit from recoding.
 Found FSM state register conv2d.fsm_conv2d.
@@ -654,7 +655,7 @@ Not marking conv2d.i_outsel as FSM state register:
 
 yosys> fsm_extract
 
-3.16.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+3.31.2. Executing FSM_EXTRACT pass (extracting FSM from design).
 Extracting FSM `\fsm_conv2d' from module `\conv2d'.
   found $adff cell for state register: $verific$fsm_conv2d_reg$conv2d.v:1246$2644
   root of input selection tree: $verific$n11461$707
@@ -803,7 +804,7 @@ Extracting FSM `\fsm_getpixels' from module `\conv2d'.
 
 yosys> fsm_opt
 
-3.16.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.31.3. Executing FSM_OPT pass (simple optimizations of FSMs).
 Optimizing FSM `$fsm$\fsm_getpixels$4082' from module `\conv2d'.
   Removing unused input signal $verific$n8237$129.
 Optimizing FSM `$fsm$\fsm_getbias$4077' from module `\conv2d'.
@@ -815,14 +816,14 @@ Optimizing FSM `$fsm$\fsm_conv2d$4060' from module `\conv2d'.
 
 yosys> opt_clean
 
-3.16.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.31.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 51 unused cells and 51 unused wires.
 <suppressed ~52 debug messages>
 
 yosys> fsm_opt
 
-3.16.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+3.31.5. Executing FSM_OPT pass (simple optimizations of FSMs).
 Optimizing FSM `$fsm$\fsm_conv2d$4060' from module `\conv2d'.
   Removing unused output signal $verific$n11461$707 [0].
   Removing unused output signal $verific$n11461$707 [1].
@@ -840,7 +841,7 @@ Optimizing FSM `$fsm$\fsm_getpixels$4082' from module `\conv2d'.
 
 yosys> fsm_recode -encoding binary
 
-3.16.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+3.31.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
 Recoding FSM `$fsm$\fsm_conv2d$4060' from module `\conv2d' using `auto' encoding:
   mapping auto encoding to `binary` for this FSM.
   00000 -> 0000
@@ -869,7 +870,7 @@ Recoding FSM `$fsm$\fsm_getpixels$4082' from module `\conv2d' using `auto' encod
 
 yosys> fsm_info
 
-3.16.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+3.31.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
 
 FSM `$fsm$\fsm_conv2d$4060' from module `conv2d':
 -------------------------------------
@@ -1034,31 +1035,27 @@ FSM `$fsm$\fsm_getpixels$4082' from module `conv2d':
 
 yosys> fsm_map
 
-3.16.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+3.31.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
 Mapping FSM `$fsm$\fsm_conv2d$4060' from module `\conv2d'.
 Mapping FSM `$fsm$\fsm_getbias$4077' from module `\conv2d'.
 Mapping FSM `$fsm$\fsm_getpixels$4082' from module `\conv2d'.
 
-yosys> opt -sat -nosdff
-
-3.17. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.17.1. Executing OPT_EXPR pass (perform const folding).
+3.32. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~24 debug messages>
 
 yosys> opt_merge -nomux
 
-3.17.2. Executing OPT_MERGE pass (detect identical cells).
+3.33. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~6 debug messages>
 Removed a total of 2 cells.
 
 yosys> opt_muxtree
 
-3.17.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.34. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1068,7 +1065,7 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.17.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.35. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
     New input vector for $reduce_or cell $verific$reduce_or_1206$conv2d.v:1245$2638: { $auto$fsm_map.cc:194:map_fsm$4090 [11:7] $auto$fsm_map.cc:194:map_fsm$4090 [5:4] $auto$fsm_map.cc:194:map_fsm$4090 [1:0] $verific$n11257$197 }
     New input vector for $reduce_or cell $verific$reduce_or_1202$conv2d.v:1245$2635: { $auto$fsm_map.cc:194:map_fsm$4090 [11:7] $auto$fsm_map.cc:194:map_fsm$4090 [5:1] $verific$n11257$197 }
@@ -1093,13 +1090,17 @@ Performed a total of 18 changes.
 
 yosys> opt_merge
 
-3.17.5. Executing OPT_MERGE pass (detect identical cells).
+3.36. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.17.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.37. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.38. Executing OPT_DFF pass (perform DFF optimizations).
 Adding EN signal on $verific$wdata2_reg$conv2d.v:785$1274 ($adff) from module conv2d (D = { \sat04 \sat15 \sat26 \sat37 }, Q = \wdata2).
 Adding EN signal on $verific$total_filters_done_reg$conv2d.v:1246$2655 ($adff) from module conv2d (D = $verific$n11570$713, Q = \total_filters_done).
 Adding EN signal on $verific$running_reg$conv2d.v:1246$2657 ($adff) from module conv2d (D = $verific$n11639$214, Q = \running).
@@ -1228,22 +1229,20 @@ Setting constant 0-bit at position 1 on $verific$i_pixel_waddr_reg$conv2d.v:913$
 
 yosys> opt_clean
 
-3.17.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.39. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 69 unused cells and 101 unused wires.
 <suppressed ~70 debug messages>
 
 yosys> opt_expr
 
-3.17.8. Executing OPT_EXPR pass (perform const folding).
+3.40. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~146 debug messages>
 
-3.17.9. Rerunning OPT passes. (Maybe there is more to do..)
-
 yosys> opt_muxtree
 
-3.17.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.41. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1253,20 +1252,24 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.17.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.42. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.17.12. Executing OPT_MERGE pass (detect identical cells).
+3.43. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~663 debug messages>
 Removed a total of 221 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.17.13. Executing OPT_DFF pass (perform DFF optimizations).
+3.44. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.45. Executing OPT_DFF pass (perform DFF optimizations).
 Setting constant 0-bit at position 0 on $auto$ff.cc:262:slice$4280 ($adffe) from module conv2d.
 Setting constant 0-bit at position 1 on $auto$ff.cc:262:slice$4280 ($adffe) from module conv2d.
 Setting constant 0-bit at position 2 on $auto$ff.cc:262:slice$4280 ($adffe) from module conv2d.
@@ -1278,21 +1281,19 @@ Setting constant 0-bit at position 2 on $auto$ff.cc:262:slice$4968 ($adffe) from
 
 yosys> opt_clean
 
-3.17.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.46. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 2 unused cells and 220 unused wires.
 <suppressed ~3 debug messages>
 
 yosys> opt_expr
 
-3.17.15. Executing OPT_EXPR pass (perform const folding).
+3.47. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.17.16. Rerunning OPT passes. (Maybe there is more to do..)
 
 yosys> opt_muxtree
 
-3.17.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.48. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1302,35 +1303,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.17.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.49. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.17.19. Executing OPT_MERGE pass (detect identical cells).
+3.50. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.17.20. Executing OPT_DFF pass (perform DFF optimizations).
+3.51. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.52. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.17.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.53. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> opt_expr
 
-3.17.22. Executing OPT_EXPR pass (perform const folding).
+3.54. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.17.23. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 3
 
 yosys> wreduce -keepdc
 
-3.18. Executing WREDUCE pass (reducing word size of cells).
+3.55. Executing WREDUCE pass (reducing word size of cells).
 Removed top 1 bits (of 4) from port B of cell conv2d.$auto$fsm_map.cc:215:map_fsm$4095 ($eq).
 Removed top 3 bits (of 4) from port B of cell conv2d.$verific$equal_67$conv2d.v:121$763 ($eq).
 Removed top 2 bits (of 4) from port B of cell conv2d.$verific$equal_68$conv2d.v:122$764 ($eq).
@@ -1543,28 +1547,28 @@ Removed top 1 bits (of 3) from wire conv2d.fsm_getfilters.
 
 yosys> peepopt
 
-3.19. Executing PEEPOPT pass (run peephole optimizers).
+3.56. Executing PEEPOPT pass (run peephole optimizers).
 
 yosys> opt_clean
 
-3.20. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.57. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 27 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> bmuxmap
 
-3.21. Executing BMUXMAP pass.
+3.58. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.22. Executing DEMUXMAP pass.
+3.59. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 
 yosys> alumacc
 
-3.23. Executing ALUMACC pass (create $alu and $macc cells).
+3.60. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module conv2d:
   creating $macc model for $verific$add_1018$conv2d.v:1119$2526 ($add).
   creating $macc model for $verific$add_1063$conv2d.v:1153$2545 ($add).
@@ -1681,19 +1685,19 @@ Extracting $alu and $macc cells in module conv2d:
 
 yosys> opt_expr
 
-3.24. Executing OPT_EXPR pass (perform const folding).
+3.61. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~7 debug messages>
 
 yosys> opt_merge -nomux
 
-3.25. Executing OPT_MERGE pass (detect identical cells).
+3.62. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.26. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.63. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   Evaluating internal representation of mux trees.
@@ -1703,40 +1707,40 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.27. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.64. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.28. Executing OPT_MERGE pass (detect identical cells).
+3.65. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.29. Executing OPT_SHARE pass.
+3.66. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.30. Executing OPT_DFF pass (perform DFF optimizations).
+3.67. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.31. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.68. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 3 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.32. Executing OPT_EXPR pass (perform const folding).
+3.69. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 MAX OPT ITERATION = 1
 
 yosys> stat
 
-3.33. Printing statistics.
+3.70. Printing statistics.
 
 === conv2d ===
 
@@ -1769,56 +1773,56 @@ yosys> stat
 
 yosys> memory -nomap
 
-3.34. Executing MEMORY pass.
+3.71. Executing MEMORY pass.
 
 yosys> opt_mem
 
-3.34.1. Executing OPT_MEM pass (optimize memories).
+3.71.1. Executing OPT_MEM pass (optimize memories).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_priority
 
-3.34.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+3.71.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
 Performed a total of 0 transformations.
 
 yosys> opt_mem_feedback
 
-3.34.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+3.71.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
 
 yosys> memory_bmux2rom
 
-3.34.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+3.71.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
 
 yosys> memory_dff
 
-3.34.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+3.71.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
 
 yosys> opt_clean
 
-3.34.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.71.6. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> memory_share
 
-3.34.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+3.71.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
 
 yosys> opt_mem_widen
 
-3.34.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+3.71.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
 Performed a total of 0 transformations.
 
 yosys> opt_clean
 
-3.34.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.71.9. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> memory_collect
 
-3.34.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+3.71.10. Executing MEMORY_COLLECT pass (generating $mem cells).
 
 yosys> stat
 
-3.35. Printing statistics.
+3.72. Printing statistics.
 
 === conv2d ===
 
@@ -1851,22 +1855,22 @@ yosys> stat
 
 yosys> muxpack
 
-3.36. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.73. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converted 0 (p)mux cells into 0 pmux cells.
 <suppressed ~284 debug messages>
 
 yosys> opt_clean
 
-3.37. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.74. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> pmuxtree
 
-3.38. Executing PMUXTREE pass.
+3.75. Executing PMUXTREE pass.
 
 yosys> muxpack
 
-3.39. Executing MUXPACK pass ($mux cell cascades to $pmux).
+3.76. Executing MUXPACK pass ($mux cell cascades to $pmux).
 Converting conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6115 ... conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6117 to a pmux with 2 cases.
 Converting conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6043 ... conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6045 to a pmux with 2 cases.
 Converting conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6001 ... conv2d.$auto$pmuxtree.cc:65:recursive_mux_generator$6003 to a pmux with 2 cases.
@@ -1884,11 +1888,11 @@ Converted 24 (p)mux cells into 12 pmux cells.
 
 yosys> memory_map
 
-3.40. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+3.77. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
 
 yosys> stat
 
-3.41. Printing statistics.
+3.78. Printing statistics.
 
 === conv2d ===
 
@@ -1921,10 +1925,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/arith_map.v
 
-3.42. Executing TECHMAP pass (map to technology primitives).
+3.79. Executing TECHMAP pass (map to technology primitives).
 
-3.42.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.79.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -1951,12 +1955,12 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.42.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
+3.79.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/arith_map.v' to AST representation.
 Generating RTLIL representation for module `\_80_rs_alu'.
 Successfully finished Verilog frontend.
 
-3.42.3. Continuing TECHMAP pass.
+3.79.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $mux.
 Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $reduce_or.
@@ -2010,7 +2014,7 @@ No more expansions possible.
 
 yosys> stat
 
-3.43. Printing statistics.
+3.80. Printing statistics.
 
 === conv2d ===
 
@@ -2039,20 +2043,20 @@ yosys> stat
 
 yosys> opt_expr
 
-3.44. Executing OPT_EXPR pass (perform const folding).
+3.81. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~4991 debug messages>
 
 yosys> opt_merge -nomux
 
-3.45. Executing OPT_MERGE pass (detect identical cells).
+3.82. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~4338 debug messages>
 Removed a total of 1446 cells.
 
 yosys> opt_muxtree
 
-3.46. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.83. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2060,40 +2064,40 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.47. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.84. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.48. Executing OPT_MERGE pass (detect identical cells).
+3.85. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.49. Executing OPT_SHARE pass.
+3.86. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.50. Executing OPT_DFF pass (perform DFF optimizations).
+3.87. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.51. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.88. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 1641 unused cells and 4089 unused wires.
 <suppressed ~1642 debug messages>
 
 yosys> opt_expr
 
-3.52. Executing OPT_EXPR pass (perform const folding).
+3.89. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~2 debug messages>
 
 yosys> opt_muxtree
 
-3.53. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.90. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2101,71 +2105,47 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.54. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.91. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.55. Executing OPT_MERGE pass (detect identical cells).
+3.92. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.56. Executing OPT_SHARE pass.
+3.93. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.57. Executing OPT_DFF pass (perform DFF optimizations).
+3.94. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.58. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.95. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 
 yosys> opt_expr
 
-3.59. Executing OPT_EXPR pass (perform const folding).
+3.96. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 MAX OPT ITERATION = 2
 
-yosys> opt -nodffe -fast -full -nosdff
-
-3.60. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr -full
 
-3.60.1. Executing OPT_EXPR pass (perform const folding).
+3.97. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~3226 debug messages>
 
-yosys> opt_merge
-
-3.60.2. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\conv2d'.
-<suppressed ~51 debug messages>
-Removed a total of 17 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.60.3. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.60.4. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \conv2d..
-Removed 0 unused cells and 220 unused wires.
-<suppressed ~1 debug messages>
-
-3.60.5. Finished fast OPT passes.
-
 yosys> techmap -map +/techmap.v
 
-3.61. Executing TECHMAP pass (map to technology primitives).
+3.98. Executing TECHMAP pass (map to technology primitives).
 
-3.61.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.98.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -2192,28 +2172,25 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.61.2. Continuing TECHMAP pass.
+3.98.2. Continuing TECHMAP pass.
 No more expansions possible.
 <suppressed ~71 debug messages>
 
-yosys> opt -nodffe -sat -nosdff
-
-3.62. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.62.1. Executing OPT_EXPR pass (perform const folding).
+3.99. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 
 yosys> opt_merge -nomux
 
-3.62.2. Executing OPT_MERGE pass (detect identical cells).
+3.100. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
-Removed a total of 0 cells.
+<suppressed ~51 debug messages>
+Removed a total of 17 cells.
 
 yosys> opt_muxtree
 
-3.62.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.101. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -2221,37 +2198,38 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.62.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.102. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.62.5. Executing OPT_MERGE pass (detect identical cells).
+3.103. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -sat -nosdff
+yosys> opt_dff -nosdff -nodffe -sat
 
-3.62.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.104. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.62.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.105. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
+Removed 0 unused cells and 220 unused wires.
+<suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.62.8. Executing OPT_EXPR pass (perform const folding).
+3.106. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.62.9. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> abc -dff
 
-3.63. Executing ABC pass (technology mapping using ABC).
+3.107. Executing ABC pass (technology mapping using ABC).
 
-3.63.1. Summary of detected clock domains:
+3.107.1. Summary of detected clock domains:
   6 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$4376, arst=!\rstn, srst={ }
   66 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$4951, arst=!\rstn, srst={ }
   18 cells in clk=\clk, en=!$auto$opt_reduce.cc:134:opt_pmux$4023, arst=!\rstn, srst={ }
@@ -2312,365 +2290,365 @@ yosys> abc -dff
   38 cells in clk=\clk, en=$auto$opt_dff.cc:219:make_patterns_logic$4657, arst=!\rstn, srst={ }
   1605 cells in clk=\clk, en={ }, arst=!\rstn, srst={ }
 
-3.63.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4376, asynchronously reset by !\rstn
 Extracted 6 gates and 14 wires to a netlist network with 7 inputs and 2 outputs.
 
-3.63.2.1. Executing ABC.
+3.107.2.1. Executing ABC.
 
-3.63.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4951, asynchronously reset by !\rstn
 Extracted 66 gates and 84 wires to a netlist network with 17 inputs and 13 outputs.
 
-3.63.3.1. Executing ABC.
+3.107.3.1. Executing ABC.
 
-3.63.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$auto$opt_reduce.cc:134:opt_pmux$4023, asynchronously reset by !\rstn
 Extracted 18 gates and 28 wires to a netlist network with 9 inputs and 10 outputs.
 
-3.63.4.1. Executing ABC.
+3.107.4.1. Executing ABC.
 
-3.63.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4527, asynchronously reset by !\rstn
 Extracted 86 gates and 162 wires to a netlist network with 74 inputs and 25 outputs.
 
-3.63.5.1. Executing ABC.
+3.107.5.1. Executing ABC.
 
-3.63.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4773, asynchronously reset by !\rstn
 Extracted 114 gates and 155 wires to a netlist network with 40 inputs and 55 outputs.
 
-3.63.6.1. Executing ABC.
+3.107.6.1. Executing ABC.
 
-3.63.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4859, asynchronously reset by !\rstn
 Extracted 42 gates and 73 wires to a netlist network with 29 inputs and 13 outputs.
 
-3.63.7.1. Executing ABC.
+3.107.7.1. Executing ABC.
 
-3.63.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4436, asynchronously reset by !\rstn
 Extracted 71 gates and 144 wires to a netlist network with 73 inputs and 33 outputs.
 
-3.63.8.1. Executing ABC.
+3.107.8.1. Executing ABC.
 
-3.63.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4846, asynchronously reset by !\rstn
 Extracted 104 gates and 113 wires to a netlist network with 7 inputs and 13 outputs.
 
-3.63.9.1. Executing ABC.
+3.107.9.1. Executing ABC.
 
-3.63.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:194:make_patterns_logic$4660, asynchronously reset by !\rstn
 Extracted 62 gates and 101 wires to a netlist network with 39 inputs and 29 outputs.
 
-3.63.10.1. Executing ABC.
+3.107.10.1. Executing ABC.
 
-3.63.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4383, asynchronously reset by !\rstn
 Extracted 34 gates and 64 wires to a netlist network with 29 inputs and 30 outputs.
 
-3.63.11.1. Executing ABC.
+3.107.11.1. Executing ABC.
 
-3.63.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4986, asynchronously reset by !\rstn
 Extracted 95 gates and 147 wires to a netlist network with 52 inputs and 28 outputs.
 
-3.63.12.1. Executing ABC.
+3.107.12.1. Executing ABC.
 
-3.63.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4674, asynchronously reset by !\rstn
 Extracted 48 gates and 75 wires to a netlist network with 27 inputs and 21 outputs.
 
-3.63.13.1. Executing ABC.
+3.107.13.1. Executing ABC.
 
-3.63.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4704, asynchronously reset by !\rstn
 Extracted 132 gates and 285 wires to a netlist network with 151 inputs and 76 outputs.
 
-3.63.14.1. Executing ABC.
+3.107.14.1. Executing ABC.
 
-3.63.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4410, asynchronously reset by !\rstn
 Extracted 11 gates and 21 wires to a netlist network with 8 inputs and 6 outputs.
 
-3.63.15.1. Executing ABC.
+3.107.15.1. Executing ABC.
 
-3.63.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4421, asynchronously reset by !\rstn
 Extracted 263 gates and 401 wires to a netlist network with 136 inputs and 88 outputs.
 
-3.63.16.1. Executing ABC.
+3.107.16.1. Executing ABC.
 
-3.63.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4482, asynchronously reset by !\rstn
 Extracted 46 gates and 80 wires to a netlist network with 32 inputs and 29 outputs.
 
-3.63.17.1. Executing ABC.
+3.107.17.1. Executing ABC.
 
-3.63.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5001, asynchronously reset by !\rstn
 Extracted 97 gates and 151 wires to a netlist network with 54 inputs and 27 outputs.
 
-3.63.18.1. Executing ABC.
+3.107.18.1. Executing ABC.
 
-3.63.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5016, asynchronously reset by !\rstn
 Extracted 98 gates and 153 wires to a netlist network with 55 inputs and 28 outputs.
 
-3.63.19.1. Executing ABC.
+3.107.19.1. Executing ABC.
 
-3.63.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5031, asynchronously reset by !\rstn
 Extracted 97 gates and 151 wires to a netlist network with 54 inputs and 27 outputs.
 
-3.63.20.1. Executing ABC.
+3.107.20.1. Executing ABC.
 
-3.63.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5046, asynchronously reset by !\rstn
 Extracted 101 gates and 158 wires to a netlist network with 57 inputs and 30 outputs.
 
-3.63.21.1. Executing ABC.
+3.107.21.1. Executing ABC.
 
-3.63.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5061, asynchronously reset by !\rstn
 Extracted 97 gates and 151 wires to a netlist network with 54 inputs and 28 outputs.
 
-3.63.22.1. Executing ABC.
+3.107.22.1. Executing ABC.
 
-3.63.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5076, asynchronously reset by !\rstn
 Extracted 97 gates and 151 wires to a netlist network with 54 inputs and 28 outputs.
 
-3.63.23.1. Executing ABC.
+3.107.23.1. Executing ABC.
 
-3.63.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5091, asynchronously reset by !\rstn
 Extracted 98 gates and 153 wires to a netlist network with 55 inputs and 27 outputs.
 
-3.63.24.1. Executing ABC.
+3.107.24.1. Executing ABC.
 
-3.63.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5112, asynchronously reset by !\rstn
 Extracted 53 gates and 93 wires to a netlist network with 40 inputs and 28 outputs.
 
-3.63.25.1. Executing ABC.
+3.107.25.1. Executing ABC.
 
-3.63.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4762, asynchronously reset by !\rstn
 Extracted 227 gates and 394 wires to a netlist network with 166 inputs and 77 outputs.
 
-3.63.26.1. Executing ABC.
+3.107.26.1. Executing ABC.
 
-3.63.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4835, asynchronously reset by !\rstn
 Extracted 17 gates and 30 wires to a netlist network with 12 inputs and 2 outputs.
 
-3.63.27.1. Executing ABC.
+3.107.27.1. Executing ABC.
 
-3.63.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4278, asynchronously reset by !\rstn
 Extracted 33 gates and 67 wires to a netlist network with 34 inputs and 33 outputs.
 
-3.63.28.1. Executing ABC.
+3.107.28.1. Executing ABC.
 
-3.63.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4602, asynchronously reset by !\rstn
 Extracted 109 gates and 120 wires to a netlist network with 10 inputs and 26 outputs.
 
-3.63.29.1. Executing ABC.
+3.107.29.1. Executing ABC.
 
-3.63.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4979, asynchronously reset by !\rstn
 Extracted 47 gates and 76 wires to a netlist network with 29 inputs and 21 outputs.
 
-3.63.30.1. Executing ABC.
+3.107.30.1. Executing ABC.
 
-3.63.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4636, asynchronously reset by !\rstn
 Extracted 131 gates and 170 wires to a netlist network with 38 inputs and 16 outputs.
 
-3.63.31.1. Executing ABC.
+3.107.31.1. Executing ABC.
 
-3.63.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4740, asynchronously reset by !\rstn
 Extracted 77 gates and 192 wires to a netlist network with 113 inputs and 76 outputs.
 
-3.63.32.1. Executing ABC.
+3.107.32.1. Executing ABC.
 
-3.63.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4723, asynchronously reset by !\rstn
 Extracted 120 gates and 262 wires to a netlist network with 140 inputs and 113 outputs.
 
-3.63.33.1. Executing ABC.
+3.107.33.1. Executing ABC.
 
-3.63.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4809, asynchronously reset by !\rstn
 Extracted 49 gates and 69 wires to a netlist network with 19 inputs and 28 outputs.
 
-3.63.34.1. Executing ABC.
+3.107.34.1. Executing ABC.
 
-3.63.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4514, asynchronously reset by !\rstn
 Extracted 92 gates and 142 wires to a netlist network with 49 inputs and 38 outputs.
 
-3.63.35.1. Executing ABC.
+3.107.35.1. Executing ABC.
 
-3.63.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4938, asynchronously reset by !\rstn
 Extracted 15 gates and 28 wires to a netlist network with 12 inputs and 7 outputs.
 
-3.63.36.1. Executing ABC.
+3.107.36.1. Executing ABC.
 
-3.63.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4908, asynchronously reset by !\rstn
 Extracted 45 gates and 60 wires to a netlist network with 14 inputs and 20 outputs.
 
-3.63.37.1. Executing ABC.
+3.107.37.1. Executing ABC.
 
-3.63.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5131, asynchronously reset by !\rstn
 Extracted 876 gates and 1028 wires to a netlist network with 152 inputs and 187 outputs.
 
-3.63.38.1. Executing ABC.
+3.107.38.1. Executing ABC.
 
-3.63.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$auto$opt_reduce.cc:134:opt_pmux$3971, asynchronously reset by !\rstn
 Extracted 374 gates and 482 wires to a netlist network with 108 inputs and 42 outputs.
 
-3.63.39.1. Executing ABC.
+3.107.39.1. Executing ABC.
 
-3.63.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4291, asynchronously reset by !\rstn
 Extracted 40 gates and 59 wires to a netlist network with 18 inputs and 13 outputs.
 
-3.63.40.1. Executing ABC.
+3.107.40.1. Executing ABC.
 
-3.63.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4551, asynchronously reset by !\rstn
 Extracted 20 gates and 33 wires to a netlist network with 11 inputs and 5 outputs.
 
-3.63.41.1. Executing ABC.
+3.107.41.1. Executing ABC.
 
-3.63.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4753, asynchronously reset by !\rstn
 Extracted 137 gates and 195 wires to a netlist network with 56 inputs and 9 outputs.
 
-3.63.42.1. Executing ABC.
+3.107.42.1. Executing ABC.
 
-3.63.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4349, asynchronously reset by !\rstn
 Extracted 31 gates and 61 wires to a netlist network with 28 inputs and 7 outputs.
 
-3.63.43.1. Executing ABC.
+3.107.43.1. Executing ABC.
 
-3.63.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4358, asynchronously reset by !\rstn
 Extracted 16 gates and 30 wires to a netlist network with 14 inputs and 11 outputs.
 
-3.63.44.1. Executing ABC.
+3.107.44.1. Executing ABC.
 
-3.63.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$5121, asynchronously reset by !\rstn
 Extracted 644 gates and 787 wires to a netlist network with 143 inputs and 131 outputs.
 
-3.63.45.1. Executing ABC.
+3.107.45.1. Executing ABC.
 
-3.63.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4326, asynchronously reset by !\rstn
 Extracted 128 gates and 162 wires to a netlist network with 33 inputs and 20 outputs.
 
-3.63.46.1. Executing ABC.
+3.107.46.1. Executing ABC.
 
-3.63.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4872, asynchronously reset by !\rstn
 Extracted 81 gates and 94 wires to a netlist network with 12 inputs and 14 outputs.
 
-3.63.47.1. Executing ABC.
+3.107.47.1. Executing ABC.
 
-3.63.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4317, asynchronously reset by !\rstn
 Extracted 42 gates and 74 wires to a netlist network with 32 inputs and 34 outputs.
 
-3.63.48.1. Executing ABC.
+3.107.48.1. Executing ABC.
 
-3.63.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4650, asynchronously reset by !\rstn
 Extracted 12 gates and 24 wires to a netlist network with 12 inputs and 3 outputs.
 
-3.63.49.1. Executing ABC.
+3.107.49.1. Executing ABC.
 
-3.63.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4300, asynchronously reset by !\rstn
 Extracted 9 gates and 18 wires to a netlist network with 8 inputs and 5 outputs.
 
-3.63.50.1. Executing ABC.
+3.107.50.1. Executing ABC.
 
-3.63.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4820, asynchronously reset by !\rstn
 Extracted 128 gates and 146 wires to a netlist network with 17 inputs and 18 outputs.
 
-3.63.51.1. Executing ABC.
+3.107.51.1. Executing ABC.
 
-3.63.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4923, asynchronously reset by !\rstn
 Extracted 11 gates and 22 wires to a netlist network with 11 inputs and 4 outputs.
 
-3.63.52.1. Executing ABC.
+3.107.52.1. Executing ABC.
 
-3.63.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$verific$n11615$206, asynchronously reset by !\rstn
 Extracted 15 gates and 30 wires to a netlist network with 14 inputs and 11 outputs.
 
-3.63.53.1. Executing ABC.
+3.107.53.1. Executing ABC.
 
-3.63.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4538, asynchronously reset by !\rstn
 Extracted 16 gates and 27 wires to a netlist network with 10 inputs and 8 outputs.
 
-3.63.54.1. Executing ABC.
+3.107.54.1. Executing ABC.
 
-3.63.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$auto$opt_reduce.cc:134:opt_pmux$4007, asynchronously reset by !\rstn
 Extracted 48 gates and 78 wires to a netlist network with 30 inputs and 22 outputs.
 
-3.63.55.1. Executing ABC.
+3.107.55.1. Executing ABC.
 
-3.63.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4572, asynchronously reset by !\rstn
 Extracted 36 gates and 72 wires to a netlist network with 36 inputs and 34 outputs.
 
-3.63.56.1. Executing ABC.
+3.107.56.1. Executing ABC.
 
-3.63.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4563, asynchronously reset by !\rstn
 Extracted 29 gates and 55 wires to a netlist network with 25 inputs and 7 outputs.
 
-3.63.57.1. Executing ABC.
+3.107.57.1. Executing ABC.
 
-3.63.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$verific$n11617$208, asynchronously reset by !\rstn
 Extracted 12 gates and 23 wires to a netlist network with 11 inputs and 10 outputs.
 
-3.63.58.1. Executing ABC.
+3.107.58.1. Executing ABC.
 
-3.63.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $auto$opt_dff.cc:219:make_patterns_logic$4657, asynchronously reset by !\rstn
 Extracted 38 gates and 76 wires to a netlist network with 38 inputs and 35 outputs.
 
-3.63.59.1. Executing ABC.
+3.107.59.1. Executing ABC.
 
-3.63.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.107.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, asynchronously reset by !\rstn
 Extracted 1585 gates and 2010 wires to a netlist network with 423 inputs and 389 outputs.
 
-3.63.60.1. Executing ABC.
+3.107.60.1. Executing ABC.
 
 yosys> abc -dff
 
-3.64. Executing ABC pass (technology mapping using ABC).
+3.108. Executing ABC pass (technology mapping using ABC).
 
-3.64.1. Summary of detected clock domains:
+3.108.1. Summary of detected clock domains:
   30 cells in clk=\clk, en=$abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, arst=!\rstn, srst={ }
   23 cells in clk=\clk, en=$abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, arst=!\rstn, srst={ }
   17 cells in clk=\clk, en=$abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, arst=!\rstn, srst={ }
@@ -2731,365 +2709,365 @@ yosys> abc -dff
   134 cells in clk=\clk, en=$abc$28629$auto$opt_dff.cc:219:make_patterns_logic$4514, arst=!\rstn, srst={ }
   1166 cells in clk=\clk, en={ }, arst=!\rstn, srst={ }
 
-3.64.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, asynchronously reset by !\rstn
 Extracted 30 gates and 55 wires to a netlist network with 25 inputs and 7 outputs.
 
-3.64.2.1. Executing ABC.
+3.108.2.1. Executing ABC.
 
-3.64.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, asynchronously reset by !\rstn
 Extracted 23 gates and 40 wires to a netlist network with 17 inputs and 7 outputs.
 
-3.64.3.1. Executing ABC.
+3.108.3.1. Executing ABC.
 
-3.64.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, asynchronously reset by !\rstn
 Extracted 17 gates and 31 wires to a netlist network with 14 inputs and 7 outputs.
 
-3.64.4.1. Executing ABC.
+3.108.4.1. Executing ABC.
 
-3.64.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31464$auto$opt_dff.cc:219:make_patterns_logic$4923, asynchronously reset by !\rstn
 Extracted 14 gates and 27 wires to a netlist network with 13 inputs and 6 outputs.
 
-3.64.5.1. Executing ABC.
+3.108.5.1. Executing ABC.
 
-3.64.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31359$auto$opt_dff.cc:219:make_patterns_logic$4300, asynchronously reset by !\rstn
 Extracted 31 gates and 79 wires to a netlist network with 48 inputs and 28 outputs.
 
-3.64.6.1. Executing ABC.
+3.108.6.1. Executing ABC.
 
-3.64.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31191$auto$opt_dff.cc:219:make_patterns_logic$4872, asynchronously reset by !\rstn
 Extracted 71 gates and 83 wires to a netlist network with 12 inputs and 15 outputs.
 
-3.64.7.1. Executing ABC.
+3.108.7.1. Executing ABC.
 
-3.64.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$31719$verific$n11617$208, asynchronously reset by !\rstn
 Extracted 18 gates and 34 wires to a netlist network with 16 inputs and 11 outputs.
 
-3.64.8.1. Executing ABC.
+3.108.8.1. Executing ABC.
 
-3.64.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28796$auto$opt_dff.cc:219:make_patterns_logic$4908, asynchronously reset by !\rstn
 Extracted 40 gates and 51 wires to a netlist network with 11 inputs and 19 outputs.
 
-3.64.9.1. Executing ABC.
+3.108.9.1. Executing ABC.
 
-3.64.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26337$auto$opt_dff.cc:219:make_patterns_logic$4383, asynchronously reset by !\rstn
 Extracted 32 gates and 63 wires to a netlist network with 31 inputs and 28 outputs.
 
-3.64.10.1. Executing ABC.
+3.108.10.1. Executing ABC.
 
-3.64.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26712$auto$opt_dff.cc:219:make_patterns_logic$4410, asynchronously reset by !\rstn
 Extracted 10 gates and 18 wires to a netlist network with 8 inputs and 6 outputs.
 
-3.64.11.1. Executing ABC.
+3.108.11.1. Executing ABC.
 
-3.64.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26999$auto$opt_dff.cc:219:make_patterns_logic$5001, asynchronously reset by !\rstn
 Extracted 81 gates and 132 wires to a netlist network with 51 inputs and 28 outputs.
 
-3.64.12.1. Executing ABC.
+3.108.12.1. Executing ABC.
 
-3.64.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26052$auto$opt_dff.cc:219:make_patterns_logic$4859, asynchronously reset by !\rstn
 Extracted 39 gates and 67 wires to a netlist network with 28 inputs and 11 outputs.
 
-3.64.13.1. Executing ABC.
+3.108.13.1. Executing ABC.
 
-3.64.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27264$auto$opt_dff.cc:219:make_patterns_logic$5046, asynchronously reset by !\rstn
 Extracted 78 gates and 125 wires to a netlist network with 47 inputs and 31 outputs.
 
-3.64.14.1. Executing ABC.
+3.108.14.1. Executing ABC.
 
-3.64.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27176$auto$opt_dff.cc:219:make_patterns_logic$5031, asynchronously reset by !\rstn
 Extracted 78 gates and 126 wires to a netlist network with 48 inputs and 28 outputs.
 
-3.64.15.1. Executing ABC.
+3.108.15.1. Executing ABC.
 
-3.64.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27688$auto$opt_dff.cc:219:make_patterns_logic$4762, asynchronously reset by !\rstn
 Extracted 359 gates and 524 wires to a netlist network with 165 inputs and 71 outputs.
 
-3.64.16.1. Executing ABC.
+3.108.16.1. Executing ABC.
 
-3.64.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27087$auto$opt_dff.cc:219:make_patterns_logic$5016, asynchronously reset by !\rstn
 Extracted 80 gates and 130 wires to a netlist network with 50 inputs and 29 outputs.
 
-3.64.17.1. Executing ABC.
+3.108.17.1. Executing ABC.
 
-3.64.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$31477$verific$n11615$206, asynchronously reset by !\rstn
 Extracted 14 gates and 28 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.64.18.1. Executing ABC.
+3.108.18.1. Executing ABC.
 
-3.64.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31682$auto$opt_dff.cc:219:make_patterns_logic$4563, asynchronously reset by !\rstn
 Extracted 35 gates and 59 wires to a netlist network with 24 inputs and 6 outputs.
 
-3.64.19.1. Executing ABC.
+3.108.19.1. Executing ABC.
 
-3.64.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26200$auto$opt_dff.cc:219:make_patterns_logic$4846, asynchronously reset by !\rstn
 Extracted 60 gates and 67 wires to a netlist network with 7 inputs and 11 outputs.
 
-3.64.20.1. Executing ABC.
+3.108.20.1. Executing ABC.
 
-3.64.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$25796$auto$opt_dff.cc:219:make_patterns_logic$4376, asynchronously reset by !\rstn
 Extracted 7 gates and 14 wires to a netlist network with 7 inputs and 3 outputs.
 
-3.64.21.1. Executing ABC.
+3.108.21.1. Executing ABC.
 
-3.64.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27356$auto$opt_dff.cc:219:make_patterns_logic$5061, asynchronously reset by !\rstn
 Extracted 71 gates and 112 wires to a netlist network with 41 inputs and 29 outputs.
 
-3.64.22.1. Executing ABC.
+3.108.22.1. Executing ABC.
 
-3.64.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27444$auto$opt_dff.cc:219:make_patterns_logic$5076, asynchronously reset by !\rstn
 Extracted 76 gates and 122 wires to a netlist network with 46 inputs and 29 outputs.
 
-3.64.23.1. Executing ABC.
+3.108.23.1. Executing ABC.
 
-3.64.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26096$auto$opt_dff.cc:219:make_patterns_logic$4436, asynchronously reset by !\rstn
 Extracted 50 gates and 100 wires to a netlist network with 50 inputs and 33 outputs.
 
-3.64.24.1. Executing ABC.
+3.108.24.1. Executing ABC.
 
-3.64.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30232$auto$opt_dff.cc:219:make_patterns_logic$4291, asynchronously reset by !\rstn
 Extracted 35 gates and 51 wires to a netlist network with 16 inputs and 12 outputs.
 
-3.64.25.1. Executing ABC.
+3.108.25.1. Executing ABC.
 
-3.64.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31495$auto$opt_dff.cc:219:make_patterns_logic$4538, asynchronously reset by !\rstn
 Extracted 18 gates and 32 wires to a netlist network with 13 inputs and 10 outputs.
 
-3.64.26.1. Executing ABC.
+3.108.26.1. Executing ABC.
 
-3.64.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28239$auto$opt_dff.cc:219:make_patterns_logic$4979, asynchronously reset by !\rstn
 Extracted 44 gates and 67 wires to a netlist network with 23 inputs and 14 outputs.
 
-3.64.27.1. Executing ABC.
+3.108.27.1. Executing ABC.
 
-3.64.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28369$auto$opt_dff.cc:219:make_patterns_logic$4740, asynchronously reset by !\rstn
 Extracted 88 gates and 205 wires to a netlist network with 117 inputs and 77 outputs.
 
-3.64.28.1. Executing ABC.
+3.108.28.1. Executing ABC.
 
-3.64.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28449$auto$opt_dff.cc:219:make_patterns_logic$4723, asynchronously reset by !\rstn
 Extracted 108 gates and 212 wires to a netlist network with 104 inputs and 76 outputs.
 
-3.64.29.1. Executing ABC.
+3.108.29.1. Executing ABC.
 
-3.64.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28575$auto$opt_dff.cc:219:make_patterns_logic$4809, asynchronously reset by !\rstn
 Extracted 50 gates and 71 wires to a netlist network with 21 inputs and 30 outputs.
 
-3.64.30.1. Executing ABC.
+3.108.30.1. Executing ABC.
 
-3.64.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28780$auto$opt_dff.cc:219:make_patterns_logic$4938, asynchronously reset by !\rstn
 Extracted 12 gates and 21 wires to a netlist network with 9 inputs and 5 outputs.
 
-3.64.31.1. Executing ABC.
+3.108.31.1. Executing ABC.
 
-3.64.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26513$auto$opt_dff.cc:219:make_patterns_logic$4704, asynchronously reset by !\rstn
 Extracted 85 gates and 175 wires to a netlist network with 89 inputs and 54 outputs.
 
-3.64.32.1. Executing ABC.
+3.108.32.1. Executing ABC.
 
-3.64.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27532$auto$opt_dff.cc:219:make_patterns_logic$5091, asynchronously reset by !\rstn
 Extracted 73 gates and 116 wires to a netlist network with 43 inputs and 28 outputs.
 
-3.64.33.1. Executing ABC.
+3.108.33.1. Executing ABC.
 
-3.64.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$25964$auto$opt_dff.cc:219:make_patterns_logic$4773, asynchronously reset by !\rstn
 Extracted 105 gates and 157 wires to a netlist network with 52 inputs and 49 outputs.
 
-3.64.34.1. Executing ABC.
+3.108.34.1. Executing ABC.
 
-3.64.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$25881$auto$opt_dff.cc:219:make_patterns_logic$4527, asynchronously reset by !\rstn
 Extracted 115 gates and 183 wires to a netlist network with 68 inputs and 26 outputs.
 
-3.64.35.1. Executing ABC.
+3.108.35.1. Executing ABC.
 
-3.64.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31262$auto$opt_dff.cc:219:make_patterns_logic$4317, asynchronously reset by !\rstn
 Extracted 110 gates and 183 wires to a netlist network with 73 inputs and 47 outputs.
 
-3.64.36.1. Executing ABC.
+3.108.36.1. Executing ABC.
 
-3.64.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30270$auto$opt_dff.cc:219:make_patterns_logic$4551, asynchronously reset by !\rstn
 Extracted 14 gates and 24 wires to a netlist network with 10 inputs and 4 outputs.
 
-3.64.37.1. Executing ABC.
+3.108.37.1. Executing ABC.
 
-3.64.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$25862$auto$opt_reduce.cc:134:opt_pmux$4023, asynchronously reset by !\rstn
 Extracted 35 gates and 61 wires to a netlist network with 26 inputs and 15 outputs.
 
-3.64.38.1. Executing ABC.
+3.108.38.1. Executing ABC.
 
-3.64.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26724$auto$opt_dff.cc:219:make_patterns_logic$4421, asynchronously reset by !\rstn
 Extracted 228 gates and 361 wires to a netlist network with 133 inputs and 86 outputs.
 
-3.64.39.1. Executing ABC.
+3.108.39.1. Executing ABC.
 
-3.64.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28158$auto$opt_dff.cc:219:make_patterns_logic$4602, asynchronously reset by !\rstn
 Extracted 69 gates and 80 wires to a netlist network with 11 inputs and 25 outputs.
 
-3.64.40.1. Executing ABC.
+3.108.40.1. Executing ABC.
 
-3.64.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28060$auto$opt_dff.cc:219:make_patterns_logic$4278, asynchronously reset by !\rstn
 Extracted 42 gates and 77 wires to a netlist network with 35 inputs and 33 outputs.
 
-3.64.41.1. Executing ABC.
+3.108.41.1. Executing ABC.
 
-3.64.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30469$auto$opt_dff.cc:219:make_patterns_logic$5121, asynchronously reset by !\rstn
 Extracted 671 gates and 958 wires to a netlist network with 287 inputs and 213 outputs.
 
-3.64.42.1. Executing ABC.
+3.108.42.1. Executing ABC.
 
-3.64.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28838$auto$opt_dff.cc:219:make_patterns_logic$5131, asynchronously reset by !\rstn
 Extracted 831 gates and 989 wires to a netlist network with 158 inputs and 237 outputs.
 
-3.64.43.1. Executing ABC.
+3.108.43.1. Executing ABC.
 
-3.64.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28047$auto$opt_dff.cc:219:make_patterns_logic$4835, asynchronously reset by !\rstn
 Extracted 18 gates and 27 wires to a netlist network with 9 inputs and 4 outputs.
 
-3.64.44.1. Executing ABC.
+3.108.44.1. Executing ABC.
 
-3.64.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26373$auto$opt_dff.cc:219:make_patterns_logic$4986, asynchronously reset by !\rstn
 Extracted 75 gates and 120 wires to a netlist network with 45 inputs and 29 outputs.
 
-3.64.45.1. Executing ABC.
+3.108.45.1. Executing ABC.
 
-3.64.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31070$auto$opt_dff.cc:219:make_patterns_logic$4326, asynchronously reset by !\rstn
 Extracted 122 gates and 163 wires to a netlist network with 41 inputs and 31 outputs.
 
-3.64.46.1. Executing ABC.
+3.108.46.1. Executing ABC.
 
-3.64.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30451$auto$opt_dff.cc:219:make_patterns_logic$4358, asynchronously reset by !\rstn
 Extracted 43 gates and 107 wires to a netlist network with 64 inputs and 38 outputs.
 
-3.64.47.1. Executing ABC.
+3.108.47.1. Executing ABC.
 
-3.64.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26459$auto$opt_dff.cc:219:make_patterns_logic$4674, asynchronously reset by !\rstn
 Extracted 54 gates and 73 wires to a netlist network with 19 inputs and 21 outputs.
 
-3.64.48.1. Executing ABC.
+3.108.48.1. Executing ABC.
 
-3.64.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$27621$auto$opt_dff.cc:219:make_patterns_logic$5112, asynchronously reset by !\rstn
 Extracted 67 gates and 109 wires to a netlist network with 42 inputs and 29 outputs.
 
-3.64.49.1. Executing ABC.
+3.108.49.1. Executing ABC.
 
-3.64.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$30287$auto$opt_dff.cc:219:make_patterns_logic$4753, asynchronously reset by !\rstn
 Extracted 105 gates and 151 wires to a netlist network with 46 inputs and 11 outputs.
 
-3.64.50.1. Executing ABC.
+3.108.50.1. Executing ABC.
 
-3.64.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$26262$auto$opt_dff.cc:194:make_patterns_logic$4660, asynchronously reset by !\rstn
 Extracted 65 gates and 104 wires to a netlist network with 39 inputs and 29 outputs.
 
-3.64.51.1. Executing ABC.
+3.108.51.1. Executing ABC.
 
-3.64.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31734$auto$opt_dff.cc:219:make_patterns_logic$4657, asynchronously reset by !\rstn
 Extracted 71 gates and 110 wires to a netlist network with 39 inputs and 35 outputs.
 
-3.64.52.1. Executing ABC.
+3.108.52.1. Executing ABC.
 
-3.64.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31369$auto$opt_dff.cc:219:make_patterns_logic$4820, asynchronously reset by !\rstn
 Extracted 90 gates and 107 wires to a netlist network with 17 inputs and 15 outputs.
 
-3.64.53.1. Executing ABC.
+3.108.53.1. Executing ABC.
 
-3.64.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28291$auto$opt_dff.cc:219:make_patterns_logic$4636, asynchronously reset by !\rstn
 Extracted 67 gates and 92 wires to a netlist network with 25 inputs and 15 outputs.
 
-3.64.54.1. Executing ABC.
+3.108.54.1. Executing ABC.
 
-3.64.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$29790$auto$opt_reduce.cc:134:opt_pmux$3971, asynchronously reset by !\rstn
 Extracted 434 gates and 551 wires to a netlist network with 117 inputs and 61 outputs.
 
-3.64.55.1. Executing ABC.
+3.108.55.1. Executing ABC.
 
-3.64.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$25804$auto$opt_dff.cc:219:make_patterns_logic$4951, asynchronously reset by !\rstn
 Extracted 53 gates and 70 wires to a netlist network with 17 inputs and 11 outputs.
 
-3.64.56.1. Executing ABC.
+3.108.56.1. Executing ABC.
 
-3.64.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$31582$auto$opt_dff.cc:219:make_patterns_logic$4572, asynchronously reset by !\rstn
 Extracted 69 gates and 107 wires to a netlist network with 38 inputs and 35 outputs.
 
-3.64.57.1. Executing ABC.
+3.108.57.1. Executing ABC.
 
-3.64.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$31517$auto$opt_reduce.cc:134:opt_pmux$4007, asynchronously reset by !\rstn
 Extracted 44 gates and 73 wires to a netlist network with 29 inputs and 24 outputs.
 
-3.64.58.1. Executing ABC.
+3.108.58.1. Executing ABC.
 
-3.64.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$28629$auto$opt_dff.cc:219:make_patterns_logic$4514, asynchronously reset by !\rstn
 Extracted 134 gates and 203 wires to a netlist network with 69 inputs and 62 outputs.
 
-3.64.59.1. Executing ABC.
+3.108.59.1. Executing ABC.
 
-3.64.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.108.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, asynchronously reset by !\rstn
 Extracted 1146 gates and 1621 wires to a netlist network with 474 inputs and 400 outputs.
 
-3.64.60.1. Executing ABC.
+3.108.60.1. Executing ABC.
 
 yosys> abc -dff
 
-3.65. Executing ABC pass (technology mapping using ABC).
+3.109. Executing ABC pass (technology mapping using ABC).
 
-3.65.1. Summary of detected clock domains:
+3.109.1. Summary of detected clock domains:
   28 cells in clk=\clk, en=$abc$33329$abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, arst=!\rstn, srst={ }
   25 cells in clk=\clk, en=$abc$33359$abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, arst=!\rstn, srst={ }
   13 cells in clk=\clk, en=$abc$33384$abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, arst=!\rstn, srst={ }
@@ -3150,365 +3128,365 @@ yosys> abc -dff
   44 cells in clk=\clk, en=!$abc$39067$abc$31517$auto$opt_reduce.cc:134:opt_pmux$4007, arst=!\rstn, srst={ }
   1204 cells in clk=\clk, en={ }, arst=!\rstn, srst={ }
 
-3.65.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33329$abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, asynchronously reset by !\rstn
 Extracted 28 gates and 53 wires to a netlist network with 25 inputs and 6 outputs.
 
-3.65.2.1. Executing ABC.
+3.109.2.1. Executing ABC.
 
-3.65.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33359$abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, asynchronously reset by !\rstn
 Extracted 25 gates and 42 wires to a netlist network with 17 inputs and 8 outputs.
 
-3.65.3.1. Executing ABC.
+3.109.3.1. Executing ABC.
 
-3.65.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33384$abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, asynchronously reset by !\rstn
 Extracted 13 gates and 26 wires to a netlist network with 13 inputs and 3 outputs.
 
-3.65.4.1. Executing ABC.
+3.109.4.1. Executing ABC.
 
-3.65.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33402$abc$31464$auto$opt_dff.cc:219:make_patterns_logic$4923, asynchronously reset by !\rstn
 Extracted 10 gates and 22 wires to a netlist network with 12 inputs and 3 outputs.
 
-3.65.5.1. Executing ABC.
+3.109.5.1. Executing ABC.
 
-3.65.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33417$abc$31359$auto$opt_dff.cc:219:make_patterns_logic$4300, asynchronously reset by !\rstn
 Extracted 32 gates and 82 wires to a netlist network with 50 inputs and 29 outputs.
 
-3.65.6.1. Executing ABC.
+3.109.6.1. Executing ABC.
 
-3.65.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$33521$abc$31719$verific$n11617$208, asynchronously reset by !\rstn
 Extracted 16 gates and 31 wires to a netlist network with 15 inputs and 9 outputs.
 
-3.65.7.1. Executing ABC.
+3.109.7.1. Executing ABC.
 
-3.65.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33583$abc$26337$auto$opt_dff.cc:219:make_patterns_logic$4383, asynchronously reset by !\rstn
 Extracted 31 gates and 61 wires to a netlist network with 30 inputs and 27 outputs.
 
-3.65.8.1. Executing ABC.
+3.109.8.1. Executing ABC.
 
-3.65.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33617$abc$26712$auto$opt_dff.cc:219:make_patterns_logic$4410, asynchronously reset by !\rstn
 Extracted 16 gates and 30 wires to a netlist network with 14 inputs and 6 outputs.
 
-3.65.9.1. Executing ABC.
+3.109.9.1. Executing ABC.
 
-3.65.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33714$abc$26052$auto$opt_dff.cc:219:make_patterns_logic$4859, asynchronously reset by !\rstn
 Extracted 42 gates and 70 wires to a netlist network with 28 inputs and 11 outputs.
 
-3.65.10.1. Executing ABC.
+3.109.10.1. Executing ABC.
 
-3.65.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33756$abc$27264$auto$opt_dff.cc:219:make_patterns_logic$5046, asynchronously reset by !\rstn
 Extracted 84 gates and 137 wires to a netlist network with 53 inputs and 31 outputs.
 
-3.65.11.1. Executing ABC.
+3.109.11.1. Executing ABC.
 
-3.65.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33930$abc$27688$auto$opt_dff.cc:219:make_patterns_logic$4762, asynchronously reset by !\rstn
 Extracted 302 gates and 468 wires to a netlist network with 166 inputs and 70 outputs.
 
-3.65.12.1. Executing ABC.
+3.109.12.1. Executing ABC.
 
-3.65.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$34320$abc$31477$verific$n11615$206, asynchronously reset by !\rstn
 Extracted 14 gates and 28 wires to a netlist network with 14 inputs and 9 outputs.
 
-3.65.13.1. Executing ABC.
+3.109.13.1. Executing ABC.
 
-3.65.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34336$abc$31682$auto$opt_dff.cc:219:make_patterns_logic$4563, asynchronously reset by !\rstn
 Extracted 38 gates and 62 wires to a netlist network with 24 inputs and 5 outputs.
 
-3.65.14.1. Executing ABC.
+3.109.14.1. Executing ABC.
 
-3.65.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34435$abc$25796$auto$opt_dff.cc:219:make_patterns_logic$4376, asynchronously reset by !\rstn
 Extracted 6 gates and 13 wires to a netlist network with 7 inputs and 2 outputs.
 
-3.65.15.1. Executing ABC.
+3.109.15.1. Executing ABC.
 
-3.65.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34444$abc$27356$auto$opt_dff.cc:219:make_patterns_logic$5061, asynchronously reset by !\rstn
 Extracted 80 gates and 130 wires to a netlist network with 50 inputs and 29 outputs.
 
-3.65.16.1. Executing ABC.
+3.109.16.1. Executing ABC.
 
-3.65.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34375$abc$26200$auto$opt_dff.cc:219:make_patterns_logic$4846, asynchronously reset by !\rstn
 Extracted 60 gates and 68 wires to a netlist network with 8 inputs and 12 outputs.
 
-3.65.17.1. Executing ABC.
+3.109.17.1. Executing ABC.
 
-3.65.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34529$abc$27444$auto$opt_dff.cc:219:make_patterns_logic$5076, asynchronously reset by !\rstn
 Extracted 72 gates and 114 wires to a netlist network with 42 inputs and 29 outputs.
 
-3.65.18.1. Executing ABC.
+3.109.18.1. Executing ABC.
 
-3.65.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33449$abc$31191$auto$opt_dff.cc:219:make_patterns_logic$4872, asynchronously reset by !\rstn
 Extracted 72 gates and 85 wires to a netlist network with 13 inputs and 16 outputs.
 
-3.65.19.1. Executing ABC.
+3.109.19.1. Executing ABC.
 
-3.65.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34719$abc$30232$auto$opt_dff.cc:219:make_patterns_logic$4291, asynchronously reset by !\rstn
 Extracted 32 gates and 49 wires to a netlist network with 17 inputs and 12 outputs.
 
-3.65.20.1. Executing ABC.
+3.109.20.1. Executing ABC.
 
-3.65.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34758$abc$31495$auto$opt_dff.cc:219:make_patterns_logic$4538, asynchronously reset by !\rstn
 Extracted 20 gates and 35 wires to a netlist network with 14 inputs and 13 outputs.
 
-3.65.21.1. Executing ABC.
+3.109.21.1. Executing ABC.
 
-3.65.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34830$abc$28369$auto$opt_dff.cc:219:make_patterns_logic$4740, asynchronously reset by !\rstn
 Extracted 107 gates and 223 wires to a netlist network with 116 inputs and 77 outputs.
 
-3.65.22.1. Executing ABC.
+3.109.22.1. Executing ABC.
 
-3.65.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34922$abc$28449$auto$opt_dff.cc:219:make_patterns_logic$4723, asynchronously reset by !\rstn
 Extracted 72 gates and 158 wires to a netlist network with 86 inputs and 62 outputs.
 
-3.65.23.1. Executing ABC.
+3.109.23.1. Executing ABC.
 
-3.65.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35010$abc$28575$auto$opt_dff.cc:219:make_patterns_logic$4809, asynchronously reset by !\rstn
 Extracted 51 gates and 71 wires to a netlist network with 20 inputs and 30 outputs.
 
-3.65.24.1. Executing ABC.
+3.109.24.1. Executing ABC.
 
-3.65.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35066$abc$28780$auto$opt_dff.cc:219:make_patterns_logic$4938, asynchronously reset by !\rstn
 Extracted 12 gates and 21 wires to a netlist network with 9 inputs and 5 outputs.
 
-3.65.25.1. Executing ABC.
+3.109.25.1. Executing ABC.
 
-3.65.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35080$abc$26513$auto$opt_dff.cc:219:make_patterns_logic$4704, asynchronously reset by !\rstn
 Extracted 85 gates and 170 wires to a netlist network with 85 inputs and 55 outputs.
 
-3.65.26.1. Executing ABC.
+3.109.26.1. Executing ABC.
 
-3.65.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35253$abc$25964$auto$opt_dff.cc:219:make_patterns_logic$4773, asynchronously reset by !\rstn
 Extracted 99 gates and 151 wires to a netlist network with 52 inputs and 49 outputs.
 
-3.65.27.1. Executing ABC.
+3.109.27.1. Executing ABC.
 
-3.65.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35356$abc$25881$auto$opt_dff.cc:219:make_patterns_logic$4527, asynchronously reset by !\rstn
 Extracted 117 gates and 183 wires to a netlist network with 66 inputs and 26 outputs.
 
-3.65.28.1. Executing ABC.
+3.109.28.1. Executing ABC.
 
-3.65.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34614$abc$26096$auto$opt_dff.cc:219:make_patterns_logic$4436, asynchronously reset by !\rstn
 Extracted 56 gates and 113 wires to a netlist network with 57 inputs and 33 outputs.
 
-3.65.29.1. Executing ABC.
+3.109.29.1. Executing ABC.
 
-3.65.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35600$abc$30270$auto$opt_dff.cc:219:make_patterns_logic$4551, asynchronously reset by !\rstn
 Extracted 17 gates and 26 wires to a netlist network with 9 inputs and 5 outputs.
 
-3.65.30.1. Executing ABC.
+3.109.30.1. Executing ABC.
 
-3.65.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$35616$abc$25862$auto$opt_reduce.cc:134:opt_pmux$4023, asynchronously reset by !\rstn
 Extracted 37 gates and 64 wires to a netlist network with 27 inputs and 18 outputs.
 
-3.65.31.1. Executing ABC.
+3.109.31.1. Executing ABC.
 
-3.65.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35660$abc$26724$auto$opt_dff.cc:219:make_patterns_logic$4421, asynchronously reset by !\rstn
 Extracted 225 gates and 356 wires to a netlist network with 131 inputs and 85 outputs.
 
-3.65.32.1. Executing ABC.
+3.109.32.1. Executing ABC.
 
-3.65.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35889$abc$28158$auto$opt_dff.cc:219:make_patterns_logic$4602, asynchronously reset by !\rstn
 Extracted 73 gates and 82 wires to a netlist network with 9 inputs and 29 outputs.
 
-3.65.33.1. Executing ABC.
+3.109.33.1. Executing ABC.
 
-3.65.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35970$abc$28060$auto$opt_dff.cc:219:make_patterns_logic$4278, asynchronously reset by !\rstn
 Extracted 44 gates and 79 wires to a netlist network with 35 inputs and 33 outputs.
 
-3.65.34.1. Executing ABC.
+3.109.34.1. Executing ABC.
 
-3.65.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$36068$abc$30469$auto$opt_dff.cc:219:make_patterns_logic$5121, asynchronously reset by !\rstn
 Extracted 643 gates and 930 wires to a netlist network with 287 inputs and 215 outputs.
 
-3.65.35.1. Executing ABC.
+3.109.35.1. Executing ABC.
 
-3.65.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37617$abc$28047$auto$opt_dff.cc:219:make_patterns_logic$4835, asynchronously reset by !\rstn
 Extracted 9 gates and 17 wires to a netlist network with 8 inputs and 2 outputs.
 
-3.65.36.1. Executing ABC.
+3.109.36.1. Executing ABC.
 
-3.65.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33542$abc$28796$auto$opt_dff.cc:219:make_patterns_logic$4908, asynchronously reset by !\rstn
 Extracted 49 gates and 70 wires to a netlist network with 21 inputs and 27 outputs.
 
-3.65.37.1. Executing ABC.
+3.109.37.1. Executing ABC.
 
-3.65.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37629$abc$26373$auto$opt_dff.cc:219:make_patterns_logic$4986, asynchronously reset by !\rstn
 Extracted 74 gates and 118 wires to a netlist network with 44 inputs and 29 outputs.
 
-3.65.38.1. Executing ABC.
+3.109.38.1. Executing ABC.
 
-3.65.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34234$abc$27087$auto$opt_dff.cc:219:make_patterns_logic$5016, asynchronously reset by !\rstn
 Extracted 75 gates and 120 wires to a netlist network with 45 inputs and 29 outputs.
 
-3.65.39.1. Executing ABC.
+3.109.39.1. Executing ABC.
 
-3.65.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37713$abc$31070$auto$opt_dff.cc:219:make_patterns_logic$4326, asynchronously reset by !\rstn
 Extracted 126 gates and 169 wires to a netlist network with 43 inputs and 35 outputs.
 
-3.65.40.1. Executing ABC.
+3.109.40.1. Executing ABC.
 
-3.65.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33845$abc$27176$auto$opt_dff.cc:219:make_patterns_logic$5031, asynchronously reset by !\rstn
 Extracted 75 gates and 120 wires to a netlist network with 45 inputs and 28 outputs.
 
-3.65.41.1. Executing ABC.
+3.109.41.1. Executing ABC.
 
-3.65.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$34781$abc$28239$auto$opt_dff.cc:219:make_patterns_logic$4979, asynchronously reset by !\rstn
 Extracted 47 gates and 70 wires to a netlist network with 23 inputs and 15 outputs.
 
-3.65.42.1. Executing ABC.
+3.109.42.1. Executing ABC.
 
-3.65.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37842$abc$30451$auto$opt_dff.cc:219:make_patterns_logic$4358, asynchronously reset by !\rstn
 Extracted 35 gates and 85 wires to a netlist network with 50 inputs and 29 outputs.
 
-3.65.43.1. Executing ABC.
+3.109.43.1. Executing ABC.
 
-3.65.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37887$abc$26459$auto$opt_dff.cc:219:make_patterns_logic$4674, asynchronously reset by !\rstn
 Extracted 54 gates and 72 wires to a netlist network with 18 inputs and 21 outputs.
 
-3.65.44.1. Executing ABC.
+3.109.44.1. Executing ABC.
 
-3.65.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$33629$abc$26999$auto$opt_dff.cc:219:make_patterns_logic$5001, asynchronously reset by !\rstn
 Extracted 76 gates and 122 wires to a netlist network with 46 inputs and 28 outputs.
 
-3.65.45.1. Executing ABC.
+3.109.45.1. Executing ABC.
 
-3.65.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$37963$abc$27621$auto$opt_dff.cc:219:make_patterns_logic$5112, asynchronously reset by !\rstn
 Extracted 60 gates and 102 wires to a netlist network with 42 inputs and 28 outputs.
 
-3.65.46.1. Executing ABC.
+3.109.46.1. Executing ABC.
 
-3.65.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38032$abc$30287$auto$opt_dff.cc:219:make_patterns_logic$4753, asynchronously reset by !\rstn
 Extracted 87 gates and 132 wires to a netlist network with 45 inputs and 7 outputs.
 
-3.65.47.1. Executing ABC.
+3.109.47.1. Executing ABC.
 
-3.65.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38124$abc$26262$auto$opt_dff.cc:194:make_patterns_logic$4660, asynchronously reset by !\rstn
 Extracted 65 gates and 104 wires to a netlist network with 39 inputs and 29 outputs.
 
-3.65.48.1. Executing ABC.
+3.109.48.1. Executing ABC.
 
-3.65.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38302$abc$31369$auto$opt_dff.cc:219:make_patterns_logic$4820, asynchronously reset by !\rstn
 Extracted 91 gates and 109 wires to a netlist network with 18 inputs and 16 outputs.
 
-3.65.49.1. Executing ABC.
+3.109.49.1. Executing ABC.
 
-3.65.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38199$abc$31734$auto$opt_dff.cc:219:make_patterns_logic$4657, asynchronously reset by !\rstn
 Extracted 67 gates and 104 wires to a netlist network with 37 inputs and 34 outputs.
 
-3.65.50.1. Executing ABC.
+3.109.50.1. Executing ABC.
 
-3.65.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$36742$abc$28838$auto$opt_dff.cc:219:make_patterns_logic$5131, asynchronously reset by !\rstn
 Extracted 840 gates and 1001 wires to a netlist network with 161 inputs and 239 outputs.
 
-3.65.51.1. Executing ABC.
+3.109.51.1. Executing ABC.
 
-3.65.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38394$abc$28291$auto$opt_dff.cc:219:make_patterns_logic$4636, asynchronously reset by !\rstn
 Extracted 63 gates and 88 wires to a netlist network with 25 inputs and 16 outputs.
 
-3.65.52.1. Executing ABC.
+3.109.52.1. Executing ABC.
 
-3.65.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35490$abc$31262$auto$opt_dff.cc:219:make_patterns_logic$4317, asynchronously reset by !\rstn
 Extracted 82 gates and 144 wires to a netlist network with 62 inputs and 39 outputs.
 
-3.65.53.1. Executing ABC.
+3.109.53.1. Executing ABC.
 
-3.65.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$38467$abc$29790$auto$opt_reduce.cc:134:opt_pmux$3971, asynchronously reset by !\rstn
 Extracted 421 gates and 538 wires to a netlist network with 117 inputs and 61 outputs.
 
-3.65.54.1. Executing ABC.
+3.109.54.1. Executing ABC.
 
-3.65.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$39128$abc$28629$auto$opt_dff.cc:219:make_patterns_logic$4514, asynchronously reset by !\rstn
 Extracted 112 gates and 159 wires to a netlist network with 47 inputs and 40 outputs.
 
-3.65.55.1. Executing ABC.
+3.109.55.1. Executing ABC.
 
-3.65.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38908$abc$25804$auto$opt_dff.cc:219:make_patterns_logic$4951, asynchronously reset by !\rstn
 Extracted 59 gates and 78 wires to a netlist network with 19 inputs and 13 outputs.
 
-3.65.56.1. Executing ABC.
+3.109.56.1. Executing ABC.
 
-3.65.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$35167$abc$27532$auto$opt_dff.cc:219:make_patterns_logic$5091, asynchronously reset by !\rstn
 Extracted 79 gates and 128 wires to a netlist network with 49 inputs and 28 outputs.
 
-3.65.57.1. Executing ABC.
+3.109.57.1. Executing ABC.
 
-3.65.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$38965$abc$31582$auto$opt_dff.cc:219:make_patterns_logic$4572, asynchronously reset by !\rstn
 Extracted 69 gates and 107 wires to a netlist network with 38 inputs and 35 outputs.
 
-3.65.58.1. Executing ABC.
+3.109.58.1. Executing ABC.
 
-3.65.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$39067$abc$31517$auto$opt_reduce.cc:134:opt_pmux$4007, asynchronously reset by !\rstn
 Extracted 44 gates and 72 wires to a netlist network with 28 inputs and 24 outputs.
 
-3.65.59.1. Executing ABC.
+3.109.59.1. Executing ABC.
 
-3.65.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.109.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, asynchronously reset by !\rstn
 Extracted 1184 gates and 1685 wires to a netlist network with 500 inputs and 431 outputs.
 
-3.65.60.1. Executing ABC.
+3.109.60.1. Executing ABC.
 
 yosys> abc -dff
 
-3.66. Executing ABC pass (technology mapping using ABC).
+3.110. Executing ABC pass (technology mapping using ABC).
 
-3.66.1. Summary of detected clock domains:
+3.110.1. Summary of detected clock domains:
   27 cells in clk=\clk, en=$abc$40738$abc$33329$abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, arst=!\rstn, srst={ }
   19 cells in clk=\clk, en=$abc$40767$abc$33359$abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, arst=!\rstn, srst={ }
   13 cells in clk=\clk, en=$abc$40793$abc$33384$abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, arst=!\rstn, srst={ }
@@ -3569,386 +3547,382 @@ yosys> abc -dff
   59 cells in clk=\clk, en=$abc$46347$abc$38908$abc$25804$auto$opt_dff.cc:219:make_patterns_logic$4951, arst=!\rstn, srst={ }
   1184 cells in clk=\clk, en={ }, arst=!\rstn, srst={ }
 
-3.66.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.2. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40738$abc$33329$abc$30420$auto$opt_dff.cc:219:make_patterns_logic$4349, asynchronously reset by !\rstn
 Extracted 27 gates and 52 wires to a netlist network with 25 inputs and 5 outputs.
 
-3.66.2.1. Executing ABC.
+3.110.2.1. Executing ABC.
 
-3.66.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.3. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40767$abc$33359$abc$26956$auto$opt_dff.cc:219:make_patterns_logic$4482, asynchronously reset by !\rstn
 Extracted 19 gates and 31 wires to a netlist network with 12 inputs and 7 outputs.
 
-3.66.3.1. Executing ABC.
+3.110.3.1. Executing ABC.
 
-3.66.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.4. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40793$abc$33384$abc$31345$auto$opt_dff.cc:219:make_patterns_logic$4650, asynchronously reset by !\rstn
 Extracted 13 gates and 26 wires to a netlist network with 13 inputs and 3 outputs.
 
-3.66.4.1. Executing ABC.
+3.110.4.1. Executing ABC.
 
-3.66.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.5. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40807$abc$33402$abc$31464$auto$opt_dff.cc:219:make_patterns_logic$4923, asynchronously reset by !\rstn
 Extracted 15 gates and 31 wires to a netlist network with 16 inputs and 4 outputs.
 
-3.66.5.1. Executing ABC.
+3.110.5.1. Executing ABC.
 
-3.66.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.6. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40818$abc$33417$abc$31359$auto$opt_dff.cc:219:make_patterns_logic$4300, asynchronously reset by !\rstn
 Extracted 32 gates and 82 wires to a netlist network with 50 inputs and 29 outputs.
 
-3.66.6.1. Executing ABC.
+3.110.6.1. Executing ABC.
 
-3.66.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.7. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$40851$abc$33521$abc$31719$verific$n11617$208, asynchronously reset by !\rstn
 Extracted 16 gates and 31 wires to a netlist network with 15 inputs and 9 outputs.
 
-3.66.7.1. Executing ABC.
+3.110.7.1. Executing ABC.
 
-3.66.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.8. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40868$abc$33583$abc$26337$auto$opt_dff.cc:219:make_patterns_logic$4383, asynchronously reset by !\rstn
 Extracted 28 gates and 56 wires to a netlist network with 28 inputs and 24 outputs.
 
-3.66.8.1. Executing ABC.
+3.110.8.1. Executing ABC.
 
-3.66.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.9. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40901$abc$33617$abc$26712$auto$opt_dff.cc:219:make_patterns_logic$4410, asynchronously reset by !\rstn
 Extracted 16 gates and 29 wires to a netlist network with 13 inputs and 6 outputs.
 
-3.66.9.1. Executing ABC.
+3.110.9.1. Executing ABC.
 
-3.66.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.10. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40920$abc$33714$abc$26052$auto$opt_dff.cc:219:make_patterns_logic$4859, asynchronously reset by !\rstn
 Extracted 40 gates and 69 wires to a netlist network with 29 inputs and 12 outputs.
 
-3.66.10.1. Executing ABC.
+3.110.10.1. Executing ABC.
 
-3.66.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.11. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$41352$abc$34320$abc$31477$verific$n11615$206, asynchronously reset by !\rstn
 Extracted 16 gates and 30 wires to a netlist network with 14 inputs and 11 outputs.
 
-3.66.11.1. Executing ABC.
+3.110.11.1. Executing ABC.
 
-3.66.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.12. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41368$abc$34336$abc$31682$auto$opt_dff.cc:219:make_patterns_logic$4563, asynchronously reset by !\rstn
 Extracted 35 gates and 59 wires to a netlist network with 24 inputs and 6 outputs.
 
-3.66.12.1. Executing ABC.
+3.110.12.1. Executing ABC.
 
-3.66.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.13. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41403$abc$34435$abc$25796$auto$opt_dff.cc:219:make_patterns_logic$4376, asynchronously reset by !\rstn
 Extracted 7 gates and 14 wires to a netlist network with 7 inputs and 3 outputs.
 
-3.66.13.1. Executing ABC.
+3.110.13.1. Executing ABC.
 
-3.66.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.14. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41411$abc$34444$abc$27356$auto$opt_dff.cc:219:make_patterns_logic$5061, asynchronously reset by !\rstn
 Extracted 81 gates and 132 wires to a netlist network with 51 inputs and 30 outputs.
 
-3.66.14.1. Executing ABC.
+3.110.14.1. Executing ABC.
 
-3.66.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.15. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41496$abc$34375$abc$26200$auto$opt_dff.cc:219:make_patterns_logic$4846, asynchronously reset by !\rstn
 Extracted 61 gates and 69 wires to a netlist network with 8 inputs and 13 outputs.
 
-3.66.15.1. Executing ABC.
+3.110.15.1. Executing ABC.
 
-3.66.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.16. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41049$abc$33930$abc$27688$auto$opt_dff.cc:219:make_patterns_logic$4762, asynchronously reset by !\rstn
 Extracted 302 gates and 468 wires to a netlist network with 166 inputs and 70 outputs.
 
-3.66.16.1. Executing ABC.
+3.110.16.1. Executing ABC.
 
-3.66.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.17. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41715$abc$34719$abc$30232$auto$opt_dff.cc:219:make_patterns_logic$4291, asynchronously reset by !\rstn
 Extracted 40 gates and 53 wires to a netlist network with 13 inputs and 9 outputs.
 
-3.66.17.1. Executing ABC.
+3.110.17.1. Executing ABC.
 
-3.66.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.18. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41779$abc$34830$abc$28369$auto$opt_dff.cc:219:make_patterns_logic$4740, asynchronously reset by !\rstn
 Extracted 97 gates and 207 wires to a netlist network with 110 inputs and 72 outputs.
 
-3.66.18.1. Executing ABC.
+3.110.18.1. Executing ABC.
 
-3.66.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.19. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41883$abc$34922$abc$28449$auto$opt_dff.cc:219:make_patterns_logic$4723, asynchronously reset by !\rstn
 Extracted 63 gates and 141 wires to a netlist network with 78 inputs and 54 outputs.
 
-3.66.19.1. Executing ABC.
+3.110.19.1. Executing ABC.
 
-3.66.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.20. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41956$abc$35010$abc$28575$auto$opt_dff.cc:219:make_patterns_logic$4809, asynchronously reset by !\rstn
 Extracted 53 gates and 76 wires to a netlist network with 23 inputs and 29 outputs.
 
-3.66.20.1. Executing ABC.
+3.110.20.1. Executing ABC.
 
-3.66.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.21. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42012$abc$35066$abc$28780$auto$opt_dff.cc:219:make_patterns_logic$4938, asynchronously reset by !\rstn
 Extracted 11 gates and 20 wires to a netlist network with 9 inputs and 4 outputs.
 
-3.66.21.1. Executing ABC.
+3.110.21.1. Executing ABC.
 
-3.66.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.22. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41557$abc$34529$abc$27444$auto$opt_dff.cc:219:make_patterns_logic$5076, asynchronously reset by !\rstn
 Extracted 79 gates and 128 wires to a netlist network with 49 inputs and 30 outputs.
 
-3.66.22.1. Executing ABC.
+3.110.22.1. Executing ABC.
 
-3.66.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.23. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42026$abc$35080$abc$26513$auto$opt_dff.cc:219:make_patterns_logic$4704, asynchronously reset by !\rstn
 Extracted 94 gates and 199 wires to a netlist network with 105 inputs and 64 outputs.
 
-3.66.23.1. Executing ABC.
+3.110.23.1. Executing ABC.
 
-3.66.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.24. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42114$abc$35253$abc$25964$auto$opt_dff.cc:219:make_patterns_logic$4773, asynchronously reset by !\rstn
 Extracted 87 gates and 128 wires to a netlist network with 41 inputs and 35 outputs.
 
-3.66.24.1. Executing ABC.
+3.110.24.1. Executing ABC.
 
-3.66.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.25. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42220$abc$35356$abc$25881$auto$opt_dff.cc:219:make_patterns_logic$4527, asynchronously reset by !\rstn
 Extracted 121 gates and 187 wires to a netlist network with 66 inputs and 26 outputs.
 
-3.66.25.1. Executing ABC.
+3.110.25.1. Executing ABC.
 
-3.66.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.26. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42458$abc$35600$abc$30270$auto$opt_dff.cc:219:make_patterns_logic$4551, asynchronously reset by !\rstn
 Extracted 14 gates and 23 wires to a netlist network with 9 inputs and 4 outputs.
 
-3.66.26.1. Executing ABC.
+3.110.26.1. Executing ABC.
 
-3.66.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.27. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$42475$abc$35616$abc$25862$auto$opt_reduce.cc:134:opt_pmux$4023, asynchronously reset by !\rstn
 Extracted 35 gates and 61 wires to a netlist network with 26 inputs and 18 outputs.
 
-3.66.27.1. Executing ABC.
+3.110.27.1. Executing ABC.
 
-3.66.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.28. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42511$abc$35660$abc$26724$auto$opt_dff.cc:219:make_patterns_logic$4421, asynchronously reset by !\rstn
 Extracted 206 gates and 335 wires to a netlist network with 129 inputs and 81 outputs.
 
-3.66.28.1. Executing ABC.
+3.110.28.1. Executing ABC.
 
-3.66.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.29. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42738$abc$35889$abc$28158$auto$opt_dff.cc:219:make_patterns_logic$4602, asynchronously reset by !\rstn
 Extracted 69 gates and 78 wires to a netlist network with 9 inputs and 26 outputs.
 
-3.66.29.1. Executing ABC.
+3.110.29.1. Executing ABC.
 
-3.66.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.30. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42822$abc$35970$abc$28060$auto$opt_dff.cc:219:make_patterns_logic$4278, asynchronously reset by !\rstn
 Extracted 39 gates and 74 wires to a netlist network with 35 inputs and 33 outputs.
 
-3.66.30.1. Executing ABC.
+3.110.30.1. Executing ABC.
 
-3.66.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.31. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42353$abc$34614$abc$26096$auto$opt_dff.cc:219:make_patterns_logic$4436, asynchronously reset by !\rstn
 Extracted 43 gates and 87 wires to a netlist network with 44 inputs and 33 outputs.
 
-3.66.31.1. Executing ABC.
+3.110.31.1. Executing ABC.
 
-3.66.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.32. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$40960$abc$33756$abc$27264$auto$opt_dff.cc:219:make_patterns_logic$5046, asynchronously reset by !\rstn
 Extracted 79 gates and 128 wires to a netlist network with 49 inputs and 30 outputs.
 
-3.66.32.1. Executing ABC.
+3.110.32.1. Executing ABC.
 
-3.66.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.33. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$42920$abc$36068$abc$30469$auto$opt_dff.cc:219:make_patterns_logic$5121, asynchronously reset by !\rstn
 Extracted 526 gates and 691 wires to a netlist network with 165 inputs and 178 outputs.
 
-3.66.33.1. Executing ABC.
+3.110.33.1. Executing ABC.
 
-3.66.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.34. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43598$abc$37617$abc$28047$auto$opt_dff.cc:219:make_patterns_logic$4835, asynchronously reset by !\rstn
 Extracted 8 gates and 16 wires to a netlist network with 8 inputs and 2 outputs.
 
-3.66.34.1. Executing ABC.
+3.110.34.1. Executing ABC.
 
-3.66.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.35. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43608$abc$33542$abc$28796$auto$opt_dff.cc:219:make_patterns_logic$4908, asynchronously reset by !\rstn
 Extracted 49 gates and 70 wires to a netlist network with 21 inputs and 27 outputs.
 
-3.66.35.1. Executing ABC.
+3.110.35.1. Executing ABC.
 
-3.66.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.36. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43658$abc$37629$abc$26373$auto$opt_dff.cc:219:make_patterns_logic$4986, asynchronously reset by !\rstn
 Extracted 72 gates and 114 wires to a netlist network with 42 inputs and 29 outputs.
 
-3.66.36.1. Executing ABC.
+3.110.36.1. Executing ABC.
 
-3.66.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.37. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43742$abc$34234$abc$27087$auto$opt_dff.cc:219:make_patterns_logic$5016, asynchronously reset by !\rstn
 Extracted 77 gates and 124 wires to a netlist network with 47 inputs and 28 outputs.
 
-3.66.37.1. Executing ABC.
+3.110.37.1. Executing ABC.
 
-3.66.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.38. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43828$abc$37713$abc$31070$auto$opt_dff.cc:219:make_patterns_logic$4326, asynchronously reset by !\rstn
 Extracted 122 gates and 165 wires to a netlist network with 43 inputs and 34 outputs.
 
-3.66.38.1. Executing ABC.
+3.110.38.1. Executing ABC.
 
-3.66.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.39. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41642$abc$33449$abc$31191$auto$opt_dff.cc:219:make_patterns_logic$4872, asynchronously reset by !\rstn
 Extracted 71 gates and 83 wires to a netlist network with 12 inputs and 15 outputs.
 
-3.66.39.1. Executing ABC.
+3.110.39.1. Executing ABC.
 
-3.66.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.40. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$46594$abc$39067$abc$31517$auto$opt_reduce.cc:134:opt_pmux$4007, asynchronously reset by !\rstn
 Extracted 44 gates and 73 wires to a netlist network with 29 inputs and 24 outputs.
 
-3.66.40.1. Executing ABC.
+3.110.40.1. Executing ABC.
 
-3.66.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.41. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$43956$abc$33845$abc$27176$auto$opt_dff.cc:219:make_patterns_logic$5031, asynchronously reset by !\rstn
 Extracted 69 gates and 108 wires to a netlist network with 39 inputs and 28 outputs.
 
-3.66.41.1. Executing ABC.
+3.110.41.1. Executing ABC.
 
-3.66.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.42. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44041$abc$34781$abc$28239$auto$opt_dff.cc:219:make_patterns_logic$4979, asynchronously reset by !\rstn
 Extracted 46 gates and 68 wires to a netlist network with 22 inputs and 13 outputs.
 
-3.66.42.1. Executing ABC.
+3.110.42.1. Executing ABC.
 
-3.66.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.43. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44091$abc$37842$abc$30451$auto$opt_dff.cc:219:make_patterns_logic$4358, asynchronously reset by !\rstn
 Extracted 32 gates and 77 wires to a netlist network with 45 inputs and 26 outputs.
 
-3.66.43.1. Executing ABC.
+3.110.43.1. Executing ABC.
 
-3.66.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.44. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44128$abc$37887$abc$26459$auto$opt_dff.cc:219:make_patterns_logic$4674, asynchronously reset by !\rstn
 Extracted 65 gates and 83 wires to a netlist network with 18 inputs and 21 outputs.
 
-3.66.44.1. Executing ABC.
+3.110.44.1. Executing ABC.
 
-3.66.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.45. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44193$abc$33629$abc$26999$auto$opt_dff.cc:219:make_patterns_logic$5001, asynchronously reset by !\rstn
 Extracted 72 gates and 114 wires to a netlist network with 42 inputs and 28 outputs.
 
-3.66.45.1. Executing ABC.
+3.110.45.1. Executing ABC.
 
-3.66.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.46. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44278$abc$37963$abc$27621$auto$opt_dff.cc:219:make_patterns_logic$5112, asynchronously reset by !\rstn
 Extracted 63 gates and 105 wires to a netlist network with 42 inputs and 28 outputs.
 
-3.66.46.1. Executing ABC.
+3.110.46.1. Executing ABC.
 
-3.66.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.47. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44346$abc$38032$abc$30287$auto$opt_dff.cc:219:make_patterns_logic$4753, asynchronously reset by !\rstn
 Extracted 90 gates and 134 wires to a netlist network with 44 inputs and 8 outputs.
 
-3.66.47.1. Executing ABC.
+3.110.47.1. Executing ABC.
 
-3.66.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.48. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$41753$abc$34758$abc$31495$auto$opt_dff.cc:219:make_patterns_logic$4538, asynchronously reset by !\rstn
 Extracted 23 gates and 38 wires to a netlist network with 14 inputs and 15 outputs.
 
-3.66.48.1. Executing ABC.
+3.110.48.1. Executing ABC.
 
-3.66.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.49. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44436$abc$38124$abc$26262$auto$opt_dff.cc:194:make_patterns_logic$4660, asynchronously reset by !\rstn
 Extracted 83 gates and 138 wires to a netlist network with 55 inputs and 29 outputs.
 
-3.66.49.1. Executing ABC.
+3.110.49.1. Executing ABC.
 
-3.66.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.50. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$46406$abc$35167$abc$27532$auto$opt_dff.cc:219:make_patterns_logic$5091, asynchronously reset by !\rstn
 Extracted 72 gates and 114 wires to a netlist network with 42 inputs and 28 outputs.
 
-3.66.50.1. Executing ABC.
+3.110.50.1. Executing ABC.
 
-3.66.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.51. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44511$abc$38302$abc$31369$auto$opt_dff.cc:219:make_patterns_logic$4820, asynchronously reset by !\rstn
 Extracted 91 gates and 110 wires to a netlist network with 19 inputs and 15 outputs.
 
-3.66.51.1. Executing ABC.
+3.110.51.1. Executing ABC.
 
-3.66.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.52. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44605$abc$38199$abc$31734$auto$opt_dff.cc:219:make_patterns_logic$4657, asynchronously reset by !\rstn
 Extracted 66 gates and 102 wires to a netlist network with 36 inputs and 34 outputs.
 
-3.66.52.1. Executing ABC.
+3.110.52.1. Executing ABC.
 
-3.66.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.53. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$44705$abc$36742$abc$28838$auto$opt_dff.cc:219:make_patterns_logic$5131, asynchronously reset by !\rstn
 Extracted 988 gates and 1231 wires to a netlist network with 243 inputs and 237 outputs.
 
-3.66.53.1. Executing ABC.
+3.110.53.1. Executing ABC.
 
-3.66.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.54. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$45585$abc$38394$abc$28291$auto$opt_dff.cc:219:make_patterns_logic$4636, asynchronously reset by !\rstn
 Extracted 62 gates and 87 wires to a netlist network with 25 inputs and 15 outputs.
 
-3.66.54.1. Executing ABC.
+3.110.54.1. Executing ABC.
 
-3.66.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.55. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$45659$abc$35490$abc$31262$auto$opt_dff.cc:219:make_patterns_logic$4317, asynchronously reset by !\rstn
 Extracted 101 gates and 178 wires to a netlist network with 77 inputs and 45 outputs.
 
-3.66.55.1. Executing ABC.
+3.110.55.1. Executing ABC.
 
-3.66.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.56. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$46492$abc$38965$abc$31582$auto$opt_dff.cc:219:make_patterns_logic$4572, asynchronously reset by !\rstn
 Extracted 71 gates and 110 wires to a netlist network with 39 inputs and 36 outputs.
 
-3.66.56.1. Executing ABC.
+3.110.56.1. Executing ABC.
 
-3.66.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.57. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by !$abc$45761$abc$38467$abc$29790$auto$opt_reduce.cc:134:opt_pmux$3971, asynchronously reset by !\rstn
 Extracted 418 gates and 532 wires to a netlist network with 114 inputs and 60 outputs.
 
-3.66.57.1. Executing ABC.
+3.110.57.1. Executing ABC.
 
-3.66.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.58. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$46202$abc$39128$abc$28629$auto$opt_dff.cc:219:make_patterns_logic$4514, asynchronously reset by !\rstn
 Extracted 112 gates and 160 wires to a netlist network with 48 inputs and 40 outputs.
 
-3.66.58.1. Executing ABC.
+3.110.58.1. Executing ABC.
 
-3.66.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.59. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, enabled by $abc$46347$abc$38908$abc$25804$auto$opt_dff.cc:219:make_patterns_logic$4951, asynchronously reset by !\rstn
 Extracted 59 gates and 76 wires to a netlist network with 17 inputs and 12 outputs.
 
-3.66.59.1. Executing ABC.
+3.110.59.1. Executing ABC.
 
-3.66.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.110.60. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Found matching posedge clock domain: \clk, asynchronously reset by !\rstn
 Extracted 1164 gates and 1655 wires to a netlist network with 490 inputs and 424 outputs.
 
-3.66.60.1. Executing ABC.
+3.110.60.1. Executing ABC.
 
 yosys> opt_ffinv
 
-3.67. Executing OPT_FFINV pass (push inverters through FFs).
+3.111. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 0 inverters.
 
-yosys> opt -sat -nosdff
-
-3.68. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.68.1. Executing OPT_EXPR pass (perform const folding).
+3.112. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~35 debug messages>
 
 yosys> opt_merge -nomux
 
-3.68.2. Executing OPT_MERGE pass (detect identical cells).
+3.113. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~81 debug messages>
 Removed a total of 27 cells.
 
 yosys> opt_muxtree
 
-3.68.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.114. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -3956,123 +3930,90 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.68.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.115. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.68.5. Executing OPT_MERGE pass (detect identical cells).
+3.116. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -sat -nosdff
+yosys> opt_share
 
-3.68.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.117. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -sat
+
+3.118. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.68.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.119. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 37841 unused wires.
 <suppressed ~26 debug messages>
 
 yosys> opt_expr
 
-3.68.8. Executing OPT_EXPR pass (perform const folding).
+3.120. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
-
-3.68.9. Rerunning OPT passes. (Maybe there is more to do..)
-
-yosys> opt_muxtree
-
-3.68.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \conv2d..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.68.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \conv2d.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.68.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\conv2d'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -sat -nosdff
-
-3.68.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.68.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \conv2d..
-
-yosys> opt_expr
-
-3.68.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module conv2d.
-
-3.68.16. Finished OPT passes. (There is nothing left to do.)
+MAX OPT ITERATION = 1
 
 yosys> bmuxmap
 
-3.69. Executing BMUXMAP pass.
+3.121. Executing BMUXMAP pass.
 
 yosys> demuxmap
 
-3.70. Executing DEMUXMAP pass.
+3.122. Executing DEMUXMAP pass.
 
 yosys> clean_zerowidth
 
-yosys> abc -script /home/users/temp_dir/yosys_t7V6jE/abc_tmp_1.scr
+yosys> abc -script /tmp/yosys_3BNwUV/abc_tmp_1.scr
 
-3.71. Executing ABC pass (technology mapping using ABC).
+3.123. Executing ABC pass (technology mapping using ABC).
 
-3.71.1. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.123.1. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Extracted 5625 gates and 6767 wires to a netlist network with 1142 inputs and 1062 outputs.
 
-3.71.1.1. Executing ABC.
-DE:   #PIs = 1142  #Luts =  1913  Max Lvl =  16  Avg Lvl =   3.02  [   0.19 sec. at Pass 0]
-DE:   #PIs = 1142  #Luts =  1733  Max Lvl =  11  Avg Lvl =   2.68  [   4.92 sec. at Pass 1]
-DE:   #PIs = 1142  #Luts =  1706  Max Lvl =  10  Avg Lvl =   2.66  [   1.17 sec. at Pass 2]
-DE:   #PIs = 1142  #Luts =  1697  Max Lvl =  10  Avg Lvl =   2.69  [   1.50 sec. at Pass 3]
-DE:   #PIs = 1142  #Luts =  1684  Max Lvl =  10  Avg Lvl =   2.64  [   1.12 sec. at Pass 4]
-DE:   #PIs = 1142  #Luts =  1676  Max Lvl =   9  Avg Lvl =   2.60  [   1.76 sec. at Pass 5]
-DE:   #PIs = 1142  #Luts =  1670  Max Lvl =   9  Avg Lvl =   2.58  [   1.21 sec. at Pass 6]
-DE:   #PIs = 1142  #Luts =  1662  Max Lvl =  10  Avg Lvl =   2.58  [   1.75 sec. at Pass 7]
-DE:   #PIs = 1142  #Luts =  1662  Max Lvl =   9  Avg Lvl =   2.59  [   1.43 sec. at Pass 8]
-DE:   #PIs = 1142  #Luts =  1657  Max Lvl =   9  Avg Lvl =   2.54  [   1.99 sec. at Pass 9]
-DE:   #PIs = 1142  #Luts =  1657  Max Lvl =   9  Avg Lvl =   2.54  [   1.47 sec. at Pass 10]
-DE:   #PIs = 1142  #Luts =  1656  Max Lvl =   9  Avg Lvl =   2.56  [   1.85 sec. at Pass 11]
-DE:   #PIs = 1142  #Luts =  1652  Max Lvl =   9  Avg Lvl =   2.50  [   1.46 sec. at Pass 12]
-DE:   #PIs = 1142  #Luts =  1650  Max Lvl =   9  Avg Lvl =   2.52  [   1.96 sec. at Pass 13]
-DE:   #PIs = 1142  #Luts =  1650  Max Lvl =   9  Avg Lvl =   2.52  [   1.52 sec. at Pass 14]
-DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   2.12 sec. at Pass 15]
-DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   1.58 sec. at Pass 16]
+3.123.1.1. Executing ABC.
+DE:   #PIs = 1142  #Luts =  1913  Max Lvl =  16  Avg Lvl =   3.02  [   0.37 sec. at Pass 0]
+DE:   #PIs = 1142  #Luts =  1733  Max Lvl =  11  Avg Lvl =   2.68  [   8.19 sec. at Pass 1]
+DE:   #PIs = 1142  #Luts =  1706  Max Lvl =  10  Avg Lvl =   2.66  [   1.46 sec. at Pass 2]
+DE:   #PIs = 1142  #Luts =  1697  Max Lvl =  10  Avg Lvl =   2.69  [   2.50 sec. at Pass 3]
+DE:   #PIs = 1142  #Luts =  1684  Max Lvl =  10  Avg Lvl =   2.64  [   2.44 sec. at Pass 4]
+DE:   #PIs = 1142  #Luts =  1676  Max Lvl =   9  Avg Lvl =   2.60  [   2.27 sec. at Pass 5]
+DE:   #PIs = 1142  #Luts =  1670  Max Lvl =   9  Avg Lvl =   2.58  [   1.85 sec. at Pass 6]
+DE:   #PIs = 1142  #Luts =  1662  Max Lvl =  10  Avg Lvl =   2.58  [   3.12 sec. at Pass 7]
+DE:   #PIs = 1142  #Luts =  1662  Max Lvl =   9  Avg Lvl =   2.59  [   2.98 sec. at Pass 8]
+DE:   #PIs = 1142  #Luts =  1657  Max Lvl =   9  Avg Lvl =   2.54  [   4.37 sec. at Pass 9]
+DE:   #PIs = 1142  #Luts =  1657  Max Lvl =   9  Avg Lvl =   2.54  [   3.33 sec. at Pass 10]
+DE:   #PIs = 1142  #Luts =  1656  Max Lvl =   9  Avg Lvl =   2.56  [   3.61 sec. at Pass 11]
+DE:   #PIs = 1142  #Luts =  1652  Max Lvl =   9  Avg Lvl =   2.50  [   1.83 sec. at Pass 12]
+DE:   #PIs = 1142  #Luts =  1650  Max Lvl =   9  Avg Lvl =   2.52  [   2.55 sec. at Pass 13]
+DE:   #PIs = 1142  #Luts =  1650  Max Lvl =   9  Avg Lvl =   2.52  [   1.68 sec. at Pass 14]
+DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   2.40 sec. at Pass 15]
+DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   2.07 sec. at Pass 16]
 DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   1.99 sec. at Pass 17]
-DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   1.53 sec. at Pass 18]
-DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   0.31 sec. at Pass 19]
+DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   1.87 sec. at Pass 18]
+DE:   #PIs = 1142  #Luts =  1649  Max Lvl =   9  Avg Lvl =   2.50  [   0.66 sec. at Pass 19]
 
 yosys> opt_expr
 
-3.72. Executing OPT_EXPR pass (perform const folding).
+3.124. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 
 yosys> opt_merge -nomux
 
-3.73. Executing OPT_MERGE pass (detect identical cells).
+3.125. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.74. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.126. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -4080,46 +4021,46 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.75. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.127. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.76. Executing OPT_MERGE pass (detect identical cells).
+3.128. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.77. Executing OPT_SHARE pass.
+3.129. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.78. Executing OPT_DFF pass (perform DFF optimizations).
+3.130. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.79. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.131. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 6454 unused wires.
 <suppressed ~5 debug messages>
 
 yosys> opt_expr
 
-3.80. Executing OPT_EXPR pass (perform const folding).
+3.132. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 MAX OPT ITERATION = 1
 
 yosys> opt_ffinv
 
-3.81. Executing OPT_FFINV pass (push inverters through FFs).
+3.133. Executing OPT_FFINV pass (push inverters through FFs).
 Discovering LUTs.
 Pushed 25 inverters.
 
 yosys> stat
 
-3.82. Printing statistics.
+3.134. Printing statistics.
 
 === conv2d ===
 
@@ -4143,16 +4084,16 @@ yosys> stat
 
 yosys> shregmap -minlen 8 -maxlen 20
 
-3.83. Executing SHREGMAP pass (map shift registers).
+3.135. Executing SHREGMAP pass (map shift registers).
 Converted 0 dff cells into 0 shift registers.
 
 yosys> dfflegalize -cell $_DFF_?_ 0 -cell $_DFF_???_ 0 -cell $_DFFE_????_ 0 -cell $_DFFSR_???_ 0 -cell $_DFFSRE_????_ 0 -cell $_DLATCHSR_PPP_ 0
 
-3.84. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+3.136. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
 
 yosys> stat
 
-3.85. Printing statistics.
+3.137. Printing statistics.
 
 === conv2d ===
 
@@ -4178,10 +4119,10 @@ yosys> stat
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
 
-3.86. Executing TECHMAP pass (map to technology primitives).
+3.138. Executing TECHMAP pass (map to technology primitives).
 
-3.86.1. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
+3.138.1. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/techmap.v' to AST representation.
 Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
 Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
 Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
@@ -4208,8 +4149,8 @@ Generating RTLIL representation for module `\_90_demux'.
 Generating RTLIL representation for module `\_90_lut'.
 Successfully finished Verilog frontend.
 
-3.86.2. Executing Verilog-2005 frontend: /home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
-Parsing Verilog input from `/home/users/khyber.runner/yosys_verific_runner/_work/yosys_verific_rs/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
+3.138.2. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v
+Parsing Verilog input from `/nfs_scratch/scratch/Vorak/aram/Workspace/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/ffs_map.v' to AST representation.
 Generating RTLIL representation for module `\$_DFF_P_'.
 Generating RTLIL representation for module `\$_DFF_PP0_'.
 Generating RTLIL representation for module `\$_DFF_PN0_'.
@@ -4277,7 +4218,7 @@ Generating RTLIL representation for module `\$_SDFF_NP1_'.
 Generating RTLIL representation for module `\$_SDFF_NN1_'.
 Successfully finished Verilog frontend.
 
-3.86.3. Continuing TECHMAP pass.
+3.138.3. Continuing TECHMAP pass.
 Using extmapper simplemap for cells of type $lut.
 Using template \$_DFFE_PN0P_ for cells of type $_DFFE_PN0P_.
 Using template \$_DFF_PN0_ for cells of type $_DFF_PN0_.
@@ -4292,56 +4233,52 @@ No more expansions possible.
 
 yosys> opt_expr -mux_undef
 
-3.87. Executing OPT_EXPR pass (perform const folding).
+3.139. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~29370 debug messages>
 
 yosys> simplemap
 
-3.88. Executing SIMPLEMAP pass (map simple cells to gate primitives).
+3.140. Executing SIMPLEMAP pass (map simple cells to gate primitives).
 
 yosys> opt_expr
 
-3.89. Executing OPT_EXPR pass (perform const folding).
+3.141. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 
 yosys> opt_merge
 
-3.90. Executing OPT_MERGE pass (detect identical cells).
+3.142. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 <suppressed ~15207 debug messages>
 Removed a total of 5069 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
-3.91. Executing OPT_DFF pass (perform DFF optimizations).
+3.143. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.92. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.144. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 12 unused cells and 8245 unused wires.
 <suppressed ~13 debug messages>
 
-yosys> opt -nodffe -nosdff
-
-3.93. Executing OPT pass (performing simple optimizations).
-
 yosys> opt_expr
 
-3.93.1. Executing OPT_EXPR pass (perform const folding).
+3.145. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 <suppressed ~930 debug messages>
 
 yosys> opt_merge -nomux
 
-3.93.2. Executing OPT_MERGE pass (detect identical cells).
+3.146. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.93.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.147. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -4349,100 +4286,67 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.93.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.148. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.93.5. Executing OPT_MERGE pass (detect identical cells).
+3.149. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_share
 
-3.93.6. Executing OPT_DFF pass (perform DFF optimizations).
+3.150. Executing OPT_SHARE pass.
+
+yosys> opt_dff -nosdff -nodffe
+
+3.151. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.93.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.152. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 226 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.93.8. Executing OPT_EXPR pass (perform const folding).
+3.153. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
+MAX OPT ITERATION = 1
 
-3.93.9. Rerunning OPT passes. (Maybe there is more to do..)
+yosys> abc -script /tmp/yosys_3BNwUV/abc_tmp_2.scr
 
-yosys> opt_muxtree
+3.154. Executing ABC pass (technology mapping using ABC).
 
-3.93.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
-Running muxtree optimizer on module \conv2d..
-  Creating internal representation of mux trees.
-  No muxes found in this module.
-Removed 0 multiplexer ports.
-
-yosys> opt_reduce
-
-3.93.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
-  Optimizing cells in module \conv2d.
-Performed a total of 0 changes.
-
-yosys> opt_merge
-
-3.93.12. Executing OPT_MERGE pass (detect identical cells).
-Finding identical cells in module `\conv2d'.
-Removed a total of 0 cells.
-
-yosys> opt_dff -nodffe -nosdff
-
-3.93.13. Executing OPT_DFF pass (perform DFF optimizations).
-
-yosys> opt_clean
-
-3.93.14. Executing OPT_CLEAN pass (remove unused cells and wires).
-Finding unused cells or wires in module \conv2d..
-
-yosys> opt_expr
-
-3.93.15. Executing OPT_EXPR pass (perform const folding).
-Optimizing module conv2d.
-
-3.93.16. Finished OPT passes. (There is nothing left to do.)
-
-yosys> abc -script /home/users/temp_dir/yosys_t7V6jE/abc_tmp_2.scr
-
-3.94. Executing ABC pass (technology mapping using ABC).
-
-3.94.1. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
+3.154.1. Extracting gate netlist of module `\conv2d' to `<abc-temp-dir>/input.blif'..
 Extracted 7283 gates and 8390 wires to a netlist network with 1105 inputs and 1162 outputs.
 
-3.94.1.1. Executing ABC.
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   0.23 sec. at Pass 0]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   5.99 sec. at Pass 1]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.42 sec. at Pass 2]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.79 sec. at Pass 3]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.50 sec. at Pass 4]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   2.09 sec. at Pass 5]
-DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   0.34 sec. at Pass 6]
+3.154.1.1. Executing ABC.
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   0.43 sec. at Pass 0]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   7.75 sec. at Pass 1]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.83 sec. at Pass 2]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.83 sec. at Pass 3]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   2.04 sec. at Pass 4]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   1.78 sec. at Pass 5]
+DE:   #PIs = 1105  #Luts =  1752  Max Lvl =   9  Avg Lvl =   2.46  [   0.58 sec. at Pass 6]
 
 yosys> opt_expr
 
-3.95. Executing OPT_EXPR pass (perform const folding).
+3.155. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 
 yosys> opt_merge -nomux
 
-3.96. Executing OPT_MERGE pass (detect identical cells).
+3.156. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_muxtree
 
-3.97. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+3.157. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
 Running muxtree optimizer on module \conv2d..
   Creating internal representation of mux trees.
   No muxes found in this module.
@@ -4450,51 +4354,51 @@ Removed 0 multiplexer ports.
 
 yosys> opt_reduce
 
-3.98. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+3.158. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
   Optimizing cells in module \conv2d.
 Performed a total of 0 changes.
 
 yosys> opt_merge
 
-3.99. Executing OPT_MERGE pass (detect identical cells).
+3.159. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\conv2d'.
 Removed a total of 0 cells.
 
 yosys> opt_share
 
-3.100. Executing OPT_SHARE pass.
+3.160. Executing OPT_SHARE pass.
 
-yosys> opt_dff -nodffe -nosdff
+yosys> opt_dff -nosdff -nodffe
 
-3.101. Executing OPT_DFF pass (perform DFF optimizations).
+3.161. Executing OPT_DFF pass (perform DFF optimizations).
 
 yosys> opt_clean
 
-3.102. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.162. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 6251 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
 
-3.103. Executing OPT_EXPR pass (perform const folding).
+3.163. Executing OPT_EXPR pass (perform const folding).
 Optimizing module conv2d.
 MAX OPT ITERATION = 1
 
 yosys> hierarchy -check
 
-3.104. Executing HIERARCHY pass (managing design hierarchy).
+3.164. Executing HIERARCHY pass (managing design hierarchy).
 
-3.104.1. Analyzing design hierarchy..
+3.164.1. Analyzing design hierarchy..
 Top module:  \conv2d
 
-3.104.2. Analyzing design hierarchy..
+3.164.2. Analyzing design hierarchy..
 Top module:  \conv2d
 Removed 0 unused modules.
 
 yosys> stat
 
-3.105. Printing statistics.
+3.165. Printing statistics.
 
 === conv2d ===
 
@@ -4512,20 +4416,20 @@ yosys> stat
 
 yosys> opt_clean -purge
 
-3.106. Executing OPT_CLEAN pass (remove unused cells and wires).
+3.166. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \conv2d..
 Removed 0 unused cells and 293 unused wires.
 <suppressed ~293 debug messages>
 
 yosys> write_verilog -noattr -nohex synthesized.v
 
-3.107. Executing Verilog backend.
+3.167. Executing Verilog backend.
 Dumping module `\conv2d'.
 
 Warnings: 80 unique messages, 80 total
-End of script. Logfile hash: f9b8b85b3e, CPU: user 36.40s system 1.54s, MEM: 113.89 MB peak
-Yosys 0.18+10 (git sha1 7a7a25778, gcc 9.1.0 -fPIC -Os)
-Time spent: 93% 6x abc (432 sec), 2% 29x opt_dff (9 sec), ...
-real 103.40
-user 413.97
-sys 48.19
+End of script. Logfile hash: 35b9a810d6, CPU: user 38.02s system 0.28s, MEM: 124.55 MB peak
+Yosys 0.18+10 (git sha1 a3cbfccc4, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
+Time spent: 92% 6x abc (369 sec), 2% 26x opt_dff (10 sec), ...
+real 136.08
+user 363.94
+sys 36.88
