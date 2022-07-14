@@ -14,9 +14,16 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 58)
+set(VERSION_PATCH 59)
 
 project(yosys_verific_rs)
+
+if (PRODUCTION_BUILD)
+    get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+endif()
 
 add_subdirectory(logic_synthesis-rs)
 
@@ -58,6 +65,24 @@ if (ENABLE_VERIFIC)
     )
 endif()
 
+if (PRODUCTION_BUILD)
+    string(CONCAT FLEX_LM_LDLIBS 
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+        "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
+    )
+    list(APPEND YOSYS_MK_ARGS
+        "PRODUCTION_BUILD=1"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
+        "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
+        "EXTRA_LD_FLAGS=-Wl,--copy-dt-needed-entries"
+    )
+endif()
+
 if (YOSYS_LIB)
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_LIBYOSYS=1"
@@ -68,7 +93,7 @@ list(APPEND YOSYS_RS_PLUGIN_MK_ARGS
     "YOSYS_PATH=${YOSYS_PATH}"
 )
 
-if (NOT RAPTOR)
+if (NOT PRODUCTION_BUILD)
     list(APPEND YOSYS_RS_PLUGIN_MK_ARGS
         "EXTRA_FLAGS=-DDEV_BUILD"
     )
@@ -113,6 +138,10 @@ if (ENABLE_VERIFIC)
     )
     add_dependencies(yosys verific)
     add_dependencies(verific_clean yosys_clean)
+endif()
+
+if (PRODUCTION_BUILD)
+    add_dependencies(yosys rs_licenseManager)
 endif()
 
 if (BUILD_YOSYS_PLUGINS)
