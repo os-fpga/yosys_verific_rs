@@ -18,6 +18,8 @@ set(VERSION_PATCH 59)
 
 project(yosys_verific_rs)
 
+set(YOSYS_VERIFIC ON)
+
 if (PRODUCTION_BUILD)
     get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
         REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -68,14 +70,25 @@ if (ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    string(CONCAT FLEX_LM_LDLIBS 
-        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-        "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
-    )
+    if (NOT RAPTOR)
+        string(CONCAT FLEX_LM_LDLIBS 
+            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+            "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
+        )
+    else()
+        string(CONCAT FLEX_LM_LDLIBS 
+            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+            "${CMAKE_BINARY_DIR}/Tools/Flex_LM/librs_licenseManager.a "
+        )
+    endif()
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
