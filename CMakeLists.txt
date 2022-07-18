@@ -95,7 +95,7 @@ if (PRODUCTION_BUILD)
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
         "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
-        "EXTRA_LD_FLAGS=-Wl,--copy-dt-needed-entries"
+        "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
     )
 endif()
 
