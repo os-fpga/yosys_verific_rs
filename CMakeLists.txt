@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 59)
+set(VERSION_PATCH 61)
 
 project(yosys_verific_rs)
 
@@ -28,6 +28,7 @@ if (PRODUCTION_BUILD)
     if (NOT RAPTOR)
         add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
     endif()
+    message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
 
 add_subdirectory(logic_synthesis-rs)
