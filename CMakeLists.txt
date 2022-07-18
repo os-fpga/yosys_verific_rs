@@ -21,12 +21,12 @@ project(yosys_verific_rs)
 set(YOSYS_VERIFIC ON)
 
 if (PRODUCTION_BUILD)
-    if (NOT FLEX_LM_SRC_DIR)
-        message(FATAL_ERROR "Flex_LM source dir is not set.")
-    endif()
-
     if (NOT RAPTOR)
+        # FLEX_LM_SRC_DIR should be made as required path.
+        get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+          REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+        # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
