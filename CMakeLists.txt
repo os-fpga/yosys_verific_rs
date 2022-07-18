@@ -14,15 +14,16 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 59)
+set(VERSION_PATCH 60)
 
 project(yosys_verific_rs)
 
 if (PRODUCTION_BUILD)
     get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
         REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
-    add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+    if (NOT RAPTOR)
+        add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+    endif()
 endif()
 
 add_subdirectory(logic_synthesis-rs)
@@ -76,10 +77,10 @@ if (PRODUCTION_BUILD)
     )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
-        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
-        "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
-        "EXTRA_LD_FLAGS=-Wl,--copy-dt-needed-entries"
+#        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
+#        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
+#        "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
+#        "EXTRA_LD_FLAGS=-Wl,--copy-dt-needed-entries"
     )
 endif()
 
