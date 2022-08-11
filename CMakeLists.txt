@@ -43,7 +43,7 @@ endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
-set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMay22)
+set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -51,10 +51,6 @@ else()
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 endif()
 
-list(APPEND VERIFIC_MK_ARGS 
-    "VERSION=-O3"
-    "TOPFLAGS=-I/usr/include/tcl -fPIC -std=c++11"
-)
 list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
@@ -120,9 +116,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_DEBUG=1"
     )
-    list(APPEND VERIFIC_MK_ARGS 
-        "PROJECT_FLAGS=-Og -DDEBUG"
-    )
     # yosys-plugins and yosys-rs-plugin inherit yosys flags.
 endif()
 
@@ -139,23 +132,6 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
-
-if (ENABLE_VERIFIC)
-    add_custom_target(
-        verific ALL 
-        COMMAND $(MAKE) ${VERIFIC_MK_ARGS}
-        WORKING_DIRECTORY ${VERIFIC_DIR}/tclmain
-        COMMENT "Compile Verific with given Makefile"
-    )
-    add_custom_target(
-        verific_clean
-        COMMAND $(MAKE) clean
-        WORKING_DIRECTORY ${VERIFIC_DIR}/tclmain
-        COMMENT "Clean Verific with given Makefile"
-    )
-    add_dependencies(yosys verific)
-    add_dependencies(verific_clean yosys_clean)
-endif()
 
 if (PRODUCTION_BUILD)
     add_dependencies(yosys rs_licenseManager)
