@@ -23,7 +23,7 @@ set(YOSYS_VERIFIC ON)
 if (PRODUCTION_BUILD)
     if (NOT RAPTOR)
         # FLEX_LM_SRC_DIR should be made as required path.
-        get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+        get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
           REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
         # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
@@ -43,7 +43,10 @@ endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
 set(BUILD_LSORACLE OFF)
-set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific)
+get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+message("VERIFIC_HOME: ${VERIFIC_HOME}")
+
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -63,7 +66,7 @@ if (ENABLE_VERIFIC)
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_VERIFIC=1"
         "DISABLE_VERIFIC_EXTENSIONS=1"
-        "VERIFIC_DIR=${VERIFIC_DIR}"
+        "VERIFIC_DIR=${VERIFIC_HOME}"
     )
 endif()
 
@@ -175,7 +178,7 @@ add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_custom_target(
     clean_all
-    COMMAND $(MAKE) verific_clean
+    COMMAND $(MAKE) yosys_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Clean All"
 )
