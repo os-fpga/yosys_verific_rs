@@ -54,10 +54,6 @@ The repository has the following submodules:
 `RTL_Benchmark` directory contains RTL_Benchmark submodule.
 
 ## Build
-After cloning the repo initialize/update submodules:
-```bash
-git submodule update --init --recursive --progress
-```
 Run **release** Makefile target to build Yosys with Verific enabled:
 ```bash
 make release
@@ -70,6 +66,17 @@ All available Makefile targets can be seen running **help** target:
 ```bash
 make help
 ```
+
+## Running tests
+Initialize/update RTL_Benchmark submodule:
+```bash
+git submodule update --init --recursive --progress RTL_Benchmark
+```
+Execute python script to run suite of benchmarks:
+```bash
+python3 scripts/synth/synthesis.py --config_files suites/Golden/Golden_synth_rs_ade_with_bram_with_dsp.json
+```
+
 
 ## How to generate yosys+verific OpenFPGA tasks
 To generate tasks with default configurations/settings the following command should be run:

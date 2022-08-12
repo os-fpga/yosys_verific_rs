@@ -20,6 +20,43 @@ project(yosys_verific_rs)
 
 set(YOSYS_VERIFIC ON)
 
+list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
+    yosys
+    yosys-plugins
+    yosys-rs-plugin
+    Raptor_Tools
+    )
+
+list(APPEND YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS
+    logic_synthesis-rs
+    )
+
+list(APPEND LOGIC_SYNTHESIS_RS_RECURSIVE_SUBSYTEMS
+    abc-rs
+    )
+
+find_package(Git QUIET)
+
+function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE)
+    foreach(SUBMODULE IN LISTS ${SUBSYSTEM_LIST})
+        if (NOT EXISTS "${WORK_DIR}/${SUBMODULE}/README.md")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}
+                WORKING_DIRECTORY ${WORK_DIR}
+                RESULT_VARIABLE GIT_SUBMOD_RESULT
+                COMMAND_ECHO STDOUT
+                )
+            if  (NOT GIT_SUBMOD_RESULT EQUAL "0") 
+                message(FATAL_ERROR "\"${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}\" failed with ${GIT_SUBMOD_RESULT}, please checkout submodule manually")
+            endif()
+        endif()
+    endforeach()
+endfunction(checkout_subsystems)
+
+checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "--recursive")
+checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "")
+checkout_subsystems(LOGIC_SYNTHESIS_RS_RECURSIVE_SUBSYTEMS "${CMAKE_CURRENT_SOURCE_DIR}/logic_synthesis-rs" "--recursive")
+
 if (PRODUCTION_BUILD)
     if (NOT RAPTOR)
         # FLEX_LM_SRC_DIR should be made as required path.
@@ -42,7 +79,6 @@ else()
 endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
-set(BUILD_LSORACLE OFF)
 get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
@@ -131,7 +167,7 @@ add_custom_target(
 add_custom_target(
     yosys_clean
     COMMAND $(MAKE) clean
-    COMMAND rm -rf ${YOSYS_PATH}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
@@ -185,7 +221,7 @@ add_custom_target(
 
 add_custom_command(
     OUTPUT ${YOSYS_PATH}/bin/abc
-    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc ${YOSYS_PATH}/bin/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc ${YOSYS_PATH}/bin/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Copy abc executable into bin"
     DEPENDS abc yosys
@@ -193,29 +229,15 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${YOSYS_PATH}/bin/de
-    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de ${YOSYS_PATH}/bin/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de ${YOSYS_PATH}/bin/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Copy de executable into bin"
     DEPENDS de yosys
 )
 
-if (BUILD_LSORACLE)
-    add_custom_command(
-        OUTPUT ${YOSYS_PATH}/bin/lsoracle
-        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle ${YOSYS_PATH}/bin/
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Copy LSOracle executable into bin"
-        DEPENDS lsoracle yosys
-    )
-    add_custom_target(
-        copy_files ALL
-        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de ${YOSYS_PATH}/bin/lsoracle
-    )
-else()    
-    add_custom_target(
-        copy_files ALL
-        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de)
-endif()
+add_custom_target(
+    copy_files ALL
+    DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de)
 
 # Installation target
 install(
