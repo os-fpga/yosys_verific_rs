@@ -24,7 +24,6 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys
     yosys-plugins
     yosys-rs-plugin
-    Raptor_Tools
     )
 if (NOT RAPTOR)
     list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
