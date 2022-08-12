@@ -26,6 +26,11 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys-rs-plugin
     Raptor_Tools
     )
+if (NOT RAPTOR)
+    list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
+        Raptor_Tools
+        )
+endif()
 
 list(APPEND YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS
     logic_synthesis-rs
@@ -39,12 +44,12 @@ find_package(Git QUIET)
 
 function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE)
     foreach(SUBMODULE IN LISTS ${SUBSYSTEM_LIST})
-        if (NOT EXISTS "${WORK_DIR}/${SUBMODULE}/README.md")
+        file(GLOB README ${WORK_DIR}/${SUBMODULE}/README*)
+        if (NOT EXISTS "${README}")
             execute_process(
                 COMMAND ${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}
                 WORKING_DIRECTORY ${WORK_DIR}
                 RESULT_VARIABLE GIT_SUBMOD_RESULT
-                COMMAND_ECHO STDOUT
                 )
             if  (NOT GIT_SUBMOD_RESULT EQUAL "0") 
                 message(FATAL_ERROR "\"${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}\" failed with ${GIT_SUBMOD_RESULT}, please checkout submodule manually")
