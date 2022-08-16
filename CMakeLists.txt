@@ -25,6 +25,7 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys-plugins
     yosys-rs-plugin
     )
+
 if (NOT RAPTOR)
     list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
         Raptor_Tools
@@ -35,16 +36,13 @@ list(APPEND YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS
     logic_synthesis-rs
     )
 
-list(APPEND LOGIC_SYNTHESIS_RS_RECURSIVE_SUBSYTEMS
-    abc-rs
-    )
-
 find_package(Git QUIET)
 
-function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE)
+function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE UPDATE)
     foreach(SUBMODULE IN LISTS ${SUBSYSTEM_LIST})
         file(GLOB README ${WORK_DIR}/${SUBMODULE}/README*)
-        if (NOT EXISTS "${README}")
+        if (NOT EXISTS "${README}" OR ${UPDATE})
+            message("Updating ${SUBMODULE} submodule...")
             execute_process(
                 COMMAND ${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}
                 WORKING_DIRECTORY ${WORK_DIR}
@@ -57,9 +55,12 @@ function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE)
     endforeach()
 endfunction(checkout_subsystems)
 
-checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "--recursive")
-checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "")
-checkout_subsystems(LOGIC_SYNTHESIS_RS_RECURSIVE_SUBSYTEMS "${CMAKE_CURRENT_SOURCE_DIR}/logic_synthesis-rs" "--recursive")
+if (NOT UPDATE_SUBMODULES)
+    set(UPDATE_SUBMODULES NO)
+endif()
+
+checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "--recursive" ${UPDATE_SUBMODULES})
+checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "" ${UPDATE_SUBMODULES})
 
 if (PRODUCTION_BUILD)
     if (NOT RAPTOR)
