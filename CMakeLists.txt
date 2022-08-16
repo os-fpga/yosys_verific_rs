@@ -128,7 +128,7 @@ if (PRODUCTION_BUILD)
             "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_BINARY_DIR}/Tools/Flex_LM/librs_licenseManager.a "
+            "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/librs_licenseManager.a "
         )
     endif()
     list(APPEND YOSYS_MK_ARGS
