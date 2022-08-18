@@ -63,6 +63,7 @@ checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_
 checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "" ${UPDATE_SUBMODULES})
 
 if (PRODUCTION_BUILD)
+    message("Production Build type set to ON")
     if (NOT RAPTOR)
         # FLEX_LM_SRC_DIR should be made as required path.
         get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
@@ -119,7 +120,7 @@ if (PRODUCTION_BUILD)
             "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
+            "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/rs_licenseManager.a "
         )
     else()
         string(CONCAT FLEX_LM_LDLIBS 
@@ -128,7 +129,7 @@ if (PRODUCTION_BUILD)
             "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
             "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/librs_licenseManager.a "
+            "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
         )
     endif()
     list(APPEND YOSYS_MK_ARGS
