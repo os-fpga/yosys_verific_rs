@@ -18,7 +18,7 @@ set(CMAKE_CXX_COMPILER g++)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 68)
+set(VERSION_PATCH 69)
 
 project(yosys_verific_rs)
 
