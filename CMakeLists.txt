@@ -56,7 +56,7 @@ function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE UPDATE)
 endfunction(checkout_subsystems)
 
 if (NOT UPDATE_SUBMODULES)
-    set(UPDATE_SUBMODULES NO)
+    set(UPDATE_SUBMODULES OFF)
 endif()
 
 checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "--recursive" ${UPDATE_SUBMODULES})
@@ -65,10 +65,9 @@ checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOU
 if (PRODUCTION_BUILD)
     message("Production Build type set to ON")
     if (NOT RAPTOR)
-        # FLEX_LM_SRC_DIR should be made as required path.
         get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
           REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+        add_subdirectory(${FLEX_LM_SRC_DIR})
         # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
@@ -88,7 +87,6 @@ option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
-
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -113,25 +111,14 @@ if (ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    if (NOT RAPTOR)
-        string(CONCAT FLEX_LM_LDLIBS 
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/rs_licenseManager.a "
-        )
-    else()
-        string(CONCAT FLEX_LM_LDLIBS 
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
-        )
-    endif()
+    string(CONCAT FLEX_LM_LDLIBS
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+        "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
+    )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
@@ -178,6 +165,13 @@ add_custom_target(
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
 
+if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (NOT RAPTOR)
+        add_subdirectory(${VERIFIC_HOME})
+    endif()
+    add_dependencies(yosys verific)
+endif()
+
 if (PRODUCTION_BUILD)
     add_dependencies(yosys rs_licenseManager)
 endif()
@@ -219,7 +213,7 @@ add_dependencies(yosys-rs-plugin yosys)
 add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_custom_target(
-    clean_all
+    clean_yosys_verific_rs
     COMMAND $(MAKE) yosys_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Clean All"

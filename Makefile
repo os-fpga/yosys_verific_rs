@@ -75,10 +75,10 @@ endif
 ##     |---> usage      :  make clean
 clean:
 ifneq ("","$(wildcard build/Makefile)")
-	cmake --build build --target clean_all
+	cmake --build build --target clean_yosys_verific_rs
 endif	
 ifneq ("","$(wildcard dbuild/Makefile)")
-	cmake --build dbuild --target clean_all
+	cmake --build dbuild --target clean_yosys_verific_rs
 endif	
 	$(RM) -r build dbuild
 
