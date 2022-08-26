@@ -16,11 +16,9 @@ The list of dependencies:
 |-- RTL_Benchmark
 |-- benchmarks
 |-- logic_synthesis-rs
-|   |-- LSOracle-rs
-|   `-- abc-rs
 |-- scripts
 |-- suites
-|-- verific
+|-- Raptor_Tools
 |-- yosys
 |-- yosys-plugins
 `-- yosys-rs-plugin
@@ -31,7 +29,7 @@ The repository has the following submodules:
  - [yosys](https://github.com/RapidSilicon/yosys_rs.git) 
  - [yosys-plugins](https://github.com/SymbiFlow/yosys-f4pga-plugins.git) 
  - [yosys-rs-plugin](https://github.com/RapidSilicon/yosys-rs-plugin.git) 
- - [verific](https://github.com/RapidSilicon/verific_rs.git) 
+ - [Raptor_Tools](git@github.com:RapidSilicon/Raptor_Tools.git)
  - [logic_synthesis-rs](https://github.com/RapidSilicon/logic_synthesis-rs.git) 
  - [RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
 
@@ -46,21 +44,21 @@ The repository has the following submodules:
  - `synth` holds the automation scripts to run synthesis on different tools.
  - `task_generator` holds the OpenFPGA tasks generator script and it's default settings JSON file. 
  - `yosys_templates` holds the OpenFPGA Yosys template scripts which are written to use the `verific` frontend.
-`verific` directory contains Verific submodule.
+`Raptor_Tools` directory contains Raptor_Tools submodule which has Flex_LM library and verific_rs submodule.
 `yosys` directory contains Yosys submodule.
 `yosys-plugins` directory contains yosys-symbiflow-plugins submodule.
 `yosys-rs-plugin` directory contains yosys-rs-plugin submodule.
-`logic_synthesis-rs` directory contains logic_synthesis-rs submodule.
+`logic_synthesis-rs` directory contains logic_synthesis-rs submodule which has DE and abc_rs submodule.
 `RTL_Benchmark` directory contains RTL_Benchmark submodule.
 
 ## Build
-After cloning the repo initialize/update submodules:
-```bash
-git submodule update --init --recursive --progress
-```
 Run **release** Makefile target to build Yosys with Verific enabled:
 ```bash
 make release
+```
+Provide PRODUCTION_BUILD=ON option to build in production mode:
+```bash
+make release PRODUCTION_BUILD=ON
 ```
 Run **install** Makefile target to build and install Yosys with Verific enabled:
 ```bash
@@ -70,6 +68,25 @@ All available Makefile targets can be seen running **help** target:
 ```bash
 make help
 ```
+
+Note: If you would like to update your local repository and build, then run the following commands.
+
+```bash
+  cd yosys_verific_rs
+  git pull
+  make UPDATE_SUBMODULES=ON
+```
+
+## Running tests
+Initialize/update RTL_Benchmark submodule:
+```bash
+git submodule update --init --recursive --progress RTL_Benchmark
+```
+Execute python script to run suite of benchmarks:
+```bash
+python3 scripts/synth/synthesis.py --config_files suites/Golden/Golden_synth_rs_ade_with_bram_with_dsp.json
+```
+
 
 ## How to generate yosys+verific OpenFPGA tasks
 To generate tasks with default configurations/settings the following command should be run:

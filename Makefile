@@ -29,10 +29,10 @@ debug: run-cmake-debug
 	cmake --build dbuild -j $(CPU_CORES)
 
 run-cmake-release:
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B build
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B build
 
 run-cmake-debug:
-	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
+	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 
 ##
 ## @ test
@@ -75,10 +75,10 @@ endif
 ##     |---> usage      :  make clean
 clean:
 ifneq ("","$(wildcard build/Makefile)")
-	cmake --build build --target clean_all
+	cmake --build build --target clean_yosys_verific_rs
 endif	
 ifneq ("","$(wildcard dbuild/Makefile)")
-	cmake --build dbuild --target clean_all
+	cmake --build dbuild --target clean_yosys_verific_rs
 endif	
 	$(RM) -r build dbuild
 

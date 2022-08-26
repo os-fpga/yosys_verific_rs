@@ -14,18 +14,60 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 68)
+set(VERSION_PATCH 69)
 
 project(yosys_verific_rs)
 
 set(YOSYS_VERIFIC ON)
 
+list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
+    yosys
+    yosys-plugins
+    yosys-rs-plugin
+    )
+
+if (NOT RAPTOR)
+    list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
+        Raptor_Tools
+        )
+endif()
+
+list(APPEND YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS
+    logic_synthesis-rs
+    )
+
+find_package(Git QUIET)
+
+function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE UPDATE)
+    foreach(SUBMODULE IN LISTS ${SUBSYSTEM_LIST})
+        file(GLOB README ${WORK_DIR}/${SUBMODULE}/README*)
+        if (NOT EXISTS "${README}" OR ${UPDATE})
+            message("Updating ${SUBMODULE} submodule...")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}
+                WORKING_DIRECTORY ${WORK_DIR}
+                RESULT_VARIABLE GIT_SUBMOD_RESULT
+                )
+            if  (NOT GIT_SUBMOD_RESULT EQUAL "0") 
+                message(FATAL_ERROR "\"${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}\" failed with ${GIT_SUBMOD_RESULT}, please checkout submodule manually")
+            endif()
+        endif()
+    endforeach()
+endfunction(checkout_subsystems)
+
+if (NOT UPDATE_SUBMODULES)
+    set(UPDATE_SUBMODULES OFF)
+endif()
+
+checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "--recursive" ${UPDATE_SUBMODULES})
+checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "" ${UPDATE_SUBMODULES})
+
 if (PRODUCTION_BUILD)
+    message("Production Build type set to ON")
     if (NOT RAPTOR)
-        # FLEX_LM_SRC_DIR should be made as required path.
-        get_filename_component(FLEX_LM_SRC_DIR "../Tools/Flex_LM"
+        get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
           REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        add_subdirectory(${FLEX_LM_SRC_DIR} Flex_LM)
+        add_subdirectory(${FLEX_LM_SRC_DIR})
         # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
@@ -42,8 +84,9 @@ else()
 endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
-set(BUILD_LSORACLE OFF)
-set(VERIFIC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/verific/verific-vMay22)
+get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -51,10 +94,6 @@ else()
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/install)
 endif()
 
-list(APPEND VERIFIC_MK_ARGS 
-    "VERSION=-O3"
-    "TOPFLAGS=-I/usr/include/tcl -fPIC -std=c++11"
-)
 list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
@@ -67,30 +106,19 @@ if (ENABLE_VERIFIC)
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_VERIFIC=1"
         "DISABLE_VERIFIC_EXTENSIONS=1"
-        "VERIFIC_DIR=${VERIFIC_DIR}"
+        "VERIFIC_DIR=${VERIFIC_HOME}"
     )
 endif()
 
 if (PRODUCTION_BUILD)
-    if (NOT RAPTOR)
-        string(CONCAT FLEX_LM_LDLIBS 
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_CURRENT_BINARY_DIR}/Flex_LM/librs_licenseManager.a "
-        )
-    else()
-        string(CONCAT FLEX_LM_LDLIBS 
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-            "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
-            "${CMAKE_BINARY_DIR}/Tools/Flex_LM/librs_licenseManager.a "
-        )
-    endif()
+    string(CONCAT FLEX_LM_LDLIBS
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+        "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
+    )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
@@ -120,9 +148,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND YOSYS_MK_ARGS
         "ENABLE_DEBUG=1"
     )
-    list(APPEND VERIFIC_MK_ARGS 
-        "PROJECT_FLAGS=-Og -DDEBUG"
-    )
     # yosys-plugins and yosys-rs-plugin inherit yosys flags.
 endif()
 
@@ -135,26 +160,16 @@ add_custom_target(
 add_custom_target(
     yosys_clean
     COMMAND $(MAKE) clean
-    COMMAND rm -rf ${YOSYS_PATH}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
 
-if (ENABLE_VERIFIC)
-    add_custom_target(
-        verific ALL 
-        COMMAND $(MAKE) ${VERIFIC_MK_ARGS}
-        WORKING_DIRECTORY ${VERIFIC_DIR}/tclmain
-        COMMENT "Compile Verific with given Makefile"
-    )
-    add_custom_target(
-        verific_clean
-        COMMAND $(MAKE) clean
-        WORKING_DIRECTORY ${VERIFIC_DIR}/tclmain
-        COMMENT "Clean Verific with given Makefile"
-    )
+if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (NOT RAPTOR)
+        add_subdirectory(${VERIFIC_HOME})
+    endif()
     add_dependencies(yosys verific)
-    add_dependencies(verific_clean yosys_clean)
 endif()
 
 if (PRODUCTION_BUILD)
@@ -198,15 +213,15 @@ add_dependencies(yosys-rs-plugin yosys)
 add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_custom_target(
-    clean_all
-    COMMAND $(MAKE) verific_clean
+    clean_yosys_verific_rs
+    COMMAND $(MAKE) yosys_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Clean All"
 )
 
 add_custom_command(
     OUTPUT ${YOSYS_PATH}/bin/abc
-    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc ${YOSYS_PATH}/bin/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/abc ${YOSYS_PATH}/bin/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Copy abc executable into bin"
     DEPENDS abc yosys
@@ -214,29 +229,15 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${YOSYS_PATH}/bin/de
-    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de ${YOSYS_PATH}/bin/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/de ${YOSYS_PATH}/bin/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Copy de executable into bin"
     DEPENDS de yosys
 )
 
-if (BUILD_LSORACLE)
-    add_custom_command(
-        OUTPUT ${YOSYS_PATH}/bin/lsoracle
-        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/logic_synthesis-rs/bin/lsoracle ${YOSYS_PATH}/bin/
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Copy LSOracle executable into bin"
-        DEPENDS lsoracle yosys
-    )
-    add_custom_target(
-        copy_files ALL
-        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de ${YOSYS_PATH}/bin/lsoracle
-    )
-else()    
-    add_custom_target(
-        copy_files ALL
-        DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de)
-endif()
+add_custom_target(
+    copy_files ALL
+    DEPENDS ${YOSYS_PATH}/bin/abc ${YOSYS_PATH}/bin/de)
 
 # Installation target
 install(
