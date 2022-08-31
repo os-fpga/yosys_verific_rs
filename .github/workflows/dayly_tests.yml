@@ -84,7 +84,7 @@ jobs:
       - name: Execute Python script
         continue-on-error: true
         run: |
-          if $github.event_name == "schedule"; then
+          if ${{ github.event_name }} == "schedule"; then
             python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
           else
             python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}           
@@ -122,9 +122,8 @@ jobs:
             fi
 
       - name: Compare QoR
+        if: ${{ github.event_name }} == "schedule" || ( ${{ github.event.inputs.config_files }} == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && ${{ github.event.inputs.conditional }} == 'true' )
         run: |
-          if {{ ${{ github.event_name }} == "schedule" || ( ${{ github.event.inputs.config_files }} == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && ${{ github.event.inputs.conditional }} == 'true' ) }}; then
-            pip install --user pandas
-            pip install --user termcolor
-            python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
-          fi
+          pip install --user pandas
+          pip install --user termcolor
+          python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
