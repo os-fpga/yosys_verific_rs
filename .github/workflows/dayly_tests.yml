@@ -84,11 +84,11 @@ jobs:
       - name: Execute Python script
         continue-on-error: true
         run: |
-          config_file=${{ github.event.inputs.config_files }}
-          if $GITHUB_EVENT_NAME == "schedule"; then
-            config_file="suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
+          if $github.event_name == "schedule"; then
+            python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
+          else
+            python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}           
           fi
-          python3 scripts/synth/synthesis.py --config_files $config_file
 
       - name: Prepare logs
         run: |
@@ -104,11 +104,7 @@ jobs:
         continue-on-error: true
         run: |
           var=`find result*/ -name *json`
-          conditionall_var=${{ github.event.inputs.conditional }}
-          if $GITHUB_EVENT_NAME == "schedule"; then
-            conditionall_var='true'
-          fi
-          if $conditionall_var == 'true'; then
+          if {{ ${{ github.event_name }} == "schedule" || ${{ github.event.inputs.conditional }} == 'true'}}; then
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp
           else
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
@@ -127,15 +123,8 @@ jobs:
 
       - name: Compare QoR
         run: |
-          if $GITHUB_EVENT_NAME == "schedule"; then
+          if {{ ${{ github.event_name }} == "schedule" || ( ${{ github.event.inputs.config_files }} == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && ${{ github.event.inputs.conditional }} == 'true' ) }}; then
             pip install --user pandas
             pip install --user termcolor
             python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
-            run: # exit_with_success
-          else
-            if {{ $config_file == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && $conditionall_var == 'true' }}; then
-              pip install --user pandas
-              pip install --user termcolor
-              python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
-            fi
           fi
