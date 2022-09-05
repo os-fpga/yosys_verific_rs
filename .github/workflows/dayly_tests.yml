@@ -103,12 +103,12 @@ jobs:
       - name: Execute metrics extraction
         continue-on-error: true
         run: |
+          var=`find result*/ -name *json`
           if ${{ github.event_name == 'schedule' ||  github.event.inputs.conditional }}; then
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp
           else
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
           fi
-          var=`find result*/ -name *json`
 
       - name: Upload csv file
         uses: actions/upload-artifact@v2
@@ -120,7 +120,8 @@ jobs:
 
       - name: Compare QoR
         run: |
-          if ${{ github.event_name == 'schedule' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional); then
+          if ${{ github.event_name == 'schedule' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional) }}; then
+            echo
             pip install --user pandas
             pip install --user termcolor
             python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
