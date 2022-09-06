@@ -38,10 +38,10 @@ endfunction(files_to_dirs)
 
 add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
 
-list(APPEND DE_CXX_FLAGS_DEBUG
+list(APPEND ANALYZE_CXX_FLAGS_DEBUG
     -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
 )
-list(APPEND DE_CXX_FLAGS_RELEASE
+list(APPEND ANALYZE_CXX_FLAGS_RELEASE
     -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
 )
 
