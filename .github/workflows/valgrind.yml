@@ -1,0 +1,80 @@
+name: yosys-verific CI
+
+on:
+  schedule:
+    - cron: "0 19 * * 5"
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  linux-gcc:
+    name: valgrind
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+    env:
+      MODE: valgrind
+
+    steps:
+
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: ssh-agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with: 
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY_RTL_BENCHMARK }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS }}
+          ${{ secrets.SSH_PRIVATE_KEY_YOSYS_RS_PLUGIN }}
+          ${{ secrets.SSH_PRIVATE_KEY_LOGIC_SYNTHESIS }}
+          ${{ secrets.SSH_PRIVATE_KEY_ABC }}
+          ${{ secrets.SSH_PRIVATE_KEY_RAPTOR_TOOLS }}
+          ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      working-directory: ./.github/scripts
+      run: |
+        bash install_ubuntu_dependencies_build.sh
+
+    - name: Use ccache
+      uses: hendrikmuhs/ccache-action@v1
+      with:
+        key: linux-valgrind
+
+    - name: Configure shell
+      run: |
+        echo 'CC=gcc-9' >> $GITHUB_ENV
+        echo 'CXX=g++-9' >> $GITHUB_ENV
+        echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
+        echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
+        echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
+        echo 'RULE_MESSAGES=off' >> $GITHUB_ENV
+
+    - name: Show shell configuration
+      run: |
+        env
+        which cmake && cmake --version
+        which make && make --version
+        which python && python --version
+        which ninja && ninja --version
+        which $CC && $CC --version
+        which $CXX && $CXX --version
+
+    - name: Valgrind
+      run: |
+        make debug
+        make valgrind
