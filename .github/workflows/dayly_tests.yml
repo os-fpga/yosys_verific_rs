@@ -24,11 +24,6 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - uses: actions/setup-python@v2
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        with:
-          python-version: 3.8
-
       - name: ssh-agent
         uses: webfactory/ssh-agent@v0.5.4
         with: 
@@ -44,20 +39,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        working-directory: ./.github/scripts
-        run: |
-          bash install_ubuntu_dependencies_build.sh
-          python3 -m pip install --upgrade pip --user
-          python3 -m pip install pandas termcolor --user
-
-      - name: Use ccache
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: linux-gcc
-  
       - name: Configure shell
         run: |
           echo 'CC=gcc' >> $GITHUB_ENV
@@ -88,7 +69,7 @@ jobs:
             python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
           else
             python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}           
-            fi
+          fi
 
       - name: Prepare logs
         run: |
@@ -121,7 +102,6 @@ jobs:
       - name: Compare QoR
         run: |
           if ${{ github.event_name == 'schedule' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional) }}; then
-            echo
             pip install --user pandas
             pip install --user termcolor
             python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
