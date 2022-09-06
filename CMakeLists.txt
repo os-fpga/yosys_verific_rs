@@ -74,6 +74,7 @@ if (PRODUCTION_BUILD)
 endif()
 
 add_subdirectory(logic_synthesis-rs)
+add_subdirectory(analyze)
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)

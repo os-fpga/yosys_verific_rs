@@ -32,10 +32,6 @@
 #include "License_manager.hpp"
 #endif
 
-#ifndef VHDL_PACKAGES
-#define VHDL_PACKAGES "."
-#endif
-
 namespace fs = std::filesystem;
 
 using namespace Verific ;
@@ -144,13 +140,13 @@ void save_vhdl_module_ports_info(Array *vhdl_modules, Array *netlists, json& por
     }
 }
 
-fs::path get_packages_path(fs::path program_path) {
+bool get_packages_path(fs::path program_path, fs::path& packages_path) {
     std::error_code ec;
-    fs::path packages = fs::canonical(program_path.remove_filename(), ec).parent_path() / "share" / "vhdl_packages";
-    std::cout << packages << std::endl;
-    if (!ec && fs::is_directory(packages)) 
-        return packages;
-    return VHDL_PACKAGES;
+    packages_path = fs::canonical(program_path.remove_filename(), ec);
+    packages_path = packages_path / "share" / "verific" / "vhdl_packages";
+    if (!ec && fs::is_directory(packages_path))
+        return true;
+    return false;
 }
 
 // ------------------------------
@@ -182,7 +178,12 @@ int main (int argc, char* argv[]) {
     std::vector<std::string> verific_libdirs;
     std::vector<std::string> verific_libexts;
 
-    fs::path vhdl_packages = get_packages_path(argv[0]);
+    fs::path vhdl_packages;
+    if (!get_packages_path(argv[0], vhdl_packages)) {
+        std::cout << "ERROR: Could not find VHDL packages." << std::endl;
+        return 0;
+    }
+
     std::string line;
     while (std::getline(in, line)) {
         std::cout << line << std::endl;
