@@ -64,8 +64,6 @@ void save_veri_module_ports_info(Array *verilog_modules, json& port_info) {
         int j;
         VeriIdDef* port;
         FOREACH_ARRAY_ITEM(ports, j, port) {
-            unsigned port_dir = port->Dir() ;
-            unsigned port_type = port->Type() ;
             json range;
             range["msb"] = port->LeftRangeBound();
             range["lsb"] = port->RightRangeBound();
@@ -154,7 +152,6 @@ bool get_packages_path(fs::path program_path, fs::path& packages_path) {
 // ------------------------------
 int main (int argc, char* argv[]) {
 
-    unsigned cu_mode = veri_file::MFCU;
     std::string top_module;
     fs::path file_path;
     std::set<std::string> works;
