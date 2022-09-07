@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 77)
+set(VERSION_PATCH 78)
 
 project(yosys_verific_rs)
 
@@ -74,7 +74,12 @@ if (PRODUCTION_BUILD)
 endif()
 
 add_subdirectory(logic_synthesis-rs)
-add_subdirectory(analyze)
+# TODO: Fix Mac OS build.
+if (NOT APPLE)
+    # There are linking issues with Verific libraries on Mac OS.
+    # We need Mac OS environment to debug and fix the issue.
+    add_subdirectory(analyze)
+endif()
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
