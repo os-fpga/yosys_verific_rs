@@ -18,6 +18,9 @@ endif(PRODUCTION_BUILD)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(SHARE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/share/verific)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 function(files_to_dirs file_list directory_list)
     # Extract the directories for each header file
     foreach(file ${${file_list}})
@@ -55,8 +58,8 @@ file(GLOB_RECURSE LIB_HEADERS
 files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
 
 if (PRODUCTION_BUILD)
-include_directories(analyze PUBLIC ${FLEX_LM_SRC_DIR}
-                            ${FLEX_LM_SRC_DIR}/machind
+    include_directories(analyze PUBLIC ${FLEX_LM_SRC_DIR}
+                                ${FLEX_LM_SRC_DIR}/machind
 )
 endif(PRODUCTION_BUILD)
 
@@ -82,9 +85,6 @@ target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
-
-set(SHARE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/share/verific)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_custom_command(TARGET analyze
     POST_BUILD
