@@ -140,7 +140,7 @@ void save_vhdl_module_ports_info(Array *vhdl_modules, Array *netlists, json& por
 
 bool get_packages_path(fs::path program_path, fs::path& packages_path) {
     std::error_code ec;
-    packages_path = fs::canonical(program_path.remove_filename(), ec);
+    packages_path = fs::canonical(program_path.remove_filename(), ec).parent_path();
     packages_path = packages_path / "share" / "verific" / "vhdl_packages";
     if (!ec && fs::is_directory(packages_path))
         return true;
