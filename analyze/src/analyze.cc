@@ -144,6 +144,8 @@ bool get_packages_path(fs::path program_path, fs::path& packages_path) {
     packages_path = packages_path / "share" / "verific" / "vhdl_packages";
     if (!ec && fs::is_directory(packages_path))
         return true;
+
+    std::cout << "ERROR: Could not find VHDL packages in : " << packages_path << std::endl;
     return false;
 }
 
@@ -157,8 +159,18 @@ int main (int argc, char* argv[]) {
     std::set<std::string> works;
 
     if (argc < 3) {
-        std::cout << "./Analyze -f <path_to_instruction_file>\n";
-        return 0;
+        std::cout << "./analyze -f <path_to_instruction_file>\n\n";
+        std::cout << "The complete list of supported instructions:\n";
+        std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
+        std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
+        std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+        std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+        std::cout << "-vlog-incdir <directory>\n";
+        std::cout << "-vlog-libdir <directory>\n";
+        std::cout << "-vlog-define <macro>[=<value>]\n";
+        std::cout << "-vlog-undef <macro>\n";
+        std::cout << "-top <top-module>\n";
+        return 1;
     }
 
     if (std::string(argv[1]) == "-f") {
@@ -167,8 +179,8 @@ int main (int argc, char* argv[]) {
         
     std::ifstream in(file_path);
     if (!in) {
-        std::cout << "ERROR: Could not open input file: " << file_path << std::endl;
-        return 0;
+        std::cout << "ERROR: Could not open instruction file: " << file_path << std::endl;
+        return 1;
     }
 
     std::vector<std::string> verific_incdirs;
@@ -177,13 +189,11 @@ int main (int argc, char* argv[]) {
 
     fs::path vhdl_packages;
     if (!get_packages_path(argv[0], vhdl_packages)) {
-        std::cout << "ERROR: Could not find VHDL packages." << std::endl;
-        return 0;
+        return 1;
     }
 
     std::string line;
     while (std::getline(in, line)) {
-        std::cout << line << std::endl;
         std::istringstream buffer(line);
 	std::vector<std::string> args;
 
@@ -194,13 +204,11 @@ int main (int argc, char* argv[]) {
         int size = args.size();
 	std::string work = "work";
 	unsigned analysis_mode = veri_file::UNDEFINED;
-
-        if (size < 2) {
-            std::cout << "ERROR: Invalid command.\n";
-            return 0;
-        }
-
 	int argidx = 0;
+
+        if (size == 0 || args[argidx][0] == '#') {
+            continue;
+        }
 
 	if (args[argidx] == "-vlog-incdir") {
 	    while (++argidx < size)
@@ -274,6 +282,19 @@ int main (int argc, char* argv[]) {
 	    Array file_names;
             argidx++;
 
+            while(argidx < size && args[argidx].compare(0, 2, "-D") == 0) {
+	            std::string name = args[argidx].substr(2);
+	            size_t equal = name.find('=');
+	            if (equal != std::string::npos) {
+	                std::string value = name.substr(equal+1);
+	                name = name.substr(0, equal);
+	                veri_file::DefineCmdLineMacro(name.c_str(), value.c_str());
+	            } else {
+	                veri_file::DefineCmdLineMacro(name.c_str());
+	            }
+            argidx++;
+            }
+
             works.insert(work);
 	    while (argidx < size) {
                 if (args[argidx].find("*.") != std::string::npos) {
@@ -291,8 +312,8 @@ int main (int argc, char* argv[]) {
             }
            
 	    if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
-	    	std::cout << "Reading Verilog/SystemVerilog sources failed.\n";
-	    	return 0;
+	    	std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
+	    	return 1;
 	    }
 
 	    int i;
@@ -314,8 +335,8 @@ int main (int argc, char* argv[]) {
 	    analysis_mode = vhdl_file::VHDL_2008;
 	    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
 	} else {
-	    std::cout << "Unknown option is specified: " << args[argidx] << std::endl;
-	    return 0;
+	    std::cout << "ERROR: Unknown instruction is specified: " << line << std::endl;
+	    return 1;
 	}
 
         if(analysis_mode != veri_file::UNDEFINED) {
@@ -330,14 +351,14 @@ int main (int argc, char* argv[]) {
                     for (auto const& dir_entry : fs::directory_iterator{dir}) 
                         if (dir_entry.path().extension() == ".vhd")
 		            if (!vhdl_file::Analyze(dir_entry.path().c_str(), work.c_str(), analysis_mode)) {
-		                std::cout << "Reading vhdl source failed: " << dir_entry.path() << " \n";
-		                return 0;
+		                std::cout << "ERROR: Reading vhdl source failed:\n";
+		                return 1;
                             }
                     argidx++;
                 } else {
 		    if (!vhdl_file::Analyze(args[argidx++].c_str(), work.c_str(), analysis_mode)) {
-		        std::cout << "Reading vhdl source failed: " << args[argidx-1] << " \n";
-		        return 0;
+		        std::cout << "ERROR: Reading vhdl source failed:\n";
+		        return 1;
                     }
                 }
             }
