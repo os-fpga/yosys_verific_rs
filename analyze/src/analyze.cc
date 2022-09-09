@@ -160,7 +160,7 @@ int main (int argc, char* argv[]) {
 
     if (argc < 3) {
         std::cout << "./analyze -f <path_to_instruction_file>\n\n";
-        std::cout << "The complete list of supported options:\n";
+        std::cout << "The complete list of supported instructions:\n";
         std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
         std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
         std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
@@ -179,7 +179,7 @@ int main (int argc, char* argv[]) {
         
     std::ifstream in(file_path);
     if (!in) {
-        std::cout << "ERROR: Could not open input file: " << file_path << std::endl;
+        std::cout << "ERROR: Could not open instruction file: " << file_path << std::endl;
         return 1;
     }
 
@@ -206,7 +206,7 @@ int main (int argc, char* argv[]) {
 	unsigned analysis_mode = veri_file::UNDEFINED;
 	int argidx = 0;
 
-        if (size < 1 || args[argidx][0] == '#') {
+        if (size == 0 || args[argidx][0] == '#') {
             continue;
         }
 
@@ -313,7 +313,6 @@ int main (int argc, char* argv[]) {
            
 	    if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
 	    	std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
-	    	std::cout << "Line: " << line << std::endl;
 	    	return 1;
 	    }
 
@@ -336,7 +335,7 @@ int main (int argc, char* argv[]) {
 	    analysis_mode = vhdl_file::VHDL_2008;
 	    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
 	} else {
-	    std::cout << "ERROR: Unknown option is specified: " << line << std::endl;
+	    std::cout << "ERROR: Unknown instruction is specified: " << line << std::endl;
 	    return 1;
 	}
 
@@ -352,13 +351,13 @@ int main (int argc, char* argv[]) {
                     for (auto const& dir_entry : fs::directory_iterator{dir}) 
                         if (dir_entry.path().extension() == ".vhd")
 		            if (!vhdl_file::Analyze(dir_entry.path().c_str(), work.c_str(), analysis_mode)) {
-		                std::cout << "ERROR: Reading vhdl source failed: " << dir_entry.path() << " \n";
+		                std::cout << "ERROR: Reading vhdl source failed:\n";
 		                return 1;
                             }
                     argidx++;
                 } else {
 		    if (!vhdl_file::Analyze(args[argidx++].c_str(), work.c_str(), analysis_mode)) {
-		        std::cout << "ERROR: Reading vhdl source failed: " << args[argidx-1] << " \n";
+		        std::cout << "ERROR: Reading vhdl source failed:\n";
 		        return 1;
                     }
                 }
