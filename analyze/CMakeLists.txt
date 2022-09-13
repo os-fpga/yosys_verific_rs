@@ -9,7 +9,7 @@ if (PRODUCTION_BUILD)
     if (NOT RAPTOR)
         get_filename_component(FLEX_LM_SRC_DIR "../Raptor_Tools/Flex_LM"
           REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        
+
         # Flex_LM directory already has been added by vpr/CMakeLists.txt
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
@@ -40,6 +40,10 @@ function(files_to_dirs file_list directory_list)
 endfunction(files_to_dirs)
 
 add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_dependencies(analyze verific)
+endif()
 
 list(APPEND ANALYZE_CXX_FLAGS_DEBUG
     -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
