@@ -154,6 +154,10 @@ bool get_packages_path(fs::path program_path, fs::path& packages_path) {
 // ------------------------------
 int main (int argc, char* argv[]) {
 
+    try {
+#ifdef PRODUCTION_BUILD
+        License_Manager license(License_Manager::LicensedProductName::ANALYZE);
+#endif
     std::string top_module;
     fs::path file_path;
     std::set<std::string> works;
@@ -414,4 +418,23 @@ int main (int argc, char* argv[]) {
     o << std::setw(4) << port_info << std::endl;
 
     return 0;
+  }
+  catch (fs::filesystem_error const& ex) {
+      std::cout << "ANALYZE: ERROR : " << ex.what() << std::endl;
+    return 1;
+  }
+#ifdef PRODUCTION_BUILD
+  catch (License_Manager::LicenseFatalException const& ex){
+      std::cout << "ANALYZE: ERROR : " << ex.what() << std::endl;
+    return 1;
+  }
+  catch (License_Manager::LicenseCorrectableException const& ex){
+      std::cout << "ANALYZE: ERROR : " << ex.what() << std::endl;
+    return 1;
+  }
+#endif
+  catch (...) {
+      std::cout << "ANALYZE: ERROR : Unhandled exception." << std::endl;
+    return 1;
+  }
 }
