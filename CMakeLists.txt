@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 83)
+set(VERSION_PATCH 84)
 
 project(yosys_verific_rs)
 
@@ -48,7 +48,7 @@ function(checkout_subsystems SUBSYSTEM_LIST WORK_DIR RECURSIVE UPDATE)
                 WORKING_DIRECTORY ${WORK_DIR}
                 RESULT_VARIABLE GIT_SUBMOD_RESULT
                 )
-            if  (NOT GIT_SUBMOD_RESULT EQUAL "0") 
+            if  (NOT GIT_SUBMOD_RESULT EQUAL "0")
                 message(FATAL_ERROR "\"${GIT_EXECUTABLE} submodule update --init ${RECURSIVE} ${SUBMODULE}\" failed with ${GIT_SUBMOD_RESULT}, please checkout submodule manually")
             endif()
         endif()
@@ -71,14 +71,6 @@ if (PRODUCTION_BUILD)
         # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
-endif()
-
-add_subdirectory(logic_synthesis-rs)
-# TODO: Fix Mac OS build.
-if (NOT APPLE)
-    # There are linking issues with Verific libraries on Mac OS.
-    # We need Mac OS environment to debug and fix the issue.
-    add_subdirectory(analyze)
 endif()
 
 option(ENABLE_VERIFIC "Enable Verific frontend" ON)
@@ -158,7 +150,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 add_custom_target(
-    yosys ALL 
+    yosys ALL
     COMMAND $(MAKE) install ${YOSYS_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Compile Yosys with given Makefile"
@@ -176,6 +168,14 @@ if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_subdirectory(${VERIFIC_HOME})
     endif()
     add_dependencies(yosys verific)
+endif()
+
+add_subdirectory(logic_synthesis-rs)
+# TODO: Fix Mac OS build.
+if (NOT APPLE)
+    # There are linking issues with Verific libraries on Mac OS.
+    # We need Mac OS environment to debug and fix the issue.
+    add_subdirectory(analyze)
 endif()
 
 if (PRODUCTION_BUILD)
@@ -204,7 +204,7 @@ if (BUILD_YOSYS_PLUGINS)
 endif()
 
 add_custom_target(
-    yosys-rs-plugin ALL 
+    yosys-rs-plugin ALL
     COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
     COMMENT "Compile Yosys RS plugin with given Makefile"
@@ -257,7 +257,7 @@ install(
     DESTINATION share
     USE_SOURCE_PERMISSIONS)
 
-# Check system 
+# Check system
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 enable_testing()
 
