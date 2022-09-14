@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 85)
+set(VERSION_PATCH 86)
 
 project(yosys_verific_rs)
 
@@ -66,7 +66,7 @@ if (PRODUCTION_BUILD)
     message("Production Build type set to ON")
     if (NOT RAPTOR)
         get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
-          REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
         add_subdirectory(${FLEX_LM_SRC_DIR})
         # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
     endif()

@@ -4,13 +4,11 @@ project(analyze)
 
 if (PRODUCTION_BUILD)
     message("Production Build type set to ON")
-    set (PRODUCTION_BUILD_FLAG "-DPRODUCTION_BUILD=1")
     add_definitions(-DPRODUCTION_BUILD)
-    if (NOT RAPTOR)
+    if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
         get_filename_component(FLEX_LM_SRC_DIR "../Raptor_Tools/Flex_LM"
-          REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
-        # Flex_LM directory already has been added by vpr/CMakeLists.txt
+            REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+        add_subdirectory(${FLEX_LM_SRC_DIR})
     endif()
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
@@ -62,6 +60,7 @@ file(GLOB_RECURSE LIB_HEADERS
 files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
 
 if (PRODUCTION_BUILD)
+    add_dependencies(analyze rs_licenseManager)
     include_directories(analyze PUBLIC ${FLEX_LM_SRC_DIR}
                                 ${FLEX_LM_SRC_DIR}/machind
 )
@@ -85,6 +84,9 @@ list(APPEND VERIFIC_LIBS
     ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
     )
 
+if (PRODUCTION_BUILD)
+    target_link_libraries(analyze PUBLIC rs_licenseManager)
+endif()
 target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
