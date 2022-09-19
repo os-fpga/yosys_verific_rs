@@ -26,6 +26,7 @@
 #include "Netlist.h"
 #include "VhdlExpression.h"
 #include "VhdlName.h"
+#include "VhdlValue_Elab.h"
 #include "file_sort_vhdl_tokens.h"
 
 #ifdef PRODUCTION_BUILD
@@ -51,7 +52,9 @@ std::unordered_map<int, std::string> vhdl_directions = {
 
 std::unordered_map<int, std::string> types = {
     {VERI_WIRE, "LOGIC"},
-    {VERI_REG, "REG"}
+    {VERI_REG, "REG"},
+    {VERI_STRUCT, "STRUCT"},
+    {VERI_LOGIC, "LOGIC"}
 };
 
 void save_veri_module_ports_info(Array *verilog_modules, json& port_info) {
@@ -74,17 +77,59 @@ void save_veri_module_ports_info(Array *verilog_modules, json& port_info) {
     }
 }
 
+long parse_vhdl_expression(VhdlExpression *expr) {
+    switch (expr->GetClassId()) {
+        case ID_VHDLIDREF:
+            {
+                VhdlIdRef *ref = static_cast<VhdlIdRef*>(expr);
+                VhdlInterfaceId *id = static_cast<VhdlInterfaceId*>(ref->GetSingleId());
+                return parse_vhdl_expression(id->GetInitAssign());
+            }
+        case ID_VHDLOPERATOR:
+            {
+                VhdlOperator* pOperator = static_cast<VhdlOperator*>(expr);
+                unsigned op = pOperator->GetOperatorToken();
+                long l = parse_vhdl_expression(pOperator->GetLeftExpression());
+                long r = parse_vhdl_expression(pOperator->GetRightExpression());
+                switch (op) {
+                    case VHDL_PLUS:
+                        return l + r;
+                    case VHDL_MINUS:
+                        return l - r;
+                    case VHDL_STAR:
+                        return l * r;
+                    case VHDL_SLASH:
+                        return l / r;
+                    case VHDL_rem:
+                        return l % r;
+                    case VHDL_EXPONENT :
+                        return std::pow(l, r);
+                    default:
+                        std::cout << "Unknown operation: " << op << std::endl;
+                        return 0;
+                }
+            }
+        case ID_VHDLINTEGER:
+            {
+                return static_cast<VhdlInteger*>(expr)->GetValue();
+            }
+        default:
+            {
+                std::cout << "Unknown type: " << expr->GetClassId() << std::endl;
+                return 0;
+            }
+    }
+}
+
 void parse_vhdl_range(VhdlDiscreteRange *pDiscreteRange, int& msb, int& lsb) {
     if (pDiscreteRange && pDiscreteRange->GetClassId() == ID_VHDLRANGE) {
         VhdlRange *pRange = static_cast<VhdlRange*>(pDiscreteRange) ;
         VhdlExpression *pLHS = pRange->GetLeftExpression() ;
         VhdlExpression *pRHS = pRange->GetRightExpression() ;
-        if (pRange->GetDir() == VHDL_downto) {
-            msb = static_cast<VhdlInteger*>(pLHS)->GetValue();
-            lsb = static_cast<VhdlInteger*>(pRHS)->GetValue();
-        } else {
-            msb = static_cast<VhdlInteger*>(pRHS)->GetValue();
-            lsb = static_cast<VhdlInteger*>(pLHS)->GetValue();
+        msb = parse_vhdl_expression(pLHS);
+        lsb = parse_vhdl_expression(pRHS);
+        if (pRange->GetDir() != VHDL_downto) {
+            std::swap(lsb, msb);
         }
     }
 }
@@ -174,6 +219,10 @@ int main (int argc, char* argv[]) {
             std::cout << "-vlog-define <macro>[=<value>]\n";
             std::cout << "-vlog-undef <macro>\n";
             std::cout << "-top <top-module>\n";
+            std::cout << "-set-error <msg_id/ids>\n";
+            std::cout << "-set-warning <msg_id/ids>\n";
+            std::cout << "-set-info <msg_id/ids>\n";
+            std::cout << "-set-ignore <msg_id/ids>\n";
             return 1;
         }
 
@@ -211,6 +260,26 @@ int main (int argc, char* argv[]) {
             int argidx = 0;
 
             if (size == 0 || args[argidx][0] == '#') {
+                continue;
+            }
+
+            if (args[argidx] == "-set-error" || args[argidx] == "-set-warning" ||
+                    args[argidx] == "-set-info" || args[argidx] == "-set-ignore")
+            {
+                msg_type_t type;
+
+                if (args[argidx] == "-set-error")
+                    type = VERIFIC_ERROR;
+                else if (args[argidx] == "-set-warning")
+                    type = VERIFIC_WARNING;
+                else if (args[argidx] == "-set-info")
+                    type = VERIFIC_INFO;
+                else
+                    type = VERIFIC_IGNORE;
+
+                while (++argidx < size)
+                    Message::SetMessageType(args[argidx].c_str(), type);
+
                 continue;
             }
 
