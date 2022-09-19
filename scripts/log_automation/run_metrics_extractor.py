@@ -69,8 +69,7 @@ parser.add_argument("--viv_carry_as_lut", action="store_false",
 output_vivado_dirs = []
 output_yosys_dirs = []
 run_log_files = []
-metrics = pd.DataFrame()
-metrics = pd.DataFrame(metrics,columns=["Benchmarks"])
+metrics = pd.DataFrame(columns=["Benchmarks"])
 metrics = metrics.fillna(0)
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 yosys_log = "yosys_output.log" 
@@ -227,7 +226,8 @@ def extract_yosys_metrics():
             if not os.path.isdir(os.path.join(output_yosys_dir, task_name)):
                 continue
             if not metrics['Benchmarks'].eq(task_name).any():
-                metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
+                bench = pd.DataFrame([[task_name]], columns=['Benchmarks'])
+                metrics= pd.concat([metrics, bench], ignore_index=True)
             task_log = os.path.join(output_yosys_dir, task_name, yosys_log)
             design_index = get_design_index(task_name)
             metrics.at[design_index, extract_column_name("LUT",tool,label)] = 0
@@ -296,7 +296,8 @@ def extract_vivado_metrics():
             if not os.path.isdir(task_dir):
                 continue
             if not metrics['Benchmarks'].eq(task_name).any():
-                metrics=metrics.append({'Benchmarks':task_name}, ignore_index=True)
+                bench = pd.DataFrame([[task_name]], columns=['Benchmarks'])
+                metrics= pd.concat([metrics, bench], ignore_index=True)
             design_index = get_design_index(task_name)
             metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] = 0
             metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = 0
@@ -524,9 +525,10 @@ def add_max_min_average():
     comparision_list = ["", "AVERAGE", "MAX", "MIN"]
     percentage_list = [column for column in metrics.columns if "PERCENTAGE" in column]
     for i in comparision_list:
-        metrics = metrics.append({'Benchmarks':i}, ignore_index=True)
-    metrics.fillna('-', inplace=True)
-    metrics.replace(to_replace='nan', value='-',inplace=True)
+        bench = pd.DataFrame([[comparision_list]], columns=['Benchmarks'])
+        metrics = pd.concat([metrics, bench], ignore_index=True)
+        metrics.fillna('-', inplace=True)
+        metrics.replace(to_replace='nan', value='-',inplace=True)
     for m in percentage_list:
         temp = []
         for x in metrics[m]:
