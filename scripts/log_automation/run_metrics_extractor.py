@@ -346,7 +346,6 @@ def extract_vivado_metrics():
                                     if re.search(r"dsp", line, re.IGNORECASE):
                                         add_value(line.split()[3], design_index, "DSP", tool, label)
                             metrics.at[design_index, extract_column_name("LUT:CARRY4=1*LUT",tool,label)] -= metrics.at[design_index, extract_column_name("MUXF8",tool,label)]
-
                         with open(os.path.join(task_dir, filename), 'r') as f:
                             slice_logic = re.findall(r"Slice Logic.*Site Type.*Used.*Fixed.*Available.*Util\%|\n?(.*?)\n\n?", f.read(), re.DOTALL)
                             if not slice_logic:
@@ -533,7 +532,8 @@ def add_max_min_average():
         temp = []
         for x in metrics[m]:
             try:
-                temp.append(float(x))
+              temp.append(astype(float(x)))
+                                
             except:
                 pass
         if temp:
