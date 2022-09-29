@@ -524,7 +524,7 @@ def add_max_min_average():
     comparision_list = ["", "AVERAGE", "MAX", "MIN"]
     percentage_list = [column for column in metrics.columns if "PERCENTAGE" in column]
     for i in comparision_list:
-        bench = pd.DataFrame([[comparision_list]], columns=['Benchmarks'])
+        bench = pd.DataFrame([[i]], columns=['Benchmarks'])
         metrics = pd.concat([metrics, bench], ignore_index=True)
         metrics.fillna('-', inplace=True)
         metrics.replace(to_replace='nan', value='-',inplace=True)
@@ -532,8 +532,7 @@ def add_max_min_average():
         temp = []
         for x in metrics[m]:
             try:
-              temp.append(astype(float(x)))
-                                
+              temp.append((float(x)))
             except:
                 pass
         if temp:
