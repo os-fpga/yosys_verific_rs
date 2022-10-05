@@ -82,8 +82,25 @@ long parse_vhdl_expression(VhdlExpression *expr) {
         case ID_VHDLIDREF:
             {
                 VhdlIdRef *ref = static_cast<VhdlIdRef*>(expr);
-                VhdlInterfaceId *id = static_cast<VhdlInterfaceId*>(ref->GetSingleId());
-                return parse_vhdl_expression(id->GetInitAssign());
+                VhdlIdDef *id = ref->GetSingleId();
+                switch (id->GetClassId()) {
+                    case ID_VHDLINTERFACEID:
+                        {
+                            VhdlInterfaceId *interfaceId = static_cast<VhdlInterfaceId*>(id);
+                            return parse_vhdl_expression(interfaceId->GetInitAssign());
+                        }
+                    case ID_VHDLCONSTANTID:
+                        {
+                            // TODO: get value of const declaration. 
+                            // VhdlConstantId *constId = static_cast<VhdlConstantId*>(id);
+                            return 0;
+                        }
+                    default:
+                        {
+                            std::cout << "Unknown type: " << id->GetClassId() << std::endl;
+                            return 0;
+                        }
+                }
             }
         case ID_VHDLOPERATOR:
             {
@@ -255,198 +272,204 @@ int main (int argc, char* argv[]) {
                     std::back_inserter(args));
 
             int size = args.size();
-            std::string work = "work";
-            unsigned analysis_mode = veri_file::UNDEFINED;
             int argidx = 0;
 
-            if (size == 0 || args[argidx][0] == '#') {
-                continue;
-            }
+            while (argidx < size) { 
 
-            if (args[argidx] == "-set-error" || args[argidx] == "-set-warning" ||
-                    args[argidx] == "-set-info" || args[argidx] == "-set-ignore")
-            {
-                msg_type_t type;
+                std::string work = "work";
+                unsigned analysis_mode = veri_file::UNDEFINED;
 
-                if (args[argidx] == "-set-error")
-                    type = VERIFIC_ERROR;
-                else if (args[argidx] == "-set-warning")
-                    type = VERIFIC_WARNING;
-                else if (args[argidx] == "-set-info")
-                    type = VERIFIC_INFO;
-                else
-                    type = VERIFIC_IGNORE;
-
-                while (++argidx < size)
-                    Message::SetMessageType(args[argidx].c_str(), type);
-
-                continue;
-            }
-
-            if (args[argidx] == "-vlog-incdir") {
-                while (++argidx < size)
-                    verific_incdirs.push_back(args[argidx]);
-                continue;
-            }
-
-            if (args[argidx] == "-vlog-libdir") {
-                while (++argidx < size)
-                    verific_libdirs.push_back(args[argidx]);
-                continue;
-            }
-
-            if (args[argidx] == "-vlog-libext") {
-                while (++argidx < size)
-                    verific_libexts.push_back(args[argidx]);
-                continue;
-            }
-
-            if (args[argidx] == "-vlog-define") {
-                while (++argidx < size) {
-                    std::string name = args[argidx];
-                    size_t equal = name.find('=');
-                    if (equal != std::string::npos) {
-                        std::string value = name.substr(equal+1);
-                        name = name.substr(0, equal);
-                        veri_file::DefineCmdLineMacro(name.c_str(), value.c_str());
-                    } else {
-                        veri_file::DefineCmdLineMacro(name.c_str());
-                    }
+                if (size == 0 || args[argidx][0] == '#') {
+                    continue;
                 }
-                continue;
-            }
 
-            if (args[argidx] == "-vlog-undef") {
-                while (++argidx < size) {
-                    std::string name = args[argidx];
-                    veri_file::UndefineMacro(name.c_str());
+                if (args[argidx] == "-set-error" || args[argidx] == "-set-warning" ||
+                        args[argidx] == "-set-info" || args[argidx] == "-set-ignore")
+                {
+                    msg_type_t type;
+
+                    if (args[argidx] == "-set-error")
+                        type = VERIFIC_ERROR;
+                    else if (args[argidx] == "-set-warning")
+                        type = VERIFIC_WARNING;
+                    else if (args[argidx] == "-set-info")
+                        type = VERIFIC_INFO;
+                    else
+                        type = VERIFIC_IGNORE;
+
+                    while (++argidx < size)
+                        Message::SetMessageType(args[argidx].c_str(), type);
+
+                    continue;
                 }
-                continue;
-            }
 
-            if (args[argidx] == "-top" && argidx + 1 < size) {
-                top_module = args[++argidx];
-                continue;
-            }
+                if (args[argidx] == "-vlog-incdir") {
+                    while (++argidx < size)
+                        verific_incdirs.push_back(args[argidx]);
+                    continue;
+                }
 
-            if (args[argidx] == "-work" && argidx + 1 < size) {
-                work = args[++argidx];
-                argidx++;
-            }
+                if (args[argidx] == "-vlog-libdir") {
+                    while (++argidx < size)
+                        verific_libdirs.push_back(args[argidx]);
+                    continue;
+                }
 
-            if (args[argidx] == "-L" && argidx + 1 < size) {
-                veri_file::AddLOption(args[++argidx].c_str());
-                argidx++;
-            }
+                if (args[argidx] == "-vlog-libext") {
+                    while (++argidx < size)
+                        verific_libexts.push_back(args[argidx]);
+                    continue;
+                }
 
-            if (args[argidx] == "-vlog95") {
-                analysis_mode = veri_file::VERILOG_95;
-            } else if (args[argidx] == "-vlog2k") {
-                analysis_mode = veri_file::VERILOG_2K;
-            } else if (args[argidx] == "-sv2005") {
-                analysis_mode = veri_file::SYSTEM_VERILOG_2005;
-            } else if (args[argidx] == "-sv2009") {
-                analysis_mode = veri_file::SYSTEM_VERILOG_2009;
-            } else if (args[argidx] == "-sv2012" || args[argidx] == "-sv" || args[argidx] == "-formal") {
-                analysis_mode = veri_file::SYSTEM_VERILOG;
-            }
-
-            if(analysis_mode != veri_file::UNDEFINED) {
-                Array file_names;
-                argidx++;
-
-                while(argidx < size && args[argidx].compare(0, 2, "-D") == 0) {
-                    std::string name = args[argidx].substr(2);
-                    size_t equal = name.find('=');
-                    if (equal != std::string::npos) {
-                        std::string value = name.substr(equal+1);
-                        name = name.substr(0, equal);
-                        veri_file::DefineCmdLineMacro(name.c_str(), value.c_str());
-                    } else {
-                        veri_file::DefineCmdLineMacro(name.c_str());
+                if (args[argidx] == "-vlog-define") {
+                    while (++argidx < size) {
+                        std::string name = args[argidx];
+                        size_t equal = name.find('=');
+                        if (equal != std::string::npos) {
+                            std::string value = name.substr(equal+1);
+                            name = name.substr(0, equal);
+                            veri_file::DefineCmdLineMacro(name.c_str(), value.c_str());
+                        } else {
+                            veri_file::DefineCmdLineMacro(name.c_str());
+                        }
                     }
+                    continue;
+                }
+
+                if (args[argidx] == "-vlog-undef") {
+                    while (++argidx < size) {
+                        std::string name = args[argidx];
+                        veri_file::UndefineMacro(name.c_str());
+                    }
+                    continue;
+                }
+
+                if (argidx + 1 < size && args[argidx] == "-top") {
+                    top_module = args[++argidx];
                     argidx++;
                 }
 
-                works.insert(work);
-                while (argidx < size) {
-                    if (args[argidx].find("*.") != std::string::npos) {
-                        fs::path dir = fs::current_path();
-                        std::string file = args[argidx].substr(0, args[argidx].find("*."));
-                        if (!file.empty())
-                            dir = file;
-                        for (auto const& dir_entry : fs::directory_iterator{dir}) 
-                            if (dir_entry.path().extension() == ".v" || dir_entry.path().extension() == ".sv")
-                                file_names.Insert(Strings::save(dir_entry.path().c_str()));
+                if (argidx + 1 < size && args[argidx] == "-work") {
+                    work = args[++argidx];
+                    argidx++;
+                }
+
+                if (argidx + 1 < size && args[argidx] == "-L") {
+                    veri_file::AddLOption(args[++argidx].c_str());
+                    argidx++;
+                }
+
+                if (argidx >= size)
+                    continue;
+
+                if (args[argidx] == "-vlog95") {
+                    analysis_mode = veri_file::VERILOG_95;
+                } else if (args[argidx] == "-vlog2k") {
+                    analysis_mode = veri_file::VERILOG_2K;
+                } else if (args[argidx] == "-sv2005") {
+                    analysis_mode = veri_file::SYSTEM_VERILOG_2005;
+                } else if (args[argidx] == "-sv2009") {
+                    analysis_mode = veri_file::SYSTEM_VERILOG_2009;
+                } else if (args[argidx] == "-sv2012" || args[argidx] == "-sv" || args[argidx] == "-formal") {
+                    analysis_mode = veri_file::SYSTEM_VERILOG;
+                }
+
+                if(analysis_mode != veri_file::UNDEFINED) {
+                    Array file_names;
+                    argidx++;
+
+                    while(argidx < size && args[argidx].compare(0, 2, "-D") == 0) {
+                        std::string name = args[argidx].substr(2);
+                        size_t equal = name.find('=');
+                        if (equal != std::string::npos) {
+                            std::string value = name.substr(equal+1);
+                            name = name.substr(0, equal);
+                            veri_file::DefineCmdLineMacro(name.c_str(), value.c_str());
+                        } else {
+                            veri_file::DefineCmdLineMacro(name.c_str());
+                        }
                         argidx++;
-                    } else {
-                        file_names.Insert(Strings::save(args[argidx++].c_str()));
                     }
+
+                    works.insert(work);
+                    while (argidx < size) {
+                        if (args[argidx].find("*.") != std::string::npos) {
+                            fs::path dir = fs::current_path();
+                            std::string file = args[argidx].substr(0, args[argidx].find("*."));
+                            if (!file.empty())
+                                dir = file;
+                            for (auto const& dir_entry : fs::directory_iterator{dir}) 
+                                if (dir_entry.path().extension() == ".v" || dir_entry.path().extension() == ".sv")
+                                    file_names.Insert(Strings::save(dir_entry.path().c_str()));
+                            argidx++;
+                        } else {
+                            file_names.Insert(Strings::save(args[argidx++].c_str()));
+                        }
+                    }
+
+                    if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
+                        std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
+                        return 1;
+                    }
+
+                    int i;
+                    char *f ;
+                    FOREACH_ARRAY_ITEM(&file_names, i, f) Strings::free(f); 
+                    continue;
                 }
 
-                if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
-                    std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
-                    return 1;
+                if (args[argidx] == "-vhdl87") {
+                    analysis_mode = vhdl_file::VHDL_87;
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1987").c_str());
+                } else if (args[argidx] == "-vhdl93") {
+                    analysis_mode = vhdl_file::VHDL_93;
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
+                } else if (args[argidx] == "-vhdl2k") {
+                    analysis_mode = vhdl_file::VHDL_2K;
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
+                } else if (args[argidx] == "-vhdl2008" || args[argidx] == "-vhdl") {
+                    analysis_mode = vhdl_file::VHDL_2008;
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
+                } else {
+                    continue;
                 }
 
-                int i;
-                char *f ;
-                FOREACH_ARRAY_ITEM(&file_names, i, f) Strings::free(f); 
-                continue;
-            }
-
-            if (args[argidx] == "-vhdl87") {
-                analysis_mode = vhdl_file::VHDL_87;
-                vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1987").c_str());
-            } else if (args[argidx] == "-vhdl93") {
-                analysis_mode = vhdl_file::VHDL_93;
-                vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
-            } else if (args[argidx] == "-vhdl2k") {
-                analysis_mode = vhdl_file::VHDL_2K;
-                vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
-            } else if (args[argidx] == "-vhdl2008" || args[argidx] == "-vhdl") {
-                analysis_mode = vhdl_file::VHDL_2008;
-                vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
-            } else {
-                std::cout << "ERROR: Unknown instruction is specified: " << line << std::endl;
-                return 1;
-            }
-
-            if(analysis_mode != veri_file::UNDEFINED) {
-                argidx++;
-                works.insert(work);
-                while (argidx < size) {
-                    if (args[argidx].find("*.") != std::string::npos) {
-                        fs::path dir = fs::current_path();
-                        std::string file = args[argidx].substr(0, args[argidx].find("*."));
-                        if (!file.empty())
-                            dir = file;
-                        for (auto const& dir_entry : fs::directory_iterator{dir}) 
-                            if (dir_entry.path().extension() == ".vhd")
-                                if (!vhdl_file::Analyze(dir_entry.path().c_str(), work.c_str(), analysis_mode)) {
-                                    std::cout << "ERROR: Reading vhdl source failed:\n";
-                                    return 1;
-                                }
-                        argidx++;
-                    } else {
-                        if (!vhdl_file::Analyze(args[argidx++].c_str(), work.c_str(), analysis_mode)) {
-                            std::cout << "ERROR: Reading vhdl source failed:\n";
-                            return 1;
+                if(analysis_mode != veri_file::UNDEFINED) {
+                    argidx++;
+                    works.insert(work);
+                    while (argidx < size) {
+                        if (args[argidx].find("*.") != std::string::npos) {
+                            fs::path dir = fs::current_path();
+                            std::string file = args[argidx].substr(0, args[argidx].find("*."));
+                            if (!file.empty())
+                                dir = file;
+                            for (auto const& dir_entry : fs::directory_iterator{dir}) 
+                                if (dir_entry.path().extension() == ".vhd")
+                                    if (!vhdl_file::Analyze(dir_entry.path().c_str(), work.c_str(), analysis_mode)) {
+                                        std::cout << "ERROR: Reading vhdl source failed:\n";
+                                        return 1;
+                                    }
+                            argidx++;
+                        } else {
+                            if (!vhdl_file::Analyze(args[argidx++].c_str(), work.c_str(), analysis_mode)) {
+                                std::cout << "ERROR: Reading vhdl source failed:\n";
+                                return 1;
+                            }
                         }
                     }
                 }
+
+                for (auto &dir : verific_incdirs)
+                    veri_file::AddIncludeDir(dir.c_str());
+                for (auto &dir : verific_libdirs)
+                    veri_file::AddYDir(dir.c_str());
+                for (auto &ext : verific_libexts)
+                    veri_file::AddLibExt(ext.c_str());
+
+                verific_incdirs.clear();
+                verific_libdirs.clear();
+                verific_libexts.clear();
             }
-
-            for (auto &dir : verific_incdirs)
-                veri_file::AddIncludeDir(dir.c_str());
-            for (auto &dir : verific_libdirs)
-                veri_file::AddYDir(dir.c_str());
-            for (auto &ext : verific_libexts)
-                veri_file::AddLibExt(ext.c_str());
-
-            verific_incdirs.clear();
-            verific_libdirs.clear();
-            verific_libexts.clear();
         }
 
         json port_info = json::array();
