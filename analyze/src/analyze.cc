@@ -406,18 +406,30 @@ int main (int argc, char* argv[]) {
                 if (args[argidx] == "-vlog-incdir") {
                     while (++argidx < size)
                         verific_incdirs.push_back(args[argidx]);
+
+                    for (auto &dir : verific_incdirs)
+                        veri_file::AddIncludeDir(dir.c_str());
+                    verific_incdirs.clear();
                     continue;
                 }
 
                 if (args[argidx] == "-vlog-libdir") {
                     while (++argidx < size)
                         verific_libdirs.push_back(args[argidx]);
+
+                    for (auto &dir : verific_libdirs)
+                        veri_file::AddYDir(dir.c_str());
+                    verific_libdirs.clear();
                     continue;
                 }
 
                 if (args[argidx] == "-vlog-libext") {
                     while (++argidx < size)
                         verific_libexts.push_back(args[argidx]);
+
+                    for (auto &ext : verific_libexts)
+                        veri_file::AddLibExt(ext.c_str());
+                    verific_libexts.clear();
                     continue;
                 }
 
@@ -461,13 +473,6 @@ int main (int argc, char* argv[]) {
 
                 if (argidx >= size)
                     continue;
-
-                for (auto &dir : verific_incdirs)
-                    veri_file::AddIncludeDir(dir.c_str());
-                for (auto &dir : verific_libdirs)
-                    veri_file::AddYDir(dir.c_str());
-                for (auto &ext : verific_libexts)
-                    veri_file::AddLibExt(ext.c_str());
 
                 if (args[argidx] == "-vlog95") {
                     analysis_mode = veri_file::VERILOG_95;
