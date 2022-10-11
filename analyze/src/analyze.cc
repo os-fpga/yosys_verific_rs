@@ -406,30 +406,18 @@ int main (int argc, char* argv[]) {
                 if (args[argidx] == "-vlog-incdir") {
                     while (++argidx < size)
                         verific_incdirs.push_back(args[argidx]);
-
-                    for (auto &dir : verific_incdirs)
-                        veri_file::AddIncludeDir(dir.c_str());
-                    verific_incdirs.clear();
                     continue;
                 }
 
                 if (args[argidx] == "-vlog-libdir") {
                     while (++argidx < size)
                         verific_libdirs.push_back(args[argidx]);
-
-                    for (auto &dir : verific_libdirs)
-                        veri_file::AddYDir(dir.c_str());
-                    verific_libdirs.clear();
                     continue;
                 }
 
                 if (args[argidx] == "-vlog-libext") {
                     while (++argidx < size)
                         verific_libexts.push_back(args[argidx]);
-
-                    for (auto &ext : verific_libexts)
-                        veri_file::AddLibExt(ext.c_str());
-                    verific_libexts.clear();
                     continue;
                 }
 
@@ -519,6 +507,13 @@ int main (int argc, char* argv[]) {
                         }
                     }
 
+                    for (auto &dir : verific_incdirs)
+                        veri_file::AddIncludeDir(dir.c_str());
+                    for (auto &dir : verific_libdirs)
+                        veri_file::AddYDir(dir.c_str());
+                    for (auto &ext : verific_libexts)
+                        veri_file::AddLibExt(ext.c_str());
+
                     if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
                         std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
                         return 1;
@@ -572,6 +567,10 @@ int main (int argc, char* argv[]) {
                 }
             }
         }
+
+        verific_incdirs.clear();
+        verific_libdirs.clear();
+        verific_libexts.clear();
 
         json port_info = json::array();
 
