@@ -62,6 +62,7 @@ valgrind:
 ##     |---> info       :  Clean unit tests
 ##     |---> usage      :  make clean_test
 clean_test:
+	cd analyze/tests && $(MAKE) $@
 ifneq ("","$(wildcard yosys/install)")
 	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install
 endif

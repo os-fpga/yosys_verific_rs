@@ -278,3 +278,14 @@ add_test(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
+
+list(APPEND ANALYZE_MK_ARGS
+    "ANALYZE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/build/analyze/bin/analyze"
+)
+
+add_test(
+    NAME analyze-smoke-test
+    COMMAND make all ${ANALYZE_MK_ARGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/analyze/tests)
+set_tests_properties(analyze-smoke-test PROPERTIES
+    FAIL_REGULAR_EXPRESSION "FAILED")

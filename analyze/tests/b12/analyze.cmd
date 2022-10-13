@@ -1,0 +1,3 @@
+-vlog-incdir .
+-vhdl b12.vhd
+-top b12
