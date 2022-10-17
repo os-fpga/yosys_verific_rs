@@ -1,4 +1,4 @@
 -vlog-incdir .
--vhdl b17.vhd
+-vhdl rtl/b17.vhd
 
 -top b17
