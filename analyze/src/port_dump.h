@@ -51,10 +51,28 @@ class portDump {
     };
 
     std::unordered_map<int, std::string> types = {
-        {VERI_WIRE, "LOGIC"},
+        {VERI_WIRE, "WIRE"},
         {VERI_REG, "REG"},
         {VERI_STRUCT, "STRUCT"},
-        {VERI_LOGIC, "LOGIC"}
+        {VERI_LOGIC, "LOGIC"},
+        {VERI_BIT, "VERI_BIT"},
+        {VERI_BYTE, "VERI_BYTE"},
+        {VERI_CHAR, "VERI_CHAR"},
+        {VERI_ENUM, "VERI_ENUM"},
+        {VERI_SHORTINT, "VERI_SHORTINT"},
+        {VERI_INT, "VERI_INT"},
+        {VERI_INTEGER, "VERI_INTEGER"},
+        {VERI_LONGINT, "VERI_LONGINT"},
+        {VERI_SHORTREAL, "VERI_SHORTREAL"},
+        {VERI_REAL_NUM, "VERI_REAL_NUM"},
+        {VERI_REAL, "VERI_REAL"},
+        {VERI_LONGREAL, "VERI_LONGREAL"},
+        {VERI_UNION, "VERI_UNION"},
+        {VERI_CLASS, "VERI_CLASS"},
+        {VERI_PACKAGE, "VERI_PACKAGE"},
+        {VERI_STRING, "VERI_STRING"},
+        {VERI_REALTIME, "VERI_REALTIME"},
+        {VERI_TIME, "VERI_TIME"}
     };
 
     portDump(std::string fileName): file(fileName) {}

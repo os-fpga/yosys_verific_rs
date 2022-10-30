@@ -110,3 +110,39 @@ install(
     DESTINATION share
     USE_SOURCE_PERMISSIONS
 )
+
+add_custom_target(
+    clean_analyze
+    COMMAND find . -name "port_info.json" | xargs rm -rf
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/
+    COMMENT "Clean All"
+)
+
+MACRO(SUBDIRLIST TESTS CURR_DIR)
+    FILE(GLOB files RELATIVE ${CURR_DIR} ${CURR_DIR}/*)
+    SET(DIR_LIST "")
+  FOREACH(test ${files})
+    IF(IS_DIRECTORY ${CURR_DIR}/${test})
+        LIST(APPEND DIR_LIST ${test})
+    ENDIF()
+  ENDFOREACH()
+  SET(${TESTS} ${DIR_LIST})
+ENDMACRO()
+
+SUBDIRLIST(TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
+
+enable_testing()
+foreach(test ${TESTS})
+  add_test(
+      NAME analyze-smoke-test-${test}
+      COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/analyze -f analyze.cmd
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test})
+endforeach()
+
+foreach(test ${TESTS})
+    add_test(analyze-smoke-test-cmp-${test}
+        ${CMAKE_COMMAND} -E compare_files
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/port_info.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/gold.json)
+endforeach()
+

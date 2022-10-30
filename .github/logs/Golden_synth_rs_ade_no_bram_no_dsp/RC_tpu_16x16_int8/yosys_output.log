@@ -19,8 +19,8 @@
  |                                                                            |
  \----------------------------------------------------------------------------/
 
- Yosys-Verific 0.0.70
- Yosys 0.18+10 (git sha1 c98b0e94e, gcc 9.4.0 -fPIC -Os)
+ Yosys-Verific 0.0.92
+ Yosys 0.18+10 (git sha1 7361c89db, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
 
 
 -- Executing script file `yosys.ys' --
@@ -50,7 +50,7 @@ VERIFIC-COMMENT [VERI-1482] Analyzing Verilog file 'Dual_port_ram.v'
 
 yosys> synth_rs -top matmul_16x16_systolic -tech genesis -goal area -de -no_dsp -no_bram -verilog synthesized.v
 
-3. Executing synth_rs pass: v0.4.69
+3. Executing synth_rs pass: v0.4.79
 
 yosys> read_verilog -lib -specify -nomem2reg +/rapidsilicon/common/cells_sim.v +/rapidsilicon/genesis/cells_sim.v +/rapidsilicon/genesis/dsp_sim.v
 
@@ -77,6 +77,9 @@ Generating RTLIL representation for module `\sdffr'.
 Generating RTLIL representation for module `\sdffs'.
 Generating RTLIL representation for module `\TDP_BRAM18'.
 Generating RTLIL representation for module `\TDP36K'.
+Generating RTLIL representation for module `\BRAM2x18_TDP'.
+Generating RTLIL representation for module `\BRAM2x18_SDP'.
+Generating RTLIL representation for module `\_$_mem_v2_asymmetric'.
 Successfully finished Verilog frontend.
 
 3.3. Executing Verilog-2005 frontend: /nfs_scratch/scratch/Vorak/aram/Workspace/Raptor/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis/dsp_sim.v
@@ -4422,7 +4425,7 @@ yosys> demuxmap
 
 yosys> clean_zerowidth
 
-yosys> abc -script /tmp/yosys_OC11q7/abc_tmp_1.scr
+yosys> abc -script /tmp/yosys_zYVWWD/abc_tmp_1.scr
 
 3.131. Executing ABC pass (technology mapping using ABC).
 
@@ -4430,11 +4433,11 @@ yosys> abc -script /tmp/yosys_OC11q7/abc_tmp_1.scr
 Extracted 140704 gates and 153619 wires to a netlist network with 12915 inputs and 12275 outputs.
 
 3.131.1.1. Executing ABC.
-DE:   #PIs = 12915  #Luts = 45658  Max Lvl =  18  Avg Lvl =   4.82  [   6.30 sec. at Pass 0]
-DE:   #PIs = 12915  #Luts = 40201  Max Lvl =  14  Avg Lvl =   4.18  [ 290.26 sec. at Pass 1]
-DE:   #PIs = 12915  #Luts = 39841  Max Lvl =  14  Avg Lvl =   4.46  [  71.40 sec. at Pass 2]
-DE:   #PIs = 12915  #Luts = 39841  Max Lvl =  14  Avg Lvl =   4.46  [ 129.60 sec. at Pass 3]
-DE:   #PIs = 12915  #Luts = 39510  Max Lvl =  16  Avg Lvl =   4.56  [  34.43 sec. at Pass 4]
+DE:   #PIs = 12915  #Luts = 45484  Max Lvl =   9  Avg Lvl =   3.40  [   2.63 sec. at Pass 0]{firstMap}
+DE:   #PIs = 12915  #Luts = 40264  Max Lvl =  14  Avg Lvl =   4.22  [ 209.18 sec. at Pass 1]{initMapFlow}
+DE:   #PIs = 12915  #Luts = 39865  Max Lvl =  15  Avg Lvl =   4.32  [  98.70 sec. at Pass 2]{map}
+DE:   #PIs = 12915  #Luts = 39660  Max Lvl =  14  Avg Lvl =   4.61  [ 124.44 sec. at Pass 3]{postMap}
+DE:   #PIs = 12915  #Luts = 39569  Max Lvl =  14  Avg Lvl =   4.58  [  23.90 sec. at Pass 4]{finalMap}
 
 yosys> opt_expr
 
@@ -4501,17 +4504,17 @@ yosys> stat
 
 === matmul_16x16_systolic ===
 
-   Number of wires:              54584
-   Number of wire bits:          77653
+   Number of wires:              54643
+   Number of wire bits:          77712
    Number of public wires:        2983
    Number of public wire bits:   26052
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              52017
+   Number of cells:              52076
      $_DFFE_PP_                   2114
      $_DFF_P_                    10394
-     $lut                        39509
+     $lut                        39568
 
 
 yosys> shregmap -minlen 8 -maxlen 20
@@ -4529,17 +4532,17 @@ yosys> stat
 
 === matmul_16x16_systolic ===
 
-   Number of wires:              54584
-   Number of wire bits:          77653
+   Number of wires:              54643
+   Number of wire bits:          77712
    Number of public wires:        2983
    Number of public wire bits:   26052
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              52017
+   Number of cells:              52076
      $_DFFE_PP0P_                 2114
      $_DFF_P_                    10394
-     $lut                        39509
+     $lut                        39568
 
 
 yosys> techmap -map +/techmap.v -map +/rapidsilicon/genesis/ffs_map.v
@@ -4649,13 +4652,13 @@ Using template \$_DFFE_PP0P_ for cells of type $_DFFE_PP0P_.
 Using template \$_DFF_P_ for cells of type $_DFF_P_.
 Using extmapper simplemap for cells of type $logic_not.
 No more expansions possible.
-<suppressed ~54267 debug messages>
+<suppressed ~54326 debug messages>
 
 yosys> opt_expr -mux_undef
 
 3.147. Executing OPT_EXPR pass (perform const folding).
 Optimizing module matmul_16x16_systolic.
-<suppressed ~783932 debug messages>
+<suppressed ~777917 debug messages>
 
 yosys> simplemap
 
@@ -4670,8 +4673,8 @@ yosys> opt_merge
 
 3.150. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\matmul_16x16_systolic'.
-<suppressed ~939171 debug messages>
-Removed a total of 313057 cells.
+<suppressed ~861840 debug messages>
+Removed a total of 287280 cells.
 
 yosys> opt_dff -nodffe -nosdff
 
@@ -4681,21 +4684,21 @@ yosys> opt_clean
 
 3.152. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \matmul_16x16_systolic..
-Removed 1 unused cells and 111752 unused wires.
+Removed 1 unused cells and 112069 unused wires.
 <suppressed ~2 debug messages>
 
 yosys> opt_expr
 
 3.153. Executing OPT_EXPR pass (perform const folding).
 Optimizing module matmul_16x16_systolic.
-<suppressed ~26933 debug messages>
+<suppressed ~25928 debug messages>
 
 yosys> opt_merge -nomux
 
 3.154. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\matmul_16x16_systolic'.
-<suppressed ~249 debug messages>
-Removed a total of 83 cells.
+<suppressed ~312 debug messages>
+Removed a total of 104 cells.
 
 yosys> opt_muxtree
 
@@ -4729,7 +4732,7 @@ yosys> opt_clean
 
 3.160. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \matmul_16x16_systolic..
-Removed 0 unused cells and 31 unused wires.
+Removed 0 unused cells and 27 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -4738,19 +4741,19 @@ yosys> opt_expr
 Optimizing module matmul_16x16_systolic.
 MAX OPT ITERATION = 1
 
-yosys> abc -script /tmp/yosys_OC11q7/abc_tmp_2.scr
+yosys> abc -script /tmp/yosys_zYVWWD/abc_tmp_2.scr
 
 3.162. Executing ABC pass (technology mapping using ABC).
 
 3.162.1. Extracting gate netlist of module `\matmul_16x16_systolic' to `<abc-temp-dir>/input.blif'..
-Extracted 247193 gates and 260109 wires to a netlist network with 12914 inputs and 12274 outputs.
+Extracted 248010 gates and 260926 wires to a netlist network with 12914 inputs and 12274 outputs.
 
 3.162.1.1. Executing ABC.
-DE:   #PIs = 12914  #Luts = 39914  Max Lvl =  14  Avg Lvl =   4.60  [   9.03 sec. at Pass 0]
-DE:   #PIs = 12914  #Luts = 39288  Max Lvl =  15  Avg Lvl =   4.29  [ 223.61 sec. at Pass 1]
-DE:   #PIs = 12914  #Luts = 38988  Max Lvl =  15  Avg Lvl =   4.22  [  68.99 sec. at Pass 2]
-DE:   #PIs = 12914  #Luts = 38988  Max Lvl =  15  Avg Lvl =   4.22  [ 133.19 sec. at Pass 3]
-DE:   #PIs = 12914  #Luts = 38988  Max Lvl =  15  Avg Lvl =   4.22  [  26.78 sec. at Pass 4]
+DE:   #PIs = 12914  #Luts = 39620  Max Lvl =  12  Avg Lvl =   3.83  [   4.36 sec. at Pass 0]{firstMap}
+DE:   #PIs = 12914  #Luts = 39527  Max Lvl =  15  Avg Lvl =   4.36  [ 211.15 sec. at Pass 1]{initMapFlow}
+DE:   #PIs = 12914  #Luts = 39445  Max Lvl =  14  Avg Lvl =   4.30  [  58.99 sec. at Pass 2]{map}
+DE:   #PIs = 12914  #Luts = 39290  Max Lvl =  15  Avg Lvl =   4.33  [ 107.69 sec. at Pass 3]{postMap}
+DE:   #PIs = 12914  #Luts = 39241  Max Lvl =  15  Avg Lvl =   4.33  [  21.33 sec. at Pass 4]{finalMap}
 
 yosys> opt_expr
 
@@ -4761,8 +4764,8 @@ yosys> opt_merge -nomux
 
 3.164. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\matmul_16x16_systolic'.
-<suppressed ~9 debug messages>
-Removed a total of 3 cells.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
 
 yosys> opt_muxtree
 
@@ -4796,7 +4799,7 @@ yosys> opt_clean
 
 3.170. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \matmul_16x16_systolic..
-Removed 0 unused cells and 164579 unused wires.
+Removed 0 unused cells and 163708 unused wires.
 <suppressed ~1 debug messages>
 
 yosys> opt_expr
@@ -4822,15 +4825,15 @@ yosys> stat
 
 === matmul_16x16_systolic ===
 
-   Number of wires:              54060
-   Number of wire bits:          77129
+   Number of wires:              54314
+   Number of wire bits:          77383
    Number of public wires:        2983
    Number of public wire bits:   26052
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              51493
-     $lut                        38985
+   Number of cells:              51747
+     $lut                        39239
      dffsre                      12508
 
 
@@ -4847,9 +4850,9 @@ yosys> write_verilog -noattr -nohex synthesized.v
 Dumping module `\matmul_16x16_systolic'.
 
 Warnings: 15 unique messages, 15 total
-End of script. Logfile hash: b1d221d937, CPU: user 692.70s system 7.35s, MEM: 2504.32 MB peak
-Yosys 0.18+10 (git sha1 c98b0e94e, gcc 9.4.0 -fPIC -Os)
-Time spent: 86% 6x abc (4004 sec), 5% 40x opt_expr (237 sec), ...
-real 3421.25
-user 4491.51
-sys 132.74
+End of script. Logfile hash: 3afc3c9aa4, CPU: user 567.87s system 4.43s, MEM: 2476.78 MB peak
+Yosys 0.18+10 (git sha1 7361c89db, gcc 9.4.0-1ubuntu1~20.04.1 -fPIC -Os)
+Time spent: 87% 6x abc (3610 sec), 5% 40x opt_expr (218 sec), ...
+real 3332.94
+user 4019.82
+sys 94.41
