@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 101)
+set(VERSION_PATCH 102)
 
 project(yosys_verific_rs)
 
@@ -165,6 +165,12 @@ add_custom_target(
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)
+        execute_process(
+            COMMAND ${CMAKE_MAKE_PROGRAM} clean
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Raptor_Tools/verific_rs
+            COMMAND_ECHO STDOUT
+            RESULT_VARIABLE GIT_SUBMOD_RESULT
+        )
         add_subdirectory(${VERIFIC_HOME})
     endif()
     add_dependencies(yosys verific)
