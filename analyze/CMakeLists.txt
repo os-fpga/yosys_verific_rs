@@ -44,10 +44,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+    -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
 )
 list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
+    -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
 )
 
 get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
