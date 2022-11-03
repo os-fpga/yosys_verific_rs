@@ -37,7 +37,10 @@ function(files_to_dirs file_list directory_list)
     set(${directory_list} ${dir_list} PARENT_SCOPE)
 endfunction(files_to_dirs)
 
-add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
+file(GLOB_RECURSE SOURCE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
+
+add_executable(analyze ${SOURCE_FILES})
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(analyze verific)
