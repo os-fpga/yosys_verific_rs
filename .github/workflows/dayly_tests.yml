@@ -24,11 +24,6 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - uses: actions/setup-python@v2
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        with:
-          python-version: 3.8
-
       - name: ssh-agent
         uses: webfactory/ssh-agent@v0.5.4
         with: 
@@ -44,20 +39,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        working-directory: ./.github/scripts
-        run: |
-          bash install_ubuntu_dependencies_build.sh
-          python3 -m pip install --upgrade pip --user
-          python3 -m pip install pandas termcolor --user
-
-      - name: Use ccache
-        if: ${{ false }} # We don't have permissions on 'verific-builder'
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: linux-gcc
-  
       - name: Configure shell
         run: |
           echo 'CC=gcc' >> $GITHUB_ENV
@@ -84,7 +65,11 @@ jobs:
       - name: Execute Python script
         continue-on-error: true
         run: |
-          python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
+          else
+            python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}           
+          fi
 
       - name: Prepare logs
         run: |
@@ -100,7 +85,7 @@ jobs:
         continue-on-error: true
         run: |
           var=`find result*/ -name *json`
-          if ${{github.event.inputs.conditional == 'true'}}; then
+          if ${{ github.event_name == 'schedule' ||  github.event.inputs.conditional }}; then
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp
           else
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
@@ -111,15 +96,15 @@ jobs:
         with:
           name: QoR
           path: |
-            if ${{github.event.inputs.conditional == 'true'}}; then
-              Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
-            else
-              synth_rs.csv
-            fi
+            Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
+            synth_rs.csv
 
       - name: Compare QoR
-        if: ${{github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional == 'true' }}
         run: |
-          pip install --user pandas
-          pip install --user termcolor
-          python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
+          if ${{ github.event_name == 'schedule' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional) }}; then
+            pip install --user pandas
+            pip install --user termcolor
+            python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
+          else
+            echo "Nothing to Run"
+          fi
