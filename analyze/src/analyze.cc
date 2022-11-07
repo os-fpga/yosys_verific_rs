@@ -18,17 +18,240 @@
 #elif _WIN32
 #include <Windows.h>
 #include <limits>
+#ifndef PATH_MAX
+//PATH_MAX is defined as MAX_PATH in Windows
+#define PATH_MAX MAX_PATH
+#endif
 #endif
 
-#include "port_dump.h"
-#include "hier_dump.h"
+#include <nlohmann_json/json.hpp>
+
+#include "veri_file.h"
+#include "vhdl_file.h"
+#include "VeriModule.h"
+#include "VhdlUnits.h"
+#include "VhdlIdDef.h"
+#include "VeriId.h"
+#include "file_sort_veri_tokens.h"
+#include "hier_tree.h"
+#include "Netlist.h"
+#include "VhdlExpression.h"
+#include "VhdlName.h"
+#include "VhdlValue_Elab.h"
+#include "file_sort_vhdl_tokens.h"
 
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
 #endif
 
 namespace fs = std::filesystem;
+
 using namespace Verific ;
+using json = nlohmann::json;
+
+std::unordered_map<int, std::string> directions = {
+    {VERI_INPUT, "Input"},
+    {VERI_OUTPUT, "Output"},
+    {VERI_INOUT, "Inout"}
+};
+
+std::unordered_map<int, std::string> vhdl_directions = {
+    {VHDL_in, "Input"},
+    {VHDL_out, "Output"},
+    {VHDL_inout, "Inout"}
+};
+
+std::unordered_map<int, std::string> types = {
+    {VERI_WIRE, "WIRE"},
+    {VERI_REG, "REG"},
+    {VERI_STRUCT, "STRUCT"},
+    {VERI_LOGIC, "LOGIC"},
+    {VERI_BIT, "VERI_BIT"},
+    {VERI_BYTE, "VERI_BYTE"},
+    {VERI_CHAR, "VERI_CHAR"},
+    {VERI_ENUM, "VERI_ENUM"},
+    {VERI_SHORTINT, "VERI_SHORTINT"},
+    {VERI_INT, "VERI_INT"},
+    {VERI_INTEGER, "VERI_INTEGER"},
+    {VERI_LONGINT, "VERI_LONGINT"},
+    {VERI_SHORTREAL, "VERI_SHORTREAL"},
+    {VERI_REAL_NUM, "VERI_REAL_NUM"},
+    {VERI_REAL, "VERI_REAL"},
+    {VERI_LONGREAL, "VERI_LONGREAL"},
+    {VERI_UNION, "VERI_UNION"},
+    {VERI_CLASS, "VERI_CLASS"},
+    {VERI_PACKAGE, "VERI_PACKAGE"},
+    {VERI_STRING, "VERI_STRING"},
+    {VERI_REALTIME, "VERI_REALTIME"},
+    {VERI_TIME, "VERI_TIME"}
+};
+
+void save_veri_module_ports_info(Array *verilog_modules, json& port_info) {
+    int p;
+    VeriModule* veri_mod;
+    FOREACH_ARRAY_ITEM(verilog_modules, p, veri_mod) {
+        if (!veri_mod)
+            continue;
+        json module;
+        module["topModule"] = veri_mod->Name();
+        Array* ports = veri_mod->GetPorts();
+        int j;
+        VeriIdDef* port;
+        FOREACH_ARRAY_ITEM(ports, j, port) {
+            if (!port)
+                continue;
+            json range;
+            range["msb"] = port->LeftRangeBound();
+            range["lsb"] = port->RightRangeBound();
+            std::string type = types.find(port->Type()) != types.end() ? types[port->Type()] : "Unknown";
+            module["ports"].push_back({{"name", port->GetName()}, {"direction", directions[port->Dir()]}, {"range", range}, {"type", type}});
+        }
+        port_info.push_back(module);
+    }
+}
+
+long parse_vhdl_expression(VhdlExpression *expr) {
+    if (!expr)
+        return 0;
+    switch (expr->GetClassId()) {
+        case ID_VHDLIDREF:
+            {
+                VhdlIdRef *ref = static_cast<VhdlIdRef*>(expr);
+                if (!ref)
+                    return 0;
+                VhdlIdDef *id = ref->GetSingleId();
+                if (!id)
+                    return 0;
+                switch (id->GetClassId()) {
+                    case ID_VHDLINTERFACEID:
+                        {
+                            VhdlInterfaceId *interfaceId = static_cast<VhdlInterfaceId*>(id);
+                            return parse_vhdl_expression(interfaceId->GetInitAssign());
+                        }
+                    case ID_VHDLCONSTANTID:
+                        {
+                            // TODO: get value of const declaration. 
+                            // VhdlConstantId *constId = static_cast<VhdlConstantId*>(id);
+                            return 0;
+                        }
+                    default:
+                        {
+                            std::cout << "Unknown type: " << id->GetClassId() << std::endl;
+                            return 0;
+                        }
+                }
+            }
+        case ID_VHDLOPERATOR:
+            {
+                VhdlOperator* pOperator = static_cast<VhdlOperator*>(expr);
+                unsigned op = pOperator->GetOperatorToken();
+                long l = parse_vhdl_expression(pOperator->GetLeftExpression());
+                long r = parse_vhdl_expression(pOperator->GetRightExpression());
+                switch (op) {
+                    case VHDL_PLUS:
+                        return l + r;
+                    case VHDL_MINUS:
+                        return l - r;
+                    case VHDL_STAR:
+                        return l * r;
+                    case VHDL_SLASH:
+                        return l / r;
+                    case VHDL_rem:
+                        return l % r;
+                    case VHDL_EXPONENT :
+                        return std::pow(l, r);
+                    default:
+                        std::cout << "Unknown operation: " << op << std::endl;
+                        return 0;
+                }
+            }
+        case ID_VHDLINTEGER:
+            {
+                return static_cast<VhdlInteger*>(expr)->GetValue();
+            }
+        default:
+            {
+                std::cout << "Unknown type: " << expr->GetClassId() << std::endl;
+                return 0;
+            }
+    }
+}
+
+void parse_vhdl_range(VhdlDiscreteRange *pDiscreteRange, int& msb, int& lsb) {
+    if (pDiscreteRange && pDiscreteRange->GetClassId() == ID_VHDLRANGE) {
+        VhdlRange *pRange = static_cast<VhdlRange*>(pDiscreteRange) ;
+        VhdlExpression *pLHS = pRange->GetLeftExpression() ;
+        VhdlExpression *pRHS = pRange->GetRightExpression() ;
+        msb = parse_vhdl_expression(pLHS);
+        lsb = parse_vhdl_expression(pRHS);
+        if (pRange->GetDir() != VHDL_downto) {
+            std::swap(lsb, msb);
+        }
+    }
+}
+
+void save_vhdl_module_ports_info(Array *vhdl_modules, Array *netlists, json& port_info) {
+    int k;
+    VhdlPrimaryUnit* mod;
+    FOREACH_ARRAY_ITEM(vhdl_modules, k, mod) {
+        if (!mod)
+            return;
+
+        json module;
+        module["topModule"] = mod->Name();
+        Array* ports = mod->GetPortClause();
+        int j;
+        VhdlInterfaceDecl* port;
+        FOREACH_ARRAY_ITEM(ports, j, port) {
+            if (!port)
+                return;
+            int msb = 0;
+            int lsb = 0;
+            std::string port_type = "Unknown";
+            VhdlSubtypeIndication* type = port->GetSubtypeIndication();
+            if (!type)
+                return;
+            switch(type->GetClassId()) {
+                case ID_VHDLINDEXEDNAME: {
+                                             port_type = type->GetPrefix() ? type->GetPrefix()->OrigName() : "Unknown";
+                                             unsigned i ;
+                                             VhdlDiscreteRange *pDiscreteRange ;
+                                             FOREACH_ARRAY_ITEM(type->GetAssocList(), i, pDiscreteRange) {
+                                                 parse_vhdl_range(pDiscreteRange, msb, lsb);
+                                             }
+                                             break; 
+                                         }
+                case ID_VHDLIDREF: {
+                                       VhdlIdRef* ref = static_cast<VhdlIdRef*>(type);
+                                       port_type = ref->GetSingleId() ? ref->GetSingleId()->Name() : "Unknown";
+                                       break; 
+                                   }
+                case ID_VHDLEXPLICITSUBTYPEINDICATION: {
+                                                           port_type = type->GetTypeMark() ? type->GetTypeMark()->Name() : "Unknown";
+                                                           VhdlDiscreteRange *pDiscreteRange = static_cast<VhdlExplicitSubtypeIndication*>(type)->GetRangeConstraint();
+                                                           parse_vhdl_range(pDiscreteRange, msb, lsb);
+                                                           break;
+                                                       }
+                default: {
+                             std::cout << "Unknown type: " << type->GetClassId() << std::endl;
+                             break; 
+                         }
+            }
+            Array *ppp = port->GetIds();
+            int ii;
+            VhdlInterfaceId* p;
+            FOREACH_ARRAY_ITEM(ppp, ii, p) {
+                if (!p)
+                    return;
+                json range;
+                range["msb"] = msb;
+                range["lsb"] = lsb;
+                module["ports"].push_back({{"name", p->Name()}, {"direction", vhdl_directions[p->Mode()]}, {"range", range}, {"type", port_type}});
+            }
+        }
+        port_info.push_back(module);
+    }
+}
 
 // ------------------------------
 // getFullPath
@@ -124,20 +347,8 @@ int main (int argc, char* argv[]) {
             return 1;
         }
 
-        int argidx = 1;
-        bool dumpHierTree = false;
-
-        while (argidx < argc) {
-            if (std::string(argv[argidx]) == "-f") {
-                file_path = std::string(argv[++argidx]);
-                argidx++;
-                continue;
-            }
-
-            if (std::string(argv[argidx]) == "-dump_hier_tree") {
-                dumpHierTree = true;
-                argidx++;
-            }
+        if (std::string(argv[1]) == "-f") {
+            file_path = std::string(argv[2]);
         }
 
         std::ifstream in(file_path);
@@ -292,9 +503,14 @@ int main (int argc, char* argv[]) {
                             if (!file.empty())
                                 dir = file;
                             for (auto const& dir_entry : fs::directory_iterator{dir}) 
-                                if (dir_entry.path().extension() == ".v" || dir_entry.path().extension() == ".sv")
-                                    file_names.Insert(Strings::save(dir_entry.path().c_str()));
-                            argidx++;
+                                if (dir_entry.path().extension() == ".v" || dir_entry.path().extension() == ".sv") {
+                                    /****************************************************************
+                                    generic_string().c_str() instad of c_str() because c_str()
+                                    return type is a synonym for wchar_t on Windows or char on POSIX
+                                    *****************************************************************/
+                                    file_names.Insert(Strings::save(dir_entry.path().generic_string().c_str()));
+                                }
+                            argidx++;                                                                             
                         } else {
                             file_names.Insert(Strings::save(args[argidx++].c_str()));
                         }
@@ -320,16 +536,16 @@ int main (int argc, char* argv[]) {
 
                 if (args[argidx] == "-vhdl87") {
                     analysis_mode = vhdl_file::VHDL_87;
-                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1987").c_str());
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1987").generic_string().c_str());
                 } else if (args[argidx] == "-vhdl93") {
                     analysis_mode = vhdl_file::VHDL_93;
-                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").generic_string().c_str());
                 } else if (args[argidx] == "-vhdl2k") {
                     analysis_mode = vhdl_file::VHDL_2K;
-                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").c_str());
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_1993").generic_string().c_str());
                 } else if (args[argidx] == "-vhdl2008" || args[argidx] == "-vhdl") {
                     analysis_mode = vhdl_file::VHDL_2008;
-                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
+                    vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").generic_string().c_str());
                 } else {
                     continue;
                 }
@@ -345,7 +561,7 @@ int main (int argc, char* argv[]) {
                                 dir = file;
                             for (auto const& dir_entry : fs::directory_iterator{dir}) 
                                 if (dir_entry.path().extension() == ".vhd")
-                                    if (!vhdl_file::Analyze(dir_entry.path().c_str(), work.c_str(), analysis_mode)) {
+                                    if (!vhdl_file::Analyze(dir_entry.path().generic_string().c_str(), work.c_str(), analysis_mode)) {
                                         std::cout << "ERROR: Reading vhdl source failed:\n";
                                         return 1;
                                     }
@@ -365,45 +581,42 @@ int main (int argc, char* argv[]) {
         verific_libdirs.clear();
         verific_libexts.clear();
 
-        portDump *ports = new portDump("port_info.json");
-        hierDump *hierTree = new hierDump("hier_info.json");
+        json port_info = json::array();
 
         for (auto &w : works) {
             VeriLibrary *veri_lib = veri_file::GetLibrary(w.c_str(), 1);
             VhdlLibrary *vhdl_lib = vhdl_file::GetLibrary(w.c_str(), 1);
 
-            Array *modules;
-            Array *units;
+            Array *netlists;
             if (!top_module.empty()) {
-                Array m;
-                Array u;
+                Array veri_modules, vhdl_units;
                 VeriModule *veri_module = veri_lib ? veri_lib->GetModule(top_module.c_str(), 1) : nullptr;
                 if (veri_module) {
-                    m.InsertLast(veri_module);
+                    veri_modules.InsertLast(veri_module);
                 }
                 VhdlDesignUnit *vhdl_unit = vhdl_lib ? vhdl_lib->GetPrimUnit(top_module.c_str()) : nullptr;
                 if (vhdl_unit) {
-                    u.InsertLast(vhdl_unit);
+                    vhdl_units.InsertLast(vhdl_unit);
                 }
-                hier_tree::Elaborate(&m, &u, 0);
-                modules = &m;
-                units = &u;
+                netlists = hier_tree::Elaborate(&veri_modules, &vhdl_units, 0);
+                save_vhdl_module_ports_info(&vhdl_units, netlists, port_info);
+                save_veri_module_ports_info(&veri_modules, port_info);
             } else {
                 Array veri_libs, vhdl_libs;
                 if (vhdl_lib) vhdl_libs.InsertLast(vhdl_lib);
                 if (veri_lib) veri_libs.InsertLast(veri_lib);
-                hier_tree::ElaborateAll(&veri_libs, &vhdl_libs, 0);
-                modules = veri_file::GetTopModules(w.c_str());
-                units = vhdl_file::GetTopDesignUnits(w.c_str());
+                netlists = hier_tree::ElaborateAll(&veri_libs, &vhdl_libs, 0);
+                Array *verilog_modules = veri_file::GetTopModules(w.c_str());
+                Array *vhdl_modules = vhdl_file::GetTopDesignUnits(w.c_str());
+
+                save_vhdl_module_ports_info(vhdl_modules, netlists, port_info);
+                save_veri_module_ports_info(verilog_modules, port_info);
             }
-                ports->saveInfo(modules, units);
-                if (dumpHierTree)
-                    hierTree->saveInfo(modules, units);
+
         }
 
-        ports->saveJson();
-        if (dumpHierTree)
-            hierTree->saveJson();
+        std::ofstream o("port_info.json");
+        o << std::setw(4) << port_info << std::endl;
 
         return 0;
     }
