@@ -36,22 +36,33 @@ function(files_to_dirs file_list directory_list)
     # Set the second argument in the caller's scope
     set(${directory_list} ${dir_list} PARENT_SCOPE)
 endfunction(files_to_dirs)
-
-file(GLOB_RECURSE SOURCE_FILES
+if(WIN32)
+    add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
+else()
+    file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
-
-add_executable(analyze ${SOURCE_FILES})
+    add_executable(analyze ${SOURCE_FILES})
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(analyze verific)
 endif()
 
-list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
-)
+if(WIN32)
+    list(APPEND ANALYZE_CXX_FLAGS_DEBUG
+    -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+    )
 list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
-)
+    -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
+    )
+else()
+    list(APPEND ANALYZE_CXX_FLAGS_DEBUG
+    -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+    )
+    list(APPEND ANALYZE_CXX_FLAGS_RELEASE
+    -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
+    )
+endif()
 
 get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
@@ -74,18 +85,32 @@ target_include_directories(analyze PUBLIC ${LIB_INCLUDE_DIRS})
 
 if (APPLE)
     set(OS "mac")
+elseif(WIN32)
+    set(OS "Windows")
 elseif (UNIX)
     set(OS "linux")
 endif()
 
-list(APPEND VERIFIC_LIBS
-    ${VERIFIC_HOME}/verilog/verilog-${OS}.a
-    ${VERIFIC_HOME}/database/database-${OS}.a
-    ${VERIFIC_HOME}/util/util-${OS}.a
-    ${VERIFIC_HOME}/containers/containers-${OS}.a
-    ${VERIFIC_HOME}/hier_tree/hier_tree-${OS}.a
-    ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
-    )
+if(WIN32)
+    set(${BIN_DIR} "${CMAKE_CURRENT_BINARY_DIR}/bin")
+    list(APPEND VERIFIC_LIBS
+        ${BIN_DIR}/verilog.lib
+        ${BIN_DIR}/database.lib
+        ${BIN_DIR}/util.lib
+        ${BIN_DIR}/containers.lib
+        ${BIN_DIR}/hier_tree.lib
+        ${BIN_DIR}/vhdl.lib
+        )
+else()
+    list(APPEND VERIFIC_LIBS
+        ${VERIFIC_HOME}/verilog/verilog-${OS}.a
+        ${VERIFIC_HOME}/database/database-${OS}.a
+        ${VERIFIC_HOME}/util/util-${OS}.a
+        ${VERIFIC_HOME}/containers/containers-${OS}.a
+        ${VERIFIC_HOME}/hier_tree/hier_tree-${OS}.a
+        ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
+        )
+endif()
 
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
