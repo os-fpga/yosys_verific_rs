@@ -38,9 +38,9 @@ parser = argparse.ArgumentParser(description="The script will generate a CSV \
          write the generated sheet into file given as input argument.")
 parser.add_argument("--vivado", type=str, nargs="*",
         help="list of paths to Vivado run outputs")
-parser.add_argument("--yosys", type=str, nargs="*", 
+parser.add_argument("--yosys", type=str, nargs="*",
         help="list of path to Yosys run outputs")
-parser.add_argument("--output_file", type=str, 
+parser.add_argument("--output_file", type=str,
         help="output csv file")
 parser.add_argument("--debug", action="store_true",
         help="run script in debug mode.")
@@ -50,13 +50,13 @@ parser.add_argument("--base", type=str,
         help="base for the calculations")
 parser.add_argument("--exclude_metrics", type=str, nargs="*",
         default=[
-            "LUT_AS_LOGIC", 
-            "LUT_AS_MEMORY", 
+            "LUT_AS_LOGIC",
+            "LUT_AS_MEMORY",
             "MUXF7",
             "MUXF8",
-            "MAX_LOGIC_LEVEL", 
-            "AVERAGE_LOGIC_LEVEL", 
-            "DRAM" 
+            "MAX_LOGIC_LEVEL",
+            "AVERAGE_LOGIC_LEVEL",
+            "DRAM"
         ],
         help="exclude specified metrics")
 parser.add_argument("--viv_carry_as_lut", action="store_false",
@@ -72,7 +72,7 @@ run_log_files = []
 metrics = pd.DataFrame(columns=["Benchmarks"])
 metrics = metrics.fillna(0)
 abs_root_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
-yosys_log = "yosys_output.log" 
+yosys_log = "yosys_output.log"
 vivado_log = "vivado_output.log"
 
 def error_exit(msg):
@@ -84,7 +84,7 @@ def error_exit(msg):
 
 def validate_inputs():
     """
-    Check if input files and directories exist and replace variables with 
+    Check if input files and directories exist and replace variables with
     absolute path.
     In case of error - print error message and exit the script.
     """
@@ -171,7 +171,7 @@ def init_columns(metric_list):
         if not args.base:
             continue
         if metric in metric_list[ : 3]:
-            if args.base and args.base in output_vivado_dirs: 
+            if args.base and args.base in output_vivado_dirs:
                 if metric == metric_list[0]:
                     continue
                 for output_yosys_dir in output_yosys_dirs:
@@ -193,7 +193,7 @@ def init_columns(metric_list):
                     for output_vivado_dir in output_vivado_dirs:
                         label = output_vivado_dir.split(os.path.sep)[-2] + "_" + output_vivado_dir.split(os.path.sep)[-1]
                         metrics[extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = '-'
-        else:        
+        else:
             if metric == metric_list[-1]:
                 continue
             if metric not in metric_list[3 : 7]:
@@ -262,7 +262,7 @@ def extract_yosys_metrics():
                                 add_value(line.split()[1], design_index, "SRL", tool, label)
                             else:
                                 add_value(line.split()[1], design_index, "DFF", tool, label)
-                        if re.search(r"adder_carry", line, re.IGNORECASE):
+                        if re.search(r"adder_carry", line, re.IGNORECASE) or re.search(r"fa_1bit", line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "CARRY4", tool, label)
                         if re.search('RS_DSP', line, re.IGNORECASE):
                             add_value(line.split()[1], design_index, "DSP", tool, label)
@@ -283,7 +283,7 @@ def extract_yosys_metrics():
                 error_exit(e.strerror)
             except ValueError as e:
                 logger.error("Value error in : " + task_name + " log file")
-   
+
 def extract_vivado_metrics():
     global metrics
     global output_vivado_dirs
@@ -310,7 +310,7 @@ def extract_vivado_metrics():
             metrics.at[design_index, extract_column_name("DSP",tool,label)] = 0
             metrics.at[design_index, extract_column_name("DRAM",tool,label)] = 0
             metrics.at[design_index, extract_column_name("BRAM",tool,label)] = 0
-            vivado_util_log = "util_temp_\w+_vivado_synth.log" 
+            vivado_util_log = "util_temp_\w+_vivado_synth.log"
             try:
                 for filename in os.listdir(os.path.join(task_dir)):
                     if re.match(vivado_util_log, filename):
@@ -366,7 +366,7 @@ def extract_vivado_metrics():
                                             metrics.at[design_index, extract_column_name("LUT_AS_LOGIC",tool,label)] = int(lut_count)
                         task_log = os.path.join(output_vivado_dir, task_name, vivado_log)
                         with open(task_log, 'r') as f:
-                            
+
                             log = f.read()
                             log_list = log.split("\n")
                             for line in log_list:
@@ -449,7 +449,7 @@ def calc_percentage(metrics_list):
     vivado_lut_metrics = [metrics_list[0]] if args.viv_carry_as_lut else metrics_list[1:3]
     yosys_metrics = [metrics_list[0]] + metrics_list[7:-1]
     vivado_metrics = vivado_lut_metrics + metrics_list[7:-1]
-    label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
+    label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
     lut_label = metrics_list[0]
     if output_yosys_dirs and (args.base in output_yosys_dirs):
         for output_vivado_dir in output_vivado_dirs:
@@ -458,7 +458,7 @@ def calc_percentage(metrics_list):
                 for metric in vivado_metrics:
                     try:
                         if metrics.at[i, extract_column_name(metric, "Vivado", label)] == 0:
-                            raise 
+                            raise
                         if metric in vivado_lut_metrics:
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Vivado", label)] = format((float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(lut_label, 'Yosys', label_base)]), '.1f')
@@ -476,15 +476,15 @@ def calc_percentage(metrics_list):
                 for metric in yosys_metrics:
                     try:
                         if metrics.at[i, extract_column_name(metric, "Yosys", label)] == 0:
-                            raise 
+                            raise
                         metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]) - \
                         float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Yosys', label_base)]), '.1f')
 
                     except Exception:
                         metrics.at[i,extract_column_name("PERCENTAGE " + metric, "Yosys",label)] = "-"
-              
+
     if output_vivado_dirs and (args.base in output_vivado_dirs):
-        label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1] 
+        label_base = args.base.split(os.path.sep)[-2] + "_" + args.base.split(os.path.sep)[-1]
         if len(output_vivado_dirs) > 1:
             vivado_metrics = metrics_list[1:-1]
             for output_vivado_dir in output_vivado_dirs:
@@ -495,7 +495,7 @@ def calc_percentage(metrics_list):
                     for metric in vivado_metrics:
                         try:
                             if metrics.at[i, extract_column_name(metric, "Vivado", label)] == 0:
-                                raise 
+                                raise
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Vivado", label)] = format(((metrics.at[i, extract_column_name(metric, "Vivado", label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Vivado", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, "Vivado", label_base)]), '.1f')
                         except Exception:
@@ -507,18 +507,18 @@ def calc_percentage(metrics_list):
                 for metric in vivado_metrics:
                     try:
                         if metrics.at[i, extract_column_name(lut_label, "Yosys", label)] == 0:
-                            raise 
+                            raise
                         if metric in vivado_lut_metrics:
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric, "Yosys", label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(lut_label, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
                         else:
                             if metrics.at[i, extract_column_name(metric, "Yosys", label)] == 0:
-                                raise 
+                                raise
                             metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Yosys",label)] = format((float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]) - \
                                 float(metrics.at[i, extract_column_name(metric, "Yosys", label)])) * 100 / float(metrics.at[i, extract_column_name(metric, 'Vivado', label_base)]), '.1f')
                     except Exception:
                         metrics.at[i, extract_column_name("PERCENTAGE " + metric,"Yosys",label)] = '-'
-                
+
 def add_max_min_average():
     global metrics
     comparision_list = ["", "AVERAGE", "MAX", "MIN"]
@@ -583,21 +583,21 @@ def main():
     global metrics
     validate_inputs()
     base_metrics_list = [
-        "LUT", 
-        "LUT:CARRY4=1*LUT", 
-        "LUT:CARRY4=5*LUT", 
-        "LUT_AS_LOGIC", 
-        "LUT_AS_MEMORY", 
-        "MUXF7", 
-        "MUXF8", 
-        "CARRY4", 
-        "MAX_LOGIC_LEVEL", 
-        "AVERAGE_LOGIC_LEVEL", 
-        "DFF", 
-        "RUNTIME", 
-        "SRL", 
-        "DRAM", 
-        "BRAM", 
+        "LUT",
+        "LUT:CARRY4=1*LUT",
+        "LUT:CARRY4=5*LUT",
+        "LUT_AS_LOGIC",
+        "LUT_AS_MEMORY",
+        "MUXF7",
+        "MUXF8",
+        "CARRY4",
+        "MAX_LOGIC_LEVEL",
+        "AVERAGE_LOGIC_LEVEL",
+        "DFF",
+        "RUNTIME",
+        "SRL",
+        "DRAM",
+        "BRAM",
         "DSP",
         "STATUS"
     ]
