@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 111)
+set(VERSION_PATCH 112)
 
 project(yosys_verific_rs)
 
