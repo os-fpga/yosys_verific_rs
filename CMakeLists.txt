@@ -267,11 +267,19 @@ install(
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 enable_testing()
 
+include(ProcessorCount)
+ProcessorCount(CORES)
+if (NOT CORES EQUAL 0)
+    math(EXPR PARALLEL_TESTS "${CORES} / 4" OUTPUT_FORMAT DECIMAL)
+else()
+    set(PARALLEL_TESTS 1)
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (ENABLE_VALGRIND_TESTS)
         add_test(
             NAME yosys_verific_rs-valgrind-test
-            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
+            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
         set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
             FAIL_REGULAR_EXPRESSION "FAILED")
@@ -280,7 +288,7 @@ endif()
 
 add_test(
     NAME yosys_verific_rs-smoke-test
-    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS}
+    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
