@@ -267,12 +267,11 @@ install(
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 enable_testing()
 
+set(PARALLEL_TESTS 1)
 include(ProcessorCount)
 ProcessorCount(CORES)
-if (NOT CORES EQUAL 0)
+if (CORES GREATER 7)
     math(EXPR PARALLEL_TESTS "${CORES} / 4" OUTPUT_FORMAT DECIMAL)
-else()
-    set(PARALLEL_TESTS 1)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
