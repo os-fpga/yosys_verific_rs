@@ -86,11 +86,13 @@ get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
-get_filename_component(RAPTOR_TOOLS_HOME "../"
-    REALPATH BASE_DIR "${VERIFIC_HOME}" CACHE)
+get_filename_component(RAPTOR_TOOLS_HOME "Raptor_Tools"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("RAPTOR_TOOLS_HOME: ${RAPTOR_TOOLS_HOME}")
 
-add_subdirectory(${RAPTOR_TOOLS_HOME}/ieee_1735)
+if (NOT RAPTOR)
+    add_subdirectory(${RAPTOR_TOOLS_HOME}/ieee_1735)
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
