@@ -107,7 +107,7 @@ list(APPEND YOSYS_MK_ARGS
     "YOSYS_VERIFIC=1"
     "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
     "EXTRA_LDLIBS=${CMAKE_BINARY_DIR}/Raptor_Tools/ieee_1735/libenc_verilog_lib.a -lssl -lcrypto"
-    "EXTRA_CXX_FLAGS=-I${CMAKE_BINARY_DIR}/Raptor_Tools/ieee_1735/src"
+    "EXTRA_CXX_FLAGS=-I${RAPTOR_TOOLS_HOME}/ieee_1735/src"
 )
 
 if (ENABLE_VERIFIC)
