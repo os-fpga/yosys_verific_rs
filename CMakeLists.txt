@@ -91,7 +91,7 @@ REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
 if (NOT RAPTOR)
-	add_subdirectory(${READ_VERILOG_SRC_DIR})
+    add_subdirectory(${READ_VERILOG_SRC_DIR})
 endif()
 
 set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
@@ -130,15 +130,15 @@ if (PRODUCTION_BUILD)
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG}"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/ieee_1735/src"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
     )
 else()
     list(APPEND YOSYS_MK_ARGS
     "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto"
-    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/ieee_1735/src"
-	)
+    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+    )
 endif()
 
 if (YOSYS_LIB)
