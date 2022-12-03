@@ -1,7 +1,7 @@
 # Install required dependencies for CentOS systems
 yum update -y
-yum group install -y "Development Tools" 
-yum install -y epel-release 
+yum group install -y "Development Tools"
+yum install -y epel-release
 curl -C - -O https://cmake.org/files/v3.15/cmake-3.15.7-Linux-x86_64.tar.gz
 tar xzf cmake-3.15.7-Linux-x86_64.tar.gz
 ln -s $PWD/cmake-3.15.7-Linux-x86_64/bin/cmake /usr/bin/cmake
@@ -37,6 +37,7 @@ yum install -y zlib-devel
 yum install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-1.noarch.rpm
 yum install -y ninja-build
 yum install -y wget
+yum install -y openssl-libs
 
 
 ln -s $PWD/cmake-3.15.7-Linux-x86_64/bin/ctest /usr/bin/ctest

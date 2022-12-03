@@ -8,4 +8,5 @@ brew install bison \
     readline \
     ninja \
     wget \
-    coreutils
+    coreutils \
+    openssl
