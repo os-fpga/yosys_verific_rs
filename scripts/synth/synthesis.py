@@ -4,7 +4,6 @@
 #               : list provided in the input JSON settings file.
 # Args          : python3 synthesis.py --help
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
 import sys
 import os
 import argparse
@@ -19,11 +18,14 @@ import traceback
 import subprocess
 import signal
 import copy
+import platform
 from datetime import datetime
 
 if sys.version_info[0] < 3:
     raise Exception("Script must be run with Python 3")
 
+os_name = platform.system()
+print(os_name)
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # Read commandline arguments
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -72,7 +74,7 @@ def validate_inputs():
     for config_file in args.config_files:
         config_file = os.path.abspath(config_file)
         if not os.path.isfile(config_file):
-            error_exit("The JSON settings file not found - %s" % config_file)
+            error_exit("The JSON settings file not found - {0}" , config_file)
         configuration_files.append( (os.path.basename(config_file), 
                 config_file) )
     args.config_files = configuration_files
@@ -408,8 +410,12 @@ def create_file_from_template(file_template, replacements, resulting_file):
 def run_command(bench_name, cfg_name, logfile, command, timeout_s):
     logger.info('Starting synthesis run of {0} for configuration {1}'.format(
             bench_name, cfg_name))
-    time_command = ["/usr/bin/time", "-p"]
+    if os_name == "Windows":
+        time_command = ["timethis"]
+    else:
+        time_command = ["/usr/bin/time", "-p"]
     command = time_command + command
+    logger.info("command = {0} \n",command)
     process = None
     timeout = False
     startTime = time.time()
