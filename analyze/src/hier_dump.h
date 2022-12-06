@@ -24,6 +24,7 @@
 #include "VeriModule.h"
 #include "VhdlUnits.h"
 #include "VhdlIdDef.h"
+#include "VhdlStatement.h"
 #include "VeriId.h"
 #include "VeriConstVal.h"
 #include "file_sort_veri_tokens.h"
@@ -50,7 +51,9 @@ class hierDump : public portDump {
 
         void saveVeriInfo(Array *verilogModules, json& hierInfo);
 
-        void SetModuleId(VeriModule* veri_mod, std::string paramList);
+        void saveVhdlInfo(Array *vhdlModules, json& hierInfo);
+
+        void SetVeriModuleId(VeriModule* veri_mod, std::string paramList);
 
         std::string getFileId(std::string fileName);
 
@@ -62,9 +65,23 @@ class hierDump : public portDump {
 
         std::string saveVeriModuleInstParamInfo(VeriModuleInstantiation* veriMod, json& module);
 
+        std::vector<std::string> getVeriModuleParamList(VeriModuleInstantiation* veriMod);
+
         void saveVeriModuleInternalSignals(VeriModule* veriMod, json& module, std::unordered_set<std::string>& portNames);
 
         void saveVeriModuleParamsInfo(VeriModule* veriMod, json& module);
+
+        void saveVhdlModuleParamsInfo(VhdlPrimaryUnit* mod, json& module);
+
+        void saveVhdlModulePortsInfo(VhdlPrimaryUnit* mod, json& module, std::unordered_set<std::string>& portNames);
+
+        void saveVhdlModuleInternalSignals(VhdlPrimaryUnit* mod, json& module, std::unordered_set<std::string>& portNames);
+
+        void saveVhdlModuleInsts(VhdlPrimaryUnit* mod, json& module);
+
+        std::string saveVhdlModuleInstParamInfo(VhdlComponentInstantiationStatement* mod, json& module);
+
+        void SetVhdlModuleId(VhdlPrimaryUnit* mod, std::string paramList);
 
         void saveInfo(Array* verilogModules, Array* vhdlModules);
 
