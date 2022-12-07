@@ -85,6 +85,8 @@ void hierDump::saveVhdlInfo(Array *vhdlModules, json& tree) {
     }
 }
 void hierDump::SetVeriModuleId(VeriModule* veriMod, std::string paramList) {
+    if (!veriMod)
+        return;
     if (moduleIDs.find(paramList) == moduleIDs.end()) {
         json module;
         module["module"] = veriMod->Name();
@@ -114,6 +116,8 @@ std::string hierDump::getFileId(std::string fileName) {
 }
 
 void hierDump::saveVeriModulePortsInfo(VeriModule* veriMod, json& module, std::unordered_set<std::string>& portNames) {
+    if (!veriMod)
+        return;
     Array* ports = veriMod->GetPorts();
     int j;
     VeriIdDef* port;
@@ -131,6 +135,8 @@ void hierDump::saveVeriModulePortsInfo(VeriModule* veriMod, json& module, std::u
 }
 
 void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
+    if (!veriMod)
+        return;
     Array * items = veriMod->GetModuleItems();
     VeriModuleItem *mi ;
     int i;
@@ -142,31 +148,31 @@ void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
             case ID_VERIMODULEINSTANTIATION: {
                                                  VeriModuleInstantiation* moduleInstance = static_cast<VeriModuleInstantiation*>(mi);
                                                  if (!moduleInstance->GetInstantiatedModule()) {
-                                                    VhdlPrimaryUnit* primUnit = moduleInstance->GetInstantiatedUnit();
+                                                     VhdlPrimaryUnit* primUnit = moduleInstance->GetInstantiatedUnit();
                                                      unsigned i;
                                                      VeriInstId* instance;
                                                      FOREACH_ARRAY_ITEM(moduleInstance->GetInstances(), i, instance) {
+                                                         if (!instance)
+                                                             continue;
                                                          LineFile* lineFile;
                                                          std::string vFile = lineFile->GetFileName(instance->Linefile());
                                                          unsigned vLine = lineFile->GetLineNo(instance->StartingLinefile());
-
                                                          json params = json::array();
                                                          std::string paramList = saveVeriModuleInstParamInfo(moduleInstance, params);
                                                          paramList = moduleInstance->GetModuleName() + paramList;
-                                                     //std::string paramList = saveVhdlModuleInstParamInfo(primUnit, params);
-                                                     //std::string paramList;
-                                                     SetVhdlModuleId(primUnit, paramList);
-                                                     module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+                                                         SetVhdlModuleId(primUnit, paramList);
+                                                         module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
                                                      }
                                                  }
                                                  else {
                                                      unsigned i;
                                                      VeriInstId* instance;
                                                      FOREACH_ARRAY_ITEM(moduleInstance->GetInstances(), i, instance) {
+                                                         if (!instance)
+                                                             continue;
                                                          LineFile* lineFile;
                                                          std::string vFile = lineFile->GetFileName(instance->Linefile());
                                                          unsigned vLine = lineFile->GetLineNo(instance->StartingLinefile());
-
                                                          json params = json::array();
                                                          std::string paramList = saveVeriModuleInstParamInfo(moduleInstance, params);
                                                          paramList = moduleInstance->GetModuleName() + paramList;
@@ -184,6 +190,8 @@ void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
 }
 
 std::string hierDump::getParamValue(VeriExpression *connection) {
+    if (!connection)
+        return "Unknown";
     switch (connection->GetClassId()) {
         case ID_VERICONSTVAL: {
                                   return std::to_string(static_cast<VeriConstVal*>(connection)->Integer());
@@ -194,6 +202,8 @@ std::string hierDump::getParamValue(VeriExpression *connection) {
         case ID_VERIIDREF: {
                                VeriIdRef *idRef = static_cast<VeriIdRef*>(connection);
                                VeriIdDef *id = idRef->FullId();
+                               if (!id)
+                                   return "Unknown";
                                VeriExpression *initVal = id->GetInitialValue() ; 
                                return getParamValue(initVal);
                            }
@@ -201,13 +211,17 @@ std::string hierDump::getParamValue(VeriExpression *connection) {
                      return "Unknown";
                  }
     }
+    return "Unknown";
 }
 
 std::vector<std::string> hierDump::getVeriModuleParamList(VeriModuleInstantiation* veriMod) {
     std::vector<std::string> paramList;
+    if (!veriMod)
+        return paramList;
+
     if (veriMod->GetInstantiatedModule()) {
         VeriModule* module = veriMod->GetInstantiatedModule();
-        Array* params = module->GetParameters();
+        Array* params = module ? module->GetParameters() : NULL;
         unsigned i ;
         VeriIdDef *paramId ;
         FOREACH_ARRAY_ITEM(params, i, paramId) {
@@ -217,7 +231,7 @@ std::vector<std::string> hierDump::getVeriModuleParamList(VeriModuleInstantiatio
     }
     else {
         VhdlPrimaryUnit* primUnit = veriMod->GetInstantiatedUnit();
-        Array * params = primUnit->GetGenericClause();
+        Array * params = primUnit ? primUnit->GetGenericClause() : NULL;
         unsigned i ;
         VhdlInterfaceDecl *paramId ;
         FOREACH_ARRAY_ITEM(params, i, paramId) {
@@ -269,9 +283,13 @@ void hierDump::saveVhdlModuleInsts(VhdlPrimaryUnit* mod, json& module) {
     MapIter mi ;
     VhdlSecondaryUnit *sec ;
     FOREACH_VHDL_SECONDARY_UNIT(mod, mi, sec) {
+        if (!sec)
+            continue;
         unsigned i ;
         VhdlStatement *pStmt ;
         FOREACH_ARRAY_ITEM(sec->GetStatementPart(), i, pStmt) {
+            if (!pStmt)
+                continue;
             switch (pStmt->GetClassId()) {
                 case ID_VHDLCOMPONENTINSTANTIATIONSTATEMENT: {
                                                                  VhdlComponentInstantiationStatement *inst = static_cast<VhdlComponentInstantiationStatement*>(pStmt);
@@ -290,7 +308,7 @@ void hierDump::saveVhdlModuleInsts(VhdlPrimaryUnit* mod, json& module) {
                                                                  } else { // Instance of vhdl unit
                                                                      SetVhdlModuleId(primUnit, paramList);
                                                                  }
-                                                                 module["moduleInsts"].push_back({{"instName", inst->GetLabel()->GetPrettyPrintedString()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+                                                                 module["moduleInsts"].push_back({{"instName", inst->GetLabel() ? inst->GetLabel()->GetPrettyPrintedString() : ""}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
                                                                  break;
                                                              }
                 default: {
@@ -299,10 +317,12 @@ void hierDump::saveVhdlModuleInsts(VhdlPrimaryUnit* mod, json& module) {
                          }
             }
         }
-        }
     }
+}
 
 void hierDump::SetVhdlModuleId(VhdlPrimaryUnit* unit, std::string paramList) {
+    if (!unit)
+        return;
     if (moduleIDs.find(paramList) == moduleIDs.end()) {
         json module;
         module["module"] = unit->Name();
@@ -323,8 +343,10 @@ void hierDump::SetVhdlModuleId(VhdlPrimaryUnit* unit, std::string paramList) {
 }
 
 std::string hierDump::saveVhdlModuleInstParamInfo(VhdlComponentInstantiationStatement* mod, json& module) {
+    if (!mod)
+        return "Unknown";
     VhdlIdDef* unit = mod->GetInstantiatedUnit();
-    std::string paramList = mod->GetInstantiatedUnit()->GetPrettyPrintedString();
+    std::string paramList = mod->GetInstantiatedUnit() ? mod->GetInstantiatedUnit()->GetPrettyPrintedString() : "";
     unsigned j ;
     VhdlIdDef *param;
     FOREACH_ARRAY_ITEM(unit->GetGenerics(), j, param) {
@@ -342,10 +364,14 @@ void hierDump::saveVhdlModuleInternalSignals(VhdlPrimaryUnit* mod, json& module,
     MapIter mi ;
     VhdlSecondaryUnit *sec ;
     FOREACH_VHDL_SECONDARY_UNIT(mod, mi, sec) {
-        Array *decl_part = (sec) ? sec->GetDeclPart() : 0 ;
+        if (!sec)
+            continue;
+        Array *declPart = sec->GetDeclPart();
         unsigned i ;
         VhdlTreeNode *elem ;
-        FOREACH_ARRAY_ITEM(decl_part,i,elem) {
+        FOREACH_ARRAY_ITEM(declPart, i, elem) {
+            if (!elem)
+                continue;
             switch (elem->GetClassId()) {
                 case ID_VHDLSIGNALDECL: {
                                             VhdlSignalDecl *pSignalDecl = static_cast<VhdlSignalDecl*>(elem);
@@ -384,6 +410,8 @@ void hierDump::saveVhdlModuleInternalSignals(VhdlPrimaryUnit* mod, json& module,
                                             unsigned i ;
                                             VhdlIdDef *pId ;
                                             FOREACH_ARRAY_ITEM(pSignalDecl->GetIds(), i, pId) {
+                                                if (!pId)
+                                                    continue;
                                                 json range;
                                                 range["msb"] = msb;
                                                 range["lsb"] = lsb;
@@ -401,6 +429,8 @@ void hierDump::saveVhdlModuleInternalSignals(VhdlPrimaryUnit* mod, json& module,
 }
 
 void hierDump::saveVeriModuleInternalSignals(VeriModule* veriMod, json& module, std::unordered_set<std::string>& portNames) {
+    if (!veriMod)
+        return;
     Array * items = veriMod->GetModuleItems();
     VeriModuleItem *mi ;
     int i;
@@ -418,7 +448,8 @@ void hierDump::saveVeriModuleInternalSignals(VeriModule* veriMod, json& module, 
                                       VeriIdDef *id_def ;
                                       unsigned j ;
                                       FOREACH_ARRAY_ITEM(dataDecl->GetIds(), j, id_def) {
-                                          if (!id_def || portNames.find(id_def->Name()) != portNames.end()) continue ;
+                                          if (!id_def || portNames.find(id_def->Name()) != portNames.end())
+                                              continue ;
                                           json range;
                                           range["msb"] = id_def->LeftRangeBound();
                                           range["lsb"] = id_def->RightRangeBound();
@@ -436,6 +467,8 @@ void hierDump::saveVeriModuleInternalSignals(VeriModule* veriMod, json& module, 
 }
 
 void hierDump::saveVeriModuleParamsInfo(VeriModule* veriMod, json& module) {
+    if (!veriMod)
+        return;
     Array* params = veriMod->GetParameters();
     unsigned i ;
     VeriIdDef *paramId ;
@@ -444,6 +477,7 @@ void hierDump::saveVeriModuleParamsInfo(VeriModule* veriMod, json& module) {
         VeriParamId *id = static_cast<VeriParamId*>(paramId) ;
         VeriExpression *initVal = id->GetInitialValue() ; 
         long val = 0;
+        if (!initVal) continue ;
         switch (initVal->GetClassId()) {
             case ID_VERIINTVAL: {
                                     VeriIntVal *intVal = static_cast<VeriIntVal*>(initVal) ;
@@ -460,6 +494,8 @@ void hierDump::saveVeriModuleParamsInfo(VeriModule* veriMod, json& module) {
 }
 
 void hierDump::saveVhdlModuleParamsInfo(VhdlPrimaryUnit* mod, json& module) {
+    if (!mod)
+        return;
     Array * params = mod->GetGenericClause();
     unsigned i ;
     VhdlInterfaceDecl *paramId ;
@@ -477,6 +513,8 @@ void hierDump::saveVhdlModuleParamsInfo(VhdlPrimaryUnit* mod, json& module) {
 }
 
 void hierDump::saveVhdlModulePortsInfo(VhdlPrimaryUnit* mod, json& module, std::unordered_set<std::string>& portNames) {
+    if (!mod)
+        return;
     Array* ports = mod->GetPortClause();
     int j;
     VhdlInterfaceDecl* port;
