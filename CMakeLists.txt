@@ -188,9 +188,8 @@ if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)
         execute_process(
             COMMAND ${CMAKE_MAKE_PROGRAM} clean
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Raptor_Tools/verific_rs
+            WORKING_DIRECTORY ${VERIFIC_HOME}
             COMMAND_ECHO STDOUT
-            RESULT_VARIABLE GIT_SUBMOD_RESULT
         )
         add_subdirectory(${VERIFIC_HOME})
     endif()
@@ -200,14 +199,13 @@ endif()
 if (APPLE)
     execute_process(
         COMMAND ${CMAKE_MAKE_PROGRAM} clean
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Raptor_Tools/verific_rs
+        WORKING_DIRECTORY ${VERIFIC_HOME}
         COMMAND_ECHO STDOUT
-        RESULT_VARIABLE GIT_SUBMOD_RESULT
     )
     add_subdirectory(${VERIFIC_HOME})
     add_dependencies(yosys verific)
     add_dependencies(libreadver verific)
-    add_dependencies(read_verilog verific)
+    add_dependencies(read_verilog libreadver)
 endif()
 
 add_subdirectory(logic_synthesis-rs)
