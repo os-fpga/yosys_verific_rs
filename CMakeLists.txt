@@ -20,9 +20,9 @@ project(yosys_verific_rs)
 
 set(YOSYS_VERIFIC ON)
 
-if (APPLE)
-    message(WARNING "MacOs build is temporarily disabled: EDA-799")
-else()
+#if (APPLE)
+#    message(WARNING "MacOs build is temporarily disabled: EDA-799")
+#else()
 
 list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys
@@ -313,4 +313,4 @@ add_test(
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
 
-endif() # if (NOT APPLE)
+#endif() # if (NOT APPLE)
