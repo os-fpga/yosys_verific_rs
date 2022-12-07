@@ -10,5 +10,3 @@ brew install bison \
     wget \
     coreutils \
     openssl
-brew link --force openssl
-pkg-config --modversion openssl
