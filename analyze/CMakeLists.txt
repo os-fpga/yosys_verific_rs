@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(analyze)
-
 if (PRODUCTION_BUILD)
     message("Production Build type set to ON")
     add_definitions(-DPRODUCTION_BUILD)
@@ -92,7 +91,7 @@ elseif (UNIX)
 endif()
 
 if(WIN32)
-    set(${BIN_DIR} "${CMAKE_CURRENT_BINARY_DIR}/bin")
+    set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
     list(APPEND VERIFIC_LIBS
         ${BIN_DIR}/verilog.lib
         ${BIN_DIR}/database.lib
