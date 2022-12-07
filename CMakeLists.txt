@@ -207,6 +207,7 @@ if (APPLE)
     add_subdirectory(${VERIFIC_HOME})
     add_dependencies(yosys verific)
     add_dependencies(libreadver verific)
+    add_dependencies(read_verilog verific)
 endif()
 
 add_subdirectory(logic_synthesis-rs)
