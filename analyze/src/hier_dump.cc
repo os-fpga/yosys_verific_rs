@@ -39,6 +39,8 @@ void hierDump::saveVeriInfo(Array *verilogModules, json& tree) {
     int p;
     VeriModule* veriMod;
     FOREACH_ARRAY_ITEM(verilogModules, p, veriMod) {
+        if (!veriMod)
+            continue;
         json module;
         module["topModule"] = veriMod->Name();
         LineFile* lineFile;
@@ -90,6 +92,9 @@ void hierDump::saveVeriModulePortsInfo(VeriModule* veriMod, json& module, std::u
         int j;
         VeriIdDef* port;
         FOREACH_ARRAY_ITEM(ports, j, port) {
+            if (!port) {
+                continue;
+            }
             json range;
             range["msb"] = port->LeftRangeBound();
             range["lsb"] = port->RightRangeBound();
@@ -110,6 +115,8 @@ void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
         switch (mi->GetClassId()) {
             case ID_VERIMODULEINSTANTIATION: {
                                                  VeriModuleInstantiation* moduleInstance = static_cast<VeriModuleInstantiation*>(mi);
+                                                 if (!moduleInstance->GetInstantiatedModule())
+                                                     return;
                                                  unsigned i;
                                                  VeriInstId* instance;
                                                  FOREACH_ARRAY_ITEM(moduleInstance->GetInstances(), i, instance) {
@@ -157,6 +164,8 @@ std::string hierDump::saveVeriModuleInstParamInfo(VeriModuleInstantiation* veriM
     unsigned i ;
     VeriExpression *param ;
     FOREACH_ARRAY_ITEM(veriMod->GetParamValues(), i, param) {
+        if (!param)
+            continue;
         if (param->GetClassId() == ID_VERIPORTCONNECT) {
             VeriPortConnect *port = static_cast<VeriPortConnect*>(param);
             VeriExpression *connection = port->GetConnection();

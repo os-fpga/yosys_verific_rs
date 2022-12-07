@@ -14,11 +14,15 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 103)
+set(VERSION_PATCH 116)
 
 project(yosys_verific_rs)
 
 set(YOSYS_VERIFIC ON)
+
+if (APPLE)
+    message(WARNING "MacOs build is temporarily disabled: EDA-799")
+else()
 
 list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys
@@ -86,6 +90,16 @@ get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
+get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
+REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+
+if (NOT RAPTOR)
+    add_subdirectory(${READ_VERILOG_SRC_DIR})
+endif()
+
+set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
 else()
@@ -119,10 +133,15 @@ if (PRODUCTION_BUILD)
     )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
-        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS}"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new.o"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
+    )
+else()
+    list(APPEND YOSYS_MK_ARGS
+    "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
+    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
     )
 endif()
 
@@ -162,6 +181,8 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
+
+add_dependencies(yosys libreadver)
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)
@@ -267,11 +288,18 @@ install(
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 enable_testing()
 
+set(PARALLEL_TESTS 1)
+include(ProcessorCount)
+ProcessorCount(CORES)
+if (CORES GREATER 7)
+    math(EXPR PARALLEL_TESTS "${CORES} / 4" OUTPUT_FORMAT DECIMAL)
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (ENABLE_VALGRIND_TESTS)
         add_test(
             NAME yosys_verific_rs-valgrind-test
-            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS}
+            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
         set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
             FAIL_REGULAR_EXPRESSION "FAILED")
@@ -280,7 +308,9 @@ endif()
 
 add_test(
     NAME yosys_verific_rs-smoke-test
-    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS}
+    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
+
+endif() # if (NOT APPLE)
