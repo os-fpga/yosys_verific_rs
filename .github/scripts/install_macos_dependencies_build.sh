@@ -9,10 +9,11 @@ brew install bison \
     ninja \
     wget \
     coreutils \
-    openssl
+    openssl@3.0.7
 
 ln -s $(brew --prefix openssl)/include/openssl /usr/local/include
-ln -s $(brew --prefix openssl)/lib/libssl* /usr/local/lib
-ln -s $(brew --prefix openssl)/lib/libcrypto* /usr/local/lib
+ln -s $(brew --prefix openssl)/lib/libssl.3.0.7.dylib /usr/local/lib
+ln -s $(brew --prefix openssl)/lib/libcrypto.3.0.7.dylib /usr/local/lib
 
+ls -la /usr/local/include
 ls -la /usr/local/lib
