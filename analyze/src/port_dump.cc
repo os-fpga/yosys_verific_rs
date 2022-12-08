@@ -122,7 +122,7 @@ void portDump::saveVhdlInfo(Array *vhdlModules, json& portInfo) {
     VhdlPrimaryUnit* mod;
     FOREACH_ARRAY_ITEM(vhdlModules, k, mod) {
         if (!mod)
-            return;
+            continue;
         json module;
         module["topModule"] = mod->Name();
         saveVhdlModulePortsInfo(mod, module);
@@ -136,13 +136,13 @@ void portDump::saveVhdlModulePortsInfo(VhdlPrimaryUnit* mod, json& module) {
         VhdlInterfaceDecl* port;
         FOREACH_ARRAY_ITEM(ports, j, port) {
             if (!port)
-                return;
+                continue;
             int msb = 0;
             int lsb = 0;
             std::string portType = "Unknown";
             VhdlSubtypeIndication* type = port->GetSubtypeIndication();
             if (!type)
-                return;
+                continue;
             switch(type->GetClassId()) {
                 case ID_VHDLINDEXEDNAME: {
                                              portType = type->GetPrefix() ? type->GetPrefix()->OrigName() : "Unknown";
@@ -174,7 +174,7 @@ void portDump::saveVhdlModulePortsInfo(VhdlPrimaryUnit* mod, json& module) {
             VhdlInterfaceId* p;
             FOREACH_ARRAY_ITEM(ppp, ii, p) {
                 if (!p)
-                    return;
+                    continue;
                 json range;
                 range["msb"] = msb;
                 range["lsb"] = lsb;
