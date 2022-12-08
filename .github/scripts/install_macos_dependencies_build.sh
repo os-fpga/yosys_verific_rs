@@ -12,7 +12,7 @@ set -x
 #    coreutils \
 #    openssl@3
 
-find ./ -type d -name lib | xargs ls -la
+find / -type d -name lib | xargs ls -la
 
 #ver=`/usr/local/opt/openssl@3/bin/openssl version`
 #num_ver=${ver:8:5}
