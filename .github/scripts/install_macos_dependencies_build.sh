@@ -1,4 +1,4 @@
-#set -x
+set -x
 # Install required dependencies for Mac OS systems
 #brew install bison \
 #    flex \
