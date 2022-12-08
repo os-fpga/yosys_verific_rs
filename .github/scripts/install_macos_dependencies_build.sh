@@ -1,3 +1,4 @@
+set -x
 # Install required dependencies for Mac OS systems
 brew install bison \
     flex \
@@ -17,6 +18,8 @@ num_ver=${ver:8:5}
 ln -s $(brew --prefix openssl)/include/openssl /usr/local/include
 ln -s $(brew --prefix openssl)/lib/libssl.${num_ver}.dylib /usr/local/lib
 ln -s $(brew --prefix openssl)/lib/libcrypto.${num_ver}.dylib /usr/local/lib
+ln -s $(brew --prefix openssl)/lib/libssl.${num_ver}.a /usr/local/lib
+ln -s $(brew --prefix openssl)/lib/libcrypto.${num_ver}.a /usr/local/lib
 
 ls -la /usr/local/include
 ls -la /usr/local/lib
