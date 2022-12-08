@@ -1,4 +1,4 @@
-set -x
+#set -x
 # Install required dependencies for Mac OS systems
 #brew install bison \
 #    flex \
@@ -12,7 +12,7 @@ set -x
 #    coreutils \
 #    openssl@3
 
-find / -type d -name lib | xargs ls -la
+sudo find / -type d -name lib | xargs ls -la
 
 #ver=`/usr/local/opt/openssl@3/bin/openssl version`
 #num_ver=${ver:8:5}
