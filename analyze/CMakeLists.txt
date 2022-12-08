@@ -37,6 +37,9 @@ function(files_to_dirs file_list directory_list)
 endfunction(files_to_dirs)
 if(WIN32)
     add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
+    set_target_properties (analyze PROPERTIES
+    COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
+    )
 else()
     file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
@@ -56,10 +59,10 @@ list(APPEND ANALYZE_CXX_FLAGS_RELEASE
     )
 else()
     list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+    -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES} /MTd
     )
     list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
+    -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES} /MT
     )
 endif()
 
@@ -89,17 +92,20 @@ elseif(WIN32)
 elseif (UNIX)
     set(OS "linux")
 endif()
+message("Nairi ${CMAKE_CURRENT_BINARY_DIR}")
 
 if(WIN32)
-    set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
+    set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}\\..\\x64\\Release\\")
+    target_include_directories(analyze PUBLIC ${BIN_DIR})
     list(APPEND VERIFIC_LIBS
-        ${BIN_DIR}/verilog.lib
-        ${BIN_DIR}/database.lib
-        ${BIN_DIR}/util.lib
-        ${BIN_DIR}/containers.lib
-        ${BIN_DIR}/hier_tree.lib
-        ${BIN_DIR}/vhdl.lib
+        ${BIN_DIR}\\verilog.lib
+        ${BIN_DIR}\\database.lib
+        ${BIN_DIR}\\util.lib
+        ${BIN_DIR}\\containers.lib
+        ${BIN_DIR}\\hier_tree.lib
+        ${BIN_DIR}\\vhdl.lib
         )
+    FILE(COPY ${VERIFIC_LIBS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 else()
     list(APPEND VERIFIC_LIBS
         ${VERIFIC_HOME}/verilog/verilog-${OS}.a
