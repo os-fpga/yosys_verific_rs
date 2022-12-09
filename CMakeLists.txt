@@ -21,6 +21,13 @@ project(yosys_verific_rs)
 
 set(YOSYS_VERIFIC ON)
 
+if (APPLE)
+    execute_process(
+        COMMAND brew --prefix openssl@1.1
+        WORKING_DIRECTORY ${WORK_DIR}
+        OUTPUT_VARIABLE OPENSSL_ROOT_DIR
+        )
+endif()
 #if (APPLE)
 #    message(WARNING "MacOs build is temporarily disabled: EDA-799")
 #else()
