@@ -24,7 +24,7 @@ set(YOSYS_VERIFIC ON)
 if (APPLE)
     execute_process(
         COMMAND brew --prefix openssl@1.1
-        WORKING_DIRECTORY ${WORK_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE OPENSSL_ROOT_DIR
         )
 endif()
