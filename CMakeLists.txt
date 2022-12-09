@@ -27,6 +27,7 @@ if (APPLE)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE OPENSSL_ROOT_DIR
         )
+    message("OPENSSL_ROOT_DIR: ${OPENSSL_ROOT_DIR}")
 endif()
 #if (APPLE)
 #    message(WARNING "MacOs build is temporarily disabled: EDA-799")
