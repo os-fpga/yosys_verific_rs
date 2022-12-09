@@ -60,8 +60,8 @@ jobs:
 
     - name: Configure shell
       run: |
-        echo 'CC=gcc-12' >> $GITHUB_ENV
-        echo 'CXX=g++-12' >> $GITHUB_ENV
+        echo 'CC=gcc-9' >> $GITHUB_ENV
+        echo 'CXX=g++-9' >> $GITHUB_ENV
         echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
         echo 'PREFIX=/tmp/yosys_verific-install' >> $GITHUB_ENV
         echo "ADDITIONAL_CMAKE_OPTIONS='-DMY_CXX_WARNING_FLAGS="-W -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror -UNDEBUG"'" >> $GITHUB_ENV
@@ -203,36 +203,27 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Use ccache
-      if: ${{ false }} 
       uses: hendrikmuhs/ccache-action@v1
       with:
         key: macos-gcc
 
-    - name: Test
-      working-directory: ./.github/scripts
-      run: |
-        bash install_macos_dependencies_build.sh
-
     - name: Install dependencies
-      if: ${{ false }} 
       working-directory: ./.github/scripts
       run: |
         bash install_macos_dependencies_build.sh
 
     - name: Configure shell
-      if: ${{ false }} 
       run: |
         echo 'CC=gcc-9' >> $GITHUB_ENV
         echo 'CXX=g++-9' >> $GITHUB_ENV
         echo "PKG_CONFIG_PATH=\"/usr/local/opt/openssl@3/lib/pkgconfig\"" >> $GITHUB_ENV
         echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
         echo 'PREFIX=${GITHUB_WORKSPACE}/install' >> $GITHUB_ENV
-        echo "$(brew --prefix openssl)/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix openssl@1.1)/bin" >> $GITHUB_PATH
         echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
     - name: Show shell configuration
-      if: ${{ false }} 
       run: |
         env
         which cmake && cmake --version
@@ -244,19 +235,16 @@ jobs:
         which install && install --version
 
     - name: Build
-      if: ${{ false }} 
       run: |
         make release VERBOSE=1
         make install
 
     - name: Unit tests
-      if: ${{ false }} 
       run: |
         make clean
         make test_install
 
   macos-clang:
-    if: ${{ false }} 
     name: macos-clang
     runs-on: macos-latest
 
@@ -301,7 +289,7 @@ jobs:
         echo "PKG_CONFIG_PATH=\"/usr/local/opt/openssl@3/lib/pkgconfig\"" >> $GITHUB_ENV
         echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
         echo 'PREFIX=${GITHUB_WORKSPACE}/install' >> $GITHUB_ENV
-        echo "$(brew --prefix openssl)/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix openssl@1.1)/bin" >> $GITHUB_PATH
         echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
