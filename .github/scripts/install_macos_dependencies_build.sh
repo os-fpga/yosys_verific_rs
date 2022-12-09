@@ -16,7 +16,7 @@ find /usr/local/ -name *libssl*
 find /usr/local/ -name *libcrypto*
 
 ln -s $(brew --prefix openssl@1.1)/include/openssl /usr/local/include
-ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libssl.dylib /usr/local/lib
-ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libssl.a /usr/local/lib
-ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libcrypto.a /usr/local/lib
-ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libcrypto.dylib /usr/local/lib
+ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libssl.dylib /usr/local/lib/libssl.dylib
+ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libssl.a /usr/local/lib/libssl.a
+ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libcrypto.a /usr/local/lib/libcrypto.a
+ln -s /usr/local//Cellar/openssl@1.1/1.1.1s/lib/libcrypto.dylib /usr/local/lib/libcrypto.dylib
