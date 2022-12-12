@@ -206,17 +206,17 @@ if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(yosys verific)
 endif()
 
-#if (APPLE)
-#    execute_process(
-#        COMMAND ${CMAKE_MAKE_PROGRAM} clean
-#        WORKING_DIRECTORY ${VERIFIC_HOME}
-#        COMMAND_ECHO STDOUT
-#    )
-#    add_subdirectory(${VERIFIC_HOME})
-#    add_dependencies(yosys verific)
-#    add_dependencies(libreadver verific)
-#    add_dependencies(read_verilog libreadver)
-#endif()
+if (APPLE)
+    execute_process(
+        COMMAND ${CMAKE_MAKE_PROGRAM} clean
+        WORKING_DIRECTORY ${VERIFIC_HOME}
+        COMMAND_ECHO STDOUT
+    )
+    add_subdirectory(${VERIFIC_HOME})
+    add_dependencies(yosys verific)
+    add_dependencies(libreadver verific)
+    add_dependencies(read_verilog libreadver)
+endif()
 
 add_subdirectory(logic_synthesis-rs)
 # TODO: Fix Mac OS build.
