@@ -10,8 +10,7 @@ brew install bison \
     ninja \
     wget \
     coreutils \
-    openssl@1.1 \
-    gcc
+    openssl@1.1
 
 #find /usr/local/ -name *libssl*
 #find /usr/local/ -name *libcrypto*
