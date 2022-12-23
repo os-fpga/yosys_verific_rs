@@ -17,9 +17,8 @@ $env:PATH -split ";"
 #>
 New-Variable -Name "yosys_path" -Value ".\yosys"
 New-Variable -Name "abc_path" -Value ".\logic_synthesis-rs\abc-rs\"
-New-Variable -Name "verific_path" -Value ".\aptor_Tools\verific_rs"
-New-Variable -Name "plugin_path" -Value ".\osys-rs-plugin\"
-New-Variable -Name "yosys_verific_rs_path" -Value "."
+New-Variable -Name "verific_path" -Value ".\Raptor_Tools\verific_rs"
+New-Variable -Name "plugin_path" -Value ".\yosys-rs-plugin\"
 
 [string[]]$pathsArray = $yosys_path,$verific_path,$plugin_path,$abc_path
 
@@ -31,7 +30,7 @@ for($i = 0;$i -lt $dir_count;++$i){
 }
 
 #Build YosysVS.
-Set-Location $yosys_verific_rs_path
+Set-Location $root
 msbuild yosys_verific_rs_VS.sln /t:YosysVS /p:Configuration=Release /p:PlatformTarget=x64
 
 
