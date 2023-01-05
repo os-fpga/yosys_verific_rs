@@ -36,10 +36,23 @@ function(files_to_dirs file_list directory_list)
     set(${directory_list} ${dir_list} PARENT_SCOPE)
 endfunction(files_to_dirs)
 if(WIN32)
-    add_executable(analyze ${CMAKE_CURRENT_SOURCE_DIR}/src/analyze.cc)
+
+    file(GLOB_RECURSE SOURCE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
+    add_executable(analyze ${SOURCE_FILES})
     set_target_properties (analyze PROPERTIES
     COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
     )
+     #[[
+    if(NOT YOSYS)
+        add_custom_command(TARGET analyze PRE_BUILD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMAND pwsh.exe BuildAction.ps1
+        )
+    set(YOSYS ON)
+    endif()
+   if(EXISTS "${YOSYS_VERIFIC_RELEASE_DIR}/yosys.exe")
+    endif()]]
 else()
     file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
@@ -54,6 +67,10 @@ if(WIN32)
     list(APPEND ANALYZE_CXX_FLAGS_DEBUG
     -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
     )
+    if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
+        add_definitions(/W0)
+    endif()
+
 list(APPEND ANALYZE_CXX_FLAGS_RELEASE
     -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
     )
@@ -95,17 +112,16 @@ endif()
 message("Nairi ${CMAKE_CURRENT_BINARY_DIR}")
 
 if(WIN32)
-    set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}\\..\\x64\\Release\\")
-    target_include_directories(analyze PUBLIC ${BIN_DIR})
+    #[[FILE(COPY ${VERIFIC_LIBS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    set(YOSYS_VERIFIC_RELEASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}\\..\\x64\\Release")
     list(APPEND VERIFIC_LIBS
-        ${BIN_DIR}\\verilog.lib
-        ${BIN_DIR}\\database.lib
-        ${BIN_DIR}\\util.lib
-        ${BIN_DIR}\\containers.lib
-        ${BIN_DIR}\\hier_tree.lib
-        ${BIN_DIR}\\vhdl.lib
-        )
-    FILE(COPY ${VERIFIC_LIBS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\verilog.lib
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\database.lib
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\util.lib
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\containers.lib
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\hier_tree.lib
+        ${YOSYS_VERIFIC_RELEASE_DIR}\\vhdl.lib
+    )]]
 else()
     list(APPEND VERIFIC_LIBS
         ${VERIFIC_HOME}/verilog/verilog-${OS}.a
@@ -120,15 +136,41 @@ endif()
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
-target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
+
+
+#set_property(GLOBAL DIRECTORY ${YOSYS_VERIFIC_RELEASE_DIR} TARGET )
+
+if(WIN32)
+    target_link_libraries(analyze PUBLIC verilog
+        PUBLIC database PUBLIC util PUBLIC
+        containers PUBLIC hier_tree PUBLIC vhdl)
+else()
+    target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
+endif()
+
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
 
-add_custom_command(TARGET analyze
+if(WIN32)
+    #[[
+    add_custom_command(TARGET analyze
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${SHARE_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${VERIFIC_HOME}/vhdl_packages
+        ${SHARE_DIRECTORY}/
+    COMMAND copy
+        ${CMAKE_CURRENT_BINARY_DIR}/analyze.exe
+        ${CMAKE_BINARY_DIR}/bin/
+)]]
+else()
+    add_custom_command(TARGET analyze
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY}/vhdl_packages
-    )
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY})
+endif()
+
 
 install(
     PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/analyze
