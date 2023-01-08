@@ -20,6 +20,7 @@
 #include <limits>
 #endif
 
+#include "ieee_1735.h"
 #include "port_dump.h"
 #include "hier_dump.h"
 
@@ -123,6 +124,9 @@ int main (int argc, char* argv[]) {
             std::cout << "-set-ignore <msg_id/ids>\n";
             return 1;
         }
+
+        ieee_1735 protect;
+        veri_file::SetPragmaProtectObject(&protect);
 
         int argidx = 1;
         bool dumpHierTree = false;
