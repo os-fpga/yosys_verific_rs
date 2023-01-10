@@ -43,16 +43,6 @@ if(WIN32)
     set_target_properties (analyze PROPERTIES
     COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
     )
-     #[[
-    if(NOT YOSYS)
-        add_custom_command(TARGET analyze PRE_BUILD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMAND pwsh.exe BuildAction.ps1
-        )
-    set(YOSYS ON)
-    endif()
-   if(EXISTS "${YOSYS_VERIFIC_RELEASE_DIR}/yosys.exe")
-    endif()]]
 else()
     file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
@@ -109,20 +99,8 @@ elseif(WIN32)
 elseif (UNIX)
     set(OS "linux")
 endif()
-message("Nairi ${CMAKE_CURRENT_BINARY_DIR}")
 
-if(WIN32)
-    #[[FILE(COPY ${VERIFIC_LIBS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    set(YOSYS_VERIFIC_RELEASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}\\..\\x64\\Release")
-    list(APPEND VERIFIC_LIBS
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\verilog.lib
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\database.lib
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\util.lib
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\containers.lib
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\hier_tree.lib
-        ${YOSYS_VERIFIC_RELEASE_DIR}\\vhdl.lib
-    )]]
-else()
+if(NOT WIN32)
     list(APPEND VERIFIC_LIBS
         ${VERIFIC_HOME}/verilog/verilog-${OS}.a
         ${VERIFIC_HOME}/database/database-${OS}.a

@@ -95,8 +95,22 @@ REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
 if (NOT RAPTOR)
-    add_subdirectory(${READ_VERILOG_SRC_DIR})
+    if(WIN32)
+        set(YOSYS_VERIFIC_RELEASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/x64/Release")
+        add_subdirectory(${VERIFIC_HOME} verific)
+    endif()
+    add_subdirectory(${READ_VERILOG_SRC_DIR} libreadver)
 endif()
+
+if(WIN32)   #WINDOWS
+    add_custom_target(
+    yosys ALL
+    COMMAND pwsh BuildAction.ps1
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS libreadver verific
+    COMMENT "Build Yosys with Vsual Studio"
+    )
+else()
 
 set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
 
@@ -182,6 +196,8 @@ add_custom_target(
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
 
+endif() # if (NOT WIN32)
+
 add_dependencies(yosys libreadver)
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -197,7 +213,11 @@ if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(yosys verific)
 endif()
 
-add_subdirectory(logic_synthesis-rs)
+if(NOT WIN32)
+    add_subdirectory(logic_synthesis-rs)
+endif()
+
+
 # TODO: Fix Mac OS build.
 if (NOT APPLE)
     # There are linking issues with Verific libraries on Mac OS.
@@ -208,6 +228,10 @@ endif()
 if (PRODUCTION_BUILD)
     add_dependencies(yosys rs_licenseManager)
 endif()
+
+if(WIN32)  
+    #TODo
+else()
 
 if (BUILD_YOSYS_PLUGINS)
     list(APPEND YOSYS_PLUGINS_MK_ARGS
@@ -312,5 +336,7 @@ add_test(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
+
+endif() # if (NOT WIN32)
 
 endif() # if (NOT APPLE)
