@@ -13,6 +13,13 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
 
+get_filename_component(READ_VERILOG_SRC_DIR "../Raptor_Tools/gatelevel_readers/read_verilog"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
+    add_subdirectory(${READ_VERILOG_SRC_DIR} "libreadver")
+    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -46,6 +53,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(analyze verific)
 endif()
 
+
 list(APPEND ANALYZE_CXX_FLAGS_DEBUG
     -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
 )
@@ -71,6 +79,7 @@ endif(PRODUCTION_BUILD)
 
 target_include_directories(analyze PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 target_include_directories(analyze PUBLIC ${LIB_INCLUDE_DIRS})
+target_include_directories(analyze PUBLIC ${READ_VERILOG_SRC_DIR}/src/read_nl/)
 
 if (APPLE)
     set(OS "mac")
@@ -87,13 +96,20 @@ list(APPEND VERIFIC_LIBS
     ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
     )
 
+add_dependencies(analyze libreadver)
+
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
 target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
+target_link_libraries(analyze PUBLIC libreadver)
+target_link_libraries(analyze PUBLIC ssl)
+target_link_libraries(analyze PUBLIC crypto)
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
+
+
 
 add_custom_command(TARGET analyze
     POST_BUILD
