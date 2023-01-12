@@ -20,6 +20,17 @@ if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
     message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(OPENSSL REQUIRED openssl)
+
+if( OPENSSL_FOUND )
+    include_directories(${OPENSSL_INCLUDE_DIRS})
+    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+else()
+    message("SSL not found")
+    # Error; with REQUIRED, pkg_search_module() will throw an error by it's own
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -55,10 +66,10 @@ endif()
 
 
 list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+    -fPIC -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
 )
 list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
+    -fPIC -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
 )
 
 get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
@@ -101,15 +112,13 @@ add_dependencies(analyze libreadver)
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
+
 target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
 target_link_libraries(analyze PUBLIC libreadver)
-target_link_libraries(analyze PUBLIC ssl)
-target_link_libraries(analyze PUBLIC crypto)
+target_link_libraries(analyze PUBLIC ${OPENSSL_LIBRARIES})
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
-
-
 
 add_custom_command(TARGET analyze
     POST_BUILD
