@@ -5,32 +5,46 @@ on:
   push:
 
 jobs:
-  msvc:
+  build:
     name: msvc
     runs-on: windows-latest
     defaults:
         run:
             shell: pwsh
     steps:
-    
-    - run: git config --global core.autocrlf input
-    - uses: actions/checkout@v2
-    - uses: cygwin/cygwin-install-action@master
-    - uses: egor-tensin/setup-cygwin@v4
-      with:
-        packages: flex bison awk sed wget make bash unzip python git gcc-g++ tar gzip
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+    # Setup MSbuild
     - uses: microsoft/setup-msbuild@v1.1
       with:
         msbuild-architecture: x64
-    - name: Build yosys_verific_rs
-      run: |
-        cmake --build . --config Release
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      run: cmake -G "Ninja" -B ${{github.workspace}}/build64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-  linux-gcc:
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        platform: x64
+        packages: >-
+          flex,
+          bison,
+          sed,
+          wget,
+          make,
+          bash,
+          unzip,
+          python,
+          git,
+          gcc-g++,
+          tar,
+          gzip
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    # Build your program with the given configuration
+    - name: Build yosys_verific_rs
+      run: cmake --build ${{github.workspace}}/build64 --config ${{env.BUILD_TYPE}}
+
+    run:  linux-gcc:
     if: ${{ false }}
     name: ${{ matrix.mode }}
 
