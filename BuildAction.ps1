@@ -1,11 +1,11 @@
 
 function ExecuteAction {
     param (
-        $path
+        $submodule_path
     )
-    Write-Output "path = $path "
-    Set-Location $path
-    pwsh.exe .\action.ps1
+    Write-Output "submodule_path = $submodule_path "
+    Set-Location $submodule_path
+    pwsh.exe -File .\action.ps1 -All -WorkingDirectory 
     Set-Location -Path $root
 }
 $dir_count = 4
