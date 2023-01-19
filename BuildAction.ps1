@@ -4,8 +4,8 @@ function ExecuteAction {
         $submodule_path
     )
     Write-Output "submodule_path = $submodule_path "
-    Set-Location $submodule_path
-    pwsh.exe -File .\action.ps1 -All -WorkingDirectory $submodule_path
+    Set-Location -Path $submodule_path
+    pwsh -File .\action.ps1 
     Set-Location -Path $root
 }
 $dir_count = 4
@@ -30,7 +30,7 @@ for($i = 0;$i -lt $dir_count;++$i){
 }
 
 #Build YosysVS.
-Set-Location $root
+Set-Location -Path $root
 msbuild yosys_verific_rs_VS.sln /t:YosysVS /p:Configuration=Release /p:PlatformTarget=x64
 
 
