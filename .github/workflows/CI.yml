@@ -19,13 +19,17 @@ jobs:
     runs-on: windows-2019
     defaults:
         run:
-            shell: pwsh
+          shell: pwsh
     steps:
     
     - name: Cancel previous
       uses: styfle/cancel-workflow-action@0.9.1
       with:
         access_token: ${{ github.token }}
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
     - name: ssh-agent
       uses: webfactory/ssh-agent@v0.5.4
@@ -40,12 +44,9 @@ jobs:
           ${{ secrets.SSH_PRIVATE_KEY_VERIFIC }}
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
       with:
-        repository: RapidSilicon/yosys_verific_rs
-        token: ${{ secrets.PAT }}
         submodules: recursive
-        fetch-depth: 2
 
     - name: Installing OpenSSL
       run: choco install openssl
