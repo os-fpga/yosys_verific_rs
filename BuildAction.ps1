@@ -11,10 +11,7 @@ function ExecuteAction {
 $dir_count = 4
 $root  = Get-Location
 Write-Output $root
-<#
-$env:PATH += (Test-Path -Path "C:\cygwin64\bin") ? "C:\cygwin64\bin\" : "C:\cygwin\bin\"
-$env:PATH -split ";"
-#>
+
 New-Variable -Name "yosys_path" -Value ".\yosys"
 New-Variable -Name "abc_path" -Value ".\logic_synthesis-rs\abc-rs\"
 New-Variable -Name "verific_path" -Value ".\Raptor_Tools\verific_rs"
@@ -31,7 +28,9 @@ for($i = 0;$i -lt $dir_count;++$i){
 
 #Build YosysVS.
 Set-Location -Path $root
-msbuild yosys_verific_rs_VS.sln /t:YosysVS /p:Configuration=Release /p:PlatformTarget=x64
-
+msbuild yosys_verific_rs_VS.sln /t:YosysVS /p:Configuration=Release /p:Platform=x64
+if(-not $?){
+        Throw 'An ERROR occurred while building \"Yosys\".'
+}
 
 Write-Output "Action End"

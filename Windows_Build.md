@@ -1,17 +1,13 @@
+# Windows Raptor build
+----
+### You need to install the following dependencies
+*	- python3
+*	- visual studio 2019(with C++ Desktop development tool chain)
+*	- cygwin64  https://www.cygwin.com/setup-x86_64.exe
+* 	- OpenSSL -  https://slproweb.com/download/Win64OpenSSL-3_0_7.exe
+*	- PowerShell - https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi
 
-Step by step see the WindowsBuild.md or action.ps1 files for yosys_verific_rs Windows Version
-You need to install the following dependencies
-	- python3
-	- visual studio 2019(with C++ Desktop development tool chain)
-	- cygwin64  https://www.cygwin.com/setup-x86_64.exe
+----
+## Build yosys_verific_rs
+Open yosys_verific_rs directory in Visual Studio and follow the guidence at https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170 to switch to the CMake targets, set the configuratio Release and CMake command arguments -DPRODUCTION_BUILD=1 in the CMakeSettings.json and build the project.
 
-	
-	1: yosys_verific_rs\Raptor_Tools\verific_rs\Windows_Build.md or action.ps1
-	2: yosys_verific_rs\logic_synthesis-rs\abc-rs\Windows_Build.md or action.ps1
-	3: yosys_verific_rs\yosys\Windows_Build.md or action.ps1
-	4: yosys_verific_rs\yosys-rs-plugin\Windows_Build.md or action.ps1  
-	5: run on PowerShell Terminal in yosys_verific_rs directory   
-	```bash
-		 devenv yosys_verific_rs_VS.sln
-	```
-	6: build YosysVS in Visual Studio 

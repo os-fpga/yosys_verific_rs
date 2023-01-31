@@ -103,12 +103,35 @@ if (NOT RAPTOR)
 endif()
 
 if(WIN32)   #WINDOWS
+if(NOT RAPTOR)
     add_custom_target(
-    yosys ALL
-    COMMAND pwsh BuildAction.ps1
+        yosys ALL
+        COMMAND pwsh BuildAction.ps1
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS libreadver verific
+        COMMENT "Build Yosys with Vsual Studio"
+    )
+else()
+    add_custom_target(
+        yosys ALL
+        COMMAND pwsh BuildAction.ps1
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS libreadver
+        COMMENT "Build Yosys with Vsual Studio"
+    )
+    add_custom_command(TARGET yosys POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${YOSYS_VERIFIC_RELEASE_DIR}
+        ${CMAKE_BINARY_DIR}/bin
+    )
+    #ToDo
+endif()# NOT RAPTOR
+    add_custom_target(
+    yosys_clean
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_VERIFIC_RELEASE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/bin
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS libreadver verific
-    COMMENT "Build Yosys with Vsual Studio"
+    COMMENT "Clean Yosys/Yosys+Verific with CMake"
     )
 else()
 
