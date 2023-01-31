@@ -12,6 +12,33 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
 
+get_filename_component(READ_VERILOG_SRC_DIR "../Raptor_Tools/gatelevel_readers/read_verilog"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
+    add_subdirectory(${READ_VERILOG_SRC_DIR} "libreadver")
+    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+endif()
+
+if(WIN32)
+    # This variable works only with that call, and if you use its results
+    set(OPENSSL_USE_STATIC_LIBS TRUE)
+    # To use CRT /MT and /MTd in OpenSSL libraries
+    set(OPENSSL_MSVC_STATIC_RT TRUE)
+    #On Windows we can find OpenSSL without pkg-config
+    find_package(OpenSSL REQUIRED)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(OPENSSL REQUIRED openssl)
+endif()
+
+if(OPENSSL_FOUND)
+    include_directories(${OPENSSL_INCLUDE_DIRS})
+    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+else()
+    message("SSL not found")
+    # Error; with REQUIRED, pkg_search_module() will throw an error by it's own
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -35,50 +62,46 @@ function(files_to_dirs file_list directory_list)
     # Set the second argument in the caller's scope
     set(${directory_list} ${dir_list} PARENT_SCOPE)
 endfunction(files_to_dirs)
-if(WIN32)
 
-    file(GLOB_RECURSE SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
-    add_executable(analyze ${SOURCE_FILES})
+file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
+add_executable(analyze ${SOURCE_FILES})
+
+if(WIN32)
     set_target_properties (analyze PROPERTIES
-    COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
-    )
-else()
-    file(GLOB_RECURSE SOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
-    add_executable(analyze ${SOURCE_FILES})
+        COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
+        )
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_dependencies(analyze verific)
 endif()
 
+
 if(WIN32)
     list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
-    )
+        -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+        )
     if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
         add_definitions(/W0)
     endif()
 
-list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES}
-    )
+    list(APPEND ANALYZE_CXX_FLAGS_RELEASE
+        -Wall -O2 -DNDEBUG ${CXX_DEFINES}
+        )
 else()
     list(APPEND ANALYZE_CXX_FLAGS_DEBUG
-    -Werror -Wall -O0 -D_REENTRANT -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES} 
-    )
+        -fPIC -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
+        )
     list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-    -Werror -Wall -O2 -D_REENTRANT -DNDEBUG ${CXX_DEFINES} 
-    )
+        -fPIC -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
+        )
 endif()
 
 get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
-file(GLOB_RECURSE LIB_HEADERS
-    ${VERIFIC_HOME}/*/*.h)
+file(GLOB_RECURSE LIB_HEADERS ${VERIFIC_HOME}/*/*.h)
 
 files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
 
@@ -91,6 +114,7 @@ endif(PRODUCTION_BUILD)
 
 target_include_directories(analyze PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 target_include_directories(analyze PUBLIC ${LIB_INCLUDE_DIRS})
+target_include_directories(analyze PUBLIC ${READ_VERILOG_SRC_DIR}/src/read_nl/)
 
 if (APPLE)
     set(OS "mac")
@@ -111,44 +135,32 @@ if(NOT WIN32)
         )
 endif()
 
+add_dependencies(analyze libreadver)
+
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
-
-
-#set_property(GLOBAL DIRECTORY ${YOSYS_VERIFIC_RELEASE_DIR} TARGET )
 
 if(WIN32)
     target_link_libraries(analyze PUBLIC verilog
         PUBLIC database PUBLIC util PUBLIC
         containers PUBLIC hier_tree PUBLIC vhdl)
+    target_link_libraries(analyze PUBLIC libreadver)
+    target_link_libraries(analyze PUBLIC ${OPENSSL_LIBRARIES})
 else()
     target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
+    target_link_libraries(analyze PUBLIC libreadver)
+    target_link_libraries(analyze PUBLIC ${OPENSSL_LIBRARIES})
 endif()
-
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
 
-if(WIN32)
-    #[[
-    add_custom_command(TARGET analyze
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        ${SHARE_DIRECTORY}
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${VERIFIC_HOME}/vhdl_packages
-        ${SHARE_DIRECTORY}/
-    COMMAND copy
-        ${CMAKE_CURRENT_BINARY_DIR}/analyze.exe
-        ${CMAKE_BINARY_DIR}/bin/
-)]]
-else()
-    add_custom_command(TARGET analyze
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY})
+if(NOT WIN32)
+    add_custom_command(TARGET analyze POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY}/vhdl_packages
+        )
 endif()
-
 
 install(
     PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/analyze
