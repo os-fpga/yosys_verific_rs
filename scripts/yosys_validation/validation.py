@@ -8,6 +8,10 @@ import glob
 import json
 import csv
 
+CRED = '\033[91m'
+CGREEN = '\033[92m'
+CEND = '\033[0m'
+
 try:
     CGA_ROOT = os.getcwd()
 except:
@@ -118,7 +122,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
         
         Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(Carry_cells),str(sum(BRAM)),str(sum(DSP)),synth_status]
         
-    print(synth_status+" for "+test_)
+    print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
 
 def vcs_parse(sim_file,test_,Data):
@@ -127,11 +131,11 @@ def vcs_parse(sim_file,test_,Data):
             if (re.search(r"Simulation Passed.*", line)):
                 sim = True
                 Data.append("Simulation Passed")
-                print("Simulation Passed for "+test_)
+                print(CGREEN+"Simulation Passed for "+test_+CEND)
             if (re.search(r"Simulation Failed.*", line)):
                 sim = False
                 Data.append("Simulation Failed")
-                print("Simulation Failed for "+test_)
+                print(CRED+"Simulation Failed for "+test_+CEND)
 
 
 def compile(project_path,rtl_path,top_module,test_):
@@ -150,15 +154,15 @@ def compile(project_path,rtl_path,top_module,test_):
         if (os.path.exists(netlist)):
             replace_string(netlist,search_text,replace_text)    
         else:
-            print("Synthesis Failed for "+test_)
+            print(CRED+"Synthesis Failed for "+test_+CEND)
             synth = False
 
 def simulate(project_path,rtl_path,top_module,test_):
     vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + CGA_ROOT +"/../../" + rtl_path +"/"+top_module+".v  " + CGA_ROOT +"/../../" + rtl_path +"/tb.v " + plugins + " -full64 -debug_all -kdb -lca"
     
     try:
-        exec(vcs_cmd,"vcs_compile.log","err_compile.log","compilation",test_)
-        exec("./simv","vcs_sim.log","err_sim.log","simulation",test_)
+        exec(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
+        exec("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
     except Exception as e:
         sim = False
         print (str(e))
@@ -194,9 +198,11 @@ def test():
             except Exception as e:
                 Data.append("Cannot open ./simv file")
                 print(str(e))
-        with open(path+"/results.csv",'a') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerow(Data)        
+        if JSON_data["benchmarks"][test]["compile_status"] == "active":
+            with open(path+"/results.csv",'a') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow(Data)  
+                print("\n================================================================================\n")      
 
 path = _create_new_project_dir_()
 test()
