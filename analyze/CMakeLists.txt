@@ -24,7 +24,7 @@ if(WIN32)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
     # To use CRT /MT and /MTd in OpenSSL libraries
     set(OPENSSL_MSVC_STATIC_RT TRUE)
-    #On Windows we can find OpenSSL without pkg-config
+    # On Windows we can find OpenSSL without pkg-config
     find_package(OpenSSL REQUIRED)
 else()
     find_package(PkgConfig REQUIRED)
@@ -32,7 +32,7 @@ else()
 endif()
 
 if(OPENSSL_FOUND)
-    include_directories(${OPENSSL_INCLUDE_DIRS})
+    include_directories(${OPENSSL_INCLUDE_DIR})
     message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
 else()
     message("SSL not found")
@@ -67,6 +67,7 @@ file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 add_executable(analyze ${SOURCE_FILES})
 
 if(WIN32)
+    # set CRT to /MT and /MTd
     set_target_properties (analyze PROPERTIES
         COMPILE_OPTIONS "$<$<CONFIG:Debug>:/MTd>$<$<CONFIG:Release>:/MT>"
         )
@@ -86,7 +87,7 @@ if(WIN32)
     endif()
 
     list(APPEND ANALYZE_CXX_FLAGS_RELEASE
-        -Wall -O2 -DNDEBUG ${CXX_DEFINES}
+        -Wall -O3 -DNDEBUG ${CXX_DEFINES}
         )
 else()
     list(APPEND ANALYZE_CXX_FLAGS_DEBUG
@@ -142,6 +143,7 @@ if (PRODUCTION_BUILD)
 endif()
 
 if(WIN32)
+    # Verific Libraries are separate targets for Windows
     target_link_libraries(analyze PUBLIC verilog
         PUBLIC database PUBLIC util PUBLIC
         containers PUBLIC hier_tree PUBLIC vhdl)
@@ -207,4 +209,3 @@ foreach(test ${TESTS})
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/port_info.json
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/gold.json)
 endforeach()
-
