@@ -158,8 +158,8 @@ def compile(project_path,rtl_path,top_module,test_):
             synth = False
 
 def simulate(project_path,rtl_path,top_module,test_):
-    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + CGA_ROOT +"/../../" + rtl_path +"/"+top_module+".v  " + CGA_ROOT +"/../../" + rtl_path +"/tb.v " + plugins + " -full64 -debug_all -kdb -lca"
-    
+    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + CGA_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + CGA_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca"
+    # print(vcs_cmd)
     try:
         exec(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
         exec("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
