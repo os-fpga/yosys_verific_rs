@@ -13,9 +13,9 @@ CGREEN = '\033[92m'
 CEND = '\033[0m'
 
 try:
-    CGA_ROOT = os.getcwd()
+    YS_ROOT = os.getcwd()
 except:
-    print ("CGA_ROOT is not defined, Please export CGA_ROOT=<path to the Gap-Analysis directory>")
+    print ("YS_ROOT is not defined, Please export YS_ROOT=<path to the Yosys_Validation directory>")
     sys.exit()
 
 
@@ -23,49 +23,49 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--test",
     type=str,
-    help="Path for Tools Input file",
+    help="Path for tools Input file",
     required=True
 )
 
 args = parser.parse_args() 
 
-if (os.path.exists(CGA_ROOT+"/../../suites/yosys_validation/"+args.test)):
-    with open(CGA_ROOT+"/../../suites/yosys_validation/"+args.test) as file:
+if (os.path.exists(YS_ROOT+"/../../suites/yosys_validation/"+args.test)):
+    with open(YS_ROOT+"/../../suites/yosys_validation/"+args.test) as file:
         JSON_data = json.load(file)
 else:
-    print("[ERROR]: <"+CGA_ROOT+"/../../suites/yosys_validation/"+args.test+"> file does not exist")
+    print("[ERROR]: <"+YS_ROOT+"/../../suites/yosys_validation/"+args.test+"> file does not exist")
     sys.exit()
 
-plugins = CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/brams_sim.v " + \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/cells_sim.v " + \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_sim.v "+ \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_map.v "+ \
-         CGA_ROOT+"/../../yosys/install/share/yosys/simlib.v "+ \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/TDP18K_FIFO.v "+ \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/ufifo_ctl.v "+ \
-         CGA_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/sram1024x18.v"
+plugins = YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/brams_sim.v " + \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/cells_sim.v " + \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_sim.v "+ \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_map.v "+ \
+         YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "+ \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/TDP18K_FIFO.v "+ \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/ufifo_ctl.v "+ \
+         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/sram1024x18.v"
 
 def _create_new_project_dir_():
     run_list = []
-    if (os.path.exists(CGA_ROOT+"/logs/")==0):
-        os.makedirs(CGA_ROOT+"/logs/run1")
-        path = CGA_ROOT+"/logs/run1"
+    if (os.path.exists(YS_ROOT+"/logs/")==0):
+        os.makedirs(YS_ROOT+"/logs/run1")
+        path = YS_ROOT+"/logs/run1"
     else:
-        runid = glob.glob(CGA_ROOT+'/logs/run*')
+        runid = glob.glob(YS_ROOT+'/logs/run*')
         if (len(runid)>0):
             for dir in runid:
                 dir_splt=(dir.split("/"))[-1]
                 run_list.append(int((dir_splt.split("n"))[-1]))
             new_dir = max(run_list)+1
-            path = CGA_ROOT+"/logs/run"+str(new_dir)
+            path = YS_ROOT+"/logs/run"+str(new_dir)
             os.makedirs(path)
         else:
-            path = CGA_ROOT+"/logs/run1"
+            path = YS_ROOT+"/logs/run1"
             os.makedirs(path)
 
     return path
 
-def exec(cmd,ofname,er_file,pt,test_):
+def execute(cmd,ofname,er_file,pt,test_):
     with open(ofname,'wb') as outpfile,open(ofname,'wb') as er_file:
         p=subprocess.Popen(cmd.split(),stdout=outpfile,stderr=er_file)
         try:
@@ -89,7 +89,7 @@ def replace_string(file_,search_,replace_):
             file.write(data)
 
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
-    stat = False ;next_command = False; dffsre = [];Data=[];yosys_version="";DSP = [];BRAM=[];_Luts_=0;Carry_cells=0;verific_version="";error_msg="";status_found=False;I_O=""
+    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=0
     global run_synth_status
     run_synth_status = ""
     with open(raptor_log,"r") as in_file:
@@ -140,12 +140,12 @@ def vcs_parse(sim_file,test_,Data):
 
 def compile(project_path,rtl_path,top_module,test_):
     synth = True
-    if (os.path.exists(CGA_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
-        print("Cannot open "+CGA_ROOT +"/../../" + rtl_path+"/yosys.ys")
+    if (os.path.exists(YS_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
+        print("Cannot open "+YS_ROOT +"/../../" + rtl_path+"/yosys.ys")
     else:
-        synth_cmd = CGA_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -script " + CGA_ROOT +"/../../" + rtl_path+"/yosys.ys"
+        synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -script " + YS_ROOT +"/../../" + rtl_path+"/yosys.ys"
         try:
-            exec(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
+            execute(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
         except Exception as _error_:
             print(str(_error_))
         netlist = project_path+"/"+top_module+"_post_synth.v"
@@ -158,11 +158,11 @@ def compile(project_path,rtl_path,top_module,test_):
             synth = False
 
 def simulate(project_path,rtl_path,top_module,test_):
-    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + CGA_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + CGA_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca"
+    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca"
     # print(vcs_cmd)
     try:
-        exec(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
-        exec("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
+        execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
+        execute("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
     except Exception as e:
         sim = False
         print (str(e))
