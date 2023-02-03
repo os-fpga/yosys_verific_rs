@@ -27,7 +27,7 @@ parser.add_argument(
     required=True
 )
 
-args = parser.parse_args() 
+args = parser.parse_args()
 
 if (os.path.exists(YS_ROOT+"/../../suites/yosys_validation/"+args.test)):
     with open(YS_ROOT+"/../../suites/yosys_validation/"+args.test) as file:
@@ -83,7 +83,7 @@ def replace_string(file_,search_,replace_):
         data = file.read()
         # Replace the target string
         data = data.replace(search_, replace_)
-        
+
         # Write the file out again
         with open(file_, 'w') as file:
             file.write(data)
@@ -100,13 +100,13 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 DSP.clear()
                 BRAM.clear()
                 dffsre.clear()
-        
+
             if (re.search(r".*adder_carry.*", line) and (stat == True) and (next_command == False)):
                 Carry_cells = line.split()[1]
 
             if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
                 _Luts_ = line.split()[1]
-            
+
             if (re.search(r".*RS_DSP2.*", line) and (stat == True) and (next_command == False)):
                 DSP.append(int(line.split()[1]))
 
@@ -115,13 +115,13 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
 
             if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
                 dffsre.append(int(line.split()[1]))
-            
+
             if ((re.search(r".*yosys>.*", line) or (re.findall(r'[0-9]+\.', line) and re.search(r".*Printing statistics.*", line) == None)) and stat == True):
                 stat = False
                 next_command = True
-        
+
         Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(Carry_cells),str(sum(BRAM)),str(sum(DSP)),synth_status]
-        
+
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
 
@@ -143,7 +143,7 @@ def compile(project_path,rtl_path,top_module,test_):
     if (os.path.exists(YS_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
         print("Cannot open "+YS_ROOT +"/../../" + rtl_path+"/yosys.ys")
     else:
-        synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -script " + YS_ROOT +"/../../" + rtl_path+"/yosys.ys"
+        synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -s " + YS_ROOT +"/../../" + rtl_path+"/yosys.ys"
         try:
             execute(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
         except Exception as _error_:
@@ -152,13 +152,13 @@ def compile(project_path,rtl_path,top_module,test_):
         search_text = "module "+top_module
         replace_text = "module " + top_module+"_post_synth"
         if (os.path.exists(netlist)):
-            replace_string(netlist,search_text,replace_text)    
+            replace_string(netlist,search_text,replace_text)
         else:
             print(CRED+"Synthesis Failed for "+test_+CEND)
             synth = False
 
 def simulate(project_path,rtl_path,top_module,test_):
-    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca"
+    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca +define+VCS_MODE=1"
     # print(vcs_cmd)
     try:
         execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
@@ -183,7 +183,7 @@ def test():
             top_module = JSON_data["benchmarks"][test]["top_module"]
             os.makedirs(project_path)
             os.chdir(project_path)
-        
+
             compile(project_path,rtl_path,top_module,test)
             if (synth == True):
                 try:
@@ -201,8 +201,8 @@ def test():
         if JSON_data["benchmarks"][test]["compile_status"] == "active":
             with open(path+"/results.csv",'a') as csv_file:
                 writer = csv.writer(csv_file)
-                writer.writerow(Data)  
-                print("\n================================================================================\n")      
+                writer.writerow(Data)
+                print("\n================================================================================\n")
 
 path = _create_new_project_dir_()
 test()
