@@ -39,8 +39,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Checkout RTL_Benchmark
+        run: |
+          git submodule update --init --recursive RTL_Benchmark
+
       - name: Configure shell
         run: |
+          module load fpga_tools/raptor/build_env
+          pip3 install pandas --user
           echo 'CC=gcc' >> $GITHUB_ENV
           echo 'CXX=g++' >> $GITHUB_ENV
           echo 'PATH=/usr/lib/ccache:'"$PATH" >> $GITHUB_ENV
@@ -65,6 +71,7 @@ jobs:
       - name: Execute Python script
         continue-on-error: true
         run: |
+          module load fpga_tools/raptor/build_env
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
           else
