@@ -7,6 +7,7 @@ import sys
 import glob
 import json
 import csv
+import shutil
 
 CRED = '\033[91m'
 CGREEN = '\033[92m'
@@ -84,6 +85,7 @@ def replace_string(file_,search_,replace_):
         # Replace the target string
         data = data.replace(search_, replace_)
 
+        # print(data)
         # Write the file out again
         with open(file_, 'w') as file:
             file.write(data)
@@ -139,7 +141,7 @@ def vcs_parse(sim_file,test_,Data):
 
 
 def compile(project_path,rtl_path,top_module,test_):
-    synth = True
+    synth_status = True
     if (os.path.exists(YS_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
         print("Cannot open "+YS_ROOT +"/../../" + rtl_path+"/yosys.ys")
     else:
@@ -155,7 +157,8 @@ def compile(project_path,rtl_path,top_module,test_):
             replace_string(netlist,search_text,replace_text)
         else:
             print(CRED+"Synthesis Failed for "+test_+CEND)
-            synth = False
+            synth_status = False
+    return synth_status
 
 def simulate(project_path,rtl_path,top_module,test_):
     vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca +define+VCS_MODE=1"
@@ -163,6 +166,7 @@ def simulate(project_path,rtl_path,top_module,test_):
     try:
         execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
         execute("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
+        execute("vcd2fst tb.vcd tb.fst --compress" ,"vcd_sim.log","err_vcd.log","VCD file compression",test_)
     except Exception as e:
         sim = False
         print (str(e))
@@ -177,14 +181,12 @@ def test():
     for test in JSON_data["benchmarks"]:
         Data = []
         if JSON_data["benchmarks"][test]["compile_status"] == "active":
-            synth = True
             project_path = os.path.join(path,test)
             rtl_path  = JSON_data["benchmarks"][test]["test_path"]
             top_module = JSON_data["benchmarks"][test]["top_module"]
             os.makedirs(project_path)
             os.chdir(project_path)
-
-            compile(project_path,rtl_path,top_module,test)
+            synth = compile(project_path,rtl_path,top_module,test)
             if (synth == True):
                 try:
                     Data = yosys_parser(test,"synth.log","Synthesis Succeeded",test)
@@ -203,6 +205,9 @@ def test():
                 writer = csv.writer(csv_file)
                 writer.writerow(Data)
                 print("\n================================================================================\n")
-
+# try:
+#     shutil.rmtree(YS_ROOT+'/logs/')
+# except Exception as e: 
+#     print(str(e))
 path = _create_new_project_dir_()
 test()
