@@ -35,11 +35,18 @@ run-cmake-debug:
 	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 
 ##
-## @ test
+## @ test_gen2
 ##     |---> info       :  Run unit tests
 ##     |---> usage      :  make test
-test: release
-	cd build && ctest -R smoke-test
+test_gen: release
+	cd build && ctest -R smoke-test-gen
+
+##
+## @ test_gen2
+##     |---> info       :  Run unit tests
+##     |---> usage      :  make test
+test_gen2: release
+	cd build && ctest -R smoke-test-gen2
 
 ##
 ## @ dtest
@@ -49,14 +56,22 @@ dtest: debug
 	cd dbuild && ctest -R smoke-test
 
 ##
-## @ dtest
+## @ valgrind_gen
 ##     |---> info       :  Run unit tests with valgrind 
 ##     |---> usage      :  make dtest
-valgrind:
+valgrind_gen:
 	cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 	cmake --build dbuild -j $(CPU_CORES)
-	cd dbuild && ctest -R valgrind-test
+	cd dbuild && ctest -R valgrind-test-gen
 
+##
+## @ valgrind_gen2
+##     |---> info       :  Run unit tests with valgrind 
+##     |---> usage      :  make dtest
+valgrind_gen2:
+	cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
+	cmake --build dbuild -j $(CPU_CORES)
+	cd dbuild && ctest -R valgrind-test-gen2
 ##
 ## @ clean_test
 ##     |---> info       :  Clean unit tests
