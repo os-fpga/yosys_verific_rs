@@ -35,18 +35,18 @@ run-cmake-debug:
 	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 
 ##
-## @ test_gen2
+## @ test_gen
 ##     |---> info       :  Run unit tests
 ##     |---> usage      :  make test
 test_gen: release
-	cd build && ctest -R smoke-test-gen
+	cd build && ctest -R genesis-test
 
 ##
-## @ test_gen2
+## @ test
 ##     |---> info       :  Run unit tests
 ##     |---> usage      :  make test
-test_gen2: release
-	cd build && ctest -R smoke-test-gen2
+test: release
+	cd build && ctest -R smoke-test
 
 ##
 ## @ dtest
@@ -56,22 +56,28 @@ dtest: debug
 	cd dbuild && ctest -R smoke-test
 
 ##
+## @ dtest_gen
+##     |---> info       :  Run unit tests for debug build
+##     |---> usage      :  make dtest
+dtest_gen: debug
+	cd dbuild && ctest -R genesis-test
+##
 ## @ valgrind_gen
 ##     |---> info       :  Run unit tests with valgrind 
 ##     |---> usage      :  make dtest
 valgrind_gen:
 	cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 	cmake --build dbuild -j $(CPU_CORES)
-	cd dbuild && ctest -R valgrind-test-gen
+	cd dbuild && ctest -R valgrind-genesis-test
 
 ##
 ## @ valgrind_gen2
 ##     |---> info       :  Run unit tests with valgrind 
 ##     |---> usage      :  make dtest
-valgrind_gen2:
+valgrind:
 	cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DPRODUCTION_BUILD=$(PRODUCTION_BUILD) -DCMAKE_RULE_MESSAGES=$(RULE_MESSAGES) -DUPDATE_SUBMODULES=$(UPDATE_SUBMODULES) $(ADDITIONAL_CMAKE_OPTIONS) -S . -B dbuild
 	cmake --build dbuild -j $(CPU_CORES)
-	cd dbuild && ctest -R valgrind-test-gen2
+	cd dbuild && ctest -R valgrind-test
 ##
 ## @ clean_test
 ##     |---> info       :  Clean unit tests

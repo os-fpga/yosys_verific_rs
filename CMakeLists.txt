@@ -298,31 +298,31 @@ endif()
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (ENABLE_VALGRIND_TESTS)
         add_test(
-            NAME yosys_verific_rs-valgrind-test-gen
-            COMMAND make valgrind_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+            NAME yosys_verific_rs-valgrind-test
+            COMMAND make valgrind ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
-        set_tests_properties(yosys_verific_rs-valgrind-test-gen PROPERTIES
+        set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
             FAIL_REGULAR_EXPRESSION "FAILED")
         add_test(
-            NAME yosys_verific_rs-valgrind-test-gen2
-            COMMAND make valgrind_gen2 ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+            NAME yosys_verific_rs-valgrind-genesis-test
+            COMMAND make valgrind_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
-        set_tests_properties(yosys_verific_rs-valgrind-test-gen2 PROPERTIES
+        set_tests_properties(yosys_verific_rs-valgrind-genesis-test PROPERTIES
             FAIL_REGULAR_EXPRESSION "FAILED")
     endif()
 endif()
 
 add_test(
-    NAME yosys_verific_rs-smoke-test-gen
-    COMMAND make test_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+    NAME yosys_verific_rs-smoke-test
+    COMMAND make test ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
-set_tests_properties(yosys_verific_rs-smoke-test-gen PROPERTIES
+set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
 
 add_test(
-    NAME yosys_verific_rs-smoke-test-gen2
-    COMMAND make test_gen2 ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+    NAME yosys_verific_rs-genesis-test
+    COMMAND make test_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
-set_tests_properties(yosys_verific_rs-smoke-test-gen2 PROPERTIES
+set_tests_properties(yosys_verific_rs-genesis-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
 endif() # if (NOT APPLE)
