@@ -71,7 +71,7 @@ valgrind_gen:
 	cd dbuild && ctest -R valgrind-genesis-test
 
 ##
-## @ valgrind_gen2
+## @ valgrind
 ##     |---> info       :  Run unit tests with valgrind 
 ##     |---> usage      :  make dtest
 valgrind:
