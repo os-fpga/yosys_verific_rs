@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 144)
+set(VERSION_PATCH 148)
 
 project(yosys_verific_rs)
 
@@ -303,6 +303,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
         set_tests_properties(yosys_verific_rs-valgrind-test PROPERTIES
             FAIL_REGULAR_EXPRESSION "FAILED")
+        add_test(
+            NAME yosys_verific_rs-valgrind-genesis-test
+            COMMAND make valgrind_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+        set_tests_properties(yosys_verific_rs-valgrind-genesis-test PROPERTIES
+            FAIL_REGULAR_EXPRESSION "FAILED")
     endif()
 endif()
 
@@ -313,4 +319,10 @@ add_test(
 set_tests_properties(yosys_verific_rs-smoke-test PROPERTIES
     FAIL_REGULAR_EXPRESSION "FAILED")
 
+add_test(
+    NAME yosys_verific_rs-genesis-test
+    COMMAND make test_gen ${YOSYS_RS_PLUGIN_MK_ARGS} -j ${PARALLEL_TESTS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin)
+set_tests_properties(yosys_verific_rs-genesis-test PROPERTIES
+    FAIL_REGULAR_EXPRESSION "FAILED")
 endif() # if (NOT APPLE)
