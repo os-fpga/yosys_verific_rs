@@ -13,6 +13,7 @@ The list of dependencies:
 # Repository Structure
 ```
 .
+|-- analyze
 |-- RTL_Benchmark
 |-- benchmarks
 |-- logic_synthesis-rs
@@ -33,6 +34,7 @@ The repository has the following submodules:
  - [logic_synthesis-rs](https://github.com/RapidSilicon/logic_synthesis-rs.git) 
  - [RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
 
+`analyze` directory contains analyze tool and it's unit tests.
 `benchmarks` directory contains benchmark open-source designs - SHOULD BE REMOVED:
  - `verilog` holds Verilog language desings.
  - `mixed_languages` holds mixed language desings.
