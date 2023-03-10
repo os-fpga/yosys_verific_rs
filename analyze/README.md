@@ -1,5 +1,5 @@
 ## Introduction
-The tool  generates two JSON files: port_info.json and hier_info.json. The port_info.json contains all top modules with their ports which are written as a list of objects. The hier_info.json contains the hierarchy information.
+The tool  generates two JSON files: `port_info.json` and `hier_info.json`. The `port_info.json` contains all top modules with their ports which are written as a list of objects. The `hier_info.json` contains the hierarchy information.
 
 ## Structure of hier_info.json
 
@@ -12,7 +12,7 @@ The tool  generates two JSON files: port_info.json and hier_info.json. The port_
 
 ## Usage
 ```bash
-	analyze -f <path_to_instruction_file>
+analyze -f <path_to_instruction_file>
 ```
 where instruction file contain vhdl/verilog/systemverilog source files with options. 
 
