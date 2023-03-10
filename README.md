@@ -34,6 +34,7 @@ The repository has the following submodules:
  - [logic_synthesis-rs](https://github.com/RapidSilicon/logic_synthesis-rs.git) 
  - [RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
 
+The directory structure is the following:
 - `analyze` directory contains analyze tool and it's unit tests.
 - `benchmarks` directory contains benchmark open-source designs - SHOULD BE REMOVED:
   - `verilog` holds Verilog language desings.
