@@ -94,21 +94,21 @@ bool get_packages_path(const char* progName, fs::path& packages_path) {
 }
 
 void print_help() {
-	std::cout << "./analyze -f <path_to_instruction_file>\n\n";
-	std::cout << "The complete list of supported instructions:\n";
-	std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
-	std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
-	std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
-	std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
-	std::cout << "-vlog-incdir <directory>\n";
-	std::cout << "-vlog-libdir <directory>\n";
-	std::cout << "-vlog-define <macro>[=<value>]\n";
-	std::cout << "-vlog-undef <macro>\n";
-	std::cout << "-top <top-module>\n";
-	std::cout << "-set-error <msg_id/ids>\n";
-	std::cout << "-set-warning <msg_id/ids>\n";
-	std::cout << "-set-info <msg_id/ids>\n";
-	std::cout << "-set-ignore <msg_id/ids>\n";
+    std::cout << "./analyze -f <path_to_instruction_file>\n\n";
+    std::cout << "The complete list of supported instructions:\n";
+    std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
+    std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
+    std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+    std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+    std::cout << "-vlog-incdir <directory>\n";
+    std::cout << "-vlog-libdir <directory>\n";
+    std::cout << "-vlog-define <macro>[=<value>]\n";
+    std::cout << "-vlog-undef <macro>\n";
+    std::cout << "-top <top-module>\n";
+    std::cout << "-set-error <msg_id/ids>\n";
+    std::cout << "-set-warning <msg_id/ids>\n";
+    std::cout << "-set-info <msg_id/ids>\n";
+    std::cout << "-set-ignore <msg_id/ids>\n";
 }
 // ------------------------------
 // main
@@ -124,7 +124,7 @@ int main (int argc, char* argv[]) {
         std::set<std::string> works;
 
         if (argc < 3) {
-			print_help();
+            print_help();
             return 1;
         }
 
@@ -140,10 +140,10 @@ int main (int argc, char* argv[]) {
                 argidx++;
                 continue;
             } else {
-				std::cout << "ERROR: Invalid option is specified. " << std::endl;
-				print_help();
-				return 1;
-			}
+                std::cout << "ERROR: Invalid option is specified. " << std::endl;
+                print_help();
+                return 1;
+            }
         }
 
         std::ifstream in(file_path);
