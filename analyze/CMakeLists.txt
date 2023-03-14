@@ -165,9 +165,13 @@ foreach(test ${TESTS})
 endforeach()
 
 foreach(test ${TESTS})
-    add_test(analyze-smoke-test-cmp-${test}
+    add_test(analyze-smoke-test-port-cmp-${test}
         ${CMAKE_COMMAND} -E compare_files
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/port_info.json
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/gold.json)
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/gold_port.json)
+    add_test(analyze-smoke-test-hier-cmp-${test}
+        ${CMAKE_COMMAND} -E compare_files
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/hier_info.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}/gold_hier.json)
 endforeach()
 
