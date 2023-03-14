@@ -1,5 +1,5 @@
 ## Introduction
-The tool  generates two JSON files: `port_info.json` and `hier_info.json`. The `port_info.json` contains all top modules with their ports which are written as a list of objects. The `hier_info.json` contains the hierarchy information.
+The tool  generates two JSON files in the current working directory: `port_info.json` and `hier_info.json`. The `port_info.json` contains all top modules with their ports which are written as a list of objects. The `hier_info.json` contains the hierarchy information.
 
 ## Structure of hier_info.json
 
