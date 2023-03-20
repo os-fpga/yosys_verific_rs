@@ -93,6 +93,23 @@ bool get_packages_path(const char* progName, fs::path& packages_path) {
     return false;
 }
 
+void print_help() {
+    std::cout << "./analyze -f <path_to_instruction_file>\n\n";
+    std::cout << "The complete list of supported instructions:\n";
+    std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
+    std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
+    std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+    std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+    std::cout << "-vlog-incdir <directory>\n";
+    std::cout << "-vlog-libdir <directory>\n";
+    std::cout << "-vlog-define <macro>[=<value>]\n";
+    std::cout << "-vlog-undef <macro>\n";
+    std::cout << "-top <top-module>\n";
+    std::cout << "-set-error <msg_id/ids>\n";
+    std::cout << "-set-warning <msg_id/ids>\n";
+    std::cout << "-set-info <msg_id/ids>\n";
+    std::cout << "-set-ignore <msg_id/ids>\n";
+}
 // ------------------------------
 // main
 // ------------------------------
@@ -107,21 +124,7 @@ int main (int argc, char* argv[]) {
         std::set<std::string> works;
 
         if (argc < 3) {
-            std::cout << "./analyze -f <path_to_instruction_file>\n\n";
-            std::cout << "The complete list of supported instructions:\n";
-            std::cout << "{-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv} [-D<macro>[=<value>]] <verilog-file/files>\n";
-            std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
-            std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
-            std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
-            std::cout << "-vlog-incdir <directory>\n";
-            std::cout << "-vlog-libdir <directory>\n";
-            std::cout << "-vlog-define <macro>[=<value>]\n";
-            std::cout << "-vlog-undef <macro>\n";
-            std::cout << "-top <top-module>\n";
-            std::cout << "-set-error <msg_id/ids>\n";
-            std::cout << "-set-warning <msg_id/ids>\n";
-            std::cout << "-set-info <msg_id/ids>\n";
-            std::cout << "-set-ignore <msg_id/ids>\n";
+            print_help();
             return 1;
         }
 
@@ -129,18 +132,17 @@ int main (int argc, char* argv[]) {
         veri_file::SetPragmaProtectObject(&protect);
 
         int argidx = 1;
-        bool dumpHierTree = false;
+        bool dumpHierTree = true;
 
         while (argidx < argc) {
             if (std::string(argv[argidx]) == "-f") {
                 file_path = std::string(argv[++argidx]);
                 argidx++;
                 continue;
-            }
-
-            if (std::string(argv[argidx]) == "-dump_hier_tree") {
-                dumpHierTree = true;
-                argidx++;
+            } else {
+                std::cout << "ERROR: Invalid option is specified. " << std::endl;
+                print_help();
+                return 1;
             }
         }
 

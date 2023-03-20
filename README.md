@@ -13,6 +13,7 @@ The list of dependencies:
 # Repository Structure
 ```
 .
+|-- analyze
 |-- RTL_Benchmark
 |-- benchmarks
 |-- logic_synthesis-rs
@@ -33,23 +34,25 @@ The repository has the following submodules:
  - [logic_synthesis-rs](https://github.com/RapidSilicon/logic_synthesis-rs.git) 
  - [RTL_Benchmark](https://github.com/RapidSilicon/RTL_Benchmark.git)
 
-`benchmarks` directory contains benchmark open-source designs - SHOULD BE REMOVED:
- - `verilog` holds Verilog language desings.
- - `mixed_languages` holds mixed language desings.
- - `vhdl` holds VHDL submodule designs.
-`suites` directory contains benchmark suites which can be automatically run by the automation scripts available at `scripts/synth`.
-`scripts` directory contains automation scripts: 
- - `benchmarks` holds Yosys synthesis scripts for the available benchmarks.
- - `log_automation` holds the automation scripts to extract metrics from tools output log files.
- - `synth` holds the automation scripts to run synthesis on different tools.
- - `task_generator` holds the OpenFPGA tasks generator script and it's default settings JSON file. 
- - `yosys_templates` holds the OpenFPGA Yosys template scripts which are written to use the `verific` frontend.
-`Raptor_Tools` directory contains Raptor_Tools submodule which has Flex_LM library and verific_rs submodule.
-`yosys` directory contains Yosys submodule.
-`yosys-plugins` directory contains yosys-symbiflow-plugins submodule.
-`yosys-rs-plugin` directory contains yosys-rs-plugin submodule.
-`logic_synthesis-rs` directory contains logic_synthesis-rs submodule which has DE and abc_rs submodule.
-`RTL_Benchmark` directory contains RTL_Benchmark submodule.
+The directory structure is the following:
+- `analyze` directory contains analyze tool and it's unit tests.
+- `benchmarks` directory contains benchmark open-source designs - SHOULD BE REMOVED:
+  - `verilog` holds Verilog language desings.
+  - `mixed_languages` holds mixed language desings.
+  - `vhdl` holds VHDL submodule designs.
+- suites directory contains benchmark suites which can be automatically run by the automation scripts available at `scripts/synth`.
+- `scripts` directory contains automation scripts: 
+  - `benchmarks` holds Yosys synthesis scripts for the available benchmarks.
+  - `log_automation` holds the automation scripts to extract metrics from tools output log files.
+  - `synth` holds the automation scripts to run synthesis on different tools.
+  - `task_generator` holds the OpenFPGA tasks generator script and it's default settings JSON file. 
+  - `yosys_templates` holds the OpenFPGA Yosys template scripts which are written to use the `verific` frontend.
+- `Raptor_Tools` directory contains Raptor_Tools submodule which has Flex_LM library and verific_rs submodule.
+- `yosys` directory contains Yosys submodule.
+- `yosys-plugins` directory contains yosys-symbiflow-plugins submodule.
+- `yosys-rs-plugin` directory contains yosys-rs-plugin submodule.
+- `logic_synthesis-rs` directory contains logic_synthesis-rs submodule which has DE and abc_rs submodule.
+- `RTL_Benchmark` directory contains RTL_Benchmark submodule.
 
 ## Build
 Run **release** Makefile target to build Yosys with Verific enabled:
