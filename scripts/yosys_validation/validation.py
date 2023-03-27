@@ -138,11 +138,11 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                     synth_status="Synthesis Succeeded"
                     status_found = True
 
-
+    
     if status_found == 0:
         synth_status ="Synthesis Failed"
 
-        Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(Carry_cells),str(sum(BRAM)),str(sum(DSP)),synth_status]
+    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),synth_status]
 
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
