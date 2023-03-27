@@ -91,36 +91,56 @@ def replace_string(file_,search_,replace_):
             file.write(data)
 
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
-    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=0
+    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=[]
     global run_synth_status
     run_synth_status = ""
+    regex = re.compile(r'\b(WARNING|Warning|renaming|INFO|Info|->|.cc)\b')
     with open(raptor_log,"r") as in_file:
         for line in in_file:
-            if re.search(r".*Printing statistics.*", line):
-                stat = True
-                next_command = False
-                DSP.clear()
-                BRAM.clear()
-                dffsre.clear()
+            if regex.search(line):
+                continue
+            else:
+                if re.search(r".*Printing statistics.*", line):
+                    stat = True
+                    next_command = False
+                    Carry_cells.clear()
+                    DSP.clear()
+                    BRAM.clear()
+                    dffsre.clear()
+                
+                if (re.search(r".*Executing.*", line) and stat == True):
+                    stat = False
+                    next_command = True
 
-            if (re.search(r".*adder_carry.*", line) and (stat == True) and (next_command == False)):
-                Carry_cells = line.split()[1]
+                try:
+                    if (re.search(r".*fa_.*bit.*", line) and (stat == True) and (next_command == False)):
+                        Carry_cells.append(int(line.split()[1]))
+                except:
+                    pass
 
-            if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
-                _Luts_ = line.split()[1]
+                if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
+                    _Luts_ = line.split()[1]
+                
+                if (re.search(r".*RS_DSP[0-9].*", line) and (stat == True) and (next_command == False)):
+                    DSP.append(int(line.split()[1]))
 
-            if (re.search(r".*RS_DSP2.*", line) and (stat == True) and (next_command == False)):
-                DSP.append(int(line.split()[1]))
+                if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
+                    BRAM.append(int(line.split()[1]))
 
-            if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
-                BRAM.append(int(line.split()[1]))
+                if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
+                    dffsre.append(int(line.split()[1]))
+                
+                if ((re.search(r"ERROR:.*", line) or re.search(r"\[ERROR\].*", line))):
+                    failure_type =  ""
+                    error_msg=line
+                    break
+                if re.search(r"End of script.*", line):
+                    synth_status="Synthesis Succeeded"
+                    status_found = True
 
-            if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
-                dffsre.append(int(line.split()[1]))
 
-            if ((re.search(r".*yosys>.*", line) or (re.findall(r'[0-9]+\.', line) and re.search(r".*Printing statistics.*", line) == None)) and stat == True):
-                stat = False
-                next_command = True
+    if status_found == 0:
+        synth_status ="Synthesis Failed"
 
         Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(Carry_cells),str(sum(BRAM)),str(sum(DSP)),synth_status]
 
@@ -162,6 +182,16 @@ def compile(project_path,rtl_path,top_module,test_):
 
 def simulate(project_path,rtl_path,top_module,test_):
     vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca +define+VCS_MODE=1"
+    if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")):
+        mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")
+        for _file_ in mem_init:
+            shutil.copy(_file_,project_path+"/")
+
+    if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.init")):
+        mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.init")
+        for _file_ in mem_init:
+            shutil.copy(_file_,project_path+"/")
+
     # print(vcs_cmd)
     try:
         execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
