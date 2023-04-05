@@ -121,7 +121,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
                     _Luts_ = line.split()[1]
                 
-                if (re.search(r".*RS_DSP[0-9].*", line) and (stat == True) and (next_command == False)):
+                if (re.search(r".*RS_DSP.*", line) and (stat == True) and (next_command == False)):
                     DSP.append(int(line.split()[1]))
 
                 if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
