@@ -161,7 +161,9 @@ void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
                                                          std::string paramList = saveVeriModuleInstParamInfo(moduleInstance, params);
                                                          paramList = moduleInstance->GetModuleName() + paramList;
                                                          SetVhdlModuleId(primUnit, paramList);
-                                                         module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+							 if (instance->Name()) {
+                                                           module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+							 }
                                                      }
                                                  }
                                                  else {
@@ -177,7 +179,10 @@ void hierDump::saveVeriModuleInsts(VeriModule* veriMod, json& module) {
                                                          std::string paramList = saveVeriModuleInstParamInfo(moduleInstance, params);
                                                          paramList = moduleInstance->GetModuleName() + paramList;
                                                          SetVeriModuleId(moduleInstance->GetInstantiatedModule(), paramList);
-                                                         module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+							 // Fix EDA-1361 : make sure instance name exists
+							 if (instance->Name()) {
+                                                           module["moduleInsts"].push_back({{"instName", instance->Name()}, {"file", getFileId(vFile)}, {"line", vLine}, {"parameters", params}, {"module", paramList}});
+							 }
                                                      }
                                                  }
                                              }
