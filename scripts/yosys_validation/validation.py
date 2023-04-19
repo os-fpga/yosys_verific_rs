@@ -127,7 +127,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
                     BRAM.append(int(line.split()[1]))
 
-                if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
+                if ((re.search(r".*dff.*", line)) and re.search(r".*$.*", line) and stat == True and next_command == False):
                     dffsre.append(int(line.split()[1]))
                 
                 if ((re.search(r"ERROR:.*", line) or re.search(r"\[ERROR\].*", line))):
