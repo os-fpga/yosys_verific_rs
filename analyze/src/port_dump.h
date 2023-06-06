@@ -83,6 +83,8 @@ class portDump {
 
     long parseVhdlExpression(VhdlExpression *expr);
 
+    std::string parseVhdlExpressionStr(VhdlExpression *expr);
+
     void parseVhdlRange(VhdlDiscreteRange *pDiscreteRange, int& msb, int& lsb);
 
     virtual void saveVhdlInfo(Array *vhdlModules, json& portInfo);

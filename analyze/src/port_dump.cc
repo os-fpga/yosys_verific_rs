@@ -37,6 +37,25 @@ void portDump::saveVeriModulePortsInfo(VeriModule* veriMod, json& module) {
     }
 }
 
+std::string portDump::parseVhdlExpressionStr(VhdlExpression *expr) {
+    std::string res;
+    if (!expr)
+        return res;
+    switch (expr->GetClassId()) {
+        case ID_VHDLBITSTRINGLITERAL:
+            {
+                res = static_cast<VhdlBitStringLiteral*>(expr)->GetBasedBitString();
+                break;
+            }
+        default:
+            {
+                res = std::to_string(parseVhdlExpression(expr));
+                break;
+            }
+    }
+    return res;
+}
+
 long portDump::parseVhdlExpression(VhdlExpression *expr) {
     if (!expr)
         return 0;
@@ -60,6 +79,11 @@ long portDump::parseVhdlExpression(VhdlExpression *expr) {
                             // TODO: get value of const declaration. 
                             // VhdlConstantId *constId = static_cast<VhdlConstantId*>(id);
                             return 0;
+                        }
+                    case ID_VHDLENUMERATIONID:
+                        {
+                            VhdlEnumerationId *enumerationid = static_cast<VhdlEnumerationId*>(id);
+                            return parseVhdlExpression(enumerationid->GetInitAssign());
                         }
                     default:
                         {
