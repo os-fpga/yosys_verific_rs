@@ -10,6 +10,12 @@
 
 #include "VhdlDataFlow_Elab.h"
 
+bool is_number(const std::string& s)
+{
+    return !s.empty() && std::find_if(s.begin(),
+        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
+
 std::string hierDump::getVeriMode(int mode)
 {
     switch (mode) {
@@ -359,8 +365,9 @@ std::string hierDump::saveVhdlModuleInstParamInfo(VhdlComponentInstantiationStat
         paramList.append("_");
         paramList.append(param->GetPrettyPrintedString());
         paramList.append("#");
-        paramList.append(std::to_string(parseVhdlExpression(param->GetInitAssign())));
-        module.push_back({{"name", param->GetPrettyPrintedString()}, {"value", std::to_string(parseVhdlExpression(param->GetInitAssign()))}});
+        std::string exprInitAssign = parseVhdlExpressionStr(param->GetInitAssign());
+        paramList.append(exprInitAssign);
+        module.push_back({{"name", param->GetPrettyPrintedString()}, {"value", exprInitAssign}});
     }
     return paramList;
 }
@@ -512,7 +519,12 @@ void hierDump::saveVhdlModuleParamsInfo(VhdlPrimaryUnit* mod, json& module) {
         FOREACH_ARRAY_ITEM(ppp, ii, p) {
             if (!p)
                 continue;
-            module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", parseVhdlExpression(p->GetInitAssign())}});
+            std::string exprInitAssign = parseVhdlExpressionStr(p->GetInitAssign());
+            if (is_number(exprInitAssign)) {
+                module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", std::stol(exprInitAssign)}});
+            } else {
+                module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", exprInitAssign}});
+            }
         }
     }
 }
