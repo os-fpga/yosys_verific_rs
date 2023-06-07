@@ -9,6 +9,123 @@ The tool  generates two JSON files in the current working directory: `port_info.
 
 - `hierTree`: list of all top level modules (containing filename id, port info, parameters info, module instances with module identifiers pointing to the "modules" section.)
 
+```bash
+{
+    "fileIDs": {
+        "1": "SRC1",
+        "2": "SRC2"
+    },
+    "hierTree": [
+        {
+            "file": "UNIQUE_FILE_ID",
+            "internalSignals": [
+                {
+                    "name": "NAME",
+                    "range": {
+                        "lsb": LSB_NUM,
+                        "msb": MSB_NUM
+                    },
+                    "type": "SIGNAL_TYPE"
+                },
+		...
+            ],
+            "language": "RTL_LANGUAGE_STANDARD",
+            "line": LINE_NUM,
+            "moduleInsts": [
+                {
+                    "file": "UNIQUE_FILE_ID",
+                    "instName": "INSTANCE_NAME",
+                    "line": LINE_NUM,
+                    "module": "MODULE_UNIQUE_NAME",
+                    "parameters": [
+                        {
+                            "name": "PARAM_NAME",
+                            "value": "PARAM_VALUE"
+                        },
+			...
+                    ]
+                },
+		...
+            ],
+            "parameters": [
+                {
+                    "name": "PARAM_NAME",
+                    "value": PARAM_VALUE
+                },
+		...
+            ],
+            "ports": [
+                {
+                    "direction": "PORT_DIRECTION",
+                    "name": "PORT_NAME",
+                    "range": {
+                        "lsb": LSB_NUM,
+                        "msb": MSB_NUM
+                    },
+                    "type": "PORT_SIGNAL_TYPE"
+                },
+                ...
+            ],
+            "topModule": "TOP_MODULE_NAME"
+        },
+	...
+    ],
+    "modules": {
+        "MODULE_UNIQUE_NAME": {
+            "file": "UNIQUE_FILE_ID",
+            "internalSignals": [
+                {
+                    "name": "NAME",
+                    "range": {
+                        "lsb": LSB_NUM,
+                        "msb": MSB_NUM
+                    },
+                    "type": "SIGNAL_TYPE"
+                },
+		...
+            ],
+            "language": "RTL_LANGUAGE_STANDARD",
+            "line": LINE_NUM,
+            "module": "MODULE_NAME",
+            "parameters": [
+                {
+                    "name": "PARAM_NAME",
+                    "value": PARAM_VALUE
+                },
+		...
+            ],
+            "ports": [
+                {
+                    "direction": "PORT_DIRECTION",
+                    "name": "PORT_NAME",
+                    "range": {
+                        "lsb": LSB_NUM,
+                        "msb": MSB_NUM
+                    },
+                    "type": "PORT_SIGNAL_TYPE"
+                },
+                ...
+            ],
+            "moduleInsts": [
+                {
+                    "file": "UNIQUE_FILE_ID",
+                    "instName": "INSTANCE_NAME",
+                    "line": LINE_NUM,
+                    "module": "MODULE_UNIQUE_NAME",
+                    "parameters": [
+                        {
+                            "name": "PARAM_NAME",
+                            "value": "PARAM_VALUE"
+                        },
+			...
+                    ]
+                },
+		...
+	    ]
+        }
+    }
+}
+```
 
 ## Usage
 ```bash
