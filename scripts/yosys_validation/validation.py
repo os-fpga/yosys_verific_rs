@@ -27,24 +27,39 @@ parser.add_argument(
     help="Path for tools Input file",
     required=True
 )
-
+parser.add_argument(
+    "--flow",
+    type=str,
+    help="Path for tools Input file",
+    required=True
+)
 args = parser.parse_args()
-
+plugins = ""
+flow = ""
+if (args.flow == "rtl"):
+    flow = "rtl"
+else:
+    flow = "sim"
 if (os.path.exists(YS_ROOT+"/../../suites/yosys_validation/"+args.test)):
     with open(YS_ROOT+"/../../suites/yosys_validation/"+args.test) as file:
         JSON_data = json.load(file)
 else:
     print("[ERROR]: <"+YS_ROOT+"/../../suites/yosys_validation/"+args.test+"> file does not exist")
     sys.exit()
-
-plugins = YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/brams_sim.v " + \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/cells_sim.v " + \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_sim.v "+ \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/dsp_map.v "+ \
-         YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "+ \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/TDP18K_FIFO.v "+ \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/ufifo_ctl.v "+ \
-         YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis2/sram1024x18.v"
+    
+def plugin(arch):
+    if flow == "rtl":
+        plugins = plugins + "/nfs_scratch/scratch/FV/awais/Synthesis/v1/yosys_verific_rs/scripts/yosys_validation/file_list.sv"
+    else:
+        plugins = plugins + YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/brams_sim.v " + \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_map.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/TDP18K_FIFO.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/ufifo_ctl.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/sram1024x18.v"
+    return plugins
 
 def _create_new_project_dir_():
     run_list = []
@@ -165,6 +180,12 @@ def compile(project_path,rtl_path,top_module,test_):
     if (os.path.exists(YS_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
         print("Cannot open "+YS_ROOT +"/../../" + rtl_path+"/yosys.ys")
     else:
+        with open (YS_ROOT +"/../../" + rtl_path+"/yosys.ys","r") as ys_file:
+            for line in ys_file:
+                if (re.search(r".*-tech genesis.*", line)):
+                    architecture = line.split("-tech")
+                    architecture = architecture[1].split()[0]
+
         synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -s " + YS_ROOT +"/../../" + rtl_path+"/yosys.ys"
         try:
             execute(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
@@ -178,10 +199,11 @@ def compile(project_path,rtl_path,top_module,test_):
         else:
             print(CRED+"Synthesis Failed for "+test_+CEND)
             synth_status = False
-    return synth_status
+    
+    return synth_status,architecture
 
-def simulate(project_path,rtl_path,top_module,test_):
-    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugins + " -full64 -debug_all -kdb -lca +define+VCS_MODE=1"
+def simulate(project_path,rtl_path,top_module,test_,architecture):
+    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugin(architecture) + " -full64 -debug_all -kdb -lca -timescale=1ns/100ps +define+VCS_MODE=1"
     if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")):
         mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")
         for _file_ in mem_init:
@@ -191,7 +213,8 @@ def simulate(project_path,rtl_path,top_module,test_):
         mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.init")
         for _file_ in mem_init:
             shutil.copy(_file_,project_path+"/")
-
+    if flow == "rtl":
+        shutil.copy(YS_ROOT + "/bram.svh",project_path+"/")
     # print(vcs_cmd)
     try:
         execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
@@ -216,7 +239,7 @@ def test():
             top_module = JSON_data["benchmarks"][test]["top_module"]
             os.makedirs(project_path)
             os.chdir(project_path)
-            synth = compile(project_path,rtl_path,top_module,test)
+            synth, architecture = compile(project_path,rtl_path,top_module,test)
             if (synth == True):
                 try:
                     Data = yosys_parser(test,"synth.log","Synthesis Succeeded",test)
@@ -224,7 +247,7 @@ def test():
                     Data = [test,"N/A","N/A","N/A","N/A","N/A","Synthesis Failed"]
                     print(str(e))
         if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True:
-            simulate(project_path,rtl_path,top_module,test)
+            simulate(project_path,rtl_path,top_module,test,architecture)
             try:
                 vcs_parse("vcs_sim.log",test,Data)
             except Exception as e:
