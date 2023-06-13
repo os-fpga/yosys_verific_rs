@@ -48,14 +48,15 @@ else:
     sys.exit()
     
 def plugin(arch):
+    plugins =  YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_map.v "+ \
+                YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "
+
     if flow == "rtl":
         plugins = plugins + "/nfs_scratch/scratch/FV/awais/Synthesis/v1/yosys_verific_rs/scripts/yosys_validation/file_list.sv"
     else:
         plugins = plugins + YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/brams_sim.v " + \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_map.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "+ \
                 YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/TDP18K_FIFO.v "+ \
                 YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/ufifo_ctl.v "+ \
                 YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/sram1024x18.v"
