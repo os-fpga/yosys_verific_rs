@@ -1,6 +1,10 @@
 ## Introduction
 The tool  generates two JSON files in the current working directory: `port_info.json` and `hier_info.json`. The `port_info.json` contains all top modules with their ports which are written as a list of objects. The `hier_info.json` contains the hierarchy information.
 
+## Structure of port_info.json
+
+The JSON schema for the port_info.json is provided in the [port_info_schema.json](./port_info_schema.json) file.
+
 ## Structure of hier_info.json
 
 - `fileIDs`: list of all source files with unique IDs, which are used in json to avoid repetitive long string names for every module description.
@@ -9,123 +13,7 @@ The tool  generates two JSON files in the current working directory: `port_info.
 
 - `hierTree`: list of all top level modules (containing filename id, port info, parameters info, module instances with module identifiers pointing to the "modules" section.)
 
-```bash
-{
-    "fileIDs": {
-        "1": "SRC1",
-        "2": "SRC2"
-    },
-    "hierTree": [
-        {
-            "file": "UNIQUE_FILE_ID",
-            "internalSignals": [
-                {
-                    "name": "NAME",
-                    "range": {
-                        "lsb": LSB_NUM,
-                        "msb": MSB_NUM
-                    },
-                    "type": "SIGNAL_TYPE"
-                },
-		...
-            ],
-            "language": "RTL_LANGUAGE_STANDARD",
-            "line": LINE_NUM,
-            "moduleInsts": [
-                {
-                    "file": "UNIQUE_FILE_ID",
-                    "instName": "INSTANCE_NAME",
-                    "line": LINE_NUM,
-                    "module": "MODULE_UNIQUE_NAME",
-                    "parameters": [
-                        {
-                            "name": "PARAM_NAME",
-                            "value": "PARAM_VALUE"
-                        },
-			...
-                    ]
-                },
-		...
-            ],
-            "parameters": [
-                {
-                    "name": "PARAM_NAME",
-                    "value": PARAM_VALUE
-                },
-		...
-            ],
-            "ports": [
-                {
-                    "direction": "PORT_DIRECTION",
-                    "name": "PORT_NAME",
-                    "range": {
-                        "lsb": LSB_NUM,
-                        "msb": MSB_NUM
-                    },
-                    "type": "PORT_SIGNAL_TYPE"
-                },
-                ...
-            ],
-            "topModule": "TOP_MODULE_NAME"
-        },
-	...
-    ],
-    "modules": {
-        "MODULE_UNIQUE_NAME": {
-            "file": "UNIQUE_FILE_ID",
-            "internalSignals": [
-                {
-                    "name": "NAME",
-                    "range": {
-                        "lsb": LSB_NUM,
-                        "msb": MSB_NUM
-                    },
-                    "type": "SIGNAL_TYPE"
-                },
-		...
-            ],
-            "language": "RTL_LANGUAGE_STANDARD",
-            "line": LINE_NUM,
-            "module": "MODULE_NAME",
-            "parameters": [
-                {
-                    "name": "PARAM_NAME",
-                    "value": PARAM_VALUE
-                },
-		...
-            ],
-            "ports": [
-                {
-                    "direction": "PORT_DIRECTION",
-                    "name": "PORT_NAME",
-                    "range": {
-                        "lsb": LSB_NUM,
-                        "msb": MSB_NUM
-                    },
-                    "type": "PORT_SIGNAL_TYPE"
-                },
-                ...
-            ],
-            "moduleInsts": [
-                {
-                    "file": "UNIQUE_FILE_ID",
-                    "instName": "INSTANCE_NAME",
-                    "line": LINE_NUM,
-                    "module": "MODULE_UNIQUE_NAME",
-                    "parameters": [
-                        {
-                            "name": "PARAM_NAME",
-                            "value": "PARAM_VALUE"
-                        },
-			...
-                    ]
-                },
-		...
-	    ]
-        }
-    }
-}
-```
+The JSON schema for the hier_info.json is provided in the [hier_info_schema.json](./hier_info_schema.json) file.
 
 ## Usage
 ```bash

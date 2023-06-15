@@ -120,6 +120,11 @@ long portDump::parseVhdlExpression(VhdlExpression *expr) {
             {
                 return static_cast<VhdlInteger*>(expr)->GetValue();
             }
+        case ID_VHDLINDEXEDNAME:
+            {
+                VhdlIndexedName *indexdName = static_cast<VhdlIndexedName*>(expr);
+                return parseVhdlExpression(indexdName->FormalDesignator());
+            }
         default:
             {
                 std::cout << "Unknown type: " << expr->GetClassId() << std::endl;
