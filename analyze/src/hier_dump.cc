@@ -520,11 +520,7 @@ void hierDump::saveVhdlModuleParamsInfo(VhdlPrimaryUnit* mod, json& module) {
             if (!p)
                 continue;
             std::string exprInitAssign = parseVhdlExpressionStr(p->GetInitAssign());
-            if (is_number(exprInitAssign)) {
-                module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", std::stol(exprInitAssign)}});
-            } else {
-                module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", exprInitAssign}});
-            }
+            module["parameters"].push_back({{"name", p->GetPrettyPrintedString()}, {"value", exprInitAssign}});
         }
     }
 }
