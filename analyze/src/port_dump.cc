@@ -123,7 +123,7 @@ long portDump::parseVhdlExpression(VhdlExpression *expr) {
         case ID_VHDLINDEXEDNAME:
             {
                 VhdlIndexedName *indexdName = static_cast<VhdlIndexedName*>(expr);
-                return parseVhdlExpression(indexdName->FormalDesignator());
+                return parseVhdlExpression(indexdName->GetPrefixId()->GetInitAssign());
             }
         default:
             {
