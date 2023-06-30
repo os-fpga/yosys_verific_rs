@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 210)
+set(VERSION_PATCH 209)
 
 project(yosys_verific_rs)
 
@@ -77,7 +77,7 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
 
-option(ENABLE_VERIFIC "Enable Verific frontend" OFF)
+option(ENABLE_VERIFIC "Enable Verific frontend" ON)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 if (APPLE)
     option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
@@ -95,9 +95,7 @@ REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
 if (NOT RAPTOR)
-    if (ENABLE_VERIFIC)
-        add_subdirectory(${READ_VERILOG_SRC_DIR})
-    endif()
+    add_subdirectory(${READ_VERILOG_SRC_DIR})
 endif()
 
 set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
@@ -133,30 +131,18 @@ if (PRODUCTION_BUILD)
         "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
         "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
     )
-    if (ENABLE_VERIFIC)
-        list(APPEND YOSYS_MK_ARGS
-            "PRODUCTION_BUILD=1"
-            "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
-            "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
-            "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
-            "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
-        )
-    else()
-        list(APPEND YOSYS_MK_ARGS
-            "PRODUCTION_BUILD=1"
-            "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
-            "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
-            "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
-            "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
-        )
-    endif()
+    list(APPEND YOSYS_MK_ARGS
+        "PRODUCTION_BUILD=1"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+        "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
+        "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
+    )
 else()
-    if (ENABLE_VERIFIC)
-        list(APPEND YOSYS_MK_ARGS
-        "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
-        "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
-        )
-    endif()
+    list(APPEND YOSYS_MK_ARGS
+    "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
+    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+    )
 endif()
 
 if (YOSYS_LIB)
@@ -196,9 +182,7 @@ add_custom_target(
     COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
 )
 
-if (ENABLE_VERIFIC)
-    add_dependencies(yosys libreadver)
-endif()
+add_dependencies(yosys libreadver)
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)
@@ -218,9 +202,7 @@ add_subdirectory(logic_synthesis-rs)
 if (NOT APPLE)
     # There are linking issues with Verific libraries on Mac OS.
     # We need Mac OS environment to debug and fix the issue.
-    if (ENABLE_VERIFIC)
-        add_subdirectory(analyze)
-    endif()
+    add_subdirectory(analyze)
 endif()
 
 if (PRODUCTION_BUILD)
