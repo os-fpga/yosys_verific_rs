@@ -51,6 +51,8 @@ void hierDump::saveVeriInfo(Array *verilogModules, json& tree) {
     FOREACH_ARRAY_ITEM(verilogModules, p, veriMod) {
         if (!veriMod)
             continue;
+        if (veriMod->IsCellDefine())
+            continue;
         json module;
         module["topModule"] = veriMod->Name();
         LineFile* lineFile;
