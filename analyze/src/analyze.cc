@@ -337,7 +337,19 @@ int main (int argc, char* argv[]) {
                     analysis_mode = vhdl_file::VHDL_2008;
                     vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
                 } else {
+
+                    // Thierry : new code : we complain because we did not succeed to recognize
+                    // the option and we exit the infinite loop
+                    //
+                    std::cout << "ERROR: unrecognized option : " << args[argidx].c_str() << std::endl;
+                    return 1;
+#if 0
+                    // Thierry : original code : we "continue" by returning to the starting point of
+                    // the loop and we are re-processing the same line on and on since we do not 
+                    // recognize the option "args[argidx]".
+                    //
                     continue;
+#endif
                 }
 
                 if(analysis_mode != veri_file::UNDEFINED) {
