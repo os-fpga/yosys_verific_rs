@@ -28,15 +28,21 @@ parser.add_argument(
     required=True
 )
 parser.add_argument(
-    "--flow",
-    type=str,
+    "--rtl",
+    type=bool,
     help="Path for tools Input file",
-    required=True
+    default=False
+)
+parser.add_argument(
+    "--sim",
+    type=bool,
+    help="Path for tools Input file",
+    default=False
 )
 args = parser.parse_args()
 plugins = ""
 flow = ""
-if (args.flow == "rtl"):
+if (args.rtl):
     flow = "rtl"
 else:
     flow = "sim"
@@ -111,7 +117,9 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     global run_synth_status
     run_synth_status = ""
     regex = re.compile(r'\b(WARNING|Warning|renaming|INFO|Info|->|.cc)\b')
+    print(raptor_log)
     with open(raptor_log,"r") as in_file:
+        status_found = False
         for line in in_file:
             if regex.search(line):
                 continue
@@ -135,22 +143,28 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                     pass
 
                 if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
+                    print(line)
                     _Luts_ = line.split()[1]
                 
                 if (re.search(r".*RS_DSP.*", line) and (stat == True) and (next_command == False)):
+                    print(line)
                     DSP.append(int(line.split()[1]))
 
                 if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
+                    print(line)
                     BRAM.append(int(line.split()[1]))
 
-                if ((re.search(r".*dff.*", line)) and re.search(r".*$.*", line) and stat == True and next_command == False):
+                if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
+                    print(line)
                     dffsre.append(int(line.split()[1]))
                 
                 if ((re.search(r"ERROR:.*", line) or re.search(r"\[ERROR\].*", line))):
+                    print(line)
                     failure_type =  ""
                     error_msg=line
                     break
                 if re.search(r"End of script.*", line):
+                    print(line)
                     synth_status="Synthesis Succeeded"
                     status_found = True
 
@@ -247,7 +261,7 @@ def test():
                 except Exception as e:
                     Data = [test,"N/A","N/A","N/A","N/A","N/A","Synthesis Failed"]
                     print(str(e))
-        if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True:
+        if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True and args.sim == True:
             simulate(project_path,rtl_path,top_module,test,architecture)
             try:
                 vcs_parse("vcs_sim.log",test,Data)
