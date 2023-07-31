@@ -117,7 +117,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     global run_synth_status
     run_synth_status = ""
     regex = re.compile(r'\b(WARNING|Warning|renaming|INFO|Info|->|.cc)\b')
-    print(raptor_log)
+    # print(raptor_log)
     with open(raptor_log,"r") as in_file:
         status_found = False
         for line in in_file:
@@ -143,28 +143,28 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                     pass
 
                 if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
-                    print(line)
+                    # print(line)
                     _Luts_ = line.split()[1]
                 
                 if (re.search(r".*RS_DSP.*", line) and (stat == True) and (next_command == False)):
-                    print(line)
+                    # print(line)
                     DSP.append(int(line.split()[1]))
 
                 if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
-                    print(line)
+                    # print(line)
                     BRAM.append(int(line.split()[1]))
 
                 if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
-                    print(line)
+                    # print(line)
                     dffsre.append(int(line.split()[1]))
                 
                 if ((re.search(r"ERROR:.*", line) or re.search(r"\[ERROR\].*", line))):
-                    print(line)
+                    # print(line)
                     failure_type =  ""
                     error_msg=line
                     break
                 if re.search(r"End of script.*", line):
-                    print(line)
+                    # print(line)
                     synth_status="Synthesis Succeeded"
                     status_found = True
 
