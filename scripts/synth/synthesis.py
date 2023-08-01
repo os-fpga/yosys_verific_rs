@@ -307,7 +307,7 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
                     files_dict["vhdl"].append(filename)
                 elif filename.endswith(".vhdl"):
                     files_dict["vhdl"].append(filename)
-                elif filename.endswith(".sv"):
+                elif filename.endswith(".sv") and filename != "tb.sv":
                     files_dict["sv"].append(filename)
                 elif filename.endswith(".v"):
                     files_dict["v"].append(filename)
