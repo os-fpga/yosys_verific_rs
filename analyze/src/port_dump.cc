@@ -12,6 +12,8 @@ void portDump::saveVeriInfo(Array *verilogModules, json& portInfo) {
     FOREACH_ARRAY_ITEM(verilogModules, p, veriMod) {
         if (!veriMod)
             continue;
+        if (veriMod->IsCellDefine())
+            continue;
         json module;
         module["topModule"] = veriMod->Name();
         saveVeriModulePortsInfo(veriMod, module);

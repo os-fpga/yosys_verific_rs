@@ -51,6 +51,8 @@ void hierDump::saveVeriInfo(Array *verilogModules, json& tree) {
     FOREACH_ARRAY_ITEM(verilogModules, p, veriMod) {
         if (!veriMod)
             continue;
+        if (veriMod->IsCellDefine())
+            continue;
         json module;
         module["topModule"] = veriMod->Name();
         LineFile* lineFile;
@@ -347,9 +349,21 @@ void hierDump::SetVhdlModuleId(VhdlPrimaryUnit* unit, std::string paramList) {
         std::unordered_set<std::string> portNames;
         saveVhdlModulePortsInfo(unit, module, portNames);
         saveVhdlModuleInternalSignals(unit, module, portNames);
-        saveVhdlModuleInsts(unit, module);
+
+        // Thierry : we see potential recursive call (saveVhdlModuleInsts -> 
+        // SetVhdlModuleId -> saveVhdlModuleInsts) so we need to add 
+        // "paramList" into "moduleIDs" before caling "saveVhdlModuleInsts"
+        // so that we do not re-enter this "if" block in the sub-recursive calls.
+        // (but why do we have recursivity with loop here ???)
+        //saveVhdlModuleInsts(unit, module);
+
         modules[paramList] = module;
         moduleIDs.insert(paramList);
+
+        // Thierry : call "saveVhdlModuleInsts" after "moduleIDs.insert(paramList)"
+        // so that we know we already go through here with "paramList" module ID.
+        //
+        saveVhdlModuleInsts(unit, module);
     }
 }
 

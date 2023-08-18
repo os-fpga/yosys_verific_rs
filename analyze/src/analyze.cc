@@ -100,6 +100,7 @@ void print_help() {
     std::cout << "{-vhdl87|-vhdl93|-vhdl2k|-vhdl2008|-vhdl} <vhdl-file/files>\n";
     std::cout << "-work <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
     std::cout << "-L <libname> {-sv|-vhdl|...} <hdl-file/files>\n";
+    std::cout << "-v <primitives_file>\n";
     std::cout << "-vlog-incdir <directory>\n";
     std::cout << "-vlog-libdir <directory>\n";
     std::cout << "-vlog-define <macro>[=<value>]\n";
@@ -155,6 +156,7 @@ int main (int argc, char* argv[]) {
         std::vector<std::string> verific_incdirs;
         std::vector<std::string> verific_libdirs;
         std::vector<std::string> verific_libexts;
+        std::vector<std::string> verific_libfiles;
 
         fs::path vhdl_packages;
         if (!get_packages_path("analyze", vhdl_packages)) {
@@ -217,6 +219,12 @@ int main (int argc, char* argv[]) {
                 if (args[argidx] == "-vlog-libext") {
                     while (++argidx < size)
                         verific_libexts.push_back(args[argidx]);
+                    continue;
+                }
+
+                if (args[argidx] == "-v") {
+                    while (++argidx < size)
+                        verific_libfiles.push_back(args[argidx]);
                     continue;
                 }
 
@@ -312,6 +320,9 @@ int main (int argc, char* argv[]) {
                         veri_file::AddYDir(dir.c_str());
                     for (auto &ext : verific_libexts)
                         veri_file::AddLibExt(ext.c_str());
+                    for (auto &ext : verific_libfiles) {
+                        veri_file::AnalyzeLibFile(ext.c_str(), veri_file::SYSTEM_VERILOG_2005, work.c_str());
+                    }
 
                     if (!veri_file::AnalyzeMultipleFiles(&file_names, analysis_mode, work.c_str(), veri_file::MFCU)) {
                         std::cout << "ERROR: Reading Verilog/SystemVerilog sources failed.\n";
@@ -337,7 +348,19 @@ int main (int argc, char* argv[]) {
                     analysis_mode = vhdl_file::VHDL_2008;
                     vhdl_file::SetDefaultLibraryPath((vhdl_packages / "vdbs_2008").c_str());
                 } else {
+
+                    // Thierry : new code : we complain because we did not succeed to recognize
+                    // the option and we exit the infinite loop
+                    //
+                    std::cout << "ERROR: unrecognized option : " << args[argidx].c_str() << std::endl;
+                    return 1;
+#if 0
+                    // Thierry : original code : we "continue" by returning to the starting point of
+                    // the loop and we are re-processing the same line on and on since we do not 
+                    // recognize the option "args[argidx]".
+                    //
                     continue;
+#endif
                 }
 
                 if(analysis_mode != veri_file::UNDEFINED) {
