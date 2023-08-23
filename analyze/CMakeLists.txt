@@ -13,11 +13,13 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
 
-get_filename_component(READ_VERILOG_SRC_DIR "../Raptor_Tools/gatelevel_readers/read_verilog"
+get_filename_component(ENCRYPTION_SRC "../Raptor_Tools/encryption/"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+message("ENCRYPTION_SRC: ${ENCRYPTION_SRC}")
+
 if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
-    add_subdirectory(${READ_VERILOG_SRC_DIR} "libreadver")
-    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+    add_subdirectory(${ENCRYPTION_SRC} "libreadver")
+    message("ENCRYPTION_SRC: ${ENCRYPTION_SRC}")
 endif()
 
 find_package(PkgConfig REQUIRED)
@@ -78,6 +80,7 @@ message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
 file(GLOB_RECURSE LIB_HEADERS
     ${VERIFIC_HOME}/*/*.h)
+list(APPEND LIB_HEADERS ${ENCRYPTION_SRC}/src/enc_verilog/ieee_1735.h)
 
 files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
 
@@ -90,7 +93,7 @@ endif(PRODUCTION_BUILD)
 
 target_include_directories(analyze PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 target_include_directories(analyze PUBLIC ${LIB_INCLUDE_DIRS})
-target_include_directories(analyze PUBLIC ${READ_VERILOG_SRC_DIR}/src/read_nl/)
+target_include_directories(analyze PUBLIC {ENCRYPTION_SRC}/src/enc_verilog/)
 
 if (APPLE)
     set(OS "mac")

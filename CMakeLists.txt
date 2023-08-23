@@ -90,12 +90,12 @@ get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
-get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
-REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+get_filename_component(ENCRYPTION_SRC "Raptor_Tools/encryption/"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+message("ENCRYPTION_SRC: ${ENCRYPTION_SRC}")
 
 if (NOT RAPTOR)
-    add_subdirectory(${READ_VERILOG_SRC_DIR})
+    add_subdirectory(${ENCRYPTION_SRC})
 endif()
 
 set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
@@ -134,14 +134,14 @@ if (PRODUCTION_BUILD)
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${ENCRYPTION_SRC}/src/enc_verilog"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
     )
 else()
     list(APPEND YOSYS_MK_ARGS
     "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
-    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+    "EXTRA_CXX_FLAGS=-I${ENCRYPTION_SRC}/src/enc_verilog"
     )
 endif()
 
