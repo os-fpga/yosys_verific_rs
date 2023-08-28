@@ -1,19 +1,20 @@
 name: Daily tests
 
 on:
-  schedule:
-    - cron: "30 19 * * 1,2,3,4,5"
-  workflow_dispatch:
-    inputs:
-      config_files:
-        description: 'Json config files'
-        required: true
-        default: 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json'
-      conditional:
-        type: boolean
-        description: 'Base'
-        required: true
-        default: true
+  push:
+    schedule:
+      - cron: "30 19 * * 1,2,3,4,5"
+    workflow_dispatch:
+      inputs:
+        config_files:
+          description: 'Json config files'
+          required: true
+          default: 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json'
+        conditional:
+          type: boolean
+          description: 'Base'
+          required: true
+          default: true
 
 jobs:
   build:
@@ -73,7 +74,8 @@ jobs:
         continue-on-error: true
         run: |
           module load fpga_tools/raptor/build_env
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+          module load opensource/gcc/11.2.0
+          if [[ "${{ github.event_name }}" == "push" ]]; then
             python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
           else
             python3 scripts/synth/synthesis.py --config_files ${{ github.event.inputs.config_files }}           
@@ -93,8 +95,9 @@ jobs:
         continue-on-error: true
         run: |
           var=`find result*/ -name *json`
-          if ${{ github.event_name == 'schedule' ||  github.event.inputs.conditional }}; then
-            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp
+          echo $var
+          if ${{ github.event_name == 'push' ||  github.event.inputs.conditional }}; then
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/*.json .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv 
           else
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
           fi
@@ -109,7 +112,7 @@ jobs:
 
       - name: Compare QoR
         run: |
-          if ${{ github.event_name == 'schedule' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional) }}; then
+          if ${{ github.event_name == 'push' || (github.event.inputs.config_files == 'suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json' && github.event.inputs.conditional) }}; then
             pip install --user pandas
             pip install --user termcolor
             python3 scripts/log_automation/result_comparision.py Daily-tests_synth_rs_ade_with_bram_with_dsp.csv
