@@ -73,6 +73,7 @@ jobs:
         continue-on-error: true
         run: |
           module load fpga_tools/raptor/build_env
+          module load opensource/gcc/11.2.0
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             python3 scripts/synth/synthesis.py --config_files "suites/Daily-tests/Daily-tests_synth_rs_ade_with_bram_with_dsp.json"
           else
@@ -93,8 +94,9 @@ jobs:
         continue-on-error: true
         run: |
           var=`find result*/ -name *json`
+          echo $var
           if ${{ github.event_name == 'schedule' ||  github.event.inputs.conditional }}; then
-            python3 scripts/log_automation/run_metrics_extractor.py --yosys $var .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp
+            python3 scripts/log_automation/run_metrics_extractor.py --yosys result*/*.json .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --run_log result*/run.log .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp/run.log --base .github/logs/Daily-tests_synth_rs_ade_with_bram_with_dsp --output_file Daily-tests_synth_rs_ade_with_bram_with_dsp.csv 
           else
             python3 scripts/log_automation/run_metrics_extractor.py --yosys $var --output_file synth_rs.csv --run_log result*/run.log
           fi

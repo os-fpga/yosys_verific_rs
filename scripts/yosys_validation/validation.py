@@ -115,6 +115,13 @@ def replace_string(file_,search_,replace_):
 
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=[]
+    RS_DSP_MULT = 0
+    RS_DSP_MULT_REGIN = 0
+    RS_DSP_MULT_REGOUT = 0
+    RS_DSP_MULT_REGIN_REGOUT = 0
+    RS_DSP_MULTACC = 0
+    RS_DSP_MULTACC_REGIN = 0
+
     global run_synth_status
     run_synth_status = ""
     regex = re.compile(r'\b(WARNING|Warning|renaming|INFO|Info|->|.cc)\b')
@@ -151,6 +158,30 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                     # print(line)
                     DSP.append(int(line.split()[1]))
 
+                if (re.search(r".*RS_DSP_MULT ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULT = int(line.split()[1])
+
+                if (re.search(r".*RS_DSP_MULT_REGIN ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULT_REGIN = int(line.split()[1])
+
+                if (re.search(r".*RS_DSP_MULT_REGOUT ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULT_REGOUT = int(line.split()[1])
+
+                if (re.search(r".*RS_DSP_MULT_REGIN_REGOUT ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULT_REGIN_REGOUT = int(line.split()[1])
+
+                if (re.search(r".*RS_DSP_MULTACC ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULTACC = int(line.split()[1])
+
+                if (re.search(r".*RS_DSP_MULTACC_REGIN ", line) and (stat == True) and (next_command == False)):
+                    # print(line)
+                    RS_DSP_MULTACC_REGIN = int(line.split()[1])
+
                 if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
                     # print(line)
                     BRAM.append(int(line.split()[1]))
@@ -173,7 +204,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     if status_found == 0:
         synth_status ="Synthesis Failed"
 
-    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),synth_status]
+    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), synth_status]
 
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
@@ -181,7 +212,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
 def vcs_parse(sim_file,test_,Data):
     with open (sim_file, 'r') as sim_file:
         for line in sim_file:
-            if (re.search(r"Simulation Passed.*", line)):
+            if (re.search(r"Simulation Passed.*", line) or re.search(r".*All Comparison Matched.*", line)):
                 sim = True
                 Data.append("Simulation Passed")
                 print(CGREEN+"Simulation Passed for "+test_+CEND)
@@ -242,7 +273,7 @@ def simulate(project_path,rtl_path,top_module,test_,architecture):
 
 
 def test():
-    header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s',"Synthesis Status", "Simulation Status"]
+    header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s', 'RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN',"Synthesis Status", "Simulation Status"]
     CSV_File = open(path+"/results.csv",'w')
     writer = csv.writer(CSV_File)
     writer.writerow(header)
