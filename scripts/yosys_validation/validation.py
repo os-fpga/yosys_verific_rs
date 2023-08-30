@@ -8,6 +8,7 @@ import glob
 import json
 import csv
 import shutil
+import string
 
 CRED = '\033[91m'
 CGREEN = '\033[92m'
@@ -52,7 +53,17 @@ if (os.path.exists(YS_ROOT+"/../../suites/yosys_validation/"+args.test)):
 else:
     print("[ERROR]: <"+YS_ROOT+"/../../suites/yosys_validation/"+args.test+"> file does not exist")
     sys.exit()
-    
+def get_template(template_file):
+  with open(template_file) as read_job:
+    template = string.Template(read_job.read())
+    read_job.close()
+  return template
+
+def generate_task_conf(gen_file, final_output):
+  with open(gen_file, 'w') as write_job:
+    write_job.write(final_output)
+    write_job.close()
+
 def plugin(arch):
     plugins =  YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
                 YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
@@ -224,16 +235,16 @@ def vcs_parse(sim_file,test_,Data):
 
 def compile(project_path,rtl_path,top_module,test_):
     synth_status = True
-    if (os.path.exists(YS_ROOT +"/../../" + rtl_path+"/yosys.ys")==0):
-        print("Cannot open "+YS_ROOT +"/../../" + rtl_path+"/yosys.ys")
+    if (os.path.exists(project_path+"/yosys.ys")==0):
+        print("Cannot open "+project_path+"/yosys.ys")
     else:
-        with open (YS_ROOT +"/../../" + rtl_path+"/yosys.ys","r") as ys_file:
+        with open (project_path+"/yosys.ys","r") as ys_file:
             for line in ys_file:
                 if (re.search(r".*-tech genesis.*", line)):
                     architecture = line.split("-tech")
                     architecture = architecture[1].split()[0]
 
-        synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -s " + YS_ROOT +"/../../" + rtl_path+"/yosys.ys"
+        synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -s " + project_path+"/yosys.ys"
         try:
             execute(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
         except Exception as _error_:
@@ -280,34 +291,46 @@ def test():
     CSV_File.close()
     for test in JSON_data["benchmarks"]:
         Data = []
-        if JSON_data["benchmarks"][test]["compile_status"] == "active":
-            project_path = os.path.join(path,test)
-            rtl_path  = JSON_data["benchmarks"][test]["test_path"]
-            top_module = JSON_data["benchmarks"][test]["top_module"]
-            os.makedirs(project_path)
-            os.chdir(project_path)
-            synth, architecture = compile(project_path,rtl_path,top_module,test)
-            if (synth == True):
+        os.chdir(YS_ROOT)
+        try:
+            if JSON_data["benchmarks"][test]["compile_status"] == "active":
+                project_path = os.path.join(path,test)
+                rtl_path  = JSON_data["benchmarks"][test]["test_path"]
+                top_module = JSON_data["benchmarks"][test]["top_module"]
+                # os.makedirs(project_path)
+                shutil.copytree("../../"+rtl_path,project_path)
+                
+                TASK_template = get_template(project_path+"/yosys.ys")
+                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE="genesis3")
+                generate_task_conf(project_path+"/yosys.ys", Gen_Template)
+                os.chdir(project_path)
+                synth, architecture = compile(project_path,rtl_path,top_module,test)
+                if (synth == True):
+                    try:
+                        Data = yosys_parser(test,"synth.log","Synthesis Succeeded",test)
+                    except Exception as e:
+                        Data = [test,"N/A","N/A","N/A","N/A","N/A","Synthesis Failed"]
+                        print(str(e))
+            if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True and args.sim == True:
+                simulate(project_path,rtl_path,top_module,test,architecture)
                 try:
-                    Data = yosys_parser(test,"synth.log","Synthesis Succeeded",test)
+                    vcs_parse("vcs_sim.log",test,Data)
                 except Exception as e:
-                    Data = [test,"N/A","N/A","N/A","N/A","N/A","Synthesis Failed"]
+                    Data.append("Cannot open ./simv file")
                     print(str(e))
-        if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True and args.sim == True:
-            simulate(project_path,rtl_path,top_module,test,architecture)
-            try:
-                vcs_parse("vcs_sim.log",test,Data)
-            except Exception as e:
-                Data.append("Cannot open ./simv file")
-                print(str(e))
-        if JSON_data["benchmarks"][test]["compile_status"] == "active":
-            with open(path+"/results.csv",'a') as csv_file:
-                writer = csv.writer(csv_file)
-                writer.writerow(Data)
-                print("\n================================================================================\n")
+            if JSON_data["benchmarks"][test]["compile_status"] == "active":
+                with open(path+"/results.csv",'a') as csv_file:
+                    writer = csv.writer(csv_file)
+                    writer.writerow(Data)
+                    print("\n================================================================================\n")
+        except Exception as error:
+            print(error)
 # try:
 #     shutil.rmtree(YS_ROOT+'/logs/')
 # except Exception as e: 
 #     print(str(e))
 path = _create_new_project_dir_()
-test()
+try:
+    test()
+except Exception as error:
+    print(error)
