@@ -159,10 +159,6 @@ def parse_log_backward(log_file):
 
     return result_lines, synth_stat
 
-# log_file = "your_log_file.txt"
-# result = parse_log_backward(log_file)
-
-
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=[]
     RS_DSP_MULT = 0
@@ -277,7 +273,6 @@ def vcs_parse(sim_file,test_,Data):
                 Data.append("Simulation Failed")
                 print(CRED+"Simulation Failed for "+test_+CEND)
 
-
 def compile(project_path,rtl_path,top_module,test_):
     synth_status = True
     if (os.path.exists(project_path+"/yosys.ys")==0):
@@ -321,13 +316,16 @@ def simulate(project_path,rtl_path,top_module,test_):
         sim = False
         print (str(e))
 
-
 def test():
     header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s', 'RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN', 'RS_DSP_MULTACC_REGOUT', 'RS_DSP_MULTACC_REGIN_REGOUT', 'RS_DSP_MULTADD', 'RS_DSP_MULTADD_REGIN', 'RS_DSP_MULTADD_REGOUT', 'RS_DSP_MULTADD_REGIN_REGOUT', "Synthesis Status", "Simulation Status"]
     CSV_File = open(path+"/results.csv",'w')
     writer = csv.writer(CSV_File)
     writer.writerow(header)
     CSV_File.close()
+    Tool_settings_gen = "-de -goal delay -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
+    Tool_settings_gen2 = "-de -goal delay -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
+    Tool_settings_gen3 = "-de -goal delay -no_iobuf -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
+    Tool_seting = ""
     for test in JSON_data["benchmarks"]:
         Data = []
         os.chdir(YS_ROOT)
@@ -340,7 +338,14 @@ def test():
                 shutil.copytree("../../"+rtl_path,project_path)
                 
                 TASK_template = get_template(project_path+"/yosys.ys")
-                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE=args.tech)
+                if (args.tech == "genesis"):
+                    Tool_seting = Tool_settings_gen
+                if (args.tech == "genesis2"):
+                    Tool_seting = Tool_settings_gen2
+                if (args.tech == "genesis3"):
+                    Tool_seting = Tool_settings_gen3
+
+                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE=args.tech, TOP = top_module, SYNTH_SETTING = Tool_seting)
                 generate_task_conf(project_path+"/yosys.ys", Gen_Template)
                 os.chdir(project_path)
                 synth = compile(project_path,rtl_path,top_module,test)
