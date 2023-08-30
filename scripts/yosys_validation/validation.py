@@ -29,6 +29,13 @@ parser.add_argument(
     required=True
 )
 parser.add_argument(
+    "--tech",
+    type=str,
+    choices=["genesis", "genesis2", "genesis3"],
+    help="Specify technology for the run genesis|genesis2|genesis3",
+    required=True
+)
+parser.add_argument(
     "--rtl",
     type=bool,
     help="Path for tools Input file",
@@ -124,6 +131,38 @@ def replace_string(file_,search_,replace_):
         with open(file_, 'w') as file:
             file.write(data)
 
+def parse_log_backward(log_file):
+    found_start = False
+    result_lines = []
+    synth_stat = ""
+
+    with open(log_file, 'rb') as file:
+        file.seek(0, 2)  # Seek to the end of the file
+        file_size = file.tell()
+        pointer = file_size - 1
+
+        while pointer >= 0:
+            file.seek(pointer)
+            current_char = file.read(1)
+            if current_char == b'\n':
+                line = file.readline().decode('utf-8').strip()
+                if "End of script." in line:
+                    synth_stat = "Synthesis Succeeded"
+                if "Number of LUTs:" in line:
+                    found_start = True
+                elif found_start and "Printing statistics." in line:
+                    break  # We've found the end of the section
+                elif found_start:
+                    result_lines.insert(0, line)
+
+            pointer -= 1
+
+    return result_lines, synth_stat
+
+# log_file = "your_log_file.txt"
+# result = parse_log_backward(log_file)
+
+
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=[]
     RS_DSP_MULT = 0
@@ -132,90 +171,96 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
     RS_DSP_MULT_REGIN_REGOUT = 0
     RS_DSP_MULTACC = 0
     RS_DSP_MULTACC_REGIN = 0
+    RS_DSP_MULTACC_REGOUT = 0
+    RS_DSP_MULTACC_REGIN_REGOUT = 0
+    RS_DSP_MULTADD_REGIN = 0
+    RS_DSP_MULTADD_REGIN_REGOUT = 0
+    RS_DSP_MULTADD_REGOUT = 0
+    RS_DSP_MULTADD = 0
 
     global run_synth_status
     run_synth_status = ""
-    regex = re.compile(r'\b(WARNING|Warning|renaming|INFO|Info|->|.cc)\b')
     # print(raptor_log)
     with open(raptor_log,"r") as in_file:
-        status_found = False
-        for line in in_file:
-            if regex.search(line):
-                continue
-            else:
-                if re.search(r".*Printing statistics.*", line):
-                    stat = True
-                    next_command = False
-                    Carry_cells.clear()
-                    DSP.clear()
-                    BRAM.clear()
-                    dffsre.clear()
-                
-                if (re.search(r".*Executing.*", line) and stat == True):
-                    stat = False
-                    next_command = True
+        result, synth_status = parse_log_backward(raptor_log)
+        # result = "\n".join(result)
+        # print(result)
+        for line in result:
+            # print(line)
+            try:
+                if (re.search(r".*fa_.*bit.*", line)):
+                    Carry_cells.append(int(line.split()[1]))
+            except:
+                pass
+            if (re.search(r".*\$lut.*", line)):
+                # print(line)
+                _Luts_ = line.split()[1]
+            
+            if (re.search(r".*RS_DSP.*", line)):
+                # print(line)
+                DSP.append(int(line.split()[1]))
 
-                try:
-                    if (re.search(r".*fa_.*bit.*", line) and (stat == True) and (next_command == False)):
-                        Carry_cells.append(int(line.split()[1]))
-                except:
-                    pass
+            if (re.search(r".*RS_DSP_MULT ", line)):
+                # print(line)
+                RS_DSP_MULT = int(line.split()[1])
 
-                if (re.search(r".*\$lut.*", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    _Luts_ = line.split()[1]
-                
-                if (re.search(r".*RS_DSP.*", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    DSP.append(int(line.split()[1]))
+            if (re.search(r".*RS_DSP_MULT_REGIN ", line)):
+                # print(line)
+                RS_DSP_MULT_REGIN = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULT ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULT = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULT_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULT_REGOUT = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULT_REGIN ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULT_REGIN = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULT_REGIN_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULT_REGIN_REGOUT = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULT_REGOUT ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULT_REGOUT = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULTACC ", line)):
+                # print(line)
+                RS_DSP_MULTACC = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULT_REGIN_REGOUT ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULT_REGIN_REGOUT = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULTACC_REGIN ", line)):
+                # print(line)
+                RS_DSP_MULTACC_REGIN = int(line.split()[1])
+            
+            if (re.search(r".*RS_DSP_MULTACC_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULTACC_REGOUT = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULTACC ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULTACC = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULTACC_REGIN_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULTACC_REGIN_REGOUT = int(line.split()[1])
 
-                if (re.search(r".*RS_DSP_MULTACC_REGIN ", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    RS_DSP_MULTACC_REGIN = int(line.split()[1])
+            if (re.search(r".*RS_DSP_MULTADD ", line)):
+                # print(line)
+                RS_DSP_MULTADD = int(line.split()[1])
 
-                if (re.search(r".*TDP.*K", line) and (stat == True) and (next_command == False)):
-                    # print(line)
-                    BRAM.append(int(line.split()[1]))
+            if (re.search(r".*RS_DSP_MULTADD_REGIN ", line)):
+                # print(line)
+                RS_DSP_MULTADD_REGIN = int(line.split()[1])
+            
+            if (re.search(r".*RS_DSP_MULTADD_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULTADD = int(line.split()[1])
 
-                if ((re.search(r".*dff.*", line)) and stat == True and next_command == False):
-                    # print(line)
-                    dffsre.append(int(line.split()[1]))
-                
-                if ((re.search(r"ERROR:.*", line) or re.search(r"\[ERROR\].*", line))):
-                    # print(line)
-                    failure_type =  ""
-                    error_msg=line
-                    break
-                if re.search(r"End of script.*", line):
-                    # print(line)
-                    synth_status="Synthesis Succeeded"
-                    status_found = True
+            if (re.search(r".*RS_DSP_MULTADD_REGIN_REGOUT ", line)):
+                # print(line)
+                RS_DSP_MULTADD_REGIN = int(line.split()[1])
 
-    
-    if status_found == 0:
-        synth_status ="Synthesis Failed"
+            if (re.search(r".*TDP.*K", line) and (stat == True)):
+                # print(line)
+                BRAM.append(int(line.split()[1]))
 
-    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), synth_status]
+            if (re.search(r".*dff.*", line)):
+                # print(line)
+                dffsre.append(int(line.split()[1]))
+            
+
+            # print(line__)
+
+
+    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), str(RS_DSP_MULTACC_REGOUT), str(RS_DSP_MULTACC_REGIN_REGOUT), str(RS_DSP_MULTADD), str(RS_DSP_MULTADD_REGIN), str(RS_DSP_MULTADD_REGOUT), str(RS_DSP_MULTADD_REGIN_REGOUT), synth_status]
 
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
@@ -238,12 +283,6 @@ def compile(project_path,rtl_path,top_module,test_):
     if (os.path.exists(project_path+"/yosys.ys")==0):
         print("Cannot open "+project_path+"/yosys.ys")
     else:
-        with open (project_path+"/yosys.ys","r") as ys_file:
-            for line in ys_file:
-                if (re.search(r".*-tech genesis.*", line)):
-                    architecture = line.split("-tech")
-                    architecture = architecture[1].split()[0]
-
         synth_cmd = YS_ROOT+"/../../"+JSON_data["yosys"]["yosys_path"]+" -s " + project_path+"/yosys.ys"
         try:
             execute(synth_cmd,"synth.log","err_synth.log","synthesis",test_)
@@ -258,10 +297,10 @@ def compile(project_path,rtl_path,top_module,test_):
             print(CRED+"Synthesis Failed for "+test_+CEND)
             synth_status = False
     
-    return synth_status,architecture
+    return synth_status
 
-def simulate(project_path,rtl_path,top_module,test_,architecture):
-    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugin(architecture) + " -full64 -debug_all -kdb -lca -timescale=1ns/100ps +define+VCS_MODE=1"
+def simulate(project_path,rtl_path,top_module,test_):
+    vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugin(args.tech) + " -full64 -debug_all -kdb -lca -timescale=1ns/100ps +define+VCS_MODE=1"
     if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")):
         mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")
         for _file_ in mem_init:
@@ -284,7 +323,7 @@ def simulate(project_path,rtl_path,top_module,test_,architecture):
 
 
 def test():
-    header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s', 'RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN',"Synthesis Status", "Simulation Status"]
+    header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s', 'RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN', 'RS_DSP_MULTACC_REGOUT', 'RS_DSP_MULTACC_REGIN_REGOUT', 'RS_DSP_MULTADD', 'RS_DSP_MULTADD_REGIN', 'RS_DSP_MULTADD_REGOUT', 'RS_DSP_MULTADD_REGIN_REGOUT', "Synthesis Status", "Simulation Status"]
     CSV_File = open(path+"/results.csv",'w')
     writer = csv.writer(CSV_File)
     writer.writerow(header)
@@ -301,10 +340,10 @@ def test():
                 shutil.copytree("../../"+rtl_path,project_path)
                 
                 TASK_template = get_template(project_path+"/yosys.ys")
-                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE="genesis3")
+                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE=args.tech)
                 generate_task_conf(project_path+"/yosys.ys", Gen_Template)
                 os.chdir(project_path)
-                synth, architecture = compile(project_path,rtl_path,top_module,test)
+                synth = compile(project_path,rtl_path,top_module,test)
                 if (synth == True):
                     try:
                         Data = yosys_parser(test,"synth.log","Synthesis Succeeded",test)
@@ -312,7 +351,7 @@ def test():
                         Data = [test,"N/A","N/A","N/A","N/A","N/A","Synthesis Failed"]
                         print(str(e))
             if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True and args.sim == True:
-                simulate(project_path,rtl_path,top_module,test,architecture)
+                simulate(project_path,rtl_path,top_module,test)
                 try:
                     vcs_parse("vcs_sim.log",test,Data)
                 except Exception as e:
