@@ -91,15 +91,15 @@ get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
 message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
-get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
-REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+#get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
+#REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+#message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
-if (NOT RAPTOR)
-    add_subdirectory(${READ_VERILOG_SRC_DIR})
-endif()
+#if (NOT RAPTOR)
+#    add_subdirectory(${READ_VERILOG_SRC_DIR})
+#endif()
 
-set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
+#set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -134,15 +134,10 @@ if (PRODUCTION_BUILD)
     )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
-        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
-    )
-else()
-    list(APPEND YOSYS_MK_ARGS
-    "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
-    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
     )
 endif()
 
