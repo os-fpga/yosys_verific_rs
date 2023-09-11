@@ -19,7 +19,7 @@ set(VERSION_PATCH 237)
 
 project(yosys_verific_rs)
 
-set(YOSYS_VERIFIC ON)
+set(YOSYS_VERIFIC OFF)
 
 if (APPLE)
     message(WARNING "MacOs build is temporarily disabled: EDA-799")
@@ -78,7 +78,7 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
 
-option(ENABLE_VERIFIC "Enable Verific frontend" ON)
+option(ENABLE_VERIFIC "Enable Verific frontend" OFF)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 if (APPLE)
     option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
