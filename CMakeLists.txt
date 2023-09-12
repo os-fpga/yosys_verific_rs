@@ -111,13 +111,13 @@ list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
     "ABCEXTERNAL=abc"
-    "YOSYS_VERIFIC=1"
+    "YOSYS_VERIFIC=0"
     "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
 )
 
 if (ENABLE_VERIFIC)
     list(APPEND YOSYS_MK_ARGS
-        "ENABLE_VERIFIC=1"
+        "ENABLE_VERIFIC=0"
         "DISABLE_VERIFIC_EXTENSIONS=1"
         "VERIFIC_DIR=${VERIFIC_HOME}"
     )
@@ -175,7 +175,11 @@ add_custom_target(
     COMMAND $(MAKE) clean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
-    COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
+    if(YOSYS_VERIFIC)
+        COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
+    else()
+        COMMENT "Clean Yosys/Yosys with given Makefile"
+    endif()
 )
 
 add_dependencies(yosys libreadver)
