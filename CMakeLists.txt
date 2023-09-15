@@ -119,7 +119,7 @@ list(APPEND YOSYS_MK_ARGS
 
 if (ENABLE_VERIFIC)
     list(APPEND YOSYS_MK_ARGS
-        "ENABLE_VERIFIC=0"
+        "ENABLE_VERIFIC=1"
         "DISABLE_VERIFIC_EXTENSIONS=1"
         "VERIFIC_DIR=${VERIFIC_HOME}"
     )
@@ -203,10 +203,12 @@ endif()
 
 add_subdirectory(logic_synthesis-rs)
 # TODO: Fix Mac OS build.
-if (NOT APPLE)
-    # There are linking issues with Verific libraries on Mac OS.
-    # We need Mac OS environment to debug and fix the issue.
-    add_subdirectory(analyze)
+if(ENABLE_VERIFIC)
+    if (NOT APPLE)
+        # There are linking issues with Verific libraries on Mac OS.
+        # We need Mac OS environment to debug and fix the issue.
+        add_subdirectory(analyze)
+    endif()
 endif()
 
 if (PRODUCTION_BUILD)
