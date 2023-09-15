@@ -87,19 +87,21 @@ else()
 endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
-get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+if(ENABLE_VERIFIC)
+    get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    message("VERIFIC_HOME: ${VERIFIC_HOME}")
+
+    get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("VERIFIC_HOME: ${VERIFIC_HOME}")
+    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
-#get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
-#REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-#message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+    if (NOT RAPTOR)
+        add_subdirectory(${READ_VERILOG_SRC_DIR})
+    endif()
 
-#if (NOT RAPTOR)
-#    add_subdirectory(${READ_VERILOG_SRC_DIR})
-#endif()
-
-#set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
+    set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -182,7 +184,9 @@ add_custom_target(
     endif()
 )
 
-add_dependencies(yosys libreadver)
+if(ENABLE_VERIFIC)
+    add_dependencies(yosys libreadver)
+endif()
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)

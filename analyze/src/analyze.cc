@@ -19,11 +19,11 @@
 #include <Windows.h>
 #include <limits>
 #endif
-
+#ifdef ENABLE_VERIFIC
 #include "ieee_1735.h"
 #include "port_dump.h"
 #include "hier_dump.h"
-
+#endif
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
 #endif
