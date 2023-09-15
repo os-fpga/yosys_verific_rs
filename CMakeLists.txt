@@ -172,17 +172,28 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Compile Yosys with given Makefile"
 )
-add_custom_target(
-    yosys_clean
-    COMMAND $(MAKE) clean
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
-    if(YOSYS_VERIFIC)
-        COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
-    else()
+
+if(ENABLE_VERIFIC)
+    add_custom_target(
+        yosys_clean
+        COMMAND $(MAKE) clean
+        #COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
+        if(YOSYS_VERIFIC)
+            COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
+        else()
+            COMMENT "Clean Yosys/Yosys with given Makefile"
+        endif()
+    )
+else()
+    add_custom_target(
+        yosys_clean
+        COMMAND $(MAKE) clean
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
         COMMENT "Clean Yosys/Yosys with given Makefile"
-    endif()
-)
+    )
+endif()
 
 if(ENABLE_VERIFIC)
     add_dependencies(yosys libreadver)
