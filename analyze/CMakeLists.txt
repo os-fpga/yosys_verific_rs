@@ -13,11 +13,13 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
 
-get_filename_component(READ_VERILOG_SRC_DIR "../Raptor_Tools/gatelevel_readers/read_verilog"
-    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
-    add_subdirectory(${READ_VERILOG_SRC_DIR} "libreadver")
-    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+if(ENABLE_VERIFIC)
+    get_filename_component(READ_VERILOG_SRC_DIR "../Raptor_Tools/gatelevel_readers/read_verilog"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
+        add_subdirectory(${READ_VERILOG_SRC_DIR} "libreadver")
+        message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+    endif()
 endif()
 
 find_package(PkgConfig REQUIRED)
@@ -60,10 +62,11 @@ file(GLOB_RECURSE SOURCE_FILES
 
 add_executable(analyze ${SOURCE_FILES})
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_dependencies(analyze verific)
+if(ENABLE_VERIFIC)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_dependencies(analyze verific)
+    endif()
 endif()
-
 
 list(APPEND ANALYZE_CXX_FLAGS_DEBUG
     -fPIC -Werror -Wall -O0 -g ${MEM_SANITIZER_FLAGS} ${CXX_DEFINES}
@@ -72,14 +75,16 @@ list(APPEND ANALYZE_CXX_FLAGS_RELEASE
     -fPIC -Werror -Wall -O3 -DNDEBUG ${CXX_DEFINES}
 )
 
-get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
-    REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("VERIFIC_HOME: ${VERIFIC_HOME}")
+if(ENABLE_VERIFIC)
+    get_filename_component(VERIFIC_HOME "../Raptor_Tools/verific_rs"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    message("VERIFIC_HOME: ${VERIFIC_HOME}")
 
-file(GLOB_RECURSE LIB_HEADERS
-    ${VERIFIC_HOME}/*/*.h)
+    file(GLOB_RECURSE LIB_HEADERS
+        ${VERIFIC_HOME}/*/*.h)
 
-files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
+    files_to_dirs(LIB_HEADERS LIB_INCLUDE_DIRS)
+endif()
 
 if (PRODUCTION_BUILD)
     add_dependencies(analyze rs_licenseManager)
@@ -90,7 +95,10 @@ endif(PRODUCTION_BUILD)
 
 target_include_directories(analyze PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 target_include_directories(analyze PUBLIC ${LIB_INCLUDE_DIRS})
-target_include_directories(analyze PUBLIC ${READ_VERILOG_SRC_DIR}/src/read_nl/)
+
+if(ENABLE_VERIFIC)
+    target_include_directories(analyze PUBLIC ${READ_VERILOG_SRC_DIR}/src/read_nl/)
+endif()
 
 if (APPLE)
     set(OS "mac")
@@ -98,43 +106,52 @@ elseif (UNIX)
     set(OS "linux")
 endif()
 
-list(APPEND VERIFIC_LIBS
-    ${VERIFIC_HOME}/verilog/verilog-${OS}.a
-    ${VERIFIC_HOME}/database/database-${OS}.a
-    ${VERIFIC_HOME}/util/util-${OS}.a
-    ${VERIFIC_HOME}/containers/containers-${OS}.a
-    ${VERIFIC_HOME}/hier_tree/hier_tree-${OS}.a
-    ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
-    )
+if(ENABLE_VERIFIC)
+    list(APPEND VERIFIC_LIBS
+        ${VERIFIC_HOME}/verilog/verilog-${OS}.a
+        ${VERIFIC_HOME}/database/database-${OS}.a
+        ${VERIFIC_HOME}/util/util-${OS}.a
+        ${VERIFIC_HOME}/containers/containers-${OS}.a
+        ${VERIFIC_HOME}/hier_tree/hier_tree-${OS}.a
+        ${VERIFIC_HOME}/vhdl/vhdl-${OS}.a
+        )
 
-add_dependencies(analyze libreadver)
+    add_dependencies(analyze libreadver)
+endif()
 
 if (PRODUCTION_BUILD)
     target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
 
-target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
-target_link_libraries(analyze PUBLIC libreadver)
+if(ENABLE_VERIFIC)
+    target_link_libraries(analyze PUBLIC ${VERIFIC_LIBS})
+    target_link_libraries(analyze PUBLIC libreadver)
+endif()
+
 target_link_libraries(analyze PUBLIC ${OPENSSL_LIBRARIES})
 
 target_compile_options(analyze PUBLIC $<$<CONFIG:DEBUG>:${ANALYZE_CXX_FLAGS_DEBUG}>)
 target_compile_options(analyze PUBLIC $<$<CONFIG:RELEASE>:${ANALYZE_CXX_FLAGS_RELEASE}>)
 
-add_custom_command(TARGET analyze
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY}/vhdl_packages
-    )
+if(ENABLE_VERIFIC)
+    add_custom_command(TARGET analyze
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${VERIFIC_HOME}/vhdl_packages ${SHARE_DIRECTORY}/vhdl_packages
+        )
+endif()
 
 install(
     PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/analyze
     DESTINATION bin
 )
 
-install(
-    DIRECTORY ${SHARE_DIRECTORY}
-    DESTINATION share
-    USE_SOURCE_PERMISSIONS
-)
+if(ENABLE_VERIFIC)
+    install(
+        DIRECTORY ${SHARE_DIRECTORY}
+        DESTINATION share
+        USE_SOURCE_PERMISSIONS
+    )
+endif()
 
 add_custom_target(
     clean_analyze

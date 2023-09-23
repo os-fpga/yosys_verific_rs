@@ -19,7 +19,7 @@ set(VERSION_PATCH 240)
 
 project(yosys_verific_rs)
 
-set(YOSYS_VERIFIC ON)
+set(YOSYS_VERIFIC OFF)
 
 if (APPLE)
     message(WARNING "MacOs build is temporarily disabled: EDA-799")
@@ -78,7 +78,7 @@ if (PRODUCTION_BUILD)
     message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
 
-option(ENABLE_VERIFIC "Enable Verific frontend" ON)
+option(ENABLE_VERIFIC "Enable Verific frontend" OFF)
 option(YOSYS_LIB "Build Yosys also as library" OFF)
 if (APPLE)
     option(BUILD_YOSYS_PLUGINS "Enable build of yosys-plugins" OFF)
@@ -87,19 +87,21 @@ else()
 endif()
 option(ENABLE_VALGRIND_TESTS "Enable Valgrind tests" OFF)
 
-get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+if(ENABLE_VERIFIC)
+    get_filename_component(VERIFIC_HOME "Raptor_Tools/verific_rs"
+        REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    message("VERIFIC_HOME: ${VERIFIC_HOME}")
+
+    get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
     REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("VERIFIC_HOME: ${VERIFIC_HOME}")
+    message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
 
-get_filename_component(READ_VERILOG_SRC_DIR "Raptor_Tools/gatelevel_readers/read_verilog"
-REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-message("READ_VERILOG_SRC_DIR: ${READ_VERILOG_SRC_DIR}")
+    if (NOT RAPTOR)
+        add_subdirectory(${READ_VERILOG_SRC_DIR})
+    endif()
 
-if (NOT RAPTOR)
-    add_subdirectory(${READ_VERILOG_SRC_DIR})
+    set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
 endif()
-
-set(LIB_READ_VERILOG ${CMAKE_BINARY_DIR}/Raptor_Tools/gatelevel_readers/read_verilog/libreadver.a)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(YOSYS_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/yosys/debug-install)
@@ -111,7 +113,7 @@ list(APPEND YOSYS_MK_ARGS
     "CONFIG=gcc"
     "PREFIX=${YOSYS_PATH}"
     "ABCEXTERNAL=abc"
-    "YOSYS_VERIFIC=1"
+    "YOSYS_VERIFIC=0"
     "YOSYS_VERIFIC_VER_STR=Yosys-Verific ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
 )
 
@@ -134,15 +136,10 @@ if (PRODUCTION_BUILD)
     )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
-        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lssl -lcrypto ${LIB_READ_VERILOG} -lstdc++"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1 -I${READ_VERILOG_SRC_DIR}/src/read_nl/"
+        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
+        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
         "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
-    )
-else()
-    list(APPEND YOSYS_MK_ARGS
-    "EXTRA_LDLIBS=${LIB_READ_VERILOG} -lssl -lcrypto -lstdc++"
-    "EXTRA_CXX_FLAGS=-I${READ_VERILOG_SRC_DIR}/src/read_nl/"
     )
 endif()
 
@@ -175,15 +172,32 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
     COMMENT "Compile Yosys with given Makefile"
 )
-add_custom_target(
-    yosys_clean
-    COMMAND $(MAKE) clean
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
-    COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
-)
 
-add_dependencies(yosys libreadver)
+if(ENABLE_VERIFIC)
+    add_custom_target(
+        yosys_clean
+        COMMAND $(MAKE) clean
+        #COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
+        if(YOSYS_VERIFIC)
+            COMMENT "Clean Yosys/Yosys+Verific with given Makefile"
+        else()
+            COMMENT "Clean Yosys/Yosys with given Makefile"
+        endif()
+    )
+else()
+    add_custom_target(
+        yosys_clean
+        COMMAND $(MAKE) clean
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${YOSYS_PATH}
+        COMMENT "Clean Yosys/Yosys with given Makefile"
+    )
+endif()
+
+if(ENABLE_VERIFIC)
+    add_dependencies(yosys libreadver)
+endif()
 
 if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (NOT RAPTOR)
@@ -200,10 +214,12 @@ endif()
 
 add_subdirectory(logic_synthesis-rs)
 # TODO: Fix Mac OS build.
-if (NOT APPLE)
-    # There are linking issues with Verific libraries on Mac OS.
-    # We need Mac OS environment to debug and fix the issue.
-    add_subdirectory(analyze)
+if(ENABLE_VERIFIC)
+    if (NOT APPLE)
+        # There are linking issues with Verific libraries on Mac OS.
+        # We need Mac OS environment to debug and fix the issue.
+        add_subdirectory(analyze)
+    endif()
 endif()
 
 if (PRODUCTION_BUILD)
