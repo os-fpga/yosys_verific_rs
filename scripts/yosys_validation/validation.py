@@ -160,7 +160,7 @@ def parse_log_backward(log_file):
     return result_lines, synth_stat
 
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
-    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=0;Carry_cells=[]
+    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=[];Carry_cells=[]
     RS_DSP_MULT = 0
     RS_DSP_MULT_REGIN = 0
     RS_DSP_MULT_REGOUT = 0
@@ -188,9 +188,9 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                     Carry_cells.append(int(line.split()[1]))
             except:
                 pass
-            if (re.search(r".*\$lut.*", line)):
+            if ((re.search(r".*\$lut.*", line)) or (re.search(r".*LUT.*", line))):
                 # print(line)
-                _Luts_ = line.split()[1]
+                _Luts_.append(int(line.split()[1]))
             
             if (re.search(r".*RS_DSP.*", line)):
                 # print(line)
@@ -244,7 +244,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 # print(line)
                 RS_DSP_MULTADD_REGIN = int(line.split()[1])
 
-            if (re.search(r".*TDP.*K", line) and (stat == True)):
+            if (re.search(r".*TDP.*K", line)):
                 # print(line)
                 BRAM.append(int(line.split()[1]))
 
@@ -256,7 +256,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
             # print(line__)
 
 
-    Data = [PROJECT_NAME,str(_Luts_),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), str(RS_DSP_MULTACC_REGOUT), str(RS_DSP_MULTACC_REGIN_REGOUT), str(RS_DSP_MULTADD), str(RS_DSP_MULTADD_REGIN), str(RS_DSP_MULTADD_REGOUT), str(RS_DSP_MULTADD_REGIN_REGOUT), synth_status]
+    Data = [PROJECT_NAME,str(sum(_Luts_)),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), str(RS_DSP_MULTACC_REGOUT), str(RS_DSP_MULTACC_REGIN_REGOUT), str(RS_DSP_MULTADD), str(RS_DSP_MULTADD_REGIN), str(RS_DSP_MULTADD_REGOUT), str(RS_DSP_MULTADD_REGIN_REGOUT), synth_status]
 
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
@@ -296,6 +296,8 @@ def compile(project_path,rtl_path,top_module,test_):
 
 def simulate(project_path,rtl_path,top_module,test_):
     vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugin(args.tech) + " -full64 -debug_all -kdb -lca -timescale=1ns/100ps +define+VCS_MODE=1"
+    iverilog_cmd = "iverilog -g2012 -o " + top_module+"_ " + plugin(args.tech) + " " +YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/tb.sv "
+    # print(iverilog_cmd)
     if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")):
         mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")
         for _file_ in mem_init:
@@ -309,8 +311,9 @@ def simulate(project_path,rtl_path,top_module,test_):
         shutil.copy(YS_ROOT + "/bram.svh",project_path+"/")
     # print(vcs_cmd)
     try:
-        execute(vcs_cmd,"vcs_compile.log","err_compile.log","VCS compilation",test_)
-        execute("./simv","vcs_sim.log","err_sim.log","VCS simulation",test_)
+        execute(iverilog_cmd,"compile.log","err_compile.log","compilation",test_)
+        execute("vvp ./"+top_module+"_" ,"sim.log","err_sim.log","simulation",test_)
+        # execute("./simv","sim.log","err_sim.log","simulation",test_)
         execute("vcd2fst tb.vcd tb.fst --compress" ,"vcd_sim.log","err_vcd.log","VCD file compression",test_)
     except Exception as e:
         sim = False
@@ -345,7 +348,7 @@ def test():
                 if (args.tech == "genesis3"):
                     Tool_seting = Tool_settings_gen3
 
-                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",ARCHITECTURE=args.tech, TOP = top_module, SYNTH_SETTING = Tool_seting)
+                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",RTL_PATH = rtl_path, ARCHITECTURE=args.tech, TOP = top_module, SYNTH_SETTING = Tool_seting)
                 generate_task_conf(project_path+"/yosys.ys", Gen_Template)
                 os.chdir(project_path)
                 synth = compile(project_path,rtl_path,top_module,test)
@@ -358,7 +361,7 @@ def test():
             if ((JSON_data["benchmarks"][test]["compile_status"] == "active") and (JSON_data["benchmarks"][test]["sim_status"] == "active")) and synth == True and args.sim == True:
                 simulate(project_path,rtl_path,top_module,test)
                 try:
-                    vcs_parse("vcs_sim.log",test,Data)
+                    vcs_parse("sim.log",test,Data)
                 except Exception as e:
                     Data.append("Cannot open ./simv file")
                     print(str(e))
