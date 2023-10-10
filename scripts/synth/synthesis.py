@@ -156,8 +156,6 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
                 if setting in yosys_settings:
                     proccesed_settings[setting] = os.path.join(abs_root_dir,
                         yosys_settings[setting])
-            if "verific" in yosys_settings:
-                proccesed_settings["verific"] = yosys_settings["verific"]
             if "synth_rs" in yosys_settings:
                 if "synth_rs" in proccesed_settings:
                     for k, v in yosys_settings["synth_rs"].items():
@@ -173,7 +171,7 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
         error_flag = True        
 
         try:
-            mandatory_settings_names = ["yosys_template_script", "yosys_path", "verific"]
+            mandatory_settings_names = ["yosys_template_script", "yosys_path"]
             for setting in mandatory_settings_names:
                 if setting not in benchmark_settings:
                     error_flag = False
@@ -185,15 +183,13 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
         if error_flag:
             if "abc_script" not in benchmark_settings:
                 benchmark_settings["abc_script"] = ""
-            read_hdl_base = "read"
-            if (benchmark_settings["verific"]):
-                read_hdl_base += " -verific"
-            else:
-                read_hdl_base += " -noverific"
-            read_hdl_base += "\nread -incdir ."
+            read_hdl_base = ""
             options = ""
+            device = ""
             if "synth_rs" in benchmark_settings:
                 for k, v in benchmark_settings["synth_rs"].items():
+                    if k == "-tech":
+                        device = v
                     if k == "-abc":
                         v = os.path.abspath( os.path.join(abs_root_dir, v))
                     if v:
@@ -207,6 +203,7 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
                 benchmark_settings["yosys_template_script"],
                 benchmark_settings["abc_script"], 
                 options,
+                device,
                 config_run_dir_base, 
                 read_hdl_base, 
                 cfg_name, 
@@ -268,13 +265,15 @@ def run_config_with_diamond(synthesis_settings, config_run_dir_base,
     
 
 def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
-        abc_script, options, run_dir_base, read_hdl_base, cfg_name, timeout):
+        abc_script, options, device, run_dir_base, read_hdl_base, cfg_name, timeout):
     try:
         abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
         files_dict = {"v": [], "sv": [], "vhdl": []}
         flist_file = os.path.join(abs_rtl_path, "flist.flist")
         read_hdl = read_hdl_base
         files = None
+        sim_bb = ""
+        rs_plugin = ""
         if os.path.exists(flist_file):
             with open(flist_file) as fp:
                 hdl_list = []
@@ -316,8 +315,10 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
                 elif filename.endswith(".vlg"):
                     files_dict["v"].append(filename)
             if files_dict["v"]:
-                read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
+                read_verilog = "\nread_verilog -I./ "+ "" + " ".join(files_dict["v"])  
+                rs_plugin = "plugin -i synth-rs"
                 read_hdl += read_verilog
+                sim_bb = "read_verilog -sv " + run_dir_base + "/../../yosys/install/share/yosys/rapidsilicon/" + device + "/cell_sim_blackbox.v"
             if files_dict["sv"]:
                 read_sv = "\nread -sv " + " ".join(files_dict["sv"])
                 read_hdl += read_sv
@@ -331,9 +332,9 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
         
         options = "-top " + benchmark["top_module"] + " " + options
 
-        rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
+        rep = {"${PLUGINS}": rs_plugin, "${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
                 "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script,
-                 "${OPTIONS}": options}
+                 "${OPTIONS}": options, "${READ_SIM_BB}": sim_bb,}
         create_file_from_template(yosys_file_template, rep, yosys_file) 
         os.chdir(benchmark_run_dir)
         run_command(benchmark["name"], cfg_name, "yosys_output.log", 
