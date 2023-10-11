@@ -20,7 +20,7 @@ import subprocess
 import signal
 import copy
 from datetime import datetime
-
+enable_verific = False
 if sys.version_info[0] < 3:
     raise Exception("Script must be run with Python 3")
 
@@ -156,8 +156,9 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
                 if setting in yosys_settings:
                     proccesed_settings[setting] = os.path.join(abs_root_dir,
                         yosys_settings[setting])
-            if "verific" in yosys_settings:
-                proccesed_settings["verific"] = yosys_settings["verific"]
+            if (enable_verific):
+                if "verific" in yosys_settings:
+                    proccesed_settings["verific"] = yosys_settings["verific"]
             if "synth_rs" in yosys_settings:
                 if "synth_rs" in proccesed_settings:
                     for k, v in yosys_settings["synth_rs"].items():
@@ -173,7 +174,10 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
         error_flag = True        
 
         try:
-            mandatory_settings_names = ["yosys_template_script", "yosys_path", "verific"]
+            if (enable_verific):
+                mandatory_settings_names = ["yosys_template_script", "yosys_path", "verific"]
+            else:
+                mandatory_settings_names = ["yosys_template_script", "yosys_path"]
             for setting in mandatory_settings_names:
                 if setting not in benchmark_settings:
                     error_flag = False
@@ -185,15 +189,20 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
         if error_flag:
             if "abc_script" not in benchmark_settings:
                 benchmark_settings["abc_script"] = ""
-            read_hdl_base = "read"
-            if (benchmark_settings["verific"]):
-                read_hdl_base += " -verific"
-            else:
-                read_hdl_base += " -noverific"
-            read_hdl_base += "\nread -incdir ."
+            read_hdl_base = ""
+            if (enable_verific):
+                read_hdl_base = "read"
+                if (benchmark_settings["verific"]):
+                    read_hdl_base += " -verific"
+                else:
+                    read_hdl_base += " -noverific"
+            
             options = ""
+            device = ""
             if "synth_rs" in benchmark_settings:
                 for k, v in benchmark_settings["synth_rs"].items():
+                    if k == "-tech":
+                        device = v
                     if k == "-abc":
                         v = os.path.abspath( os.path.join(abs_root_dir, v))
                     if v:
@@ -207,6 +216,7 @@ def run_config_with_yosys(synthesis_settings, config_run_dir_base,
                 benchmark_settings["yosys_template_script"],
                 benchmark_settings["abc_script"], 
                 options,
+                device,
                 config_run_dir_base, 
                 read_hdl_base, 
                 cfg_name, 
@@ -268,34 +278,74 @@ def run_config_with_diamond(synthesis_settings, config_run_dir_base,
     
 
 def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
-        abc_script, options, run_dir_base, read_hdl_base, cfg_name, timeout):
+        abc_script, options, device, run_dir_base, read_hdl_base, cfg_name, timeout):
     try:
         abs_rtl_path = os.path.join(abs_root_dir, benchmark["rtl_path"])
         files_dict = {"v": [], "sv": [], "vhdl": []}
         flist_file = os.path.join(abs_rtl_path, "flist.flist")
         read_hdl = read_hdl_base
         files = None
+        sim_bb = ""
+        rqd_plugin = ""
+        rs_plugin = ""
         if os.path.exists(flist_file):
             with open(flist_file) as fp:
                 hdl_list = []
                 curr_hdl_mode = None
                 prev_hdl_mode = None
+                vhdl_base = ""
                 files = [filename.strip() for filename in fp.readlines()]
                 for filename in files:
-                    if filename.endswith(".svh") or filename.endswith(".sv"):
-                        curr_hdl_mode = "-sv"
-                    elif filename.endswith(".vhd") or filename.endswith(".vhdl"):
-                        curr_hdl_mode = "-vhdl"
-                    elif filename.endswith(".vh") or filename.endswith(".v") \
-                         or filename.endswith(".verilog") or filename.endswith(".vlg"):
-                        curr_hdl_mode = "-vlog2k"
-                    if not prev_hdl_mode:
-                        read_hdl += "\nread " + curr_hdl_mode + " " + filename
-                    elif prev_hdl_mode == curr_hdl_mode:
-                        read_hdl += " " + filename
+                    if (enable_verific):
+                        if filename.endswith(".svh") or filename.endswith(".sv"):
+                            curr_hdl_mode = "-sv"
+                        elif filename.endswith(".vhd") or filename.endswith(".vhdl"):
+                            curr_hdl_mode = "-vhdl"
+                        elif filename.endswith(".vh") or filename.endswith(".v") \
+                            or filename.endswith(".verilog") or filename.endswith(".vlg"):
+                            curr_hdl_mode = "-vlog2k"
+                        if not prev_hdl_mode:
+                            read_hdl += "\nread " + curr_hdl_mode + " " + filename
+                        elif prev_hdl_mode == curr_hdl_mode:
+                            read_hdl += " " + filename
+                        else:
+                            read_hdl += "\nread " + curr_hdl_mode + " " + filename
+                        prev_hdl_mode = curr_hdl_mode
                     else:
-                        read_hdl += "\nread " + curr_hdl_mode + " " + filename
-                    prev_hdl_mode = curr_hdl_mode
+                        if filename.endswith(".svh") or filename.endswith(".sv"):
+                            if (enable_verific):
+                                curr_hdl_mode = "-sv"
+                            else:
+                                curr_hdl_mode = "read_systemverilog -synth -top " + benchmark["top_module"] + " -I./ "
+                        elif filename.endswith(".vhd") or filename.endswith(".vhdl"):
+                            curr_hdl_mode = "-vhdl"
+                            rqd_plugin = "plugin -i ghdl"
+                            prefix = run_dir_base + "/../../../build/bin/HDL_simulator/GHDL/lib/ghdl -P./" " --std=08 "
+                            vhdl_base = "\nghdl -frelaxed-rules --no-formal -fsynopsys -fexplicit --PREFIX=" + prefix                
+                            sim_bb = "read_verilog -sv " + run_dir_base + "/../../yosys/install/share/yosys/rapidsilicon/" + device + "/cell_sim_blackbox.v"
+                            rs_plugin = "plugin -i synth-rs"
+
+                        elif filename.endswith(".vh") or filename.endswith(".v") \
+                            or filename.endswith(".verilog") or filename.endswith(".vlg"):
+                            if (enable_verific):
+                                curr_hdl_mode = "-vlog2k"
+                            else:
+                                curr_hdl_mode = "read_systemverilog -synth -top " + benchmark["top_module"] + " -I./ "
+                        if not prev_hdl_mode:
+                            if (curr_hdl_mode != "-vhdl" and enable_verific == False):
+                                rs_plugin = "plugin -i synth-rs"
+                                rqd_plugin = "plugin -i systemverilog"
+                                read_hdl = curr_hdl_mode  + filename
+                            else:
+                                read_hdl += vhdl_base + filename
+                        elif prev_hdl_mode == curr_hdl_mode:
+                            read_hdl += " " + filename
+                        else:
+                            read_hdl += "\nread " + curr_hdl_mode + " " + filename
+                        prev_hdl_mode = curr_hdl_mode   
+
+                if (curr_hdl_mode == "-vhdl" and enable_verific == False):
+                    read_hdl += " -e"
         else:
             for filename in os.listdir(abs_rtl_path):
                 if filename.endswith(".svh"):
@@ -315,25 +365,45 @@ def run_benchmark_with_yosys(benchmark, yosys_path, yosys_file_template,
                     files_dict["v"].append(filename)
                 elif filename.endswith(".vlg"):
                     files_dict["v"].append(filename)
-            if files_dict["v"]:
-                read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
-                read_hdl += read_verilog
-            if files_dict["sv"]:
-                read_sv = "\nread -sv " + " ".join(files_dict["sv"])
-                read_hdl += read_sv
-            if files_dict["vhdl"]:
-                read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
-                read_hdl += read_vhdl
-        
+            if (enable_verific):
+                if files_dict["v"]:
+                    read_verilog = "\nread -vlog2k " + " ".join(files_dict["v"])
+                    read_hdl += read_verilog
+                if files_dict["sv"]:
+                    read_sv = "\nread -sv " + " ".join(files_dict["sv"])
+                    read_hdl += read_sv
+                if files_dict["vhdl"]:
+                    read_vhdl = "\nread -vhdl " + " ".join(files_dict["vhdl"])
+                    read_hdl += read_vhdl
+            else:
+                if files_dict["v"]:
+                    read_verilog = "\nread_verilog -I./ "+ "" + " ".join(files_dict["v"])  
+                    rs_plugin = "plugin -i synth-rs"
+                    read_hdl += read_verilog
+                    sim_bb = "read_verilog -sv " + run_dir_base + "/../../yosys/install/share/yosys/rapidsilicon/" + device + "/cell_sim_blackbox.v"
+                if files_dict["sv"]:
+                    rqd_plugin = "plugin -i systemverilog"
+                    read_sv = "\nread_systemverilog -synth " + "-top " +  benchmark["top_module"] + " -I./ "
+                    read_sv += " ".join(files_dict["sv"])
+                    sim_bb = "read_verilog -sv " + run_dir_base + "/../../yosys/install/share/yosys/rapidsilicon/" + device + "/cell_sim_blackbox.v"
+                    read_hdl += read_sv
+                    rs_plugin = "plugin -i synth-rs"
+                if files_dict["vhdl"]:
+                    prefix = run_dir_base + "/../../../build/bin/HDL_simulator/GHDL/lib/ghdl -P./" " --std=08 "
+                    rqd_plugin = "plugin -i ghdl"
+                    read_vhdl = "\nghdl -frelaxed-rules --no-formal -fsynopsys -fexplicit --PREFIX=" + prefix + " ".join(files_dict["vhdl"]) + " -e"               
+                    read_hdl += read_vhdl 
+                    sim_bb = "read_verilog -sv " + run_dir_base + "/../../yosys/install/share/yosys/rapidsilicon/" + device + "/cell_sim_blackbox.v"
+                    rs_plugin = "plugin -i synth-rs"
         benchmark_run_dir = os.path.join(run_dir_base, benchmark["name"])
         shutil.copytree(abs_rtl_path, benchmark_run_dir)
         yosys_file = os.path.join(benchmark_run_dir, "yosys.ys")
         
         options = "-top " + benchmark["top_module"] + " " + options
-
-        rep = {"${READ_HDL}": read_hdl, "${TOP_MODULE}": benchmark["top_module"],
+        
+        rep = {"${PLUGINS}": rqd_plugin, "${READ_HDL}": read_hdl , "${TOP_MODULE}": benchmark["top_module"],
                 "${BENCHMARK_NAME}": benchmark["name"], "${ABC_SCRIPT}": abc_script,
-                 "${OPTIONS}": options}
+                 "${OPTIONS}": options, "${READ_SIM_BB}": sim_bb, "${RS_PLUGIN}": rs_plugin}
         create_file_from_template(yosys_file_template, rep, yosys_file) 
         os.chdir(benchmark_run_dir)
         run_command(benchmark["name"], cfg_name, "yosys_output.log", 
@@ -370,7 +440,7 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template,
         logger.error('Failed to execute synthesis of {0} for configuration '
                 '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
                 traceback.format_exc()))
-
+#### DIAMOND
 def run_benchmark_with_diamond(benchmark, diamond_file_template, 
         config_run_dir_base, cfg_name, timeout):
     try:
@@ -391,7 +461,7 @@ def run_benchmark_with_diamond(benchmark, diamond_file_template,
         logger.error('Failed to execute synthesis of {0} for configuration '
                 '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
                 traceback.format_exc()))
-
+### DIAMOND
 def create_file_from_template(file_template, replacements, resulting_file):
     replacements = dict((re.escape(k), v) for k, v in replacements.items())
     pattern = re.compile("|".join(replacements.keys()))
