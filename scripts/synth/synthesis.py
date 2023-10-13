@@ -440,7 +440,7 @@ def run_benchmark_with_vivado(benchmark, vivado_file_template,
         logger.error('Failed to execute synthesis of {0} for configuration '
                 '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
                 traceback.format_exc()))
-#### DIAMOND
+
 def run_benchmark_with_diamond(benchmark, diamond_file_template, 
         config_run_dir_base, cfg_name, timeout):
     try:
@@ -461,7 +461,7 @@ def run_benchmark_with_diamond(benchmark, diamond_file_template,
         logger.error('Failed to execute synthesis of {0} for configuration '
                 '{1}:\n {2}'.format(benchmark["name"], cfg_name, 
                 traceback.format_exc()))
-### DIAMOND
+
 def create_file_from_template(file_template, replacements, resulting_file):
     replacements = dict((re.escape(k), v) for k, v in replacements.items())
     pattern = re.compile("|".join(replacements.keys()))
