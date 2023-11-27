@@ -68,9 +68,7 @@ VERILOG_MODULES	= $(COMMON)/cells_sim.v \
 				  $(GENESIS2)/sram1024x18.v \
 				  $(GENESIS2)/ufifo_ctl.v \
 				  $(GENESIS2)/cell_sim_blackbox.v \
-				  $(GENESIS3)/cells_sim.v \
 				  $(GENESIS3)/cells_sim.vhd \
-				  $(GENESIS3)/dsp_sim.v \
 				  $(GENESIS3)/brams_sim.v \
 				  $(GENESIS3)/ffs_map.v \
 				  $(GENESIS3)/dsp_map.v \
@@ -88,15 +86,10 @@ VERILOG_MODULES	= $(COMMON)/cells_sim.v \
 				  $(GENESIS3)/TDP18K_FIFO.v \
 				  $(GENESIS3)/sram1024x18.v \
 				  $(GENESIS3)/ufifo_ctl.v \
-				  $(GENESIS3)/cell_sim_blackbox.v \
+				  $(GENESIS3)/RS_PRIMITIVES/blackbox_models/cell_sim_blackbox.v \
 				  $(GENESIS3)/llatches_sim.v \
-				  $(GENESIS3)/RS_PRIMITIVES/IO/io_cells_primitives_new.sv \
-				  $(GENESIS3)/RS_PRIMITIVES/IO/io_cells_primitives.sv \
-				  $(GENESIS3)/RS_PRIMITIVES/IO/io_cells_sims.sv \
-				  $(GENESIS3)/RS_PRIMITIVES/TECHMAP/io_model_map_new.v \
-				  $(GENESIS3)/RS_PRIMITIVES/LUT/LUT.v \
-				  $(GENESIS3)/RS_PRIMITIVES/TECHMAP/lut_map.v
-
+				  $(GENESIS3)/dsp38_map.v \
+				  $(GENESIS3)/RS_PRIMITIVES/sim_models/verilog/DSP38.v
 
 NAME = synth-pow
 SOURCES = src/synth_rapidsilicon.cc 

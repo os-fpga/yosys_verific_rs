@@ -39,8 +39,9 @@ PRIVATE_NAMESPACE_BEGIN
 #define GENESIS_3_DIR genesis3
 #define COMMON_DIR common
 #define SIM_LIB_FILE cells_sim.v
-#define LLATCHES_SIM_FILE llatches_sim.v
+#define DSP_SIM_38 DSP38.v
 #define DSP_SIM_LIB_FILE dsp_sim.v
+#define LLATCHES_SIM_FILE llatches_sim.v
 #define BRAMS_SIM_LIB_FILE brams_sim.v
 #define FFS_MAP_FILE ffs_map.v
 #define LUTx_SIM_FILE LUT.v
@@ -60,6 +61,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define GET_FILE_PATH(tech_dir,file) " +/rapidsilicon/" STR(tech_dir) "/" STR(file)
 #define IO_cells_FILE io_cells_primitives_new.sv
 #define IO_MODEL_FILE io_model_map_new.v
+#define DSP_SIM_LIB_FILE_RS_PRIMITIVE(tech_dir,file) " +/rapidsilicon/" STR(tech_dir) "/RS_PRIMITIVES/sim_models/verilog/" STR(file)
 #define GET_FILE_PATH_RS_LUTx_PRIMITVES(tech_dir,file) " +/rapidsilicon/" STR(tech_dir) "/RS_PRIMITIVES/LUT/" STR(file)
 #define GET_FILE_PATH_RS_PRIMITVES(tech_dir,file) " +/rapidsilicon/" STR(tech_dir) "/RS_PRIMITIVES/IO/" STR(file)
 #define GET_TECHMAP_FILE_PATH_RS_PRIMITVES(tech_dir,file) " +/rapidsilicon/" STR(tech_dir) "/RS_PRIMITIVES/TECHMAP/" STR(file)
@@ -112,6 +114,8 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
     std::vector<Cell *> LUTs;
     std::vector<Cell *> LUTs_CLK;
     std::vector<Cell *> LUTs_NCLK;
+    std::vector<Cell *> DSP_38;
+    std::vector<Cell *> TDP36K;
     std::vector<Cell *> DFFs;
     std::vector<Wire *> IOs;
     std::vector<RTLIL::SigSpec> clocks;
@@ -121,7 +125,8 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
     std::map<RTLIL::SigSpec,std::vector<SigSpec>>clk_driver;
     std::map<string,std::vector<string>>lut_clk;
     std::map<string,string>Lut_clocks;
-
+    std::map<string,std::vector<int>>dsp_clock;
+    std::map<string,std::vector<string>> bram_out;
     bool preserve_ip;
     
     RTLIL::Design *_design;
@@ -212,6 +217,7 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
             log("Key = %s Sum = %f Result = %f\n",log_signal(ce_ff.first),sum, sum/ce_ff.second.size());
         }
     }
+
     int countOnesInBinary(int n) {
         int count = 0;
         while (n > 0) {
@@ -414,12 +420,241 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
             std::cout << std::endl;
         }
     }
+    
+    string dsp_38_no_clk(SigSpec _port_){
+        string clk = "";
+        for (auto clk_src : clk_source){
+            for (auto src : clk_src.second){
+                if (GetSize(_port_)>1){
+                    for(int i = 0 ; i<=GetSize(_port_)-1; i++){
+                        if (_port_[i] == src){
+                            return log_signal(clk_src.first);
+                        }
+                    }
+                }
+                else{
+                    if (_port_ == src){
+                        return log_signal(clk_src.first);                        
+                    }
+                }
+            }
+        }
+        for (auto clk_drive : clk_driver){
+            for (auto drive : clk_drive.second){
+                if (GetSize(_port_)>1){
+                    for(int i = 0 ; i<=GetSize(_port_)-1; i++){
+                        if (_port_[i] == drive){
+                            return log_signal(clk_drive.first);
+                        }
+                    }
+                }
+                else{
+                    if (_port_ == drive){
+                        return log_signal(clk_drive.first);
+                    }
+                }
+            }
+        }
+        return clk;
+    }
+
+    void dsp38_update_clk_src_driver(string id, RTLIL::Cell *dsp,std::string &clk, bool clk_found){
+        SigMap sigmap(_design->top_module());
+        RTLIL::SigSpec Port;
+        if (id == "A")
+            Port = dsp->getPort(ID::A);
+        else if(id == "B")
+            Port = dsp->getPort(ID::B);
+        else 
+            Port = dsp->getPort(ID::Z);
+        if (!(Port.is_chunk())){
+            std::vector<SigChunk> chunks = sigmap(Port);
+            for (auto chunk : chunks){
+                RTLIL::SigSpec dsp_port_chunk = chunk;
+                if (!clk_found){
+                    clk = dsp_38_no_clk(dsp_port_chunk);
+                    return;
+                }
+                if (id == "Z"){
+                    if (!dsp_port_chunk.is_fully_const())
+                        clk_driver[dsp->getPort(ID::CLK)].push_back(dsp_port_chunk);
+                }
+                else{
+                    if (!dsp_port_chunk.is_fully_const()) 
+                        clk_source[dsp->getPort(ID::CLK)].push_back(dsp_port_chunk);
+                }
+            }
+        }
+        else {
+            if (!clk_found){
+                clk = dsp_38_no_clk(Port);
+                return;
+            }
+            if (id == "Z"){
+                if (!Port.is_fully_const())
+                    clk_driver[dsp->getPort(ID::CLK)].push_back(Port);
+            }
+            else{
+                if (!Port.is_fully_const()) 
+                    clk_source[dsp->getPort(ID::CLK)].push_back(Port);
+            }
+        }
+    }
+
+    void check_dsp38(){
+        log ("DSP %ld\n",DSP_38.size());
+        bool clk_found = false;
+        string clk = "";
+        for (auto dsp : DSP_38){
+            string in_reg = (dsp->getParam(ID::INPUT_REG_EN)).decode_string().c_str();
+            string outreg = (dsp->getParam(ID::OUTPUT_REG_EN)).decode_string().c_str();
+            string mode = (dsp->getParam(ID::DSP_MODE)).decode_string().c_str();
+            if (in_reg == "FALSE" && outreg == "FALSE" && mode == "MULTIPLY") clk_found = false;
+            else clk_found = true;
+            int a_size = check_port_width(dsp->getPort(ID::A));
+            int b_size = check_port_width(dsp->getPort(ID::B));
+            if (clk_found){           
+                if (!dsp->getPort(ID::CLK).empty()){
+                    clk_found = true;
+                    dsp38_update_clk_src_driver("Z", dsp, clk, clk_found);
+                    dsp38_update_clk_src_driver("A", dsp, clk, clk_found);
+                    dsp38_update_clk_src_driver("B", dsp, clk, clk_found);
+                    clk = log_signal(dsp->getPort(ID::CLK));
+                    dsp_clock[clk].push_back(a_size);
+                    dsp_clock[clk].push_back(b_size);
+
+                    log("\t%s: %d %d %d\n",clk.c_str(), a_size, b_size, 1);
+                }
+                else{
+                    clk_found = false;
+                    dsp38_update_clk_src_driver("Z", dsp, clk, clk_found);
+                    if (clk == "")
+                        dsp38_update_clk_src_driver("A", dsp, clk, clk_found);
+                    if (clk == "")
+                        dsp38_update_clk_src_driver("B", dsp, clk, clk_found);
+                    if (clk == "")
+                        clk = "unknown";
+                    dsp_clock[clk].push_back(a_size);
+                    dsp_clock[clk].push_back(b_size);
+
+                    log("\t%s: %d %d %d\n",clk.c_str(), a_size, b_size, 1);
+                }
+            }
+            else {
+                dsp38_update_clk_src_driver("Z", dsp, clk, clk_found);
+                if (clk == "")
+                    dsp38_update_clk_src_driver("A", dsp, clk, clk_found);
+                if (clk == "")
+                    dsp38_update_clk_src_driver("B", dsp, clk, clk_found);
+                if (clk == "")
+                    clk = "unknown";
+                dsp_clock[clk].push_back(a_size);
+                dsp_clock[clk].push_back(b_size);
+
+                log("\t%s: %d %d %d\n",clk.c_str(), a_size, b_size, 1);
+            }
+        }
+
+    }
+
     // void check_IOs(){
     //     for (auto wire : IOs){
 
     //     }
     // }
+    int check_port_width (SigSpec _Port_){
+        int width = 0;
+        for (auto port_bit : _Port_){
+            if(!(port_bit == State::Sx || port_bit == State::S0 || port_bit == State::S1))
+                width++;
+        }
+        return width;
+    }
+    void check_port_const (SigSpec _Port_,float &value){
+        if (_Port_.is_fully_const()){
+            if (_Port_ == State::S0) value = 0;
+            else value = 1;
+        }
+    }
 
+    void update_clk_src_driver_TDP(SigSpec _Port_, bool update_src, SigSpec clk){
+        SigMap sigmap(_design->top_module());
+        if (!(_Port_.is_chunk())){
+            std::vector<SigChunk> chunks = sigmap(_Port_);
+            for (auto chunk : chunks){
+                RTLIL::SigSpec _sigspec_chunk_ = chunk;
+                if (!_sigspec_chunk_.is_fully_const()){
+                    if (update_src){
+                        clk_source[clk].push_back(_sigspec_chunk_);
+                    }
+                    else{
+                        clk_driver[clk].push_back(_sigspec_chunk_);
+                    }
+                }
+            }
+        }
+        else{
+            if (!_Port_.is_fully_const()){
+                if (update_src){
+                    clk_source[clk].push_back(_Port_);
+                }
+                else{
+                    clk_driver[clk].push_back(_Port_);
+                }
+            }
+        }
+    }
+
+    void check_BRAM (){
+        for (auto ram : TDP36K){
+            int arwidth = 0;
+            int brwidth = 0;
+            int awwidth = 0;
+            int bwwidth = 0;
+            float ena = 0.5;
+            float wena = 0.5;
+            float enb = 0.5;
+            float wenb = 0.5;
+
+            arwidth = check_port_width(ram->getPort(ID::RDATA_A1)) + check_port_width(ram->getPort(ID::RDATA_A2));
+            brwidth = check_port_width(ram->getPort(ID::RDATA_B1)) + check_port_width(ram->getPort(ID::RDATA_B2));
+            awwidth = check_port_width(ram->getPort(ID::WDATA_A1)) + check_port_width(ram->getPort(ID::WDATA_A2));
+            bwwidth = check_port_width(ram->getPort(ID::WDATA_B1)) + check_port_width(ram->getPort(ID::WDATA_B2));
+
+            check_port_const(ram->getPort(ID::REN_A1),ena);
+            check_port_const(ram->getPort(ID::REN_A2),ena);
+            check_port_const(ram->getPort(ID::WEN_A1),wena);
+            check_port_const(ram->getPort(ID::WEN_A2),wena);
+
+            check_port_const(ram->getPort(ID::REN_B1),enb);
+            check_port_const(ram->getPort(ID::REN_B2),enb);
+            check_port_const(ram->getPort(ID::WEN_B1),wenb);
+            check_port_const(ram->getPort(ID::WEN_B2),wenb);
+
+            update_clk_src_driver_TDP(ram->getPort(ID::ADDR_A1), true, ram->getPort(ID::CLK_A1));
+            update_clk_src_driver_TDP(ram->getPort(ID::ADDR_A2), true, ram->getPort(ID::CLK_A2));
+            update_clk_src_driver_TDP(ram->getPort(ID::ADDR_B1), true, ram->getPort(ID::CLK_B1));
+            update_clk_src_driver_TDP(ram->getPort(ID::ADDR_B2), true, ram->getPort(ID::CLK_B2));
+
+            update_clk_src_driver_TDP(ram->getPort(ID::BE_A1), true, ram->getPort(ID::CLK_A1));
+            update_clk_src_driver_TDP(ram->getPort(ID::BE_A2), true, ram->getPort(ID::CLK_A2));
+            update_clk_src_driver_TDP(ram->getPort(ID::BE_B1), true, ram->getPort(ID::CLK_B1));
+            update_clk_src_driver_TDP(ram->getPort(ID::BE_B2), true, ram->getPort(ID::CLK_B2));
+
+            update_clk_src_driver_TDP(ram->getPort(ID::RDATA_A1), false, ram->getPort(ID::CLK_A1));
+            update_clk_src_driver_TDP(ram->getPort(ID::RDATA_A2), false, ram->getPort(ID::CLK_A2));
+            update_clk_src_driver_TDP(ram->getPort(ID::RDATA_B1), false, ram->getPort(ID::CLK_B1));
+            update_clk_src_driver_TDP(ram->getPort(ID::RDATA_B2), false, ram->getPort(ID::CLK_B2));
+
+            update_clk_src_driver_TDP(ram->getPort(ID::WDATA_A1), false, ram->getPort(ID::CLK_A1));
+            update_clk_src_driver_TDP(ram->getPort(ID::WDATA_A1), false, ram->getPort(ID::CLK_A2));
+            update_clk_src_driver_TDP(ram->getPort(ID::WDATA_A1), false, ram->getPort(ID::CLK_B1));
+            update_clk_src_driver_TDP(ram->getPort(ID::WDATA_A1), false, ram->getPort(ID::CLK_B2));
+
+            log("arwidth = %d \nbrwidth = %d \nawwidth = %d \nbwwidth = %d \nena = %f \nenb = %f \nwena = %f \nwenb = %f\n",arwidth, brwidth, awwidth, bwwidth, ena, enb, wena, wenb);
+            
+        } 
+    }
     void script() override
     {
         string readArgs;
@@ -448,11 +683,9 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
                     break;
                 }    
                 case Technologies::GENESIS_3: {
-                    readArgs = GET_FILE_PATH(GENESIS_3_DIR, SIM_LIB_FILE) 
-                                GET_FILE_PATH(GENESIS_3_DIR, LLATCHES_SIM_FILE)
-                                GET_FILE_PATH(GENESIS_3_DIR, DSP_SIM_LIB_FILE)
-                                GET_FILE_PATH_RS_LUTx_PRIMITVES(GENESIS_3_DIR, LUTx_SIM_FILE)
-                                GET_FILE_PATH(GENESIS_3_DIR, BRAMS_SIM_LIB_FILE);
+                    readArgs =  GET_FILE_PATH(GENESIS_3_DIR, LLATCHES_SIM_FILE)
+                                DSP_SIM_LIB_FILE_RS_PRIMITIVE(GENESIS_3_DIR, DSP_SIM_38);
+                                // GET_FILE_PATH(GENESIS_3_DIR, BRAMS_SIM_LIB_FILE);
                     break;
                 }    
                 // Just to make compiler happy
@@ -460,7 +693,7 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
                     break;
                 }    
             }
-            // run("read_verilog -lib -specify -nomem2reg" GET_FILE_PATH(COMMON_DIR, SIM_LIB_FILE) + readArgs);
+            run("read_verilog -lib -specify -nomem2reg" GET_FILE_PATH(COMMON_DIR, SIM_LIB_FILE) + readArgs);
             
             
             for (auto &module : _design->selected_modules()) {
@@ -482,7 +715,6 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
                         || cell->type == RTLIL::escape_id("RS_DSP_MULT_REGOUT") \
                         || cell->type == RTLIL::escape_id("RS_DSP_MULT_REGIN_REGOUT") ){
                         DSP_Blocks.push_back(cell);
-                        dsp_cnt++;
                         continue;
                     }
                     if (cell->type == RTLIL::escape_id("$lut") \
@@ -493,21 +725,34 @@ struct SynthPowerRapidSiliconPass : public ScriptPass {
                         || cell->type == RTLIL::escape_id("LUT5") \
                         || cell->type == RTLIL::escape_id("LUT6") ){
                         LUTs.push_back(cell);
-                        lut_cnt++;
                         continue;
                     }
                     if (cell->type == RTLIL::escape_id("DFFRE") \
                         || cell->type == RTLIL::escape_id("DFFNRE")) {
-                        dff_cnt++;
                         DFFs.push_back(cell);
+                        continue;
+                    }
+                    if (cell->type == RTLIL::escape_id("DSP38")) {
+                        DSP_38.push_back(cell);
+                        continue;
+                    }
+                    if (cell->type == RTLIL::escape_id("RS_TDP36K")) {
+                        TDP36K.push_back(cell);
                         continue;
                     }
                     // log("Cell = %s  Module = %s\n",log_id(cell->name),log_id(cell->type));
                 }
             }
             check_dff();
+            check_dsp38();
+            check_BRAM();
             check_LUT();
-            log("No. of LUT = %d\nNo. of DSP = %d\nNo. of DFF = %d\nNo. of IOs = %d\n",lut_cnt,dsp_cnt,dff_cnt,IO_cnt);
+            for (auto clk_src : clk_driver){
+                for (auto src : clk_src.second){
+                    log("Src = %s\n",log_signal(src));
+                }
+            }
+            // log("No. of LUT = %d\nNo. of DSP = %d\nNo. of DFF = %d\nNo. of IOs = %d\n",lut_cnt,dsp_cnt,dff_cnt,IO_cnt);
         }
 
     }
