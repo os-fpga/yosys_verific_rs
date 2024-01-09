@@ -91,7 +91,7 @@ VERILOG_MODULES	= $(COMMON)/cells_sim.v \
 				  $(GENESIS3)/dsp38_map.v \
 				  $(GENESIS3)/RS_PRIMITIVES/sim_models/verilog/DSP38.v
 
-NAME = synth-pow
+NAME = pow-extract
 SOURCES = src/synth_rapidsilicon.cc 
 
 OBJS := $(SOURCES:cc=o)
