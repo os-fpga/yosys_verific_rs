@@ -16,6 +16,7 @@
 #include <regex>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <numeric>
 #include <algorithm>
 #include <chrono>
@@ -123,8 +124,9 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     std::map<SigSpec, string> io_with_clk;
     std::vector<std::tuple<int, string, string, string, string>> ios_out;
     std::map<RTLIL::SigSpec,std::vector<float>>ce_ffs;
-    std::map<RTLIL::SigSpec,std::vector<SigSpec>>clk_source;
-    std::map<RTLIL::SigSpec,std::vector<SigSpec>>clk_driver;
+    // std::unordered_map<RTLIL::SigSpec,RTLIL::SigSpec>clk_source1;
+    std::map<RTLIL::SigSpec,RTLIL::SigSpec>clk_source;
+    std::map<RTLIL::SigSpec,RTLIL::SigSpec>clk_driver;
     std::map<string,std::vector<string>>lut_clk;
     std::map<string,string>Lut_clocks;
     std::map<string,std::vector<int>>dsp_clock;
@@ -226,13 +228,13 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                 ce_ffs[dff->getPort(ID::C)].push_back(0.5);
 
             if (!dff->getPort(ID::D).is_fully_const())
-                clk_source[dff->getPort(ID::C)].push_back(dff->getPort(ID::D));
+                clk_source[dff->getPort(ID::D)] = dff->getPort(ID::C);
             if (!dff->getPort(ID::E).is_fully_const())
-                clk_source[dff->getPort(ID::C)].push_back(dff->getPort(ID::E));
+                clk_source[dff->getPort(ID::E)] = dff->getPort(ID::C);
             if (!dff->getPort(ID::R).is_fully_const())
-                clk_source[dff->getPort(ID::C)].push_back(dff->getPort(ID::R));
+                clk_source[dff->getPort(ID::R)] = dff->getPort(ID::C);
             if (!dff->getPort(ID::Q).is_fully_const())
-                clk_driver[dff->getPort(ID::C)].push_back(dff->getPort(ID::Q));
+                clk_driver[dff->getPort(ID::Q)] = dff->getPort(ID::C);
             
         }
         auto unique_clk = std::unique(clocks.begin(), clocks.end());
@@ -241,33 +243,29 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     
     bool check_LUT_src_drv(RTLIL::SigSpec lut_port, std::string &clk, SigSpec lut_port_A){
         for (auto clk_src : clk_source){
-            for (auto src : clk_src.second){
-                if (lut_port == src){
-                    clk = log_signal(clk_src.first);
-                    if (!(lut_port_A.is_chunk())){
-                        std::vector<SigChunk> chunks_A = lut_port_A;
-                        for (auto chunk_A : chunks_A){
-                            RTLIL::SigSpec chunkA = chunk_A;
-                            clk_source[clk_src.first].push_back(chunkA);
-                        }
+            if (lut_port == clk_src.first){
+                clk = log_signal(clk_src.second);
+                if (!(lut_port_A.is_chunk())){
+                    std::vector<SigChunk> chunks_A = lut_port_A;
+                    for (auto chunk_A : chunks_A){
+                        RTLIL::SigSpec chunkA = chunk_A;
+                        clk_source[chunkA] = clk_src.second;
                     }
-                    return true;
                 }
+                return true;
             }
         }
         for (auto clk_drive : clk_driver){
-            for (auto drive : clk_drive.second){
-                if (lut_port == drive){
-                    clk = log_signal(clk_drive.first);
-                    if (!(lut_port_A.is_chunk())){
-                        std::vector<SigChunk> chunks_A = lut_port_A;
-                        for (auto chunk_A : chunks_A){
-                            RTLIL::SigSpec chunkA = chunk_A;
-                            clk_source[clk_drive.first].push_back(chunkA);
-                        }
+            if (lut_port == clk_drive.first){
+                clk = log_signal(clk_drive.second);
+                if (!(lut_port_A.is_chunk())){
+                    std::vector<SigChunk> chunks_A = lut_port_A;
+                    for (auto chunk_A : chunks_A){
+                        RTLIL::SigSpec chunkA = chunk_A;
+                        clk_source[chunkA] = clk_drive.second;
                     }
-                    return true;
                 }
+                return true;
             }
         }
         return false;
@@ -444,38 +442,54 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     string dsp_38_no_clk(SigSpec _port_, SigSpec &_clk_){
         string clk = "unknown";
         for (auto clk_src : clk_source){
-            for (auto src : clk_src.second){
-                if (GetSize(_port_)>1){
-                    for(int i = 0 ; i<=GetSize(_port_)-1; i++){
-                        if (_port_[i] == src){
-                            _clk_ = clk_src.first;
-                            return log_signal(clk_src.first);
-                        }
+            if (!(_port_.is_chunk())){
+                std::vector<SigChunk> chunks = _port_;
+                for (auto chunk : chunks){
+                    RTLIL::SigSpec _chunk_ = chunk;
+                    if (_chunk_ == clk_src.first){
+                        _clk_ = clk_src.second;
+                        return log_signal(clk_src.second);                        
                     }
                 }
-                else{
-                    if (_port_ == src){
-                        _clk_ = clk_src.first;
-                        return log_signal(clk_src.first);                        
+            }
+            else if (GetSize(_port_)>1){
+                for(int i = 0 ; i<=GetSize(_port_)-1; i++){
+                    if (_port_[i] == clk_src.first){
+                        _clk_ = clk_src.second;
+                        return log_signal(clk_src.second);
                     }
+                }
+            }
+            else{
+                if (_port_ == clk_src.first){
+                    _clk_ = clk_src.second;
+                    return log_signal(clk_src.second);                        
                 }
             }
         }
         for (auto clk_drive : clk_driver){
-            for (auto drive : clk_drive.second){
-                if (GetSize(_port_)>1){
-                    for(int i = 0 ; i<=GetSize(_port_)-1; i++){
-                        if (_port_[i] == drive){
-                            _clk_ = clk_drive.first;
-                            return log_signal(clk_drive.first);
-                        }
+            if (!(_port_.is_chunk())){
+                std::vector<SigChunk> chunks = _port_;
+                for (auto chunk : chunks){
+                    RTLIL::SigSpec _chunk_ = chunk;
+                    if (_chunk_ == clk_drive.first){
+                        _clk_ = clk_drive.second;
+                        return log_signal(clk_drive.second);                        
                     }
                 }
-                else{
-                    if (_port_ == drive){
-                        _clk_ = clk_drive.first;
-                        return log_signal(clk_drive.first);
+            }
+            else if (GetSize(_port_)>1){
+                for(int i = 0 ; i<=GetSize(_port_)-1; i++){
+                    if (_port_[i] == clk_drive.first){
+                        _clk_ = clk_drive.second;
+                        return log_signal(clk_drive.second);
                     }
+                }
+            }
+            else{
+                if (_port_ == clk_drive.first){
+                    _clk_ = clk_drive.second;
+                    return log_signal(clk_drive.second);
                 }
             }
         }
@@ -565,22 +579,46 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             for (auto chunk : chunks){
                 RTLIL::SigSpec _sigspec_chunk_ = chunk;
                 if (!_sigspec_chunk_.is_fully_const()){
-                    if (update_src){
-                        clk_source[clk].push_back(_sigspec_chunk_);
+                    if (GetSize(_sigspec_chunk_)>1){
+                        for(int i = 0 ; i<=GetSize(_sigspec_chunk_)-1; i++){
+                            if (update_src){
+                                clk_source[_sigspec_chunk_[i]] = clk;
+                            }
+                            else{
+                                clk_driver[_sigspec_chunk_[i]] = clk;
+                            }
+                        }
                     }
                     else{
-                        clk_driver[clk].push_back(_sigspec_chunk_);
+                        if (update_src){
+                            clk_source[_sigspec_chunk_] = clk;
+                        }
+                        else{
+                            clk_driver[_sigspec_chunk_] = clk;
+                        }
                     }
                 }
             }
         }
         else{
             if (!_Port_.is_fully_const()){
-                if (update_src){
-                    clk_source[clk].push_back(_Port_);
+                if (GetSize(_Port_)>1){
+                    for(int i = 0 ; i<=GetSize(_Port_)-1; i++){
+                        if (update_src){
+                            clk_source[_Port_[i]] = clk;
+                        }
+                        else{
+                            clk_driver[_Port_[i]] = clk;
+                        }
+                    }
                 }
                 else{
-                    clk_driver[clk].push_back(_Port_);
+                    if (update_src){
+                        clk_source[_Port_] = clk;
+                    }
+                    else{
+                        clk_driver[_Port_] = clk;
+                    }
                 }
             }
         }
@@ -634,7 +672,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                     update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A1")), false, ram->getPort(RTLIL::escape_id("CLK_A2")));
                     update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A1")), false, ram->getPort(RTLIL::escape_id("CLK_B1")));
                     update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A1")), false, ram->getPort(RTLIL::escape_id("CLK_B2")));
-
+                    
                     clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A1")));
                     clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A2")));
                     clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_B1")));
@@ -680,12 +718,13 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                         update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A1")), false, ram->getPort(RTLIL::escape_id("CLK_B1")));
                         update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A1")), false, ram->getPort(RTLIL::escape_id("CLK_B2")));
                         
-                        clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A1")));
+                        if (!((ram->getPort(RTLIL::escape_id("CLK_A1")) == RTLIL::S0) || (ram->getPort(RTLIL::escape_id("CLK_A1")) == RTLIL::S1) || (ram->getPort(RTLIL::escape_id("CLK_A1")) == RTLIL::Sx)))
+                            clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A1")));
                         clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A2")));
                         clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_B1")));
                         clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_B2")));
 
-                        ram_type = "36k ";
+                        ram_type = "18kx2 ";
                     }
                     if(ram->type == RTLIL::escape_id("TDP_RAM36K")){
                         arwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A"))) + check_port_width(ram->getPort(RTLIL::escape_id("RPARITY_A")));
@@ -710,11 +749,11 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
                         update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A")), false, ram->getPort(RTLIL::escape_id("CLK_A")));
                         update_clk_src_driver(ram->getPort(RTLIL::escape_id("WDATA_A")), false, ram->getPort(RTLIL::escape_id("CLK_B")));
-                        
+
                         clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_A")));
                         clocks.push_back(ram->getPort(RTLIL::escape_id("CLK_B")));
 
-                        ram_type = "18kx2 ";
+                        ram_type = "36k ";
                     }
                     break;
                 }
@@ -731,8 +770,10 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                 ram_type += "TDP";
             }
             std::tuple<std::string, SigSpec, SigSpec, int, int, float, float, float, float> elements;
-            if (tech == Technologies::GENESIS_3)
+            if ((tech == Technologies::GENESIS_3) && (ram->type == RTLIL::escape_id("TDP_RAM36K")))
                 elements = std::make_tuple(ram_type, ram->getPort(RTLIL::escape_id("CLK_A")), ram->getPort(RTLIL::escape_id("CLK_B")), arwidth, brwidth, ena, enb, wena, wenb);
+            else if (tech == Technologies::GENESIS_3 && (ram->type == RTLIL::escape_id("TDP_RAM18KX2")))
+                elements = std::make_tuple(ram_type, ram->getPort(RTLIL::escape_id("CLK_A1")), ram->getPort(RTLIL::escape_id("CLK_B1")), arwidth, brwidth, ena, enb, wena, wenb);
             else if (tech != Technologies::GENERIC)
                 elements = std::make_tuple(ram_type, ram->getPort(RTLIL::escape_id("CLK_A1")), ram->getPort(RTLIL::escape_id("CLK_B1")), arwidth, brwidth, ena, enb, wena, wenb);
             if (tdp_out.find(elements) != tdp_out.end()) {
