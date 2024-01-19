@@ -130,11 +130,11 @@ endif()
 if (PRODUCTION_BUILD)
     string(CONCAT FLEX_LM_LDLIBS
     #TODO enable Flexlm
-     #   "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-     #   "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-     #   "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-     #   "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-     #   "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
         "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
     )
     list(APPEND YOSYS_MK_ARGS
