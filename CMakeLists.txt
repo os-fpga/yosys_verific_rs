@@ -143,7 +143,7 @@ if (PRODUCTION_BUILD)
         "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
         #TODO enable Flexlm
         #"EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
-        #"EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
+        "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
     )
 endif()
 
