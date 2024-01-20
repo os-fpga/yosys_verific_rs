@@ -129,20 +129,12 @@ endif()
 
 if (PRODUCTION_BUILD)
     string(CONCAT FLEX_LM_LDLIBS
-    #TODO enable Flexlm
-        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
-        "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
         "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
     )
     list(APPEND YOSYS_MK_ARGS
         "PRODUCTION_BUILD=1"
         "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
-        "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
-        #TODO enable Flexlm
-        #"EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
+        "EXTRA_CXX_FLAGS=-DPRODUCTION_BUILD=1"
         "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
     )
 endif()
