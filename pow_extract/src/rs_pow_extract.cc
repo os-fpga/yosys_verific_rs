@@ -142,6 +142,8 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     std::map<string, double> sdc_clks;
     std::map<string, double> clk_out; 
     dict<Cell*, std::set<RTLIL::SigSpec>*> cell2clkDomainsMerged;
+    dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanout;
+    dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanin;
     std::set<std::tuple<string, string, string, int>>IO_dict;
     dict <RTLIL::Cell* , std::set<RTLIL::SigSpec>*> LUTs_Cells;
     dict <RTLIL::Cell* , std::set<RTLIL::SigSpec>*> DSP_Cells;
@@ -1773,8 +1775,6 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
     void extractAllClockDomains()
     {
-        dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanout;
-        dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanin;
         dict<RTLIL::SigSpec, std::set<RTLIL::SigSpec>*> rhsSig2LhsSig;
         dict<RTLIL::SigSpec, RTLIL::SigSpec> lhsSig2rhsSig;
 
@@ -2174,55 +2174,34 @@ struct PowerExtractRapidSilicon : public ScriptPass {
         std::set<std::tuple<int, string, string, string, string>> filteredVector;
         std::set<SigBit> IOs_wire;
         bool clk_found = false;
+        std::set<Cell*>* Cells_Set;
+        RTLIL::Cell *cell;
         for (auto &module : _design->selected_modules()) {
             for (auto wire : module->wires()){
                 clk_found = false;
                 RTLIL::SigSpec sig_port = wire;
-                if(wire->port_input || wire->port_output){
-                    for (auto &cell : module->selected_cells()) {
-                        for (auto conn : cell->connections()){
-                            if (conn.second.is_chunk()){
-                                if (GetSize(conn.second)>1){
-                                    for(auto actual_conn : conn.second){
-                                        if (actual_conn == sig_port){
-                                            clk_found = find_io_clk(cell, sig_port);
-                                            if (clk_found)break;
-                                        }
-                                    }
-                                }else{
-                                    if (conn.second == sig_port){
-                                        clk_found = find_io_clk(cell, sig_port);
-                                    }
-                                }
-                            }
-                            else{
-                                for (auto it = conn.second.chunks().rbegin(); 
-                                it != conn.second.chunks().rend(); ++it) {
-                                    RTLIL::SigSpec sub_conn = *it;
-                                    if (GetSize(sub_conn)>1){
-                                        for (auto bit_sub_conn : sub_conn){
-                                            if (bit_sub_conn == sig_port){                                                
-                                                clk_found = find_io_clk(cell, sig_port);
-                                                if (clk_found)break;
-                                            }
-                                        }
-                                    }else{
-                                        if (sub_conn == sig_port){
-                                            clk_found = find_io_clk(cell, sig_port);
-                                        }
-                                    }
-                                    if (clk_found) break;
-                                }
-                            }
-                            if (clk_found) break; 
-                        }
-                        if (clk_found) break;
+                if(!(wire->port_input || wire->port_output))
+                    continue;
+                if (sig2CellsInFanout[sig_port] != NULL){
+                    Cells_Set = sig2CellsInFanout[sig_port];
+                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
+                        cell = *it;
+                        clk_found = find_io_clk(cell, sig_port);
+                        break;
                     }
                 }
-                if (!clk_found)ios_clk[sig_port] = "unknown";
+                
+                if (sig2CellsInFanin[sig_port] != NULL){
+                    Cells_Set = sig2CellsInFanin[sig_port];
+                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
+                        cell = *it;
+                        clk_found = find_io_clk(cell, sig_port);
+                        break;
+                    }
+                }
             }
         }
-        
+
         string io_type = "SDR";
         for (auto orig_io : IO_dict){
             clk_found = false;
@@ -2615,6 +2594,8 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
     void script() override
     {
+        
+        auto start = std::chrono::high_resolution_clock::now();
         string readArgs;
         if (preserve_ip){
             RTLIL::IdString protectId("$rs_protected");
@@ -2722,7 +2703,6 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             };
             writeCSV("power.csv", summary);
 
-            auto start = std::chrono::high_resolution_clock::now();
             extractAllClockDomains();
             check_dff();
             check_BRAM();
@@ -2733,7 +2713,8 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             gen_csv_old();
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration =  std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-            log("Time taken by Run = %fs\n",duration.count());
+            log("\nTime taken by power data extraction tool = %fs\n",duration.count());
+            
 
         }
     }
