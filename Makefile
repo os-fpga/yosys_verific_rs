@@ -85,10 +85,10 @@ valgrind:
 clean_test:
 #	cmake --build build --target clean_analyze
 ifneq ("","$(wildcard yosys/install)")
-	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install && cd ../synth_pow && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install
+	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install && cd ../pow_extract && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install
 endif
 ifneq ("","$(wildcard yosys/debug-install)")
-	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install && cd ../synth_pow && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install
+	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install && cd ../pow_extract && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install
 endif
 
 ##
@@ -116,7 +116,7 @@ install: release
 ##     |---> info       :  Test if everything is installed properly
 ##     |---> usage      :  make test_install
 test_install:
-	cd yosys-rs-plugin && $(MAKE) test YOSYS_PATH=$(PREFIX) && cd synth_pow && $(MAKE) test YOSYS_PATH=$(PREFIX)
+	cd yosys-rs-plugin && $(MAKE) test YOSYS_PATH=$(PREFIX) && cd pow_extract && $(MAKE) test YOSYS_PATH=$(PREFIX)
 
 ##
 ## @ uninstall
