@@ -86,13 +86,13 @@ VERILOG_MODULES	= $(COMMON)/cells_sim.v \
 				  $(GENESIS3)/TDP18K_FIFO.v \
 				  $(GENESIS3)/sram1024x18.v \
 				  $(GENESIS3)/ufifo_ctl.v \
-				  $(GENESIS3)/RS_PRIMITIVES/blackbox_models/cell_sim_blackbox.v \
+				  $(GENESIS3)/FPGA_PRIMITIVES_MODELS/blackbox_models/cell_sim_blackbox.v \
 				  $(GENESIS3)/llatches_sim.v \
 				  $(GENESIS3)/dsp38_map.v \
-				  $(GENESIS3)/RS_PRIMITIVES/sim_models/verilog/DSP38.v
+				  $(GENESIS3)/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DSP38.v
 
 NAME = pow-extract
-SOURCES = src/synth_rapidsilicon.cc 
+SOURCES = src/rs_pow_extract.cc 
 
 OBJS := $(SOURCES:cc=o)
 
@@ -127,7 +127,4 @@ test:
 
 clean:
 	rm -rf src/*.d src/*.o *.so pmgen/
-	$(MAKE) -C tests clean_tests YOSYS_PATH=$(YOSYS_PATH)
-
-clean_test:
-	$(MAKE) -C tests clean_tests YOSYS_PATH=$(YOSYS_PATH)
+	

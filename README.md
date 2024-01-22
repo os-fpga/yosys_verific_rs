@@ -1,9 +1,9 @@
 # Introduction
-This repository is designed for the Yosys+Verific support. The open-source Yosys has extensive Verilog-2005 support while Verific adds complete support for SystemVerilog IEEE-1800, UPF IEEE-1801 and VHDL IEEE-1076 standards. 
-The repository contains yosys_rs, verific_rs and open-source HDL projects as submodules, which are going to be used for the Sythesis and Verification. It also contains Yosys template scripts which can be used in the OpenFPGA tasks for the yosys_vpr flow. These scripts are designed to be used only with Yosys with Verific enabled.
+This repository is designed for the Yosys + (Optional) Verific support. The open-source Yosys has extensive Verilog-2005 support while Verific adds complete support for SystemVerilog IEEE-1800, UPF IEEE-1801 and VHDL IEEE-1076 standards. 
+The repository contains yosys_rs, and open-source HDL projects as submodules, which are going to be used for the Synthesis and Verification. It also contains Yosys template scripts which can be used in the OpenFPGA tasks for the yosys_vpr flow. These scripts are designed to be used only with Yosys with Verific enabled.
+Contact Verific directly to subscribe the optional Verific License. Contact zarin.said@rapidsilicon.com for support with the Verific integration in this repo. 
 
 # Requirements
-The repository requires SSH key setup. Please see instructions at [connecting-to-github-with-ssh](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
 The list of dependencies:
  * [`Ubuntu`](.github/scripts/install_ubuntu_dependencies_build.sh)

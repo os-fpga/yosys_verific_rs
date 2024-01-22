@@ -1,2 +1,2 @@
-# yosys-rs-plugin
+# pow-extract
 Rapidsilicon's Yosys Plugin
