@@ -2186,17 +2186,17 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                     Cells_Set = sig2CellsInFanout[sig_port];
                     for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
                         cell = *it;
-                        clk_found = find_io_clk(cell, sig_port);
-                        break;
+                        if (!(find_io_clk(cell, sig_port)))
+                            break;
                     }
                 }
                 
                 if (sig2CellsInFanin[sig_port] != NULL){
                     Cells_Set = sig2CellsInFanin[sig_port];
                     for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
-                        cell = *it;
-                        clk_found = find_io_clk(cell, sig_port);
-                        break;
+                        cell = *it;                        
+                        if (!(find_io_clk(cell, sig_port)))
+                            break;
                     }
                 }
             }
