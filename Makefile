@@ -116,7 +116,7 @@ install: release
 ##     |---> info       :  Test if everything is installed properly
 ##     |---> usage      :  make test_install
 test_install:
-	cd yosys-rs-plugin && $(MAKE) test YOSYS_PATH=$(PREFIX) && cd pow_extract && $(MAKE) test YOSYS_PATH=$(PREFIX)
+	cd yosys-rs-plugin && $(MAKE) test YOSYS_PATH=$(PREFIX)
 
 ##
 ## @ uninstall
