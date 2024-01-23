@@ -85,10 +85,10 @@ valgrind:
 clean_test:
 #	cmake --build build --target clean_analyze
 ifneq ("","$(wildcard yosys/install)")
-	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install && cd ../pow_extract && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install
+	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/install
 endif
 ifneq ("","$(wildcard yosys/debug-install)")
-	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install && cd ../pow_extract && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install
+	cd yosys-rs-plugin && $(MAKE) $@ YOSYS_PATH=$(shell pwd)/yosys/debug-install
 endif
 
 ##
