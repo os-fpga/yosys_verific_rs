@@ -133,7 +133,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     std::map<SigSpec, SigSpec> clk_from_buffer;
     std::vector<std::tuple<int, string, string, string, string>> ios_out;
 
-    dict<RTLIL::SigSpec, string> ios_clk;
+    dict<RTLIL::SigSpec, std::set<string>*> ios_clk;
     std::map<RTLIL::SigSpec,std::vector<float>>ce_ffs;
     std::map<string,std::vector<string>>lut_clk;    
     std::map<std::tuple<std::string, string, string, int, int, float, float, float, float>, int> tdp_out;
@@ -2131,17 +2131,29 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     
     bool find_io_clk (RTLIL::Cell * cell, RTLIL::SigSpec sig_port){
         std::set<RTLIL::SigSpec> *clocks;
-        // log("%s %s %d ",log_signal(sig_port), log_id(cell->type),(cell2clkDomainsMerged[cell] != NULL));
-        // getchar();
+        std::set<string> *cdc_clk;
+        bool clk_matched = false;
         if (cell2clkDomainsMerged[cell] != NULL){
             clocks = cell2clkDomainsMerged[cell];
+            if (ios_clk.count(sig_port)) {
+                cdc_clk = ios_clk[sig_port];
+            } else {
+                cdc_clk = new std::set<string>;
+                ios_clk[sig_port] =cdc_clk;
+            }
             for (std::set<RTLIL::SigSpec>::iterator it = clocks->begin(); it != clocks->end(); it++) {
                 RTLIL::SigSpec cell_clk = *it;
-                // log("Clk Size = %d\n",GetSize(cell_clk));
-                if(GetSize(cell_clk)>0){
-                    ios_clk[sig_port] = log_signal(cell_clk);
-                    return true;
+                if(GetSize(cell_clk)>0){ 
+                    if (cdc_clk->count(log_signal(cell_clk)))
+                        continue;
+                    
+                    cdc_clk->insert(log_signal(cell_clk));                    
+                    // ios_clk[sig_port] = log_signal(cell_clk);
+                    clk_matched =  true;
                 }
+            }
+            if (clk_matched){
+                return true;
             }
         }
         return false;
@@ -2159,20 +2171,20 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                     }
                     else{
                         for (auto clk_buf : CLK_BUF){
-                            if (clk_buf->getPort(RTLIL::escape_id("O")) == clk){
-                                if (clk_buf->getPort(RTLIL::escape_id("I")) == i_buf->getPort(RTLIL::escape_id("O"))){
-                                    clk_from_buffer[clk] = i_buf->getPort(RTLIL::escape_id("I"));
-                                }
+                            if (clk_buf->getPort(RTLIL::escape_id("O")) != clk){
+                                continue;
                             }
+                            if (clk_buf->getPort(RTLIL::escape_id("I")) == i_buf->getPort(RTLIL::escape_id("O"))){
+                                clk_from_buffer[clk] = i_buf->getPort(RTLIL::escape_id("I"));
+                            }
+                            
                         }
                     }
                 }
             }
         }
 
-        dict <RTLIL::SigSpec, string> io_direction;
         std::set<std::tuple<int, string, string, string, string>> filteredVector;
-        std::set<SigBit> IOs_wire;
         bool clk_found = false;
         std::set<Cell*>* Cells_Set;
         RTLIL::Cell *cell;
@@ -2180,45 +2192,59 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             for (auto wire : module->wires()){
                 clk_found = false;
                 RTLIL::SigSpec sig_port = wire;
-                if(!(wire->port_input || wire->port_output))
+                if(!(wire->port_input || wire->port_output)){
                     continue;
+                }
                 if (sig2CellsInFanout[sig_port] != NULL){
                     Cells_Set = sig2CellsInFanout[sig_port];
                     for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
                         cell = *it;
-                        if (!(find_io_clk(cell, sig_port)))
-                            break;
+                        find_io_clk(cell, sig_port);
                     }
                 }
                 
                 if (sig2CellsInFanin[sig_port] != NULL){
                     Cells_Set = sig2CellsInFanin[sig_port];
                     for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
-                        cell = *it;                        
-                        if (!(find_io_clk(cell, sig_port)))
-                            break;
+                        cell = *it;      
+                        find_io_clk(cell, sig_port);
                     }
                 }
             }
         }
-
+        
         string io_type = "SDR";
         for (auto orig_io : IO_dict){
             clk_found = false;
             for (auto ind_clk : ios_clk){
-                string ind_clk_first = log_signal(ind_clk.first);
-                std::get<0>(orig_io).erase(std::remove_if(std::get<0>(orig_io).begin(), std::get<0>(orig_io).end(), ::isspace), std::get<0>(orig_io).end());
-                if (ind_clk_first == std::get<0>(orig_io)){
-                    if ((std::get<1>(orig_io) == ind_clk.second) || (log_signal(clk_from_buffer[ind_clk.second]) == std::get<1>(orig_io)))
-                        io_type = "Clock";
-                    else
-                        io_type = "SDR";
-                    if (ind_clk.second != "unknown"){
+                RTLIL::SigSpec io_port = ind_clk.first;
+                std::set<string> *clks;
+                if (!(ios_clk.count(io_port))){
+                    continue;
+                }
+                clks = ios_clk[io_port];
+                for (std::set<string>::iterator it = clks->begin(); it != clks->end(); it++){ 
+                    string clk = *it;
+                    if (!(clk.size()))
+                        continue;
+                    string ind_clk_first = log_signal(ind_clk.first);
+                    std::get<0>(orig_io).erase(std::remove_if(std::get<0>(orig_io).begin(), std::get<0>(orig_io).end(), ::isspace), std::get<0>(orig_io).end());
+                    // check if actual IO is part of io, clock table or not
+                    if (ind_clk_first == std::get<0>(orig_io)){
                         clk_found = true;
-                        filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(),ind_clk.second.c_str()));
+                        // check if IO is a clock or SDR
+                        if ((std::get<1>(orig_io) == clk) || (log_signal(clk_from_buffer[clk]) == std::get<1>(orig_io)))
+                            io_type = "Clock";
+                        else
+                            io_type = "SDR";
+
+                        filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(),clk.c_str()));
+                        // Break the loop if first instance of an associated clock is found for IO in the cell.
                         break;
+                        
                     }
                 }
+                if (clk_found) break;
             }
             if (clk_found == false){
                 filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(), "unknown"));
