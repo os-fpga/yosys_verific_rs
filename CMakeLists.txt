@@ -71,14 +71,14 @@ checkout_subsystems(YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_
 checkout_subsystems(YOSYS_VERIFIC_RS_NON_RECURSIVE_SUBSYTEMS ${CMAKE_CURRENT_SOURCE_DIR} "" ${UPDATE_SUBMODULES})
 
 if (PRODUCTION_BUILD)
-    message("Production Build type set to ON")
-    if (NOT RAPTOR)
-        get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
-            REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-        add_subdirectory(${FLEX_LM_SRC_DIR})
-        # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
-    endif()
-    message("FLEX: "  ${FLEX_LM_SRC_DIR})
+    # message("Production Build type set to ON")
+    # if (NOT RAPTOR)
+    #     get_filename_component(FLEX_LM_SRC_DIR "Raptor_Tools/Flex_LM"
+    #         REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    #     add_subdirectory(${FLEX_LM_SRC_DIR})
+    #     # No need for else as FLEX_LM_SRC_DIR will be set by Raptor
+    # endif()
+    # message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif()
 
 option(ENABLE_VERIFIC "Enable Verific frontend" OFF)
@@ -129,15 +129,22 @@ if (ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    string(CONCAT FLEX_LM_LDLIBS
-        "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
-    )
-    list(APPEND YOSYS_MK_ARGS
-        "PRODUCTION_BUILD=1"
-        "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
-        "EXTRA_CXX_FLAGS=-DPRODUCTION_BUILD=1"
-        "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
-    )
+
+    # string(CONCAT FLEX_LM_LDLIBS
+    #     "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_trl.a "
+    #     "${FLEX_LM_SRC_DIR}/x64_lsb/libcrvs.a "
+    #     "${FLEX_LM_SRC_DIR}/x64_lsb/libsb.a "
+    #     "${FLEX_LM_SRC_DIR}/x64_lsb/activation/lib/libnoact.a "
+    #     "${FLEX_LM_SRC_DIR}/x64_lsb/liblmgr_dongle.a "
+    #     "${CMAKE_BINARY_DIR}/Raptor_Tools/Flex_LM/rs_licenseManager.a "
+    # )
+    # list(APPEND YOSYS_MK_ARGS
+    #     "PRODUCTION_BUILD=1"
+    #     "EXTRA_LDLIBS=${FLEX_LM_LDLIBS} -lstdc++"
+    #     "EXTRA_CXX_FLAGS=-I${FLEX_LM_SRC_DIR} -I${FLEX_LM_SRC_DIR}/machind -DPRODUCTION_BUILD=1"
+    #     "EXTRA_OBJS=${FLEX_LM_SRC_DIR}/x64_lsb/lm_new_pic.o"
+    #     "EXTRA_LD_FLAGS=-fPIC -fvisibility=hidden -no-pie -lrt -Wl,--no-as-needed -ldl -pthread"
+    # )
 endif()
 
 if (YOSYS_LIB)
@@ -220,7 +227,7 @@ if(ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    add_dependencies(yosys rs_licenseManager)
+    # add_dependencies(yosys rs_licenseManager)
 endif()
 
 if (BUILD_YOSYS_PLUGINS)
