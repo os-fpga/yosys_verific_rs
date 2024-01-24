@@ -3,14 +3,14 @@ cmake_minimum_required(VERSION 3.12)
 project(analyze)
 
 if (PRODUCTION_BUILD)
-    message("Production Build type set to ON")
-    add_definitions(-DPRODUCTION_BUILD)
-    if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
-        get_filename_component(FLEX_LM_SRC_DIR "../Raptor_Tools/Flex_LM"
-            REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
-        add_subdirectory(${FLEX_LM_SRC_DIR})
-    endif()
-    message("FLEX: "  ${FLEX_LM_SRC_DIR})
+    # message("Production Build type set to ON")
+    # add_definitions(-DPRODUCTION_BUILD)
+    # if ((NOT RAPTOR) AND (NOT YOSYS_VERIFIC))
+    #     get_filename_component(FLEX_LM_SRC_DIR "../Raptor_Tools/Flex_LM"
+    #         REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE)
+    #     add_subdirectory(${FLEX_LM_SRC_DIR})
+    # endif()
+    # message("FLEX: "  ${FLEX_LM_SRC_DIR})
 endif(PRODUCTION_BUILD)
 
 if(ENABLE_VERIFIC)
@@ -87,10 +87,10 @@ if(ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    add_dependencies(analyze rs_licenseManager)
-    include_directories(analyze PUBLIC ${FLEX_LM_SRC_DIR}
-                                ${FLEX_LM_SRC_DIR}/machind
-)
+#     # add_dependencies(analyze rs_licenseManager)
+#     # include_directories(analyze PUBLIC ${FLEX_LM_SRC_DIR}
+#     #                             ${FLEX_LM_SRC_DIR}/machind
+# )
 endif(PRODUCTION_BUILD)
 
 target_include_directories(analyze PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
@@ -120,7 +120,7 @@ if(ENABLE_VERIFIC)
 endif()
 
 if (PRODUCTION_BUILD)
-    target_link_libraries(analyze PUBLIC rs_licenseManager)
+    # target_link_libraries(analyze PUBLIC rs_licenseManager)
 endif()
 
 if(ENABLE_VERIFIC)
