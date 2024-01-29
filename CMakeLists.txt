@@ -296,7 +296,7 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${YOSYS_PATH}/bin/de
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/bin/de ${YOSYS_PATH}/bin/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/bin/de ${YOSYS_PATH}/bin/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Copy de executable into bin"
     DEPENDS de yosys
