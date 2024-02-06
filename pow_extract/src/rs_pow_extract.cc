@@ -2740,11 +2740,12 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             gen_csv_old();
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration =  std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-            char buffer[FILENAME_MAX];
-            if (getcwd(buffer, FILENAME_MAX) == nullptr) {
+            char csv_path[FILENAME_MAX];
+            if (getcwd(csv_path, FILENAME_MAX) == nullptr) {
                 log_warning("Error getting path for power.csv");
             } else {
-                log("\nINFO: PWR: Created %s\n",buffer);
+                strcat(csv_path, "/power.csv");
+                log("\nINFO: PWR: Created %s\n",csv_path);
             }
             log("\nTime taken by power data extraction tool = %fs\n",duration.count());
             
