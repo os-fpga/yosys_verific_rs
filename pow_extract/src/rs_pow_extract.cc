@@ -20,6 +20,7 @@
 #include <numeric>
 #include <algorithm>
 #include <chrono>
+#include <unistd.h>
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
 #endif
@@ -2267,7 +2268,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
         std::ifstream sdcFile(sdc_file); // Replace "input.sdc" with your SDC file name
 
         if (!sdcFile.is_open()) {
-            log_warning("Error opening the SDC constraint file.");
+            log_warning("Error opening the SDC constraint file.\n");
             return 0;
         }
 
@@ -2739,6 +2740,12 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             gen_csv_old();
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration =  std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+            char buffer[FILENAME_MAX];
+            if (getcwd(buffer, FILENAME_MAX) == nullptr) {
+                log_warning("Error getting path for power.csv");
+            } else {
+                log("\nINFO: PWR: Created %s\n",buffer);
+            }
             log("\nTime taken by power data extraction tool = %fs\n",duration.count());
             
 
