@@ -2038,35 +2038,74 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                 }
                 case Technologies::GENESIS_3:{
                     if (ram->type == RTLIL::escape_id("TDP_RAM18KX2")){
-                        arwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A1"))) + check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A2")));
-                        brwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B1"))) + check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B2")));
-                        awwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A1"))) + check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A2")));
-                        bwwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B1"))) + check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B2")));
+                        if(getPortActual_noref(RTLIL::escape_id("RDATA_A1"), ram) && getPortActual_noref(RTLIL::escape_id("RDATA_A2"), ram))
+                            arwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A1"))) + check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A2")));
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("RDATA_B1"), ram) && getPortActual_noref(RTLIL::escape_id("RDATA_B2"), ram))
+                            brwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B1"))) + check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B2")));
 
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_A1")),ena);
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_A2")),ena);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_A1")),wena);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_A2")),wena);
+                        if(getPortActual_noref(RTLIL::escape_id("WDATA_A1"), ram) && getPortActual_noref(RTLIL::escape_id("WDATA_A2"), ram))
+                            awwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A1"))) + check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A2")));
 
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_B1")),enb);
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_B2")),enb);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_B1")),wenb);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_B2")),wenb);
+                        if(getPortActual_noref(RTLIL::escape_id("WDATA_B1"), ram) && getPortActual_noref(RTLIL::escape_id("WDATA_B2"), ram))
+                            bwwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B1"))) + check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B2")));
+
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("REN_A1"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_A1")),ena);
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("REN_A2"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_A2")),ena);
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("WEN_A1"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_A1")),wena);
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("WEN_A2"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_A2")),wena);
+
+                        if(getPortActual_noref(RTLIL::escape_id("REN_B1"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_B1")),enb);
+
+                        if(getPortActual_noref(RTLIL::escape_id("REN_B2"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_B2")),enb);
+
+                        if(getPortActual_noref(RTLIL::escape_id("WEN_B1"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_B1")),wenb);
+
+                        if(getPortActual_noref(RTLIL::escape_id("WEN_B2"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_B2")),wenb);
 
 
                         ram_type = "18kx2 ";
                     }
                     if(ram->type == RTLIL::escape_id("TDP_RAM36K")){
-                        arwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A"))) + check_port_width(ram->getPort(RTLIL::escape_id("RPARITY_A")));
-                        awwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A"))) + check_port_width(ram->getPort(RTLIL::escape_id("WPARITY_A")));
-                        brwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B"))) + check_port_width(ram->getPort(RTLIL::escape_id("RPARITY_B")));
-                        bwwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B"))) + check_port_width(ram->getPort(RTLIL::escape_id("WPARITY_B")));
+                        if(getPortActual_noref(RTLIL::escape_id("RDATA_A"), ram) && getPortActual_noref(RTLIL::escape_id("RPARITY_A"), ram))
+                            arwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_A"))) + check_port_width(ram->getPort(RTLIL::escape_id("RPARITY_A")));
+                        else
+                            log_warning("Port A for RAM %s is missing\n",log_id(ram->name));
 
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_A")),ena);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_A")),wena);
+                        if(getPortActual_noref(RTLIL::escape_id("WDATA_A"), ram) && getPortActual_noref(RTLIL::escape_id("WPARITY_A"), ram))
+                            awwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_A"))) + check_port_width(ram->getPort(RTLIL::escape_id("WPARITY_A")));
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("RDATA_B"), ram) && getPortActual_noref(RTLIL::escape_id("RPARITY_B"), ram))
+                            brwidth = check_port_width(ram->getPort(RTLIL::escape_id("RDATA_B"))) + check_port_width(ram->getPort(RTLIL::escape_id("RPARITY_B")));
+                        else
+                            log_warning("Port B for RAM %s is missing\n",log_id(ram->name));
 
-                        check_port_const(ram->getPort(RTLIL::escape_id("REN_B")),enb);
-                        check_port_const(ram->getPort(RTLIL::escape_id("WEN_B")),wenb);
+                        if(getPortActual_noref(RTLIL::escape_id("WDATA_B"), ram) && getPortActual_noref(RTLIL::escape_id("WPARITY_B"), ram))
+                            bwwidth = check_port_width(ram->getPort(RTLIL::escape_id("WDATA_B"))) + check_port_width(ram->getPort(RTLIL::escape_id("WPARITY_B")));
+                                                
+                        if(getPortActual_noref(RTLIL::escape_id("REN_A"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_A")),ena);
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("WEN_A"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_A")),wena);
+                        
+                        if(getPortActual_noref(RTLIL::escape_id("REN_B"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("REN_B")),enb);
+                        
+                        if (getPortActual_noref(RTLIL::escape_id("WEN_B"), ram))
+                            check_port_const(ram->getPort(RTLIL::escape_id("WEN_B")),wenb);
 
                         ram_type = "36k ";
                     }
@@ -2088,28 +2127,37 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             string ClkA = "unknown";
             string ClkB = "unknown";
             if ((tech == Technologies::GENESIS_3) && (ram->type == RTLIL::escape_id("TDP_RAM36K"))){
-                if (!((ram->getPort(RTLIL::escape_id("CLK_A")).as_chunk()).wire == NULL)){
-                    ClkA = log_signal(ram->getPort(RTLIL::escape_id("CLK_A")));
-                    _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_A")));
-                    update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_A")));
+                if (getPortActual_noref(RTLIL::escape_id("CLK_A"), ram)){ 
+                    if (!((ram->getPort(RTLIL::escape_id("CLK_A")).as_chunk()).wire == NULL)){
+                        ClkA = log_signal(ram->getPort(RTLIL::escape_id("CLK_A")));
+                        _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_A")));
+                        update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_A")));
+                    }
                 }
-                if (!((ram->getPort(RTLIL::escape_id("CLK_B")).as_chunk()).wire == NULL)){
-                    ClkB = log_signal(ram->getPort(RTLIL::escape_id("CLK_B")));
-                    _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_B")));
-                    update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_B")));
+                if (getPortActual_noref(RTLIL::escape_id("CLK_B"), ram)){ 
+                    if (!((ram->getPort(RTLIL::escape_id("CLK_B")).as_chunk()).wire == NULL)){
+                        ClkB = log_signal(ram->getPort(RTLIL::escape_id("CLK_B")));
+                        _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_B")));
+                        update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_B")));
+                    }
                 }
                 elements = std::make_tuple(ram_type, ClkA, ClkB, arwidth, brwidth, ena, enb, wena, wenb);
             }
             else if (tech != Technologies::GENERIC){
-                if (!((ram->getPort(RTLIL::escape_id("CLK_A1")).as_chunk()).wire == NULL)){
-                    ClkA = log_signal(ram->getPort(RTLIL::escape_id("CLK_A1")));
-                    _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_A1")));
-                    update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_A1")));
+
+                if (getPortActual_noref(RTLIL::escape_id("CLK_A1"), ram)){
+                    if (!((ram->getPort(RTLIL::escape_id("CLK_A1")).as_chunk()).wire == NULL)){
+                        ClkA = log_signal(ram->getPort(RTLIL::escape_id("CLK_A1")));
+                        _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_A1")));
+                        update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_A1")));
+                    }
                 }
-                if (!((ram->getPort(RTLIL::escape_id("CLK_B1")).as_chunk()).wire == NULL)){
-                    ClkB = log_signal(ram->getPort(RTLIL::escape_id("CLK_B1")));
-                    _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_B1")));
-                    update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_B1")));
+                if (getPortActual_noref(RTLIL::escape_id("CLK_B1"), ram)){
+                    if (!((ram->getPort(RTLIL::escape_id("CLK_B1")).as_chunk()).wire == NULL)){
+                        ClkB = log_signal(ram->getPort(RTLIL::escape_id("CLK_B1")));
+                        _clocks_.push_back(ram->getPort(RTLIL::escape_id("CLK_B1")));
+                        update_clkDomains(ram, ram->getPort(RTLIL::escape_id("CLK_B1")));
+                    }
                 }
                 
                 elements = std::make_tuple(ram_type, ClkA, ClkB, arwidth, brwidth, ena, enb, wena, wenb);
