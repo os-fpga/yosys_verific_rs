@@ -247,6 +247,11 @@ if (BUILD_YOSYS_PLUGINS)
     )
     add_dependencies(yosys-plugins yosys)
     add_dependencies(yosys_clean yosys-plugins_clean)
+    
+    if(NOT RAPTOR) # synling plugin
+    add_subdirectory(Raptor_Tools/parser_plugins)
+    add_dependencies(synlig_build yosys)
+    endif()
 endif()
 
 add_custom_target(
