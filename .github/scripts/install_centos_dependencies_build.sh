@@ -38,7 +38,7 @@ yum install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-1.noa
 yum install -y ninja-build
 yum install -y wget
 yum install -y openssl-devel
-
+yum install -y java-11-openjdk-devel
 
 pip3 install orderedmultidict
 pip3 install psutil
