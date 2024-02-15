@@ -2,9 +2,9 @@
 yum update -y
 yum group install -y "Development Tools"
 yum install -y epel-release
-curl -C - -O https://cmake.org/files/v3.15/cmake-3.15.7-Linux-x86_64.tar.gz
-tar xzf cmake-3.15.7-Linux-x86_64.tar.gz
-ln -s $PWD/cmake-3.15.7-Linux-x86_64/bin/cmake /usr/bin/cmake
+curl -C - -O https://cmake.org/files/v3.28/cmake-3.28.0-linux-x86_64.tar.gz
+tar xzf cmake-3.28.0-linux-x86_64.tar.gz
+ln -s $PWD/cmake-3.28.0-linux-x86_64/bin/cmake /usr/bin/cmake
 yum install -y openssh-server openssh-clients
 yum install -y centos-release-scl-rh
 yum install -y devtoolset-11
@@ -38,12 +38,12 @@ yum install http://repo.okay.com.mx/centos/7/x86_64/release/okay-release-1-1.noa
 yum install -y ninja-build
 yum install -y wget
 yum install -y openssl-devel
-
+yum install -y java-11-openjdk-devel
 
 pip3 install orderedmultidict
 pip3 install psutil
 
 
-ln -s $PWD/cmake-3.15.7-Linux-x86_64/bin/ctest /usr/bin/ctest
+ln -s $PWD/cmake-3.28.0-linux-x86_64/bin/ctest /usr/bin/ctest
 echo 'QMAKE_CC=/opt/rh/devtoolset-11/root/usr/bin/gcc' >> $GITHUB_ENV
 echo 'QMAKE_CXX=/opt/rh/devtoolset-11/root/usr/bin/g++' >> $GITHUB_ENV
