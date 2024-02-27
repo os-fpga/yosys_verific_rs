@@ -1,6 +1,6 @@
 /**
  * @file rs_design_edit.cc
- * @author Behzadf Mehmoud (behzadmehmood82@gmail.com)
+ * @author Behzad Mehmood (behzadmehmood82@gmail.com)
  * @author Manadher Kharroubi (manadher@gmail.com)
  * @brief
  * @version 0.1
@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <json.hpp>
 
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
@@ -54,6 +55,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
+using json = nlohmann::json;
 using namespace std;
 
 struct primitives_data {
@@ -98,7 +100,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<std::string> wrapper_files;
-  std::string cell_lib;
+  std::string interface_json;
+  std::string tech;
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
@@ -197,6 +200,119 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return ""; // If no extension found
   }
 
+  std::string id(RTLIL::IdString internal_id)
+  {
+    const char *str = internal_id.c_str();
+    return std::string(str);
+  }
+
+  void process_chunk(const RTLIL::SigChunk &chunk, json &port_object_array)
+  {
+    int lsb, msb;
+    std::string name = remove_backslashes(chunk.wire->name.str());
+    if (chunk.wire == NULL)
+    {
+      return;
+    }
+
+    if (chunk.width == chunk.wire->width && chunk.offset == 0)
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = chunk.wire->width - 1;
+        msb = chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = chunk.wire->start_offset;
+        msb = chunk.wire->width - 1;
+      }
+    } else if (chunk.width == 1)
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = msb = chunk.offset + chunk.wire->start_offset;
+      }
+    }
+    else
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = (chunk.wire->width - (chunk.offset + chunk.width - 1) - 1) + chunk.wire->start_offset;
+        msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = chunk.offset + chunk.wire->start_offset;
+        msb = (chunk.offset + chunk.width - 1) + chunk.wire->start_offset;
+      }
+    }
+    if(chunk.wire->port_input)
+    {
+      port_object_array.push_back({{"FUNC", "IN_DIR"}, {"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } else if (chunk.wire->port_output)
+    {
+      port_object_array.push_back({{"FUNC", "OUT_DIR"}, {"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } else
+    {
+      port_object_array.push_back({{"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } 
+  }
+
+  void dump_interface_json(Module* mod, std::string file)
+	{
+		std::ofstream json_file(file.c_str());
+		json io_instances;
+		io_instances["IO_Instances"] = json::object();
+		for(auto cell : mod->cells())
+		{
+			json instance_object;
+			instance_object["module"] = remove_backslashes(cell->type.str());
+			for(auto conn : cell->connections())
+			{
+				json port_obj_array;
+				IdString port_name = conn.first;
+        RTLIL::SigSpec actual = conn.second;
+				if (actual.is_chunk())
+				{
+					RTLIL::Wire* wire = actual.as_chunk().wire;
+					if(wire != NULL)
+					{
+						process_chunk(actual.as_chunk(), port_obj_array);
+					}
+				} else{
+					for (auto it = actual.chunks().rbegin(); 
+                    	it != actual.chunks().rend(); ++it)
+					{
+						RTLIL::Wire* wire = (*it).wire;
+						if(wire != NULL)
+						{
+							process_chunk(*it, port_obj_array);
+						}
+					}
+				}
+        instance_object["ports"][remove_backslashes(port_name.str())] = port_obj_array;
+			}
+			io_instances["IO_Instances"][remove_backslashes(cell->name.str())] = instance_object;
+		}
+		if (json_file.is_open())
+    {
+      json_file << std::setw(4) << io_instances << std::endl;
+      json_file.close();
+    }
+    else
+    {
+      std::cerr << "Unable to open file " << file << " for writing." << std::endl;
+    }
+	}
+
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
     clear_flags();
@@ -214,10 +330,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
         argidx = next_argidx - 1;
         continue;
       }
+			if (args[argidx] == "-tech" && argidx + 1 < args.size())
+			{
+				tech = args[++argidx];
+        continue;
+			}
+			if (args[argidx] == "-json" && argidx + 1 < args.size())
+			{
+				interface_json = args[++argidx];
+        continue;
+			}
       break;
     }
-    cell_lib = "genesis3";
-    primitives = io_prim.get_primitives(cell_lib);
+    primitives = io_prim.get_primitives(tech);
 
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
@@ -361,6 +486,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       interface_mod->remove({wire});
     }
     interface_mod->fixup_ports();
+    dump_interface_json(interface_mod, interface_json);
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
@@ -440,144 +566,5 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 } DesignEditRapidSilicon;
-
-// struct DesignEditRapidSilicon : public ScriptPass {
-
-//   DesignEditRapidSilicon()
-//       : ScriptPass(STR(PASS_NAME), "Design Editing for RapidSilicon FPGAs")
-//       {}
-
-//   void help() override {
-//     log("\n");
-//     log("   %s [options]\n", STR(PASS_NAME));
-//     log("This command runs Design Editing for RapidSilicon FPGAs\n");
-//     log("\n");
-//     log("    -verilog <file>\n");
-//     log("        Write the design to the specified verilog file. writing of
-//     an "
-//         "output file\n");
-//     log("        is omitted if this parameter is not specified.\n");
-//     log("\n");
-//     log("\n");
-//   }
-
-//   string module_name;
-//   Technologies tech;
-//   string sdc_str;
-//   string verilog_file;
-//   int lut_cnt;
-//   int dff_cnt;
-//   int latch_cnt;
-//   int ram_cnt;
-//   int dsp_cnt;
-//   int IO_cnt;
-//   int PLL_cnt;
-
-//   RTLIL::Design *_design;
-
-//   void clear_flags() override {
-//     tech = Technologies::GENESIS_3;
-//     verilog_file = "";
-//     lut_cnt = 0;
-//     dff_cnt = 0;
-//     latch_cnt = 0;
-//     ram_cnt = 0;
-//     dsp_cnt = 0;
-//     IO_cnt = 0;
-//     PLL_cnt = 0;
-//     module_name = "";
-//   }
-
-//   void execute(std::vector<std::string> args, RTLIL::Design *design) override
-//   {
-// #ifdef PRODUCTION_BUILD
-//     License_Manager license(
-//         License_Manager::LicensedProductName::YOSYS_RS_PLUGIN);
-// #endif
-//     string run_from;
-//     string run_to;
-//     string tech_str;
-//     string goal_str;
-//     string encoding_str;
-//     string effort_str;
-//     string carry_str;
-//     clear_flags();
-//     _design = design;
-
-//     size_t argidx;
-//     for (argidx = 1; argidx < args.size(); argidx++) {
-//       if (args[argidx] == "-verilog" && argidx + 1 < args.size()) {
-//         verilog_file = args[++argidx];
-//         continue;
-//       }
-//       if (args[argidx] == "-tech" && argidx + 1 < args.size()) {
-//         tech_str = args[++argidx];
-//         continue;
-//       }
-//       if (args[argidx] == "-sdc" && argidx + 1 < args.size()) {
-//         sdc_str = args[++argidx];
-//         continue;
-//       }
-//       break;
-//     }
-//     extra_args(args, argidx, design);
-
-//     if (tech_str == "generic")
-//       tech = Technologies::GENERIC;
-//     else if (tech_str == "genesis") {
-//       tech = Technologies::GENESIS;
-//     } else if (tech_str == "genesis2") {
-//       tech = Technologies::GENESIS_2;
-//     } else if (tech_str == "genesis3") {
-//       tech = Technologies::GENESIS_3;
-//     } else if (tech_str != "")
-//       log_cmd_error("Invalid tech specified: '%s'\n", tech_str.c_str());
-
-//     if (!design->full_selection())
-//       log_cmd_error("This command only operates on fully selected
-//       designs!\n");
-
-//     log_header(design, "Executing design editing pass: v%d.%d.%d\n",
-//                VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-//     log_push();
-
-//     run_script(design, run_from, run_to);
-
-//     log_pop();
-//   }
-
-//   void script() override {
-
-//     auto start = std::chrono::high_resolution_clock::now();
-//     string readArgs;
-
-//     if (check_label("begin") && tech != Technologies::GENERIC) {
-//       switch (tech) {
-//       case Technologies::GENESIS: {
-//         log("DESIGN_EDIT GENESIS");
-//         break;
-//       }
-//       case Technologies::GENESIS_2: {
-//         log("DESIGN_EDIT GENESIS_2");
-//         break;
-//       }
-//       case Technologies::GENESIS_3: {
-//         log("DESIGN_EDIT GENESIS_3");
-//         break;
-//       }
-//       // Just to make compiler happy
-//       case Technologies::GENERIC: {
-//         log("DESIGN_EDIT GENERIC");
-//         break;
-//       }
-//       }
-//     //   run("read_verilog -lib -specify -nomem2reg"
-//     GET_FILE_PATH(COMMON_DIR,
-//     // SIM_LIB_FILE) +
-//     //       readArgs);
-//     }
-//   }
-
-// } DesignEditRapidSilicon;
 
 PRIVATE_NAMESPACE_END
