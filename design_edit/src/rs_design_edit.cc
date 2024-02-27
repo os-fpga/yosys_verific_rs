@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <json.hpp>
 
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
@@ -54,6 +55,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
+using json = nlohmann::json;
 using namespace std;
 
 struct primitives_data {
@@ -98,6 +100,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<std::string> wrapper_files;
+  std::string interface_json;
   std::string tech;
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
@@ -197,6 +200,108 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return ""; // If no extension found
   }
 
+  std::string id(RTLIL::IdString internal_id)
+  {
+    const char *str = internal_id.c_str();
+    return std::string(str);
+  }
+
+  void process_chunk(const RTLIL::SigChunk &chunk, json &port_object_array)
+  {
+    int lsb, msb;
+    std::string name = remove_backslashes(chunk.wire->name.str());
+    if (chunk.wire == NULL)
+    {
+      return;
+    }
+
+    if (chunk.width == chunk.wire->width && chunk.offset == 0)
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = chunk.wire->width - 1;
+        msb = chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = chunk.wire->start_offset;
+        msb = chunk.wire->width - 1;
+      }
+    } else if (chunk.width == 1)
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = msb = chunk.offset + chunk.wire->start_offset;
+      }
+    }
+    else
+    {
+      if (chunk.wire->upto)
+      {
+        lsb = (chunk.wire->width - (chunk.offset + chunk.width - 1) - 1) + chunk.wire->start_offset;
+        msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
+      }
+      else
+      {
+        lsb = chunk.offset + chunk.wire->start_offset;
+        msb = (chunk.offset + chunk.width - 1) + chunk.wire->start_offset;
+      }
+    }
+    port_object_array.push_back({{"Actual", name},
+      {"lsb", lsb}, {"msb", msb}});
+  }
+
+  void dump_interface_json(Module* mod, std::string file)
+	{
+		std::ofstream json_file(file.c_str());
+		json io_instances;
+		io_instances["IO_Instances"] = json::object();
+		for(auto cell : mod->cells())
+		{
+			json instance_object;
+			instance_object["module"] = remove_backslashes(cell->type.str());
+			for(auto conn : cell->connections())
+			{
+				json port_obj_array;
+				IdString port_name = conn.first;
+        RTLIL::SigSpec actual = conn.second;
+				if (actual.is_chunk())
+				{
+					RTLIL::Wire* wire = actual.as_chunk().wire;
+					if(wire != NULL)
+					{
+						process_chunk(actual.as_chunk(), port_obj_array);
+					}
+				} else{
+					for (auto it = actual.chunks().rbegin(); 
+                    	it != actual.chunks().rend(); ++it)
+					{
+						RTLIL::Wire* wire = (*it).wire;
+						if(wire != NULL)
+						{
+							process_chunk(*it, port_obj_array);
+						}
+					}
+				}
+        instance_object["ports"][remove_backslashes(port_name.str())] = port_obj_array;
+			}
+			io_instances["IO_Instances"][remove_backslashes(cell->name.str())] = instance_object;
+		}
+		if (json_file.is_open())
+    {
+      json_file << std::setw(4) << io_instances << std::endl;
+      json_file.close();
+    }
+    else
+    {
+      std::cerr << "Unable to open file " << file << " for writing." << std::endl;
+    }
+	}
+
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
     clear_flags();
@@ -217,6 +322,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
 			if (args[argidx] == "-tech" && argidx + 1 < args.size())
 			{
 				tech = args[++argidx];
+        continue;
+			}
+			if (args[argidx] == "-json" && argidx + 1 < args.size())
+			{
+				interface_json = args[++argidx];
         continue;
 			}
       break;
@@ -365,6 +475,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       interface_mod->remove({wire});
     }
     interface_mod->fixup_ports();
+    dump_interface_json(interface_mod, interface_json);
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();

@@ -10,7 +10,7 @@ $(error "Didn't find 'yosys-config' under '$(YOSYS_PATH)'")
 endif
 
 CXX ?= $(shell $(YOSYS_CONFIG) --cxx)
-CXXFLAGS ?= $(shell $(YOSYS_CONFIG) --cxxflags) #-DSDC_DEBUG
+CXXFLAGS ?= $(shell $(YOSYS_CONFIG) --cxxflags) -Iinclude #-DSDC_DEBUG
 LDFLAGS ?= $(shell $(YOSYS_CONFIG) --ldflags)
 LDLIBS ?= $(shell $(YOSYS_CONFIG) --ldlibs)
 PLUGINS_DIR ?= $(shell $(YOSYS_CONFIG) --datdir)/plugins
