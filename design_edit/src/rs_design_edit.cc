@@ -251,8 +251,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
         msb = (chunk.offset + chunk.width - 1) + chunk.wire->start_offset;
       }
     }
-    port_object_array.push_back({{"Actual", name},
-      {"lsb", lsb}, {"msb", msb}});
+    if(chunk.wire->port_input)
+    {
+      port_object_array.push_back({{"FUNC", "IN_DIR"}, {"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } else if (chunk.wire->port_output)
+    {
+      port_object_array.push_back({{"FUNC", "OUT_DIR"}, {"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } else
+    {
+      port_object_array.push_back({{"Actual", name},
+        {"lsb", lsb}, {"msb", msb}});
+    } 
   }
 
   void dump_interface_json(Module* mod, std::string file)
