@@ -16,7 +16,7 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
 
 
-set(VERSION_PATCH 273)
+set(VERSION_PATCH 274)
 
 
 project(yosys_verific_rs)
@@ -32,6 +32,7 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys-plugins
     yosys-rs-plugin
     pow_extract
+#    design_edit
     )
 
 if (NOT RAPTOR)
@@ -267,6 +268,12 @@ add_custom_target(
     COMMENT "Compile Yosys power estimator plugin with given Makefile"
 )
 add_custom_target(
+    design_edit ALL
+    COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/design_edit
+    COMMENT "Compile Yosys Design Edit plugin with given Makefile"
+)
+add_custom_target(
     yosys-rs-plugin_clean
     COMMAND $(MAKE) clean ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yosys-rs-plugin
@@ -278,11 +285,20 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pow_extract
     COMMENT "Clean Yosys power estimator with given Makefile"
 )
+add_custom_target(
+    design_edit_clean
+    COMMAND $(MAKE) clean ${YOSYS_RS_PLUGIN_MK_ARGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/design_edit
+    COMMENT "Clean Yosys Design Edit with given Makefile"
+)
 add_dependencies(yosys-rs-plugin yosys)
 add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_dependencies(pow_extract yosys)
 add_dependencies(yosys_clean pow_extract_clean)
+
+add_dependencies(design_edit yosys)
+add_dependencies(yosys_clean design_edit_clean)
 
 add_custom_target(
     clean_yosys_verific_rs
