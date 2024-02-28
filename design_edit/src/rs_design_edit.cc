@@ -555,7 +555,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       std::string extension = get_extension(file);
       if (!extension.empty()) {
         if (extension == ".v") {
-          run("write_verilog -noexpr -simple-lhs " + file);
+          run("write_verilog -noexpr -norename " + file);
           continue;
         }
         if (extension == ".eblif") {
