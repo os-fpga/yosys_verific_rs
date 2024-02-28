@@ -14,11 +14,11 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   input i_buf_mux1_sel;
   input rst_i_buf_out;
   (* unused_bits = "1 2 3 4 5 6 7" *)
-  wire [7:0] _00_;
+  wire [7:0] \$auto$memory_dff.cc:782:handle_rd_port_addr$50 ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:12.23-12.24" *)
-  wire [2:0] _01_;
+  wire [2:0] \$techmap643$abc$638$auto$blifparse.cc:515:parse_blif$641.A ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:13.13-13.14" *)
-  wire _02_;
+  wire \$techmap645$abc$638$auto$blifparse.cc:515:parse_blif$639.Y ;
   (* src = "./rtl/primitive_example_design_2.v:19.10-19.20" *)
   wire dffnre_out;
   (* src = "./rtl/primitive_example_design_2.v:15.21-15.32" *)
@@ -26,39 +26,39 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   wire clk_buf_out;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:499.14-499.27" *)
   (* unused_bits = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17" *)
-  wire [17:0] _03_;
+  wire [17:0] \$techmap72\ram_inst.ram.0.0.PORT_B1_RDATA ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:461.28-461.34" *)
   (* unused_bits = "0" *)
-  wire _04_;
+  wire \$techmap72\ram_inst.ram.0.0.C1DATA ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:13.13-13.14" *)
-  wire _05_;
+  wire \$techmap644$abc$638$auto$blifparse.cc:515:parse_blif$640.Y ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:501.14-501.27" *)
   (* unused_bits = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17" *)
-  wire [17:0] _06_;
+  wire [17:0] \$techmap72\ram_inst.ram.0.0.PORT_B2_RDATA ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:13.13-13.14" *)
-  wire _07_;
+  wire \$techmap643$abc$638$auto$blifparse.cc:515:parse_blif$641.Y ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:498.14-498.27" *)
   (* unused_bits = "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17" *)
-  wire [17:0] _08_;
+  wire [17:0] \$techmap72\ram_inst.ram.0.0.PORT_A1_RDATA ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:500.14-500.27" *)
   (* unused_bits = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17" *)
-  wire [17:0] _09_;
+  wire [17:0] \$techmap72\ram_inst.ram.0.0.PORT_A2_RDATA ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:12.23-12.24" *)
-  wire [2:0] _10_;
+  wire [2:0] \$techmap644$abc$638$auto$blifparse.cc:515:parse_blif$640.A ;
   (* src = "./rtl/primitive_example_design_2.v:22.10-22.19" *)
   wire Q_buff_in;
   (* unused_bits = "1 2 3 4 5 6 7 8" *)
-  wire [8:0] _11_;
+  wire [8:0] \$auto$memory_libmap.cc:1863:emit_port$52 ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:12.23-12.24" *)
-  wire [2:0] _12_;
+  wire [2:0] \$techmap646$abc$638$auto$blifparse.cc:515:parse_blif$642.A ;
   (* src = "./rtl/primitive_example_design_2.v:20.18-20.25" *)
   wire acc_out;
   (* keep = 32'h00000001 *)
   (* unused_bits = "1 2 3 4 5 6 7" *)
-  wire [7:0] _13_;
+  wire [7:0] \$auto$memory_dff.cc:777:handle_rd_port_addr$46 ;
   (* src = "./rtl/primitive_example_design_2.v:16.10-16.17" *)
   wire lut_out;
-  wire _14_;
+  wire \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0] ;
   (* hdlname = "ff_inst1 D" *)
   (* src = "./rtl/primitive_example_design_2.v:49.15-49.66|./rtl/primitive_example_design_2.v:80.11-80.12" *)
   wire \ff_inst1.D ;
@@ -75,7 +75,7 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   (* src = "./rtl/primitive_example_design_2.v:18.21-18.27" *)
   wire g_ibuf;
   (* keep = 32'h00000001 *)
-  wire _15_;
+  wire \$auto$memory_dff.cc:775:handle_rd_port_addr$44 ;
   (* src = "./rtl/primitive_example_design_2.v:18.10-18.13" *)
   wire out;
   (* src = "./rtl/primitive_example_design_2.v:18.14-18.20" *)
@@ -110,9 +110,9 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   (* src = "./rtl/primitive_example_design_2.v:17.10-17.23" *)
   wire rst_i_buf_out;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:12.23-12.24" *)
-  wire [1:0] _16_;
+  wire [1:0] \$techmap645$abc$638$auto$blifparse.cc:515:parse_blif$639.A ;
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:13.13-13.14" *)
-  wire _17_;
+  wire \$techmap646$abc$638$auto$blifparse.cc:515:parse_blif$642.Y ;
   (* module_not_derived = 32'h00000001 *)
   (* src = "./rtl/primitive_example_design_2.v:55.11-55.90" *)
   DFFRE ff_inst (
@@ -133,16 +133,16 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/ffs_map.v:10.11-10.70" *)
-  DFFRE _18_ (
+  DFFRE \$abc$335$auto$blifparse.cc:362:parse_blif$337  (
     .C(clk),
     .D(Q_buff_in),
     .E(1'h1),
-    .Q(_13_[0]),
+    .Q(\$auto$memory_dff.cc:777:handle_rd_port_addr$46 [0]),
     .R(1'h1)
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/ffs_map.v:10.11-10.70" *)
-  DFFRE _19_ (
+  DFFRE \$abc$335$auto$blifparse.cc:362:parse_blif$338  (
     .C(clk),
     .D(\ff_inst1.D ),
     .E(1'h1),
@@ -153,7 +153,7 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:25.38-25.69" *)
   LUT3 #(
     .INIT_VALUE(8'h3e)
-  ) _20_ (
+  ) \$abc$638$auto$blifparse.cc:515:parse_blif$640  (
     .Y(lut_out),
     .A({ i_buf_out[1:0], i_buf_out[2] })
   );
@@ -161,24 +161,24 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:25.38-25.69" *)
   LUT3 #(
     .INIT_VALUE(8'hac)
-  ) _21_ (
+  ) \$abc$638$auto$blifparse.cc:515:parse_blif$641  (
     .Y(mux2_out),
     .A({ i_buf_mux2_sel, acc_out, \ff_inst1.D  })
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/ffs_map.v:10.11-10.70" *)
-  DFFRE _22_ (
+  DFFRE \$abc$335$auto$blifparse.cc:362:parse_blif$336  (
     .C(clk),
     .D(\ram_inst.we ),
     .E(1'h1),
-    .Q(_15_),
+    .Q(\$auto$memory_dff.cc:775:handle_rd_port_addr$44 ),
     .R(1'h1)
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:21.38-21.69" *)
   LUT2 #(
     .INIT_VALUE(4'h9)
-  ) _23_ (
+  ) \$abc$638$auto$blifparse.cc:515:parse_blif$639  (
     .Y(out),
     .A({ i_buf_mux1_sel, dffnre_out })
   );
@@ -195,9 +195,9 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:25.38-25.69" *)
   LUT3 #(
     .INIT_VALUE(8'hac)
-  ) _24_ (
+  ) \$abc$638$auto$blifparse.cc:515:parse_blif$642  (
     .Y(ram_out),
-    .A({ _15_, _14_, _13_[0] })
+    .A({ \$auto$memory_dff.cc:775:handle_rd_port_addr$44 , \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0] , \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [0] })
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_map_new_version.v:495.4-506.3|/home/manadher/work/Feb24/yosys_rs27/yosys_verific_rs/yosys/install/bin/../share/yosys/rapidsilicon/genesis3/brams_final_map_new_version.v:645.7-684.2" *)
@@ -227,18 +227,18 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
     .CLK_A2(1'hx),
     .CLK_B1(clk),
     .CLK_B2(1'hx),
-    .RDATA_A1({ _08_[15:9], _11_[8], _00_[7:1], _14_ }),
-    .RDATA_A2({ _09_[15:1], _04_ }),
-    .RDATA_B1(_03_[15:0]),
-    .RDATA_B2(_06_[15:0]),
+    .RDATA_A1({ \$techmap72\ram_inst.ram.0.0.PORT_A1_RDATA [15:9], \$auto$memory_libmap.cc:1863:emit_port$52 [8], \$auto$memory_dff.cc:782:handle_rd_port_addr$50 [7:1], \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0]  }),
+    .RDATA_A2({ \$techmap72\ram_inst.ram.0.0.PORT_A2_RDATA [15:1], \$techmap72\ram_inst.ram.0.0.C1DATA  }),
+    .RDATA_B1(\$techmap72\ram_inst.ram.0.0.PORT_B1_RDATA [15:0]),
+    .RDATA_B2(\$techmap72\ram_inst.ram.0.0.PORT_B2_RDATA [15:0]),
     .REN_A1(1'h1),
     .REN_A2(1'hx),
     .REN_B1(1'h0),
     .REN_B2(1'h0),
-    .RPARITY_A1(_08_[17:16]),
-    .RPARITY_A2(_09_[17:16]),
-    .RPARITY_B1(_03_[17:16]),
-    .RPARITY_B2(_06_[17:16]),
+    .RPARITY_A1(\$techmap72\ram_inst.ram.0.0.PORT_A1_RDATA [17:16]),
+    .RPARITY_A2(\$techmap72\ram_inst.ram.0.0.PORT_A2_RDATA [17:16]),
+    .RPARITY_B1(\$techmap72\ram_inst.ram.0.0.PORT_B1_RDATA [17:16]),
+    .RPARITY_B2(\$techmap72\ram_inst.ram.0.0.PORT_B2_RDATA [17:16]),
     .WDATA_A1(16'hxxxx),
     .WDATA_A2(16'hxxxx),
     .WDATA_B1({ 15'bxxxxxxxx0000000, Q_buff_in }),
@@ -252,9 +252,9 @@ module primitive_example_design_2(clk, i_buf_out, clk_buf_out, rst_i_buf_out, i_
     .WPARITY_B1(2'hx),
     .WPARITY_B2(2'hx)
   );
-  assign _09_[0] = _04_;
-  assign _08_[8:0] = { _11_[8], _00_[7:1], _14_ };
-  assign _11_[7:0] = { _00_[7:1], _14_ };
-  assign _00_[0] = _14_;
-  assign _13_[6:1] = { _13_[7], _13_[7], _13_[7], _13_[7], _13_[7], _13_[7] };
+  assign \$techmap72\ram_inst.ram.0.0.PORT_A2_RDATA [0] = \$techmap72\ram_inst.ram.0.0.C1DATA ;
+  assign \$techmap72\ram_inst.ram.0.0.PORT_A1_RDATA [8:0] = { \$auto$memory_libmap.cc:1863:emit_port$52 [8], \$auto$memory_dff.cc:782:handle_rd_port_addr$50 [7:1], \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0]  };
+  assign \$auto$memory_libmap.cc:1863:emit_port$52 [7:0] = { \$auto$memory_dff.cc:782:handle_rd_port_addr$50 [7:1], \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0]  };
+  assign \$auto$memory_dff.cc:782:handle_rd_port_addr$50 [0] = \$abc$319$auto$memory_dff.cc:782:handle_rd_port_addr$50[0] ;
+  assign \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [6:1] = { \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7], \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7], \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7], \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7], \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7], \$auto$memory_dff.cc:777:handle_rd_port_addr$46 [7] };
 endmodule
