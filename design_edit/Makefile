@@ -97,9 +97,9 @@ valgrind:
 test_gen:
 	$(MAKE) -C tests tests_gen YOSYS_PATH=$(YOSYS_PATH)
 
-test:
-	$(MAKE) -C tests tests_gen2 YOSYS_PATH=$(YOSYS_PATH)
+test: 
+	./run_tests.sh
 
 clean:
-	rm -rf src/*.d src/*.o *.so pmgen/
+	rm -rf src/*.d src/*.o *.so pmgen/ Tests/*/tmp
 	

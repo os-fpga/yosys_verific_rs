@@ -32,7 +32,6 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys-plugins
     yosys-rs-plugin
     pow_extract
-#    design_edit
     )
 
 if (NOT RAPTOR)
