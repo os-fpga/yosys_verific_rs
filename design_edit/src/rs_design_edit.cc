@@ -116,7 +116,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<std::string> wrapper_files;
-  std::string interface_json;
+  std::string io_config_json;
   std::string sdc_file;
   bool sdc_passed = false;
   std::string tech;
@@ -194,53 +194,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return std::string(str);
   }
 
-  void dump_intf(Module* mod, std::string file)
-	{
-		std::ofstream json_file(file.c_str());
-		json io_instances;
-		io_instances["IO_Instances"] = json::object();
-		for(auto cell : mod->cells())
-		{
-			json instance_object;
-			instance_object["module"] = remove_backslashes(cell->type.str());
-			for(auto conn : cell->connections())
-			{
-				json port_obj_array;
-				IdString port_name = conn.first;
-        RTLIL::SigSpec actual = conn.second;
-				if (actual.is_chunk())
-				{
-					RTLIL::Wire* wire = actual.as_chunk().wire;
-					if(wire != NULL)
-					{
-						process_chunk(actual.as_chunk(), port_obj_array);
-					}
-				} else{
-					for (auto it = actual.chunks().rbegin(); 
-                    	it != actual.chunks().rend(); ++it)
-					{
-						RTLIL::Wire* wire = (*it).wire;
-						if(wire != NULL)
-						{
-							process_chunk(*it, port_obj_array);
-						}
-					}
-				}
-        instance_object["ports"][remove_backslashes(port_name.str())] = port_obj_array;
-			}
-			io_instances["IO_Instances"][remove_backslashes(cell->name.str())] = instance_object;
-		}
-		if (json_file.is_open())
-    {
-      json_file << std::setw(4) << io_instances << std::endl;
-      json_file.close();
-    }
-    else
-    {
-      std::cerr << "Unable to open file " << file << " for writing." << std::endl;
-    }
-	}
-
   std::string process_connection(const RTLIL::SigChunk &chunk) {
     std::stringstream output;
     if (chunk.width == chunk.wire->width && chunk.offset == 0) {
@@ -261,7 +214,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return output.str();
   }
 
-  void dump_connectivity_json(Module* mod, std::string file) {
+  void dump_io_config_json(Module* mod, std::string file) {
     std::ofstream json_file(file.c_str());
 		json instances;
     instances["instances"] = json::object();
@@ -270,7 +223,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       json instance_object;
 			instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
-      json properties_object;
 
       for(auto conn : cell->connections()) {
         IdString port_name = conn.first;
@@ -300,17 +252,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (location_map_by_io.find(connection) != location_map_by_io.end()) {
           instance_object["location"] = location_map_by_io[connection]._name;
           for (auto &pr : location_map_by_io[connection]._properties) {
-            properties_object[pr.first] = pr.second;
+            if (!pr.second.empty()) {
+              instance_object["properties"][pr.first] = pr.second;
+            }
           }
         }
       }
 
-      instance_object["properties"] = properties_object;
       instances_array.push_back(instance_object);
     }
     instances["instances"] = instances_array;
 
-    std::cout << std::setw(4) << instances << std::endl;
+    if (json_file.is_open()) {
+      json_file << std::setw(4) << instances << std::endl;
+      json_file.close();
+    }
   }
 
   std::string remove_backslashes(const std::string &input) {
@@ -386,113 +342,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return ""; // If no extension found
   }
 
-  void process_chunk(const RTLIL::SigChunk &chunk, json &port_object_array)
-  {
-    int lsb, msb;
-    std::string name = remove_backslashes(chunk.wire->name.str());
-    if (chunk.wire == NULL)
-    {
-      return;
-    }
-
-    if (chunk.width == chunk.wire->width && chunk.offset == 0)
-    {
-      if (chunk.wire->upto)
-      {
-        lsb = chunk.wire->width - 1;
-        msb = chunk.wire->start_offset;
-      }
-      else
-      {
-        lsb = chunk.wire->start_offset;
-        msb = chunk.wire->width - 1;
-      }
-    } else if (chunk.width == 1)
-    {
-      if (chunk.wire->upto)
-      {
-        lsb = msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
-      }
-      else
-      {
-        lsb = msb = chunk.offset + chunk.wire->start_offset;
-      }
-    }
-    else
-    {
-      if (chunk.wire->upto)
-      {
-        lsb = (chunk.wire->width - (chunk.offset + chunk.width - 1) - 1) + chunk.wire->start_offset;
-        msb = (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset;
-      }
-      else
-      {
-        lsb = chunk.offset + chunk.wire->start_offset;
-        msb = (chunk.offset + chunk.width - 1) + chunk.wire->start_offset;
-      }
-    }
-    if(chunk.wire->port_input)
-    {
-      port_object_array.push_back({{"FUNC", "IN_DIR"}, {"Actual", name},
-        {"lsb", lsb}, {"msb", msb}});
-    } else if (chunk.wire->port_output)
-    {
-      port_object_array.push_back({{"FUNC", "OUT_DIR"}, {"Actual", name},
-        {"lsb", lsb}, {"msb", msb}});
-    } else
-    {
-      port_object_array.push_back({{"Actual", name},
-        {"lsb", lsb}, {"msb", msb}});
-    } 
-  }
-
-  void dump_interface_json(Module* mod, std::string file)
-	{
-		std::ofstream json_file(file.c_str());
-		json io_instances;
-		io_instances["IO_Instances"] = json::object();
-		for(auto cell : mod->cells())
-		{
-			json instance_object;
-			instance_object["module"] = remove_backslashes(cell->type.str());
-			for(auto conn : cell->connections())
-			{
-				json port_obj_array;
-				IdString port_name = conn.first;
-        RTLIL::SigSpec actual = conn.second;
-				if (actual.is_chunk())
-				{
-					RTLIL::Wire* wire = actual.as_chunk().wire;
-					if(wire != NULL)
-					{
-						process_chunk(actual.as_chunk(), port_obj_array);
-					}
-				} else{
-					for (auto it = actual.chunks().rbegin(); 
-                    	it != actual.chunks().rend(); ++it)
-					{
-						RTLIL::Wire* wire = (*it).wire;
-						if(wire != NULL)
-						{
-							process_chunk(*it, port_obj_array);
-						}
-					}
-				}
-        instance_object["ports"][remove_backslashes(port_name.str())] = port_obj_array;
-			}
-			io_instances["IO_Instances"][remove_backslashes(cell->name.str())] = instance_object;
-		}
-		if (json_file.is_open())
-    {
-      json_file << std::setw(4) << io_instances << std::endl;
-      json_file.close();
-    }
-    else
-    {
-      std::cerr << "Unable to open file " << file << " for writing." << std::endl;
-    }
-	}
-
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
     clear_flags();
@@ -517,7 +366,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 			}
 			if (args[argidx] == "-json" && argidx + 1 < args.size())
 			{
-				interface_json = args[++argidx];
+				io_config_json = args[++argidx];
         continue;
 			}
 			if (args[argidx] == "-sdc" && argidx + 1 < args.size())
@@ -672,7 +521,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       interface_mod->remove({wire});
     }
     interface_mod->fixup_ports();
-    dump_interface_json(interface_mod, interface_json);
     if(sdc_passed) {
       std::string new_sdc = "new_sdc.txt";
       std::ofstream output_sdc(new_sdc);
@@ -690,7 +538,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         std::cout << "Sig name: " << p.first << std::endl;
         p.second.print(std::cout);
       }
-      dump_connectivity_json(interface_mod, "new.json");
+      dump_io_config_json(interface_mod, io_config_json);
       for(auto constraint : constrained_pins) {
         std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
       }
