@@ -11,7 +11,7 @@ for ys_file in Tests/**/*.ys; do
     echo "Running yosys for ${folder_name}..."
 
     # Change directory to the folder containing the .ys file and run yosys
-    (cd "$folder" && rm -rf tmp && mkdir tmp && ../../../yosys/install/bin/yosys -s "${folder_name}.ys")
+    (cd "$folder" && rm -rf tmp && mkdir tmp && ../../../yosys/install/bin/yosys -s "${folder_name}.ys" > /dev/null && diff ./gold ./tmp)
 
     echo "Done with ${folder_name}."
 done

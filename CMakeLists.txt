@@ -16,7 +16,7 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
 
 
-set(VERSION_PATCH 275)
+set(VERSION_PATCH 278)
 
 
 project(yosys_verific_rs)
@@ -32,7 +32,6 @@ list(APPEND YOSYS_VERIFIC_RS_RECURSIVE_SUBSYTEMS
     yosys-plugins
     yosys-rs-plugin
     pow_extract
-#    design_edit
     )
 
 if (NOT RAPTOR)
