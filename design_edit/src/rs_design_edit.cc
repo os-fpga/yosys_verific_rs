@@ -78,6 +78,22 @@ struct primitives_data {
   }
 };
 
+struct location_data {
+  std::string _name;
+  std::string _associated_pin;
+  std::unordered_map<string, std::string> _properties;
+  void print(std::ostream &output) {
+    output << "name: " << _name << std::endl;
+    output << "  pin: " << _associated_pin << std::endl;
+    output << "  properties: " << std::endl;
+    for (auto &pr : _properties) {
+      output << "    " << pr.first << " : " << pr.second << std::endl;
+    }
+  }
+};
+
+std::unordered_map<string, location_data> location_map_by_io;
+std::unordered_map<string, location_data> location_map;
 enum Technologies { GENERIC, GENESIS, GENESIS_2, GENESIS_3 };
 
 USING_YOSYS_NAMESPACE
@@ -101,6 +117,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   std::vector<std::string> wrapper_files;
   std::string interface_json;
+  std::string sdc_file;
+  bool sdc_passed = false;
   std::string tech;
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
@@ -119,6 +137,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
+  std::unordered_set<std::string> constrained_pins;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -126,6 +145,173 @@ struct DesignEditRapidSilicon : public ScriptPass {
   primitives_data io_prim;
 
   void clear_flags() override { wrapper_files = {}; }
+
+  std::vector<std::string> tokenizeString(const std::string &input) {
+    std::vector<std::string> tokens;
+    std::istringstream iss(input);
+    std::string token;
+
+    while (iss >> token) {
+      tokens.push_back(token);
+    }
+
+    return tokens;
+  }
+
+  void processFile(std::istream &input, std::ostream &output) {
+    std::string line;
+    while (std::getline(input, line)) {
+      std::vector<std::string> tokens = tokenizeString(line);
+      if (!tokens.size())
+        continue;
+      if ("set_property" == tokens[0]) {
+        if (tokens.size() == 4) {
+          location_map[tokens[3]]._properties[tokens[1]] = tokens[2];
+          location_map[tokens[3]]._name = tokens[3];
+        }
+      } else if ("set_pin_loc" == tokens[0]) {
+        if (tokens.size() == 3) {
+          constrained_pins.insert(tokens[1]);
+          location_map[tokens[2]]._associated_pin = tokens[1];
+          location_map[tokens[2]]._name = tokens[2];
+        }
+      }
+    }
+    for (auto &p : location_map) {
+      p.second.print(output);
+    }
+  }
+
+  void get_loc_map_by_io() {
+    for (auto &p : location_map) {
+      location_map_by_io[p.second._associated_pin] = p.second;
+    }
+  }
+
+  std::string id(RTLIL::IdString internal_id)
+  {
+    const char *str = internal_id.c_str();
+    return std::string(str);
+  }
+
+  void dump_intf(Module* mod, std::string file)
+	{
+		std::ofstream json_file(file.c_str());
+		json io_instances;
+		io_instances["IO_Instances"] = json::object();
+		for(auto cell : mod->cells())
+		{
+			json instance_object;
+			instance_object["module"] = remove_backslashes(cell->type.str());
+			for(auto conn : cell->connections())
+			{
+				json port_obj_array;
+				IdString port_name = conn.first;
+        RTLIL::SigSpec actual = conn.second;
+				if (actual.is_chunk())
+				{
+					RTLIL::Wire* wire = actual.as_chunk().wire;
+					if(wire != NULL)
+					{
+						process_chunk(actual.as_chunk(), port_obj_array);
+					}
+				} else{
+					for (auto it = actual.chunks().rbegin(); 
+                    	it != actual.chunks().rend(); ++it)
+					{
+						RTLIL::Wire* wire = (*it).wire;
+						if(wire != NULL)
+						{
+							process_chunk(*it, port_obj_array);
+						}
+					}
+				}
+        instance_object["ports"][remove_backslashes(port_name.str())] = port_obj_array;
+			}
+			io_instances["IO_Instances"][remove_backslashes(cell->name.str())] = instance_object;
+		}
+		if (json_file.is_open())
+    {
+      json_file << std::setw(4) << io_instances << std::endl;
+      json_file.close();
+    }
+    else
+    {
+      std::cerr << "Unable to open file " << file << " for writing." << std::endl;
+    }
+	}
+
+  std::string process_connection(const RTLIL::SigChunk &chunk) {
+    std::stringstream output;
+    if (chunk.width == chunk.wire->width && chunk.offset == 0) {
+      output << id(chunk.wire->name);
+    } else if (chunk.width == 1) {
+      if (chunk.wire->upto)
+        output << id(chunk.wire->name) << "[" << (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset << "]";
+      else
+        output << id(chunk.wire->name) << "[" << chunk.offset + chunk.wire->start_offset << "]";
+    } else {
+      if (chunk.wire->upto)
+        output << id(chunk.wire->name) << "[" << (chunk.wire->width - (chunk.offset + chunk.width - 1) - 1) + chunk.wire->start_offset << ":" <<
+                  (chunk.wire->width - chunk.offset - 1) + chunk.wire->start_offset << "]";
+      else
+        output << id(chunk.wire->name) << "[" << (chunk.offset + chunk.width - 1) + chunk.wire->start_offset << ":" <<
+                  chunk.offset + chunk.wire->start_offset << "]";
+    }
+    return output.str();
+  }
+
+  void dump_connectivity_json(Module* mod, std::string file) {
+    std::ofstream json_file(file.c_str());
+		json instances;
+    instances["instances"] = json::object();
+    json instances_array = json::array();
+    for(auto cell : mod->cells()) {
+      json instance_object;
+			instance_object["module"] = remove_backslashes(cell->type.str());
+      instance_object["name"] = remove_backslashes(cell->name.str());
+      json properties_object;
+
+      for(auto conn : cell->connections()) {
+        IdString port_name = conn.first;
+        RTLIL::SigSpec actual = conn.second;
+        std::string connection;
+        json port_obj;
+
+        if (actual.is_chunk())
+				{
+          if (actual.as_chunk().wire != NULL)
+            connection = process_connection(actual.as_chunk());
+        } else {
+					for (auto it = actual.chunks().rbegin(); 
+                    	it != actual.chunks().rend(); ++it)
+					{
+						RTLIL::Wire* wire = (*it).wire;
+						if(wire != NULL)
+						{
+							connection = process_connection(*it);
+              break;
+						}
+					}
+				}
+        connection = remove_backslashes(connection);
+        instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
+
+        if (location_map_by_io.find(connection) != location_map_by_io.end()) {
+          instance_object["location"] = location_map_by_io[connection]._name;
+          for (auto &pr : location_map_by_io[connection]._properties) {
+            properties_object[pr.first] = pr.second;
+          }
+        }
+      }
+
+      instance_object["properties"] = properties_object;
+      instances_array.push_back(instance_object);
+    }
+    instances["instances"] = instances_array;
+
+    std::cout << std::setw(4) << instances << std::endl;
+  }
 
   std::string remove_backslashes(const std::string &input) {
     std::string result;
@@ -198,12 +384,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       return filename.substr(dot_pos);
     }
     return ""; // If no extension found
-  }
-
-  std::string id(RTLIL::IdString internal_id)
-  {
-    const char *str = internal_id.c_str();
-    return std::string(str);
   }
 
   void process_chunk(const RTLIL::SigChunk &chunk, json &port_object_array)
@@ -338,6 +518,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
 			if (args[argidx] == "-json" && argidx + 1 < args.size())
 			{
 				interface_json = args[++argidx];
+        continue;
+			}
+			if (args[argidx] == "-sdc" && argidx + 1 < args.size())
+			{
+				sdc_file = args[++argidx];
+        sdc_passed = true;
         continue;
 			}
       break;
@@ -487,6 +673,28 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     interface_mod->fixup_ports();
     dump_interface_json(interface_mod, interface_json);
+    if(sdc_passed) {
+      std::string new_sdc = "new_sdc.txt";
+      std::ofstream output_sdc(new_sdc);
+      std::ifstream input_sdc(sdc_file);
+      if (!input_sdc.is_open()) {
+        std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
+      }
+      if (!output_sdc.is_open()) {
+        std::cerr << "Error opening output file: " << new_sdc << std::endl;
+        return;
+      }
+      processFile(input_sdc, output_sdc);
+      get_loc_map_by_io();
+      for (auto &p : location_map_by_io) {
+        std::cout << "Sig name: " << p.first << std::endl;
+        p.second.print(std::cout);
+      }
+      dump_connectivity_json(interface_mod, "new.json");
+      for(auto constraint : constrained_pins) {
+        std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
+      }
+    }
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
