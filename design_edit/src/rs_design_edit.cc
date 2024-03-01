@@ -382,11 +382,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
         remove_backslashes(_design->top_module()->name.str());
+    if (original_mod_name.find("fabric_") == std::string::npos) {
+      design->rename(original_mod, "\\fabric_" + original_mod_name);   
+    }
     Module *interface_mod = _design->top_module()->clone();
     std::string interface_mod_name = "\\interface_" + original_mod_name;
     interface_mod->name = interface_mod_name;
     Module *wrapper_mod = original_mod->clone();
-    std::string wrapper_mod_name = "\\wrapper_" + original_mod_name;
+    std::string wrapper_mod_name = "\\" + original_mod_name;
     wrapper_mod->name = wrapper_mod_name;
     for (auto cell : original_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
@@ -432,9 +435,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       }
-    }
-    if (!io_prim.contains_io_prem) {
-      return;
     }
 
     delete_cells(original_mod, remove_prims);
