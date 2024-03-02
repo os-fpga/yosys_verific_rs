@@ -25,13 +25,13 @@ module tristate(din, oe, tristate_out, clk);
   (* keep = 32'd1 *)
   (* src = "tristate.v:14.10-14.13" *)
   wire din;
-  fabric_tristate \$auto$rs_design_edit.cc:559:execute$444  (
+  fabric_tristate \$auto$rs_design_edit.cc:561:execute$444  (
     .clk(clk),
     .din(din),
     .oe(oe),
     .tristate_out(tristate_out)
   );
-  interface_tristate \$auto$rs_design_edit.cc:561:execute$445  (
+  interface_tristate \$auto$rs_design_edit.cc:563:execute$445  (
   );
 endmodule
 

@@ -113,7 +113,7 @@ module primitive_example_design_3(A, B, i_buft_oe, ACC_FIR, Z, DLY_B, CLK, RESET
   (* src = "./rtl/primitive_example_design_3.v:24.15-24.20" *)
   (* unused_bits = "37" *)
   wire [37:0] z_out;
-  fabric_primitive_example_design_3 \$auto$rs_design_edit.cc:559:execute$397  (
+  fabric_primitive_example_design_3 \$auto$rs_design_edit.cc:561:execute$397  (
     .Z(Z),
     .a_out(a_out),
     .b_out(b_out),
@@ -132,7 +132,7 @@ module primitive_example_design_3(A, B, i_buft_oe, ACC_FIR, Z, DLY_B, CLK, RESET
     .o_buf_dly_b(o_buf_dly_b),
     .z_out(z_out)
   );
-  interface_primitive_example_design_3 \$auto$rs_design_edit.cc:561:execute$398  (
+  interface_primitive_example_design_3 \$auto$rs_design_edit.cc:563:execute$398  (
     .A(A),
     .ACC_FIR(ACC_FIR),
     .B(B),

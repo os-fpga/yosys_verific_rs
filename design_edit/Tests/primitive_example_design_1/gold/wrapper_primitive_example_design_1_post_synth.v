@@ -146,7 +146,7 @@ module primitive_example_design_1(clk, in, rst, Q, mux1_sel, mux2_sel, P, G, ram
   (* src = "./rtl/primitive_example_design_1.v:5.131-5.140" *)
   (* src = "./rtl/primitive_example_design_1.v:5.131-5.140" *)
   wire ibuf13_en;
-  fabric_primitive_example_design_1 \$auto$rs_design_edit.cc:559:execute$655  (
+  fabric_primitive_example_design_1 \$auto$rs_design_edit.cc:561:execute$655  (
     .clk(clk),
     .clk_buf_out(clk_buf_out),
     .\ff_inst1.Q (\ff_inst1.Q ),
@@ -161,7 +161,7 @@ module primitive_example_design_1(clk, in, rst, Q, mux1_sel, mux2_sel, P, G, ram
     .rst(rst),
     .rst_i_buf_out(rst_i_buf_out)
   );
-  interface_primitive_example_design_1 \$auto$rs_design_edit.cc:561:execute$656  (
+  interface_primitive_example_design_1 \$auto$rs_design_edit.cc:563:execute$656  (
     .G(G),
     .P(P),
     .Q(Q),

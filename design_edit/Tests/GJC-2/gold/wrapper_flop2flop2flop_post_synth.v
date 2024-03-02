@@ -15,12 +15,12 @@ module flop2flop2flop(din, dout, clk);
   (* keep = 32'd1 *)
   (* src = "flop2flop2flop.v:15.12-15.16" *)
   wire dout;
-  fabric_flop2flop2flop \$auto$rs_design_edit.cc:559:execute$444  (
+  fabric_flop2flop2flop \$auto$rs_design_edit.cc:561:execute$444  (
     .clk(clk),
     .din(din),
     .dout(dout)
   );
-  interface_flop2flop2flop \$auto$rs_design_edit.cc:561:execute$445  (
+  interface_flop2flop2flop \$auto$rs_design_edit.cc:563:execute$445  (
   );
 endmodule
 

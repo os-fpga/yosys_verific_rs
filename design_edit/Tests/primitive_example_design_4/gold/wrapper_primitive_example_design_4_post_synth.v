@@ -49,14 +49,14 @@ module primitive_example_design_4(in, clk, rst, ibuf1_en, ibuf2_en, ibuf3_en, ib
   wire rst;
   (* src = "./rtl/primitive_example_design_4.v:10.10-10.23" *)
   wire rst_i_buf_out;
-  fabric_primitive_example_design_4 \$auto$rs_design_edit.cc:559:execute$396  (
+  fabric_primitive_example_design_4 \$auto$rs_design_edit.cc:561:execute$396  (
     .clk_buf_out(clk_buf_out),
     .dffre_out(dffre_out),
     .i_buf_out(i_buf_out),
     .ibuf1_en(ibuf1_en),
     .rst_i_buf_out(rst_i_buf_out)
   );
-  interface_primitive_example_design_4 \$auto$rs_design_edit.cc:561:execute$397  (
+  interface_primitive_example_design_4 \$auto$rs_design_edit.cc:563:execute$397  (
     .clk(clk),
     .clk_buf_out(clk_buf_out),
     .dffre_out(dffre_out),
