@@ -20,14 +20,14 @@ module flop2flop(din, dout, clk);
   wire \$iopadmap$dout ;
   wire \$auto$clkbufmap.cc:262:execute$429 ;
   wire \$auto$clkbufmap.cc:294:execute$430 ;
-  fabric_flop2flop \$auto$rs_design_edit.cc:559:execute$435  (
+  fabric_flop2flop \$auto$rs_design_edit.cc:561:execute$435  (
     .\$iopadmap$clk (\$iopadmap$clk ),
     .\$auto$clkbufmap.cc:294:execute$430 (\$auto$clkbufmap.cc:294:execute$430 ),
     .\$iopadmap$din (\$iopadmap$din ),
     .\$auto$clkbufmap.cc:262:execute$429 (\$auto$clkbufmap.cc:262:execute$429 ),
     .\$iopadmap$dout (\$iopadmap$dout )
   );
-  interface_flop2flop \$auto$rs_design_edit.cc:561:execute$436  (
+  interface_flop2flop \$auto$rs_design_edit.cc:563:execute$436  (
     .\$iopadmap$clk (\$iopadmap$clk ),
     .clk(clk),
     .din(din),

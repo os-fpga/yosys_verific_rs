@@ -158,7 +158,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return tokens;
   }
 
-  void processFile(std::istream &input, std::ostream &output) {
+  void processSdcFile(std::istream &input, std::ostream &output) {
     std::string line;
     while (std::getline(input, line)) {
       std::vector<std::string> tokens = tokenizeString(line);
@@ -532,17 +532,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
         std::cerr << "Error opening output file: " << new_sdc << std::endl;
         return;
       }
-      processFile(input_sdc, output_sdc);
+      processSdcFile(input_sdc, output_sdc);
       get_loc_map_by_io();
       for (auto &p : location_map_by_io) {
         std::cout << "Sig name: " << p.first << std::endl;
         p.second.print(std::cout);
       }
-      dump_io_config_json(interface_mod, io_config_json);
+     
       for(auto constraint : constrained_pins) {
         std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
       }
     }
+
+    dump_io_config_json(interface_mod, io_config_json);
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();

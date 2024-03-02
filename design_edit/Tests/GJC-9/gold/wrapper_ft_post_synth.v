@@ -13,11 +13,11 @@ module ft(din, dout);
   (* keep = 32'd1 *)
   (* src = "ft.v:11.10-11.14" *)
   wire dout;
-  fabric_ft \$auto$rs_design_edit.cc:559:execute$392  (
+  fabric_ft \$auto$rs_design_edit.cc:561:execute$392  (
     .din(din),
     .dout(dout)
   );
-  interface_ft \$auto$rs_design_edit.cc:561:execute$393  (
+  interface_ft \$auto$rs_design_edit.cc:563:execute$393  (
   );
 endmodule
 

@@ -73,7 +73,7 @@ module primitive_example_design_5(in, ibuf2_en, rst, clk, ibuf1_en, ibuf3_en, ib
   wire rst;
   (* src = "./rtl/primitive_example_design_5.v:16.10-16.23" *)
   wire rst_i_buf_out;
-  fabric_primitive_example_design_5 \$auto$rs_design_edit.cc:559:execute$399  (
+  fabric_primitive_example_design_5 \$auto$rs_design_edit.cc:561:execute$399  (
     .\$auto$hierarchy.cc:1408:execute$1 (\$auto$hierarchy.cc:1408:execute$1 ),
     .\$auto$hierarchy.cc:1408:execute$2 (\$auto$hierarchy.cc:1408:execute$2 ),
     .\$auto$hierarchy.cc:1408:execute$3 (\$auto$hierarchy.cc:1408:execute$3 ),
@@ -82,7 +82,7 @@ module primitive_example_design_5(in, ibuf2_en, rst, clk, ibuf1_en, ibuf3_en, ib
     .q_n(q_n),
     .rst_i_buf_out(rst_i_buf_out)
   );
-  interface_primitive_example_design_5 \$auto$rs_design_edit.cc:561:execute$400  (
+  interface_primitive_example_design_5 \$auto$rs_design_edit.cc:563:execute$400  (
     .\$auto$hierarchy.cc:1408:execute$1 (\$auto$hierarchy.cc:1408:execute$1 ),
     .\$auto$hierarchy.cc:1408:execute$2 (\$auto$hierarchy.cc:1408:execute$2 ),
     .\$auto$hierarchy.cc:1408:execute$3 (\$auto$hierarchy.cc:1408:execute$3 ),

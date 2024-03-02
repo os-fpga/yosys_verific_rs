@@ -49,12 +49,12 @@ module primitive_example_design_6(clk, in, rst, q_p, q_n, oddr_en, ibuf_oe1, ibu
   wire rst;
   (* src = "./rtl/primitive_example_design_6.v:13.6-13.19" *)
   wire rst_i_buf_out;
-  fabric_primitive_example_design_6 \$auto$rs_design_edit.cc:559:execute$398  (
+  fabric_primitive_example_design_6 \$auto$rs_design_edit.cc:561:execute$398  (
     .dffre_out(dffre_out),
     .oddr_out(oddr_out),
     .rst_i_buf_out(rst_i_buf_out)
   );
-  interface_primitive_example_design_6 \$auto$rs_design_edit.cc:561:execute$399  (
+  interface_primitive_example_design_6 \$auto$rs_design_edit.cc:563:execute$399  (
     .clk(clk),
     .dffre_out(dffre_out),
     .ibuf_oe1(ibuf_oe1),

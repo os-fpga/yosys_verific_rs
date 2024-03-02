@@ -170,7 +170,7 @@ module primitive_example_design_2(in_n, in_p, clk, rst_n, rst_p, mux1_sel_n, mux
   (* src = "./rtl/primitive_example_design_2.v:5.65-5.73" *)
   (* src = "./rtl/primitive_example_design_2.v:5.65-5.73" *)
   wire ibuf6_en;
-  fabric_primitive_example_design_2 \$auto$rs_design_edit.cc:559:execute$647  (
+  fabric_primitive_example_design_2 \$auto$rs_design_edit.cc:561:execute$647  (
     .clk(clk),
     .clk_buf_out(clk_buf_out),
     .\ff_inst1.Q (\ff_inst1.Q ),
@@ -184,7 +184,7 @@ module primitive_example_design_2(in_n, in_p, clk, rst_n, rst_p, mux1_sel_n, mux
     .ram_out(ram_out),
     .rst_i_buf_out(rst_i_buf_out)
   );
-  interface_primitive_example_design_2 \$auto$rs_design_edit.cc:561:execute$648  (
+  interface_primitive_example_design_2 \$auto$rs_design_edit.cc:563:execute$648  (
     .G(G),
     .P(P),
     .buft_out_n(buft_out_n),
