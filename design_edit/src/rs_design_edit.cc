@@ -158,7 +158,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return tokens;
   }
 
-  void processSdcFile(std::istream &input, std::ostream &output) {
+  void processSdcFile(std::istream &input) {
     std::string line;
     while (std::getline(input, line)) {
       std::vector<std::string> tokens = tokenizeString(line);
@@ -176,9 +176,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
           location_map[tokens[2]]._name = tokens[2];
         }
       }
-    }
-    for (auto &p : location_map) {
-      p.second.print(output);
     }
   }
 
@@ -524,26 +521,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       interface_mod->fixup_ports();
       if(sdc_passed) {
-        std::string new_sdc = "new_sdc.txt";
-        std::ofstream output_sdc(new_sdc);
         std::ifstream input_sdc(sdc_file);
         if (!input_sdc.is_open()) {
           std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
         }
-        if (!output_sdc.is_open()) {
-          std::cerr << "Error opening output file: " << new_sdc << std::endl;
-          return;
-        }
-        processSdcFile(input_sdc, output_sdc);
+        processSdcFile(input_sdc);
         get_loc_map_by_io();
-        for (auto &p : location_map_by_io) {
-          std::cout << "Sig name: " << p.first << std::endl;
-          p.second.print(std::cout);
-        }
-
-        for(auto constraint : constrained_pins) {
-          std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
-        }
       }
 
       dump_io_config_json(interface_mod, io_config_json);
