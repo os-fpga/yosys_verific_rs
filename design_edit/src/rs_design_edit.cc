@@ -437,174 +437,177 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    delete_cells(original_mod, remove_prims);
+    if(io_prim.contains_io_prem)
+    {
+      delete_cells(original_mod, remove_prims);
 
-    intersection_copy_remove(new_ins, new_outs, interface_wires);
+      intersection_copy_remove(new_ins, new_outs, interface_wires);
 
-    for (auto wire : original_mod->wires()) {
-      std::string wire_name = wire->name.str();
-      if (new_ins.find(wire_name) != new_ins.end()) {
-        wire->port_input = true;
-        continue;
-      }
-      if (new_outs.find(wire_name) != new_outs.end()) {
-        wire->port_output = true;
-        continue;
-      }
-      if (interface_wires.find(wire_name) != interface_wires.end()) {
-        wires_interface.insert(wire);
-        continue;
-      }
-      if (inputs.find(wire_name) != inputs.end()) {
-        del_ins.insert(wire);
-        continue;
-      }
-      if (outputs.find(wire_name) != outputs.end()) {
-        del_outs.insert(wire);
-        continue;
-      }
-    }
-
-    for (auto &conn : original_mod->connections()) {
-      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
-      std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
-      for (size_t i = 0; i < conn_lhs.size(); i++) {
-        if (conn_lhs[i].wire != nullptr) {
-          keep_wires.insert(conn_lhs[i].wire->name.str());
+      for (auto wire : original_mod->wires()) {
+        std::string wire_name = wire->name.str();
+        if (new_ins.find(wire_name) != new_ins.end()) {
+          wire->port_input = true;
+          continue;
         }
-        if (conn_rhs[i].wire != nullptr) {
-          keep_wires.insert(conn_rhs[i].wire->name.str());
+        if (new_outs.find(wire_name) != new_outs.end()) {
+          wire->port_output = true;
+          continue;
+        }
+        if (interface_wires.find(wire_name) != interface_wires.end()) {
+          wires_interface.insert(wire);
+          continue;
+        }
+        if (inputs.find(wire_name) != inputs.end()) {
+          del_ins.insert(wire);
+          continue;
+        }
+        if (outputs.find(wire_name) != outputs.end()) {
+          del_outs.insert(wire);
+          continue;
         }
       }
-    }
 
-    delete_wires(original_mod, wires_interface);
-    delete_wires(original_mod, del_ins);
-    delete_wires(original_mod, del_outs);
-
-    original_mod->fixup_ports();
-
-    for (auto cell : interface_mod->cells()) {
-      string module_name = remove_backslashes(cell->type.str());
-      if (std::find(primitives.begin(), primitives.end(), module_name) ==
-          primitives.end()) {
-        remove_non_prims.push_back(cell);
-      }
-    }
-
-    delete_cells(interface_mod, remove_non_prims);
-
-    for (auto wire : interface_mod->wires()) {
-      std::string wire_name = wire->name.str();
-      if (new_ins.find(wire_name) != new_ins.end()) {
-        wire->port_output = true;
-        continue;
-      }
-      if (new_outs.find(wire_name) != new_outs.end()) {
-        wire->port_input = true;
-        continue;
-      }
-      if (interface_wires.find(wire_name) != interface_wires.end()) {
-        continue;
-      }
-      if (inputs.find(wire_name) != inputs.end()) {
-        continue;
-      }
-      if (outputs.find(wire_name) != outputs.end()) {
-        continue;
-      }
-      del_interface_wires.insert(wire);
-    }
-
-    interface_mod->connections_.clear();
-    for (auto wire : del_interface_wires) {
-      interface_mod->remove({wire});
-    }
-    interface_mod->fixup_ports();
-    if(sdc_passed) {
-      std::string new_sdc = "new_sdc.txt";
-      std::ofstream output_sdc(new_sdc);
-      std::ifstream input_sdc(sdc_file);
-      if (!input_sdc.is_open()) {
-        std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
-      }
-      if (!output_sdc.is_open()) {
-        std::cerr << "Error opening output file: " << new_sdc << std::endl;
-        return;
-      }
-      processSdcFile(input_sdc, output_sdc);
-      get_loc_map_by_io();
-      for (auto &p : location_map_by_io) {
-        std::cout << "Sig name: " << p.first << std::endl;
-        p.second.print(std::cout);
-      }
-     
-      for(auto constraint : constrained_pins) {
-        std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
-      }
-    }
-
-    dump_io_config_json(interface_mod, io_config_json);
-
-    for (auto cell : wrapper_mod->cells()) {
-      string module_name = cell->type.str();
-      remove_wrapper_cells.push_back(cell);
-    }
-
-    for (auto cell : remove_wrapper_cells) {
-      wrapper_mod->remove(cell);
-    }
-
-    wrapper_mod->connections_.clear();
-
-    // Add instances of the original and interface modules to the wrapper module
-    Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
-    Cell *interface_mod_inst =
-        wrapper_mod->addCell(NEW_ID, interface_mod->name);
-    for (auto wire : original_mod->wires()) {
-      RTLIL::SigSpec conn = wire;
-      std::string wire_name = wire->name.str();
-      if (wire->port_input || wire->port_output) {
-        orig_inst_conns.insert(wire_name);
-      }
-    }
-
-    for (auto wire : interface_mod->wires()) {
-      RTLIL::SigSpec conn = wire;
-      std::string wire_name = wire->name.str();
-      if (wire->port_input || wire->port_output) {
-        interface_inst_conns.insert(wire_name);
-      }
-    }
-
-    for (auto wire : wrapper_mod->wires()) {
-      RTLIL::SigSpec conn = wire;
-      std::string wire_name = wire->name.str();
-      if (orig_inst_conns.find(wire_name) == orig_inst_conns.end() &&
-          interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
-          interface_wires.find(wire_name) == interface_wires.end()) {
-        del_wrapper_wires.insert(wire);
-      } else {
-        if (orig_inst_conns.find(wire_name) != orig_inst_conns.end()) {
-          orig_mod_inst->setPort(wire_name, conn);
-        }
-        if (interface_inst_conns.find(wire_name) !=
-            interface_inst_conns.end()) {
-          interface_mod_inst->setPort(wire_name, conn);
+      for (auto &conn : original_mod->connections()) {
+        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+        std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+        for (size_t i = 0; i < conn_lhs.size(); i++) {
+          if (conn_lhs[i].wire != nullptr) {
+            keep_wires.insert(conn_lhs[i].wire->name.str());
+          }
+          if (conn_rhs[i].wire != nullptr) {
+            keep_wires.insert(conn_rhs[i].wire->name.str());
+          }
         }
       }
+
+      delete_wires(original_mod, wires_interface);
+      delete_wires(original_mod, del_ins);
+      delete_wires(original_mod, del_outs);
+
+      original_mod->fixup_ports();
+
+      for (auto cell : interface_mod->cells()) {
+        string module_name = remove_backslashes(cell->type.str());
+        if (std::find(primitives.begin(), primitives.end(), module_name) ==
+            primitives.end()) {
+          remove_non_prims.push_back(cell);
+        }
+      }
+
+      delete_cells(interface_mod, remove_non_prims);
+
+      for (auto wire : interface_mod->wires()) {
+        std::string wire_name = wire->name.str();
+        if (new_ins.find(wire_name) != new_ins.end()) {
+          wire->port_output = true;
+          continue;
+        }
+        if (new_outs.find(wire_name) != new_outs.end()) {
+          wire->port_input = true;
+          continue;
+        }
+        if (interface_wires.find(wire_name) != interface_wires.end()) {
+          continue;
+        }
+        if (inputs.find(wire_name) != inputs.end()) {
+          continue;
+        }
+        if (outputs.find(wire_name) != outputs.end()) {
+          continue;
+        }
+        del_interface_wires.insert(wire);
+      }
+
+      interface_mod->connections_.clear();
+      for (auto wire : del_interface_wires) {
+        interface_mod->remove({wire});
+      }
+      interface_mod->fixup_ports();
+      if(sdc_passed) {
+        std::string new_sdc = "new_sdc.txt";
+        std::ofstream output_sdc(new_sdc);
+        std::ifstream input_sdc(sdc_file);
+        if (!input_sdc.is_open()) {
+          std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
+        }
+        if (!output_sdc.is_open()) {
+          std::cerr << "Error opening output file: " << new_sdc << std::endl;
+          return;
+        }
+        processSdcFile(input_sdc, output_sdc);
+        get_loc_map_by_io();
+        for (auto &p : location_map_by_io) {
+          std::cout << "Sig name: " << p.first << std::endl;
+          p.second.print(std::cout);
+        }
+
+        for(auto constraint : constrained_pins) {
+          std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
+        }
+      }
+
+      dump_io_config_json(interface_mod, io_config_json);
+
+      for (auto cell : wrapper_mod->cells()) {
+        string module_name = cell->type.str();
+        remove_wrapper_cells.push_back(cell);
+      }
+
+      for (auto cell : remove_wrapper_cells) {
+        wrapper_mod->remove(cell);
+      }
+
+      wrapper_mod->connections_.clear();
+
+      // Add instances of the original and interface modules to the wrapper module
+      Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
+      Cell *interface_mod_inst =
+          wrapper_mod->addCell(NEW_ID, interface_mod->name);
+      for (auto wire : original_mod->wires()) {
+        RTLIL::SigSpec conn = wire;
+        std::string wire_name = wire->name.str();
+        if (wire->port_input || wire->port_output) {
+          orig_inst_conns.insert(wire_name);
+        }
+      }
+
+      for (auto wire : interface_mod->wires()) {
+        RTLIL::SigSpec conn = wire;
+        std::string wire_name = wire->name.str();
+        if (wire->port_input || wire->port_output) {
+          interface_inst_conns.insert(wire_name);
+        }
+      }
+
+      for (auto wire : wrapper_mod->wires()) {
+        RTLIL::SigSpec conn = wire;
+        std::string wire_name = wire->name.str();
+        if (orig_inst_conns.find(wire_name) == orig_inst_conns.end() &&
+            interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
+            interface_wires.find(wire_name) == interface_wires.end()) {
+          del_wrapper_wires.insert(wire);
+        } else {
+          if (orig_inst_conns.find(wire_name) != orig_inst_conns.end()) {
+            orig_mod_inst->setPort(wire_name, conn);
+          }
+          if (interface_inst_conns.find(wire_name) !=
+              interface_inst_conns.end()) {
+            interface_mod_inst->setPort(wire_name, conn);
+          }
+        }
+      }
+
+      for (auto wire : del_wrapper_wires) {
+        wrapper_mod->remove({wire});
+      }
+
+      wrapper_mod->fixup_ports();
+
+      new_design->add(interface_mod->clone());
+      new_design->add(wrapper_mod->clone());
+
+      run_script(new_design);
     }
-
-    for (auto wire : del_wrapper_wires) {
-      wrapper_mod->remove({wire});
-    }
-
-    wrapper_mod->fixup_ports();
-
-    new_design->add(interface_mod->clone());
-    new_design->add(wrapper_mod->clone());
-
-    run_script(new_design);
   }
 
   void script() override {
