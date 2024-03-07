@@ -250,7 +250,7 @@ if (BUILD_YOSYS_PLUGINS)
     
     if(NOT RAPTOR) # synling plugin
     add_subdirectory(Raptor_Tools/parser_plugins)
-    add_dependencies(synlig_build yosys)
+    add_dependencies(synlig yosys)
     endif()
 endif()
 
