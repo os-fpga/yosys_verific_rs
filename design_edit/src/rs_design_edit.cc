@@ -17,6 +17,7 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys.h"
+<<<<<<< HEAD
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -30,6 +31,10 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
+=======
+#include "rs_design_edit.h"
+#include "rs_primitive.h"
+>>>>>>> 1bb89563... adding gen_map tool from yaml files
 #include <json.hpp>
 
 #ifdef PRODUCTION_BUILD
