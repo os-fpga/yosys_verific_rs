@@ -345,6 +345,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
     clear_flags();
+    Yosys::run_pass("clean -purge");
     _design = design;
 
     size_t argidx;
