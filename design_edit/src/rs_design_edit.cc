@@ -17,24 +17,8 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys.h"
-<<<<<<< HEAD
-#include <algorithm>
-#include <chrono>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <numeric>
-#include <regex>
-#include <set>
-#include <string>
-#include <unistd.h>
-#include <unordered_map>
-#include <unordered_set>
-=======
 #include "rs_design_edit.h"
 #include "rs_primitive.h"
->>>>>>> 1bb89563... adding gen_map tool from yaml files
 #include <json.hpp>
 
 #ifdef PRODUCTION_BUILD
@@ -61,45 +45,6 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_PATCH 1
 
 using json = nlohmann::json;
-using namespace std;
-
-struct primitives_data {
-  std::map<std::string, std::unordered_set<std::string>> io_primitives =
-      { // TO_DO Read from Yaml
-          {"genesis3",
-           {"CLK_BUF", "I_BUF", "I_BUF_DS", "I_DDR", "I_DELAY", "I_SERDES",
-            "O_BUF", "O_BUFT", "O_BUFT_DS", "O_BUF_DS", "O_DDR", "O_DELAY",
-            "O_SERDES", "O_SERDES_CLK", "PLL"}}};
-  bool contains_io_prem = false;
-
-  // Function to get the primitive names for a specific cell library
-  std::unordered_set<std::string> get_primitives(const std::string &lib) {
-    std::unordered_set<std::string> primitive_names;
-    auto it = io_primitives.find(lib);
-    if (it != io_primitives.end()) {
-      primitive_names = it->second;
-    }
-    return primitive_names;
-  }
-};
-
-struct location_data {
-  std::string _name;
-  std::string _associated_pin;
-  std::unordered_map<string, std::string> _properties;
-  void print(std::ostream &output) {
-    output << "name: " << _name << std::endl;
-    output << "  pin: " << _associated_pin << std::endl;
-    output << "  properties: " << std::endl;
-    for (auto &pr : _properties) {
-      output << "    " << pr.first << " : " << pr.second << std::endl;
-    }
-  }
-};
-
-std::unordered_map<string, location_data> location_map_by_io;
-std::unordered_map<string, location_data> location_map;
-enum Technologies { GENERIC, GENESIS, GENESIS_2, GENESIS_3 };
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
@@ -120,29 +65,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
     log("\n");
   }
 
-  std::vector<std::string> wrapper_files;
-  std::string io_config_json;
-  std::string sdc_file;
-  bool sdc_passed = false;
-  std::string tech;
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
-  std::unordered_set<std::string> primitives;
-  std::unordered_set<std::string> new_ins;
-  std::unordered_set<std::string> new_outs;
-  std::unordered_set<std::string> interface_wires;
-  std::unordered_set<std::string> inputs;
-  std::unordered_set<std::string> outputs;
-  std::unordered_set<std::string> orig_inst_conns;
-  std::unordered_set<std::string> interface_inst_conns;
-  std::unordered_set<std::string> keep_wires;
   std::unordered_set<Wire *> wires_interface;
   std::unordered_set<Wire *> del_ins;
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
-  std::unordered_set<std::string> constrained_pins;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -163,7 +93,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return tokens;
   }
 
-  void processSdcFile(std::istream &input, std::ostream &output) {
+  void processSdcFile(std::istream &input) {
     std::string line;
     while (std::getline(input, line)) {
       std::vector<std::string> tokens = tokenizeString(line);
@@ -181,9 +111,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
           location_map[tokens[2]]._name = tokens[2];
         }
       }
-    }
-    for (auto &p : location_map) {
-      p.second.print(output);
     }
   }
 
@@ -527,26 +454,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     interface_mod->fixup_ports();
     if(sdc_passed) {
-      std::string new_sdc = "new_sdc.txt";
-      std::ofstream output_sdc(new_sdc);
       std::ifstream input_sdc(sdc_file);
       if (!input_sdc.is_open()) {
         std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
       }
-      if (!output_sdc.is_open()) {
-        std::cerr << "Error opening output file: " << new_sdc << std::endl;
-        return;
-      }
-      processSdcFile(input_sdc, output_sdc);
+      processSdcFile(input_sdc);
       get_loc_map_by_io();
-      for (auto &p : location_map_by_io) {
-        std::cout << "Sig name: " << p.first << std::endl;
-        p.second.print(std::cout);
-      }
-     
-      for(auto constraint : constrained_pins) {
-        std::cout << "PIN CONSTRAINED  " << constraint << std::endl;
-      }
     }
 
     dump_io_config_json(interface_mod, io_config_json);
