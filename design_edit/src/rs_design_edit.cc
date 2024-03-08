@@ -140,6 +140,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
+  std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
   std::unordered_set<std::string> constrained_pins;
 
   RTLIL::Design *_design;
@@ -335,6 +336,54 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void remove_extra_conns(Module* mod)
+  {
+    for (const auto& conn : connections_to_remove) {
+    mod->connections_.erase(std::remove_if(mod->connections_.begin(),
+      mod->connections_.end(),
+      [&](const std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>& p) {
+          return p == conn;
+      }), mod->connections_.end());
+    }
+  }
+
+  void update_prim_connections(Module* mod, std::unordered_set<std::string> prims)
+  {
+    for (auto cell : mod->cells()) {
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(prims.begin(), prims.end(), module_name) !=
+          prims.end()) {
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
+          RTLIL::SigSpec actual = conn.second;
+          if (actual.is_chunk()) {
+            RTLIL::Wire *wire = actual.as_chunk().wire;
+            if (wire != NULL) {
+              const RTLIL::SigChunk chunk = actual.as_chunk();
+              if (chunk.width == chunk.wire->width && chunk.offset == 0) {
+                for (const auto& connection : connections_to_remove)
+                {
+                  const Yosys::RTLIL::SigSpec lhs = connection.first;
+                  const Yosys::RTLIL::SigSpec rhs = connection.second;
+                  const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+                  const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+                  if (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0)
+                  {
+                    if(lhs_chunk.wire->name.str() == chunk.wire->name.str())
+                    {
+                      cell->unsetPort(portName);
+                      cell->setPort(portName, rhs);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -394,6 +443,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     if (original_mod_name.find("fabric_") == std::string::npos) {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
+
+    
     Module *interface_mod = _design->top_module()->clone();
     std::string interface_mod_name = "\\interface_" + original_mod_name;
     interface_mod->name = interface_mod_name;
@@ -478,6 +529,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
       std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
       std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
       for (size_t i = 0; i < conn_lhs.size(); i++) {
+        if((conn_lhs[i].wire != nullptr) && (conn_rhs[i].wire != nullptr))
+        {
+          if((conn_lhs[i].wire->port_input || conn_lhs[i].wire->port_output) &&
+            (conn_rhs[i].wire->port_input || conn_rhs[i].wire->port_output))
+          {
+            connections_to_remove.insert(conn);
+            continue;
+          }
+        }
         if (conn_lhs[i].wire != nullptr) {
           keep_wires.insert(conn_lhs[i].wire->name.str());
         }
@@ -486,6 +546,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+
+    remove_extra_conns(original_mod);
+    update_prim_connections(original_mod, primitives);
 
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
@@ -529,6 +592,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
+
+    update_prim_connections(interface_mod, primitives);
     interface_mod->fixup_ports();
     if(sdc_passed) {
       std::string new_sdc = "new_sdc.txt";
