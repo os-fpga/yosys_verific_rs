@@ -373,6 +373,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                     {
                       cell->unsetPort(portName);
                       cell->setPort(portName, rhs);
+                      mod->remove({wire});
                     }
                   }
                 }
@@ -497,8 +498,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    delete_cells(original_mod, remove_prims);
-
     intersection_copy_remove(new_ins, new_outs, interface_wires);
 
     for (auto wire : original_mod->wires()) {
@@ -549,6 +548,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     remove_extra_conns(original_mod);
     update_prim_connections(original_mod, primitives);
+    delete_cells(original_mod, remove_prims);
 
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
