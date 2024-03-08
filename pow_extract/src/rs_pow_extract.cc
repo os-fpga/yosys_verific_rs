@@ -2215,7 +2215,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                     if (CLK_BUF.size()==0){
                         if (i_buf->getPort(RTLIL::escape_id("O")) == clk){
                             clk_from_buffer[clk] = i_buf->getPort(RTLIL::escape_id("I"));
-                            IBUFs.erase(remove(IBUFs.begin(),IBUFs.end(),i_buf));
+                            // IBUFs.erase(remove(IBUFs.begin(),IBUFs.end(),i_buf));
                         }
                     }
                     else{
