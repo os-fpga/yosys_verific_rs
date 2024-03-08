@@ -376,6 +376,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                       mod->remove({wire});
                     }
                   }
+                  // TODO : Need to work for multiple chunks, for CLK_BUF it's working now
                 }
               }
             }
