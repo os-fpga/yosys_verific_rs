@@ -614,6 +614,9 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
       index++;
     }
     json << "\n  ]";
+  } else {
+    json << ",\n  \"instances\" : [";
+    json << "\n  ]";
   }
   json << "\n}\n";
   json.close();
