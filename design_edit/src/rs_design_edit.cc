@@ -17,6 +17,7 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys.h"
+#include "primitives_extractor.h"
 #include "rs_design_edit.h"
 #include "rs_primitive.h"
 #include <json.hpp>
@@ -44,7 +45,10 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
+#define GEN_JSON_METHOD 1
+
 using json = nlohmann::json;
+
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
@@ -311,6 +315,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
+    #if GEN_JSON_METHOD
+    // Extract the primitive information (before anything is modified)
+    PRIMITIVES_EXTRACTOR extractor(tech);
+    extractor.extract(_design);
+    #endif
+
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
         remove_backslashes(_design->top_module()->name.str());
@@ -462,7 +472,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       get_loc_map_by_io();
     }
 
+    #if GEN_JSON_METHOD
+    extractor.write_json(io_config_json);
+    #else
     dump_io_config_json(interface_mod, io_config_json);
+    #endif
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
