@@ -215,6 +215,7 @@ if (ENABLE_VERIFIC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 add_subdirectory(logic_synthesis-rs)
+add_subdirectory(design_edit/gen_map)
 # TODO: Fix Mac OS build.
 if(ENABLE_VERIFIC)
     if (NOT APPLE)
@@ -295,8 +296,8 @@ add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_dependencies(pow_extract yosys)
 add_dependencies(yosys_clean pow_extract_clean)
-
-add_dependencies(design_edit yosys)
+add_dependencies(design_edit rs_primitive)
+add_dependencies(design_edit yosys )
 add_dependencies(yosys_clean design_edit_clean)
 
 add_custom_target(
