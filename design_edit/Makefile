@@ -67,7 +67,7 @@ VERILOG_MODULES	= $(COMMON)/cells_sim.v \
 				  $(GENESIS3)/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DSP38.v
 
 NAME = design-edit
-SOURCES = src/rs_design_edit.cc 
+SOURCES = src/primitives_extractor.cc src/rs_design_edit.cc
 
 OBJS := $(SOURCES:cc=o)
 

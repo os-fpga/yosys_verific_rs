@@ -17,6 +17,7 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys.h"
+#include "primitives_extractor.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -54,6 +55,8 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MAJOR 0 // 0 - beta
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
+
+#define GEN_JSON_METHOD 1
 
 using json = nlohmann::json;
 using namespace std;
@@ -379,6 +382,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
+#if GEN_JSON_METHOD
+    // Extract the primitive information (before anything is modified)
+    PRIMITIVES_EXTRACTOR extractor(tech);
+    extractor.extract(_design);
+#endif
+
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
         remove_backslashes(_design->top_module()->name.str());
@@ -537,6 +546,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       for (auto &p : location_map_by_io) {
         std::cout << "Sig name: " << p.first << std::endl;
         p.second.print(std::cout);
+#if GEN_JSON_METHOD
+        extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
+#endif
       }
      
       for(auto constraint : constrained_pins) {
@@ -544,7 +556,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
+#if GEN_JSON_METHOD
+    extractor.write_json(io_config_json);
+#else
     dump_io_config_json(interface_mod, io_config_json);
+#endif
+    
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
