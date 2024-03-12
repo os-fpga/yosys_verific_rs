@@ -222,7 +222,7 @@ PRIMITIVES_EXTRACTOR::PRIMITIVES_EXTRACTOR(const std::string& technology)
     : m_technology(technology) {
   if (SUPPORTED_PRIMITIVES.find(m_technology) == SUPPORTED_PRIMITIVES.end()) {
     m_status = false;
-    POST_MSG(1, "Technology %s is not supported", m_technology.c_str());
+    POST_MSG(1, "Error: Technology %s is not supported", m_technology.c_str());
   }
 }
 
