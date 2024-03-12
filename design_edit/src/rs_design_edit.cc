@@ -281,6 +281,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+
+
   void update_prim_connections(Module* mod, std::unordered_set<std::string> prims)
   {
     for (auto cell : mod->cells()) {
@@ -291,43 +293,28 @@ struct DesignEditRapidSilicon : public ScriptPass {
           IdString portName = conn.first;
           RTLIL::SigSpec actual = conn.second;
           if (actual.is_chunk()) {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
             RTLIL::Wire *wire = actual.as_chunk().wire;
-            if (wire != NULL) {
-              const RTLIL::SigChunk chunk = actual.as_chunk();
-              if (chunk.width == chunk.wire->width && chunk.offset == 0) {
-                for (const auto& connection : connections_to_remove)
-                {
-                  const Yosys::RTLIL::SigSpec lhs = connection.first;
-                  const Yosys::RTLIL::SigSpec rhs = connection.second;
-                  const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
-                  const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
-                  if (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0)
-                  {
-                    if(lhs_chunk.wire->name.str() == chunk.wire->name.str())
-                    {
-                      cell->unsetPort(portName);
-                      cell->setPort(portName, rhs);
-                      mod->remove({wire});
-                    }
-                  }
-                }
-              } else if (chunk.width == 1) {
-                for (const auto& connection : connections_to_remove)
-                {
-                  const Yosys::RTLIL::SigSpec lhs = connection.first;
-                  const Yosys::RTLIL::SigSpec rhs = connection.second;
-                  const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
-                  const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
-                  if(lhs_chunk.wire->name.str() == chunk.wire->name.str())
-                  {
-                    if(lhs_chunk.width == 1)
-                    {
-                      cell->unsetPort(portName);
-                      cell->setPort(portName, rhs);
-                      del_intermediate_wires.insert(wire);
-                    }
-                  }
-                }
+            if(chunk.wire == NULL) continue;
+            for (const auto& connection : connections_to_remove)
+            {
+              const Yosys::RTLIL::SigSpec lhs = connection.first;
+              const Yosys::RTLIL::SigSpec rhs = connection.second;
+              const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+              const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+              if ((chunk.width == chunk.wire->width && chunk.offset == 0) &&
+                (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0) &&
+                (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
+              {
+                cell->unsetPort(portName);
+                cell->setPort(portName, rhs);
+                mod->remove({wire});
+              } else if ((chunk.width == 1) && (lhs_chunk.width == 1) &&
+                (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
+              {
+                cell->unsetPort(portName);
+                cell->setPort(portName, rhs);
+                del_intermediate_wires.insert(wire);
               }
             }
           }
@@ -476,16 +463,18 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     for (auto &conn : original_mod->connections()) {
-      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
-      std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
-      for (size_t i = 0; i < conn_lhs.size(); i++) {
-        if((conn_lhs[i].wire != nullptr) && (conn_rhs[i].wire != nullptr))
+      RTLIL::SigSpec lhs = conn.first;
+      RTLIL::SigSpec rhs = conn.second;
+      if(lhs.is_chunk() && rhs.is_chunk())
+      {
+        const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+        const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+        if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
         {
-          if((conn_lhs[i].wire->port_input || conn_lhs[i].wire->port_output) &&
-            (conn_rhs[i].wire->port_input || conn_rhs[i].wire->port_output))
+          if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output))
           {
             connections_to_remove.insert(conn);
-            continue;
           }
         }
       }
