@@ -309,12 +309,23 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 cell->unsetPort(portName);
                 cell->setPort(portName, rhs);
                 mod->remove({wire});
-              } else if ((chunk.width == 1) && (lhs_chunk.width == 1) &&
+              } else if ((chunk.width == 1) &&
                 (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
               {
-                cell->unsetPort(portName);
-                cell->setPort(portName, rhs);
-                del_intermediate_wires.insert(wire);
+                if (lhs_chunk.width == 1)
+                {
+                  cell->unsetPort(portName);
+                  cell->setPort(portName, rhs);
+                  del_intermediate_wires.insert(wire);
+                } else if (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0) {
+                  unsigned offset = chunk.offset + chunk.wire->start_offset ;
+                  std::cout << offset << "  is the ofset " << std::endl; 
+                  auto conn_rhs = connection.second.to_sigbit_vector();
+                  cell->unsetPort(portName);
+                  cell->setPort(portName, conn_rhs.at(offset));
+                  std::cout << "wire to be deleted " << wire->name.str() << std::endl;
+                  //del_intermediate_wires.insert(wire);
+                }
               }
             }
           }
