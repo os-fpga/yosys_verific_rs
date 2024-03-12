@@ -78,6 +78,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
+  std::unordered_set<Wire *> del_intermediate_wires; 
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -309,7 +310,23 @@ struct DesignEditRapidSilicon : public ScriptPass {
                       mod->remove({wire});
                     }
                   }
-                  // TODO : Need to work for multiple chunks, for CLK_BUF it's working now
+                }
+              } else if (chunk.width == 1) {
+                for (const auto& connection : connections_to_remove)
+                {
+                  const Yosys::RTLIL::SigSpec lhs = connection.first;
+                  const Yosys::RTLIL::SigSpec rhs = connection.second;
+                  const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+                  const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+                  if(lhs_chunk.wire->name.str() == chunk.wire->name.str())
+                  {
+                    if(lhs_chunk.width == 1)
+                    {
+                      cell->unsetPort(portName);
+                      cell->setPort(portName, rhs);
+                      del_intermediate_wires.insert(wire);
+                    }
+                  }
                 }
               }
             }
@@ -471,6 +488,17 @@ struct DesignEditRapidSilicon : public ScriptPass {
             continue;
           }
         }
+      }
+    }
+
+    remove_extra_conns(original_mod);
+    update_prim_connections(original_mod, primitives);
+    delete_cells(original_mod, remove_prims);
+
+    for (auto &conn : original_mod->connections()) {
+      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+      std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+      for (size_t i = 0; i < conn_lhs.size(); i++) {
         if (conn_lhs[i].wire != nullptr) {
           keep_wires.insert(conn_lhs[i].wire->name.str());
         }
@@ -480,13 +508,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    remove_extra_conns(original_mod);
-    update_prim_connections(original_mod, primitives);
-    delete_cells(original_mod, remove_prims);
-
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
+    delete_wires(original_mod, del_intermediate_wires);
 
     original_mod->fixup_ports();
 
@@ -528,6 +553,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     update_prim_connections(interface_mod, primitives);
+    delete_wires(interface_mod, del_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
       std::ifstream input_sdc(sdc_file);
