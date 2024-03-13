@@ -78,7 +78,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
-  std::unordered_set<Wire *> del_intermediate_wires; 
+  std::unordered_set<Wire *> orig_intermediate_wires;
+  std::unordered_set<Wire *> interface_intermediate_wires;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -283,7 +284,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
 
 
-  void update_prim_connections(Module* mod, std::unordered_set<std::string> prims)
+  void update_prim_connections(Module* mod, std::unordered_set<std::string> prims, std::unordered_set<Wire *> &del_intermediate_wires)
   {
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
@@ -319,12 +320,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   del_intermediate_wires.insert(wire);
                 } else if (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0) {
                   unsigned offset = chunk.offset + chunk.wire->start_offset ;
-                  std::cout << offset << "  is the ofset " << std::endl; 
                   auto conn_rhs = connection.second.to_sigbit_vector();
                   cell->unsetPort(portName);
                   cell->setPort(portName, conn_rhs.at(offset));
-                  std::cout << "wire to be deleted " << wire->name.str() << std::endl;
-                  //del_intermediate_wires.insert(wire);
+                  del_intermediate_wires.insert(wire);
                 }
               }
             }
@@ -492,7 +491,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     remove_extra_conns(original_mod);
-    update_prim_connections(original_mod, primitives);
+    update_prim_connections(original_mod, primitives, orig_intermediate_wires);
     delete_cells(original_mod, remove_prims);
 
     for (auto &conn : original_mod->connections()) {
@@ -511,7 +510,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
-    delete_wires(original_mod, del_intermediate_wires);
 
     original_mod->fixup_ports();
 
@@ -547,18 +545,22 @@ struct DesignEditRapidSilicon : public ScriptPass {
       del_interface_wires.insert(wire);
     }
 
+    update_prim_connections(interface_mod, primitives, interface_intermediate_wires);
+
     interface_mod->connections_.clear();
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
 
-    update_prim_connections(interface_mod, primitives);
-    delete_wires(interface_mod, del_intermediate_wires);
+    
+    delete_wires(original_mod, orig_intermediate_wires);
+    original_mod->fixup_ports();
+    delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
       std::ifstream input_sdc(sdc_file);
       if (!input_sdc.is_open()) {
-        std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
+        std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
       }
       processSdcFile(input_sdc);
       get_loc_map_by_io();
