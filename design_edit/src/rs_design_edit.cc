@@ -282,9 +282,38 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  bool is_fab_conn(Module *mod, Wire* lhs_wire, Wire* rhs_wire, std::unordered_set<std::string> &prims)
+  {
+    bool is_fab_output = false;
+    bool is_fab_input = false;
+    for (auto cell : mod->cells()) {
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(prims.begin(), prims.end(), module_name) !=
+          prims.end()) {
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
+          RTLIL::SigSpec actual = conn.second;
+          if (actual.is_chunk()) {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
+            if(chunk.wire == NULL) continue;
+            if(chunk.wire->name.str() == rhs_wire->name.str() &&
+              ((module_name.substr(0, 2) == "I_") || (module_name.substr(0, 4) == "CLK_")))
+            {
+              is_fab_input = true;
+            }
+            if(chunk.wire->name.str() == lhs_wire->name.str() &&
+              (module_name.substr(0, 2) == "O_"))
+            {
+              is_fab_output = true;
+            }
+          }
+        }
+      }
+    }
+    return is_fab_input && is_fab_output;
+  }
 
-
-  void update_prim_connections(Module* mod, std::unordered_set<std::string> prims, std::unordered_set<Wire *> &del_intermediate_wires)
+  void update_prim_connections(Module* mod, std::unordered_set<std::string> &prims, std::unordered_set<Wire *> &del_intermediate_wires)
   {
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
@@ -484,7 +513,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
           if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output))
           {
-            connections_to_remove.insert(conn);
+            if(!is_fab_conn(original_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            {
+              lhs_chunk.wire->port_input = false;
+              lhs_chunk.wire->port_output = false;
+              rhs_chunk.wire->port_input = false;
+              rhs_chunk.wire->port_output = false;
+              connections_to_remove.insert(conn);
+            }
           }
         }
       }
@@ -510,6 +546,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
+    connections_to_remove.clear();
 
     original_mod->fixup_ports();
 
@@ -543,6 +580,31 @@ struct DesignEditRapidSilicon : public ScriptPass {
         continue;
       }
       del_interface_wires.insert(wire);
+    }
+
+     for (auto &conn : interface_mod->connections()) {
+      RTLIL::SigSpec lhs = conn.first;
+      RTLIL::SigSpec rhs = conn.second;
+      if(lhs.is_chunk() && rhs.is_chunk())
+      {
+        const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+        const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+        if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
+        {
+          if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output))
+          {
+            if(!is_fab_conn(interface_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            {
+              lhs_chunk.wire->port_input = false;
+              lhs_chunk.wire->port_output = false;
+              rhs_chunk.wire->port_input = false;
+              rhs_chunk.wire->port_output = false;
+              connections_to_remove.insert(conn);
+            }
+          }
+        }
+      }
     }
 
     update_prim_connections(interface_mod, primitives, interface_intermediate_wires);
