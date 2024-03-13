@@ -220,8 +220,10 @@ struct INSTANCE {
 */
 PRIMITIVES_EXTRACTOR::PRIMITIVES_EXTRACTOR(const std::string& technology)
     : m_technology(technology) {
-  log_assert(SUPPORTED_PRIMITIVES.find(m_technology) !=
-             SUPPORTED_PRIMITIVES.end());
+  if (SUPPORTED_PRIMITIVES.find(m_technology) == SUPPORTED_PRIMITIVES.end()) {
+    m_status = false;
+    POST_MSG(1, "Error: Technology %s is not supported", m_technology.c_str());
+  }
 }
 
 /*
@@ -250,15 +252,20 @@ PRIMITIVES_EXTRACTOR::~PRIMITIVES_EXTRACTOR() {
   Entry point of EXTRACTOR to extract
 */
 bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
-  // Step 1: Get Input and Output ports
+  // Step 1: Make sure the technology is supported (check in constructor)
+  if (!m_status) {
+    goto EXTRACT_END;
+  }
+
+  // Step 2: Get Input and Output ports
   if (!get_ports(design->top_module())) {
     goto EXTRACT_END;
   }
 
-  // Step 2: Trace CLK_BUF connection
+  // Step 3: Trace CLK_BUF connection
   trace_clk_buf(design->top_module());
 
-  // Step 3: Support more primitive once more use cases are understood
+  // Step 4: Support more primitive once more use cases are understood
 
   // Lastly generate instance(s)
   if (m_status) {
