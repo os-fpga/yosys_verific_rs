@@ -160,7 +160,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     json instances_array = json::array();
     for(auto cell : mod->cells()) {
       json instance_object;
-			instance_object["module"] = remove_backslashes(cell->type.str());
+      instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
 
       for(auto conn : cell->connections()) {
@@ -172,10 +172,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (actual.is_chunk())
 				{
           if (actual.as_chunk().wire != NULL)
-            connection = process_connection(actual.as_chunk());
+          connection = process_connection(actual.as_chunk());
         } else {
 					for (auto it = actual.chunks().rbegin(); 
-                    	it != actual.chunks().rend(); ++it)
+            it != actual.chunks().rend(); ++it)
 					{
 						RTLIL::Wire* wire = (*it).wire;
 						if(wire != NULL)
@@ -235,8 +235,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   void intersection_copy_remove(std::unordered_set<std::string> &set1,
-                  std::unordered_set<std::string> &set2,
-                  std::unordered_set<std::string> &wires) {
+    std::unordered_set<std::string> &set2,
+    std::unordered_set<std::string> &wires) {
     for (auto it = set1.begin(); it != set1.end();) {
       if (set2.find(*it) != set2.end()) {
         wires.insert(*it);
@@ -338,7 +338,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
               {
                 cell->unsetPort(portName);
                 cell->setPort(portName, rhs);
-                mod->remove({wire});
+                del_intermediate_wires.insert(wire);
               } else if ((chunk.width == 1) &&
                 (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
               {
@@ -582,7 +582,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       del_interface_wires.insert(wire);
     }
 
-     for (auto &conn : interface_mod->connections()) {
+    for (auto &conn : interface_mod->connections()) {
       RTLIL::SigSpec lhs = conn.first;
       RTLIL::SigSpec rhs = conn.second;
       if(lhs.is_chunk() && rhs.is_chunk())
@@ -669,8 +669,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
       if (orig_inst_conns.find(wire_name) == orig_inst_conns.end() &&
-          interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
-          interface_wires.find(wire_name) == interface_wires.end()) {
+        interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
+        interface_wires.find(wire_name) == interface_wires.end()) {
         del_wrapper_wires.insert(wire);
       } else {
         if (orig_inst_conns.find(wire_name) != orig_inst_conns.end()) {
