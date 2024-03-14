@@ -170,21 +170,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
         json port_obj;
 
         if (actual.is_chunk())
-				{
+        {
           if (actual.as_chunk().wire != NULL)
           connection = process_connection(actual.as_chunk());
         } else {
-					for (auto it = actual.chunks().rbegin(); 
-            it != actual.chunks().rend(); ++it)
-					{
-						RTLIL::Wire* wire = (*it).wire;
-						if(wire != NULL)
-						{
-							connection = process_connection(*it);
-              break;
-						}
-					}
-				}
+	for (auto it = actual.chunks().rbegin(); 
+          it != actual.chunks().rend(); ++it)
+	{
+	  RTLIL::Wire* wire = (*it).wire;
+	  if(wire != NULL)
+	  {
+	    connection = process_connection(*it);
+            break;
+	  }
+        }
+      }
         connection = remove_backslashes(connection);
         instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
 
@@ -389,22 +389,22 @@ struct DesignEditRapidSilicon : public ScriptPass {
         argidx = next_argidx - 1;
         continue;
       }
-			if (args[argidx] == "-tech" && argidx + 1 < args.size())
-			{
-				tech = args[++argidx];
+      if (args[argidx] == "-tech" && argidx + 1 < args.size())
+      {
+        tech = args[++argidx];
         continue;
-			}
-			if (args[argidx] == "-json" && argidx + 1 < args.size())
-			{
-				io_config_json = args[++argidx];
+      }
+      if (args[argidx] == "-json" && argidx + 1 < args.size())
+      {
+        io_config_json = args[++argidx];
         continue;
-			}
-			if (args[argidx] == "-sdc" && argidx + 1 < args.size())
-			{
-				sdc_file = args[++argidx];
+      }
+      if (args[argidx] == "-sdc" && argidx + 1 < args.size())
+      {
+        sdc_file = args[++argidx];
         sdc_passed = true;
         continue;
-			}
+      }
       break;
     }
     primitives = io_prim.get_primitives(tech);
@@ -417,7 +417,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
-        remove_backslashes(_design->top_module()->name.str());
+      remove_backslashes(_design->top_module()->name.str());
     if (original_mod_name.find("fabric_") == std::string::npos) {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
@@ -648,7 +648,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     // Add instances of the original and interface modules to the wrapper module
     Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
     Cell *interface_mod_inst =
-        wrapper_mod->addCell(NEW_ID, interface_mod->name);
+      wrapper_mod->addCell(NEW_ID, interface_mod->name);
     for (auto wire : original_mod->wires()) {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
