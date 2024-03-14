@@ -55,6 +55,7 @@ enum Technologies { GENERIC, GENESIS, GENESIS_2, GENESIS_3 };
 std::unordered_map<string, location_data> location_map_by_io;
 std::unordered_map<string, location_data> location_map;
 std::vector<std::string> wrapper_files;
+std::vector<std::string> post_route_wrapper;
 std::unordered_set<std::string> primitives;
 std::unordered_set<std::string> new_ins;
 std::unordered_set<std::string> new_outs;
