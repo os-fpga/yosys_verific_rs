@@ -389,6 +389,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
         argidx = next_argidx - 1;
         continue;
       }
+      if (args[argidx] == "-pr" && argidx + 1 < args.size()) {
+        size_t next_argidx = argidx + 1;
+        while (next_argidx < args.size() && !is_flag(args[next_argidx])) {
+          post_route_wrapper.push_back(args[next_argidx]);
+          ++next_argidx;
+        }
+        argidx = next_argidx - 1;
+        continue;
+      }
       if (args[argidx] == "-tech" && argidx + 1 < args.size())
       {
         tech = args[++argidx];
@@ -698,6 +707,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
   void script() override {
     std::cout << "Run Script" << std::endl;
     for (auto file : wrapper_files) {
+      std::string extension = get_extension(file);
+      if (!extension.empty()) {
+        if (extension == ".v") {
+          run("write_verilog -noexpr -norename " + file);
+          continue;
+        }
+        if (extension == ".eblif") {
+          run("write_blif -param " + file);
+          continue;
+        }
+      }
+    }
+    Pass::call(new_design, "splitnets -ports");
+    for (auto file : post_route_wrapper) {
       std::string extension = get_extension(file);
       if (!extension.empty()) {
         if (extension == ".v") {
