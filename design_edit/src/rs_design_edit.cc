@@ -72,7 +72,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
-  std::vector<Cell *> remove_pnr_wrap_cells;
   std::unordered_set<Wire *> wires_interface;
   std::unordered_set<Wire *> del_ins;
   std::unordered_set<Wire *> del_outs;
@@ -84,7 +83,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
-  RTLIL::Design *pnr_wrapper = new RTLIL::Design;
   primitives_data io_prim;
 
   void clear_flags() override { wrapper_files = {}; }
@@ -698,91 +696,47 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     wrapper_mod->fixup_ports();
 
-    new_design->add(interface_mod->clone());
-    new_design->add(wrapper_mod->clone());
+    new_design->add(interface_mod);
+    new_design->add(wrapper_mod);
 
-    Module *pnr_fab_mod = original_mod->clone();
-    Module *pnr_interface_mod = interface_mod->clone();
-    Module *pnr_wrapper_mod = wrapper_mod->clone();
-    pnr_wrapper->add(pnr_fab_mod);
-
-    Pass::call(pnr_wrapper, "splitnets -ports");
-    pnr_wrapper->add(pnr_interface_mod);
-    pnr_wrapper->add(pnr_wrapper_mod);
-
-    for (auto cell : pnr_wrapper_mod->cells()) {
-      string module_name = cell->type.str();
-      remove_pnr_wrap_cells.push_back(cell);
-    }
-
-    for (auto cell : remove_pnr_wrap_cells) {
-      pnr_wrapper_mod->remove(cell);
-    }
-
-    pnr_wrapper_mod->connections_.clear();
-
-    Cell *fab_mod_inst = pnr_wrapper_mod->addCell(NEW_ID, pnr_fab_mod->name);
-    Cell *interface_pnr_inst =
-      pnr_wrapper_mod->addCell(NEW_ID, pnr_interface_mod->name);
-
-    for (auto wire : pnr_fab_mod->wires()) {
-      RTLIL::SigSpec conn = wire;
-      std::string wire_name = wire->name.str();
-      if (wire->port_input || wire->port_output) {
-        fab_inst_conns.insert(wire_name);
-      }
-    }
-
-    for (auto wire : pnr_interface_mod->wires()) {
-      RTLIL::SigSpec conn = wire;
-      std::string wire_name = wire->name.str();
-      if (wire->port_input || wire->port_output) {
-        pnr_interface_inst_conns.insert(wire_name);
-      }
-    }
-
-    for (auto wire : pnr_wrapper_mod->wires()) {
-      std::string wire_name = wire->name.str();
-      for (const auto& fab_conn : fab_inst_conns)
-      {
-        std::string fab_conn_name = fab_conn;
-        size_t start_pos = fab_conn_name.find('[');
-        size_t end_pos = fab_conn_name.find(']');
-        if (start_pos != std::string::npos && end_pos != std::string::npos && end_pos > start_pos)
-        {
-          std::string index_str = fab_conn_name.substr(start_pos + 1, end_pos - start_pos - 1);
-          int index = std::stoi(index_str);
-          fab_conn_name.erase(start_pos);
-          if(fab_conn_name == wire_name)
-          {
-            RTLIL::SigSpec conn = wire;
-            std::vector<RTLIL::SigBit> conn_bit = conn.to_sigbit_vector();
-            fab_mod_inst->setPort(fab_conn, conn[index]);
-          }
-        }
-        else if (fab_conn_name == wire_name)
-        {
-          fab_mod_inst->setPort(fab_conn, wire);
-        }
-      }
-      if (pnr_interface_inst_conns.find(wire_name) !=
-          pnr_interface_inst_conns.end()) {
-        interface_pnr_inst->setPort(wire_name, wire);
-      }
-    }
-
-    pnr_wrapper->remove(pnr_fab_mod);
-
-    for (auto file : post_route_wrapper) {
+    for (auto file : wrapper_files) {
       std::string extension = get_extension(file);
       if (!extension.empty()) {
         if (extension == ".v") {
-          Pass::call(pnr_wrapper, "write_verilog -noexpr -norename " + file);
+          Pass::call(new_design, "write_verilog -noexpr -norename " + file);
           continue;
         }
         if (extension == ".eblif") {
-          Pass::call(pnr_wrapper, "write_blif -param " + file);
+          Pass::call(new_design, "write_blif -param " + file);
           continue;
+        }
+      }
+    }
+
+    for(auto cell : wrapper_mod->cells())
+    {
+      if(cell->type.str() == orig_mod_inst->type.str())
+      {
+        for(const auto& conn : cell->connections())
+        {
+          RTLIL::SigSpec actual = conn.second;
+          IdString portName = conn.first;
+          if (actual.is_chunk())
+          {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
+            RTLIL::Wire *wire = actual.as_chunk().wire;
+            if(chunk.wire == NULL) continue;
+            if(wire->width > 1)
+            {
+              cell->unsetPort(portName);
+              RTLIL::SigSpec conn = wire;
+              for(int i=0; i<wire->width; i++)
+              {
+                IdString nportName = std::string(portName.c_str()) + "[" + std::to_string(i) + "]";
+                cell->setPort(nportName, conn[i]);
+              }
+            }
+          }
         }
       }
     }
@@ -792,7 +746,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   void script() override {
     std::cout << "Run Script" << std::endl;
-    for (auto file : wrapper_files) {
+    for (auto file : post_route_wrapper) {
       std::string extension = get_extension(file);
       if (!extension.empty()) {
         if (extension == ".v") {
