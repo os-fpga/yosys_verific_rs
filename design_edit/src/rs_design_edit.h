@@ -64,8 +64,6 @@ std::unordered_set<std::string> inputs;
 std::unordered_set<std::string> outputs;
 std::unordered_set<std::string> orig_inst_conns;
 std::unordered_set<std::string> interface_inst_conns;
-std::unordered_set<std::string> fab_inst_conns;
-std::unordered_set<std::string> pnr_interface_inst_conns;
 std::unordered_set<std::string> keep_wires;
 std::unordered_set<std::string> constrained_pins;
 std::string io_config_json;
