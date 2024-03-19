@@ -145,11 +145,14 @@ struct PowerExtractRapidSilicon : public ScriptPass {
     dict<Cell*, std::set<RTLIL::SigSpec>*> cell2clkDomainsMerged;
     dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanout;
     dict<RTLIL::SigSpec, std::set<Cell*>*> sig2CellsInFanin;
+    dict<RTLIL::SigSpec, std::set<RTLIL::SigSpec>*> rhsSig2LhsSig;
+    dict<RTLIL::SigSpec, RTLIL::SigSpec> lhsSig2rhsSig;
+
     std::set<std::tuple<string, string, string, int>>IO_dict;
     dict <RTLIL::Cell* , std::set<RTLIL::SigSpec>*> LUTs_Cells;
     dict <RTLIL::Cell* , std::set<RTLIL::SigSpec>*> DSP_Cells;
     dict <RTLIL::Cell* , std::set<RTLIL::SigSpec>*> Carry_Cells;
-    
+
     bool preserve_ip;
     
     RTLIL::Design *_design;
@@ -228,6 +231,15 @@ struct PowerExtractRapidSilicon : public ScriptPass {
         log_pop();
     }
 
+    bool stringExistsInSetOfTuples(const std::set<std::tuple<int, std::string, std::string, std::string, std::string>>& s, const std::string& str) {
+        for (const auto& tuple : s) {
+            // Accessing elements of the tuple
+            if (std::get<1>(tuple) == str || std::get<2>(tuple) == str || std::get<3>(tuple) == str || std::get<4>(tuple) == str) {
+                return true; // Found the string in this tuple
+            }
+        }
+        return false; // String not found in any tuple
+    }
 
     std::string id(RTLIL::IdString internal_id)
     {
@@ -1776,10 +1788,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
     void extractAllClockDomains()
     {
-        dict<RTLIL::SigSpec, std::set<RTLIL::SigSpec>*> rhsSig2LhsSig;
-        dict<RTLIL::SigSpec, RTLIL::SigSpec> lhsSig2rhsSig;
-
-
+        
         auto startTime = std::chrono::high_resolution_clock::now();
 
         // we need to slit busses in ihe netlsi to make sure the forward and  bacward
@@ -1866,11 +1875,6 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
         auto unique_clk = std::unique(_clocks_.begin(), _clocks_.end());
         _clocks_.erase(unique_clk, _clocks_.end());
-        log("DFFs: %ld\n", DFFs.size());
-        for (auto ce_ff: ce_ffs){
-            float sum = std::accumulate(ce_ff.second.begin(), ce_ff.second.end(), 0.0);
-            log("\tEnabled %ld %s 0.125 Typical %f\n", ce_ff.second.size(), log_signal(ce_ff.first), sum/ce_ff.second.size());
-        }
     }
     
     string check_glitch_factor(RTLIL::Cell *lut){
@@ -1915,23 +1919,6 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                 }
             } 
             lut_clk[clk_lut].push_back(glitch_factor);          
-        }
-        log("LUTs: %ld\n",LUTs_Cells.size());
-        for (const auto& pair : lut_clk) {
-            const std::vector<std::string>& glitches = pair.second;
-            std::unordered_map<std::string, int> elementCounts;
-            for (const std::string& str : glitches) {
-                elementCounts[str]++;
-            }
-            // log("Clock: %s\nLut Glitch:\n",pair.first.c_str());
-            for (const auto& element : elementCounts) {
-                if (pair.first != "unknown")
-                    log("\tEnabled : %d : %s : 0.125 : %s\n",element.second, pair.first.c_str(),element.first.c_str());
-                else
-                    log("\tDisabled : %d : %s : 0.125 : %s\n",element.second, pair.first.c_str(),element.first.c_str());
-                
-            }
-            // std::cout << std::endl;
         }
     }
 
@@ -1980,11 +1967,6 @@ struct PowerExtractRapidSilicon : public ScriptPass {
 
         auto unique_clk = std::unique(_clocks_.begin(), _clocks_.end());
         _clocks_.erase(unique_clk, _clocks_.end());
-
-        log("DSP's : %ld\n",DSP_38.size());
-        for (auto &dsp : dsp_out){
-            log("\t%s : %s : %d %d : %d\n", log_id(std::get<0>(dsp.first)), (std::get<1>(dsp.first)).c_str(), std::get<2>(dsp.first), std::get<3>(dsp.first), dsp.second);
-        }
 
     }
 
@@ -2172,13 +2154,85 @@ struct PowerExtractRapidSilicon : public ScriptPass {
         auto unique_clk = std::unique(_clocks_.begin(), _clocks_.end());
         _clocks_.erase(unique_clk, _clocks_.end());
         
-        log("BRAM's : %ld\n",TDP36K.size());
-        for (auto &bram : tdp_out){
-            log("\t%s : %s %s : %d %d : %2f %2f : %2f %2f : %d\n", std::get<0>(bram.first).c_str(), std::get<1>(bram.first).c_str(), std::get<2>(bram.first).c_str(), std::get<3>(bram.first), std::get<4>(bram.first), std::get<5>(bram.first), std::get<6>(bram.first), std::get<7>(bram.first), std::get<8>(bram.first), bram.second);
+        // log("BRAM's : %ld\n",TDP36K.size());
+        // for (auto &bram : tdp_out){
+        //     log("\t%s : %s %s : %d %d : %2f %2f : %2f %2f : %d\n", std::get<0>(bram.first).c_str(), std::get<1>(bram.first).c_str(), std::get<2>(bram.first).c_str(), std::get<3>(bram.first), std::get<4>(bram.first), std::get<5>(bram.first), std::get<6>(bram.first), std::get<7>(bram.first), std::get<8>(bram.first), bram.second);
+        // }
+    }
+    
+    void find_buf_clk_port(){
+        dict<RTLIL::SigSpec, RTLIL::SigSpec> buf_ios;
+        dict<RTLIL::SigSpec, std::set<Cell*>*> ios_cell;
+        for (auto i_buf : IBUFs){
+            buf_ios[i_buf->getPort(RTLIL::escape_id("I"))] = i_buf->getPort(RTLIL::escape_id("O"));
+        }
+        for (auto o_buf : OBUFs){
+            buf_ios[o_buf->getPort(RTLIL::escape_id("O"))] = o_buf->getPort(RTLIL::escape_id("I"));
+        }
+        bool found_io = false;
+        std::set<Cell*>* _cells_;
+        
+        for (auto buf_io : buf_ios){
+            found_io = false;
+            for (auto &module : _design->selected_modules()) {
+                for (auto &cell : module->selected_cells()) {
+                    for (auto &conn : cell->connections()) {
+                        for(auto bit_conn : conn.second){
+                            if(bit_conn == buf_io.second){
+                                if(ios_cell.count(buf_io.first)==0){
+                                    _cells_ = new std::set<Cell*>;
+                                    ios_cell[buf_io.first] = _cells_;
+                                }
+                                _cells_ = ios_cell[buf_io.first];
+                                _cells_->insert(cell);
+                                found_io = true;
+                                break;
+                            }
+                        }
+                        if (found_io)break;
+                    }
+                }
+            }
+        }
+        RTLIL::Cell *cell;
+        for (auto cell_io : ios_cell){
+            for (std::set<RTLIL::Cell*>::iterator it = cell_io.second->begin(); it != cell_io.second->end(); it++) {
+                cell = *it;
+                find_io_clk(cell, cell_io.first);
+            }
+        }
+    }
+
+    void find_clk_port(){
+        std::set<Cell*>* Cells_Set;
+        RTLIL::Cell *cell;
+        for (auto &module : _design->selected_modules()) {
+            for (auto wire : module->wires()){
+                RTLIL::SigSpec sig_port = wire;
+                if(!(wire->port_input || wire->port_output)){
+                    continue;
+                }
+                if (sig2CellsInFanout[sig_port] != NULL){
+                    Cells_Set = sig2CellsInFanout[sig_port];
+                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
+                        cell = *it;
+                        find_io_clk(cell, sig_port);
+                    }
+                }
+                
+                if (sig2CellsInFanin[sig_port] != NULL){
+                    Cells_Set = sig2CellsInFanin[sig_port];
+                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
+                        cell = *it;     
+                        find_io_clk(cell, sig_port);
+                    }
+                }
+            }
         }
     }
     
     bool find_io_clk (RTLIL::Cell * cell, RTLIL::SigSpec sig_port){
+       
         std::set<RTLIL::SigSpec> *clocks;
         std::set<string> *cdc_clk;
         bool clk_matched = false;
@@ -2208,7 +2262,7 @@ struct PowerExtractRapidSilicon : public ScriptPass {
         return false;
     }
     
-    void check_ios(){
+    void clk_buffer(){
         if (IBUFs.size()!=0){
             for (auto i_buf : IBUFs){
                 for (auto clk : _clocks_){
@@ -2223,48 +2277,37 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                             if (clk_buf->getPort(RTLIL::escape_id("O")) != clk){
                                 continue;
                             }
+                            if(lhsSig2rhsSig.count(clk_buf->getPort(RTLIL::escape_id("I")))){
+                                RTLIL::SigSpec clk_left =  lhsSig2rhsSig[clk_buf->getPort(RTLIL::escape_id("I"))];
+                                if (clk_left == i_buf->getPort(RTLIL::escape_id("O"))){
+                                    clk_from_buffer[clk] = i_buf->getPort(RTLIL::escape_id("I"));
+                                    continue;
+                                }
+                            }
                             if (clk_buf->getPort(RTLIL::escape_id("I")) == i_buf->getPort(RTLIL::escape_id("O"))){
                                 clk_from_buffer[clk] = i_buf->getPort(RTLIL::escape_id("I"));
                             }
-                            
                         }
                     }
                 }
             }
         }
+    }
+    
+    void check_ios(){
+        find_buf_clk_port();
+        clk_buffer();
+        find_clk_port();
 
         std::set<std::tuple<int, string, string, string, string>> filteredVector;
-        bool clk_found = false;
-        std::set<Cell*>* Cells_Set;
-        RTLIL::Cell *cell;
-        for (auto &module : _design->selected_modules()) {
-            for (auto wire : module->wires()){
-                clk_found = false;
-                RTLIL::SigSpec sig_port = wire;
-                if(!(wire->port_input || wire->port_output)){
-                    continue;
-                }
-                if (sig2CellsInFanout[sig_port] != NULL){
-                    Cells_Set = sig2CellsInFanout[sig_port];
-                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
-                        cell = *it;
-                        find_io_clk(cell, sig_port);
-                    }
-                }
-                
-                if (sig2CellsInFanin[sig_port] != NULL){
-                    Cells_Set = sig2CellsInFanin[sig_port];
-                    for (std::set<RTLIL::Cell*>::iterator it = Cells_Set->begin(); it != Cells_Set->end(); it++) {
-                        cell = *it;      
-                        find_io_clk(cell, sig_port);
-                    }
-                }
-            }
-        }
-        
-        string io_type = "SDR";
+        bool clk_found = false;        
+        string io_type = "SDR";        
+        std::set<std::string> ioshandled;
         for (auto orig_io : IO_dict){
-            clk_found = false;
+            auto it = ioshandled.find(std::get<1>(orig_io));
+            if (it == ioshandled.end())
+                clk_found = false;
+            
             for (auto ind_clk : ios_clk){
                 RTLIL::SigSpec io_port = ind_clk.first;
                 std::set<string> *clks;
@@ -2272,43 +2315,94 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                     continue;
                 }
                 clks = ios_clk[io_port];
-                for (std::set<string>::iterator it = clks->begin(); it != clks->end(); it++){ 
-                    string clk = *it;
-                    if (!(clk.size()))
-                        continue;
+                
+                if (clk_from_buffer.size()>0 && !(clks->size())){
                     string ind_clk_first = log_signal(ind_clk.first);
                     std::get<0>(orig_io).erase(std::remove_if(std::get<0>(orig_io).begin(), std::get<0>(orig_io).end(), ::isspace), std::get<0>(orig_io).end());
                     // check if actual IO is part of io, clock table or not
                     if (ind_clk_first == std::get<0>(orig_io)){
                         clk_found = true;
                         // check if IO is a clock or SDR
-                        if ((std::get<1>(orig_io) == clk) || (log_signal(clk_from_buffer[clk]) == std::get<1>(orig_io)))
-                            io_type = "Clock";
-                        else
-                            io_type = "SDR";
-
-                        filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(),clk.c_str()));
+                        for (auto clkb : clk_from_buffer){
+                            if (io_type == "Clock")
+                                break;
+                            
+                            if ((log_signal(clkb.second) == std::get<1>(orig_io))){
+                                io_type = "Clock";
+                            }
+                            else
+                                io_type = "SDR";
+                        }
+                        auto it = ioshandled.find(std::get<1>(orig_io));
+                            if (it == ioshandled.end())
+                        filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(),ind_clk_first.c_str()));
+                        if(!ind_clk_first.empty())
+                            ioshandled.insert(std::get<1>(orig_io));
                         // Break the loop if first instance of an associated clock is found for IO in the cell.
                         break;
                         
                     }
                 }
+                else{
+                    for (std::set<string>::iterator it = clks->begin(); it != clks->end(); it++){ 
+                        string clk = *it;
+                        if (!(clk.size()))
+                            continue;
+                        string ind_clk_first = log_signal(ind_clk.first);
+                        std::get<0>(orig_io).erase(std::remove_if(std::get<0>(orig_io).begin(), std::get<0>(orig_io).end(), ::isspace), std::get<0>(orig_io).end());
+                        // check if actual IO is part of io, clock table or not
+                        if (ind_clk_first == std::get<0>(orig_io)){
+                            clk_found = true;
+                            // check if IO is a clock or SDR
+                            if ((std::get<1>(orig_io) == clk))
+                                io_type = "Clock";
+                            else
+                                io_type = "SDR";
+
+                            auto it = ioshandled.find(std::get<1>(orig_io));
+                            if (it == ioshandled.end())
+                                filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(),clk.c_str()));
+                            // Break the loop if first instance of an associated clock is found for IO in the cell.
+                            if(!clk.empty())
+                                ioshandled.insert(std::get<1>(orig_io));
+                            break;
+                            
+                        }
+                    }
+                }
                 if (clk_found) break;
+                
             }
-            if (clk_found == false){
+            auto it2 = ioshandled.find(std::get<1>(orig_io));
+            if (clk_found == false && it2 == ioshandled.end()){
                 filteredVector.insert(make_tuple(std::get<3>(orig_io), std::get<1>(orig_io).c_str(), std::get<2>(orig_io).c_str(), io_type.c_str(), "unknown"));
             }
         }
+        
+        std::unordered_map<std::string, int> Pcount;
+        for (const auto& tuple : filteredVector) {
+            Pcount[std::get<1>(tuple)]++;
+        }
+
+        // Remove tuples with "unknown" as the last element for fruits appearing more than once
+        for (const auto& tuple : filteredVector) {
+            const auto& prt = std::get<1>(tuple);
+            if (Pcount[prt] > 1 && std::get<4>(tuple) == "unknown") {
+                filteredVector.erase(tuple);
+                break;  // Break after deleting one tuple
+            }
+        }
+
         std::set<std::tuple<int, string, string, string, string>> uniqueTuples;
         for (const auto& tuple : filteredVector) {
             if (uniqueTuples.insert(tuple).second) {
                 ios_out.push_back(tuple);
             }
         }
-        log("IOs: %ld\n",ios_out.size());
-        for (auto io_rpt : ios_out){
-            log("\t%d %s %s %s  %s\n",std::get<0>(io_rpt), std::get<1>(io_rpt).c_str(), std::get<2>(io_rpt).c_str(), std::get<3>(io_rpt).c_str(), std::get<4>(io_rpt).c_str());
-        }
+        // log("IOs: %ld\n",ios_out.size());
+        // for (auto io_rpt : ios_out){
+        //     log("\t%d %s %s %s  %s\n",std::get<0>(io_rpt), std::get<1>(io_rpt).c_str(), std::get<2>(io_rpt).c_str(), std::get<3>(io_rpt).c_str(), std::get<4>(io_rpt).c_str());
+        // }
         
     }
 
@@ -2576,10 +2670,22 @@ struct PowerExtractRapidSilicon : public ScriptPass {
                 clk_type = "I/O";
                 enabled = "Enabled";
             }
-            std::vector<std::vector<std::string>> clock_data = {
-                {enabled, "",  clk.first, clk_type, std::to_string((1/clk.second)*1000) }
-            };
-            writeCSV("power.csv", clock_data);
+            if (clk_from_buffer.size()){
+                for (auto clkb : clk_from_buffer){
+                    if (log_signal(clkb.first) == clk.first){
+                        std::vector<std::vector<std::string>> clock_data = {
+                            {enabled, "",  log_signal(clkb.second), clk_type, std::to_string((1/clk.second)*1000) }
+                        };
+                        writeCSV("power.csv", clock_data);
+                    }
+                }
+            }
+            else{
+                std::vector<std::vector<std::string>> clock_data = {
+                    {enabled, "",  clk.first, clk_type, std::to_string((1/clk.second)*1000) }
+                };
+                writeCSV("power.csv", clock_data);
+            }
         }
 
         std::vector<std::vector<std::string>> fabric = {
@@ -2593,15 +2699,38 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             lut = {{"", "0", "", "", ""}};
             writeCSV("power.csv", lut);
         }
+
+        log("LUTs: %ld\n",LUTs_Cells.size());
         for (const auto& pair : lut_clk) {
             const std::vector<std::string>& glitches = pair.second;
             std::unordered_map<std::string, int> elementCounts;
             for (const std::string& str : glitches) {
                 elementCounts[str]++;
             }
-            for (const auto& element : elementCounts) { 
-                lut = {{"Enabled", std::to_string(element.second), "", pair.first, "0.125", element.first}};
-            writeCSV("power.csv", lut);
+            if (clk_from_buffer.size()){
+                for (const auto& element : elementCounts) { 
+                    for (auto clk : clk_from_buffer){
+                        if (log_signal(clk.first) == pair.first){
+                            if (pair.first != "unknown")
+                                log("\tEnabled : %d : %s : 0.125 : %s\n",element.second, log_signal(clk.second),element.first.c_str());
+                            else
+                                log("\tDisabled : %d : %s : 0.125 : %s\n",element.second, log_signal(clk.second),element.first.c_str());
+                            lut = {{"Enabled", std::to_string(element.second), "", log_signal(clk.second), "0.125", element.first}};
+                            writeCSV("power.csv", lut);
+                            break;
+                        }
+                    }
+                }
+            }
+            else{
+                for (const auto& element : elementCounts) {
+                    if (pair.first != "unknown")
+                        log("\tEnabled : %d : %s : 0.125 : %s\n",element.second, pair.first.c_str(),element.first.c_str());
+                    else
+                        log("\tDisabled : %d : %s : 0.125 : %s\n",element.second, pair.first.c_str(),element.first.c_str());
+                    lut = {{"Enabled", std::to_string(element.second), "", pair.first, "0.125", element.first}};
+                    writeCSV("power.csv", lut);
+                }
             }
         }
 
@@ -2610,10 +2739,27 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             dff_data = {{"", "", "0", "", "", ""}};
             writeCSV("power.csv", dff_data);
         }
-        for (auto ce_ff: ce_ffs){
-            float sum = std::accumulate(ce_ff.second.begin(), ce_ff.second.end(), 0.0);
-            dff_data = {{"Enabled", "", std::to_string(DFFs.size()), log_signal(ce_ff.first), "0.125", "Typical", std::to_string(sum/ce_ff.second.size())}};
-            writeCSV("power.csv", dff_data);
+        log("DFFs: %ld\n", DFFs.size());
+        
+        if (clk_from_buffer.size()){
+            for (auto ce_ff: ce_ffs){
+                float sum = std::accumulate(ce_ff.second.begin(), ce_ff.second.end(), 0.0);
+                for (auto clk : clk_from_buffer){
+                    if (clk.first == ce_ff.first){
+                        log("\tEnabled %ld %s 0.125 Typical %f\n", ce_ff.second.size(), log_signal(clk.second), sum/ce_ff.second.size());
+                        dff_data = {{"Enabled3", "", std::to_string(DFFs.size()), log_signal(clk.second), "0.125", "Typical", std::to_string(sum/ce_ff.second.size())}};
+                        writeCSV("power.csv", dff_data);
+                    }
+                }
+            }
+        }
+        else{
+            for (auto ce_ff: ce_ffs){
+                float sum = std::accumulate(ce_ff.second.begin(), ce_ff.second.end(), 0.0);
+                log("\tEnabled %ld %s 0.125 Typical %f\n", ce_ff.second.size(), log_signal(ce_ff.first), sum/ce_ff.second.size());
+                dff_data = {{"Enabled", "", std::to_string(DFFs.size()), log_signal(ce_ff.first), "0.125", "Typical", std::to_string(sum/ce_ff.second.size())}};
+                writeCSV("power.csv", dff_data);
+            }
         }
 
         std::vector<std::vector<std::string>> bram;
@@ -2621,33 +2767,76 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             {},
             {"BRAM"}
         };
+        log("BRAM's : %ld\n",TDP36K.size());
         writeCSV("power.csv", bram);
         std::vector<std::vector<std::string>> bram_data;
         if (tdp_out.empty()){
             bram_data = {{"", "0", "", "", "", "", "", "", "", "", "", ""}};
             writeCSV("power.csv", bram_data);
         }
-        for (auto &ram : tdp_out){
-            bram_data = {
-                {"Enabled", std::to_string(ram.second), std::get<0>(ram.first), std::get<1>(ram.first), std::get<2>(ram.first), \
-                std::to_string(std::get<3>(ram.first)), std::to_string(std::get<4>(ram.first)), std::to_string(std::get<5>(ram.first)), \
-                std::to_string(std::get<6>(ram.first)), std::to_string(std::get<7>(ram.first)), std::to_string(std::get<8>(ram.first)), "0.125", "0.125"}
-            };
-            writeCSV("power.csv", bram_data);
+        dict<string, string>clk_from_buffer_String;
+        if (clk_from_buffer.size()){
+            for (auto clk : clk_from_buffer){
+                clk_from_buffer_String[log_signal(clk.first)] = log_signal(clk.second);
+            }
+            for (auto &ram : tdp_out){
+                for (auto clk : clk_from_buffer_String){
+                    if (clk.first == std::get<1>(ram.first) || clk.first == std::get<2>(ram.first)){
+                        
+                        log("\t%s : %s %s : %d %d : %2f %2f : %2f %2f : %d\n", std::get<0>(ram.first).c_str(), clk_from_buffer_String[std::get<1>(ram.first)].c_str(), clk_from_buffer_String[std::get<2>(ram.first)].c_str(), std::get<3>(ram.first), std::get<4>(ram.first), std::get<5>(ram.first), std::get<6>(ram.first), std::get<7>(ram.first), std::get<8>(ram.first), ram.second);
+                        bram_data = {
+                            {"Enabled", std::to_string(ram.second), std::get<0>(ram.first), clk_from_buffer_String[std::get<1>(ram.first)], clk_from_buffer_String[std::get<1>(ram.first)], \
+                            std::to_string(std::get<3>(ram.first)), std::to_string(std::get<4>(ram.first)), std::to_string(std::get<5>(ram.first)), \
+                            std::to_string(std::get<6>(ram.first)), std::to_string(std::get<7>(ram.first)), std::to_string(std::get<8>(ram.first)), "0.125", "0.125"}
+                        };
+                        writeCSV("power.csv", bram_data);
+                    }
+                }
+            }
+        }
+        else{
+            for (auto &ram : tdp_out){
+                log("\t%s : %s %s : %d %d : %2f %2f : %2f %2f : %d\n", std::get<0>(ram.first).c_str(), std::get<1>(ram.first).c_str(), std::get<2>(ram.first).c_str(), std::get<3>(ram.first), std::get<4>(ram.first), std::get<5>(ram.first), std::get<6>(ram.first), std::get<7>(ram.first), std::get<8>(ram.first), ram.second);
+                bram_data = {
+                    {"Enabled", std::to_string(ram.second), std::get<0>(ram.first), std::get<1>(ram.first), std::get<2>(ram.first), \
+                    std::to_string(std::get<3>(ram.first)), std::to_string(std::get<4>(ram.first)), std::to_string(std::get<5>(ram.first)), \
+                    std::to_string(std::get<6>(ram.first)), std::to_string(std::get<7>(ram.first)), std::to_string(std::get<8>(ram.first)), "0.125", "0.125"}
+                };
+                writeCSV("power.csv", bram_data);
+            }
         }
         std::vector<std::vector<std::string>> dsp;
         dsp = {
             {},
             {"DSP"}
         };
+        log("DSP's : %ld\n",DSP_38.size());
+       
         writeCSV("power.csv", dsp);
         std::vector<std::vector<std::string>> dsp_data;
-        for (auto &dsp : dsp_out){
-            dsp_data = {
-                {"Enabeld", std::to_string(dsp.second), log_id(std::get<0>(dsp.first)), std::get<1>(dsp.first), std::to_string(std::get<2>(dsp.first)), \
-                std::to_string(std::get<3>(dsp.first)), "0.125"}
-            };
-            writeCSV("power.csv", dsp_data);
+        if (clk_from_buffer.size()){
+            for (auto &dsp : dsp_out){
+                for (auto clk : clk_from_buffer){
+                    if (log_signal(clk.first) == std::get<1>(dsp.first)){
+                        log("\t%s : %s : %d %d : %d\n", log_id(std::get<0>(dsp.first)), log_signal(clk.second), std::get<2>(dsp.first), std::get<3>(dsp.first), dsp.second);
+                        dsp_data = {
+                            {"Enabeld", std::to_string(dsp.second), log_id(std::get<0>(dsp.first)), log_signal(clk.second), std::to_string(std::get<2>(dsp.first)), \
+                            std::to_string(std::get<3>(dsp.first)), "0.125"}
+                        };
+                        writeCSV("power.csv", dsp_data);
+                    }
+                }
+            }
+        }
+        else{
+            for (auto &dsp : dsp_out){
+                log("\t%s : %s : %d %d : %d\n", log_id(std::get<0>(dsp.first)), (std::get<1>(dsp.first)).c_str(), std::get<2>(dsp.first), std::get<3>(dsp.first), dsp.second);
+                dsp_data = {
+                    {"Enabeld", std::to_string(dsp.second), log_id(std::get<0>(dsp.first)), std::get<1>(dsp.first), std::to_string(std::get<2>(dsp.first)), \
+                    std::to_string(std::get<3>(dsp.first)), "0.125"}
+                };
+                writeCSV("power.csv", dsp_data);
+            }
         }
         std::vector<std::vector<std::string>> _io_;
         _io_ = {
@@ -2655,14 +2844,32 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             {"I/O"}
         };
         writeCSV("power.csv", _io_);
+        log("IOs: %ld\n",ios_out.size());
+        // for (auto io_rpt : ios_out){
+        //     log("\t%d %s %s %s  %s\n",std::get<0>(io_rpt), std::get<1>(io_rpt).c_str(), std::get<2>(io_rpt).c_str(), std::get<3>(io_rpt).c_str(), std::get<4>(io_rpt).c_str());
+        // }
         std::vector<std::vector<std::string>> _io_data_;
         for (auto io_out : ios_out){
             if (std::get<4>(io_out) == "unknown") enabled = "Disabled";
             else enabled = "Enabled";
-            _io_data_ = {
-            {enabled, std::get<1>(io_out), std::to_string(std::get<0>(io_out)), std::get<2>(io_out), "LVCMOS 1.8V (HR)", "2 mA", "Slow", std::get<3>(io_out).c_str(), std::get<4>(io_out)}
-            };
-            writeCSV("power.csv", _io_data_);
+            if (clk_from_buffer.size()  && std::get<3>(io_out) != "Clock"){
+                for (auto clk : clk_from_buffer){
+                    if (log_signal(clk.first) == std::get<4>(io_out)){
+                        log("\t%d %s %s %s  %s\n",std::get<0>(io_out), std::get<1>(io_out).c_str(), std::get<2>(io_out).c_str(), std::get<3>(io_out).c_str(), log_signal(clk.second));
+                        _io_data_ = {
+                        {enabled, std::get<1>(io_out), std::to_string(std::get<0>(io_out)), std::get<2>(io_out), "LVCMOS 1.8V (HR)", "2 mA", "Slow", std::get<3>(io_out).c_str(), log_signal(clk.second)}
+                        };
+                        writeCSV("power.csv", _io_data_);
+                    }
+                }
+            }
+            else{
+                log("\t%d %s %s %s  %s\n",std::get<0>(io_out), std::get<1>(io_out).c_str(), std::get<2>(io_out).c_str(), std::get<3>(io_out).c_str(), std::get<4>(io_out).c_str());
+                _io_data_ = {
+                {enabled, std::get<1>(io_out), std::to_string(std::get<0>(io_out)), std::get<2>(io_out), "LVCMOS 1.8V (HR)", "2 mA", "Slow", std::get<3>(io_out).c_str(), std::get<4>(io_out)}
+                };
+                writeCSV("power.csv", _io_data_);
+            }
         }
 
     }
@@ -2778,12 +2985,12 @@ struct PowerExtractRapidSilicon : public ScriptPass {
             };
             writeCSV("power.csv", summary);
 
-            extractAllClockDomains();
+            extractAllClockDomains();         
             check_dff();
             check_BRAM();
             check_dsp38();
-            check_LUT();
-            check_ios();    
+            check_LUT(); 
+            check_ios(); 
             sdc_parsing(sdc_str);
             gen_csv_old();
             auto end = std::chrono::high_resolution_clock::now();
