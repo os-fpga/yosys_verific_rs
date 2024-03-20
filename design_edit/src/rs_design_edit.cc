@@ -281,10 +281,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  bool is_fab_conn(Module *mod, Wire* lhs_wire, Wire* rhs_wire, std::unordered_set<std::string> &prims)
+  bool is_fab_out(Module *mod, Wire* lhs_wire, Wire* rhs_wire, std::unordered_set<std::string> &prims)
   {
     bool is_fab_output = false;
-    bool is_fab_input = false;
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(prims.begin(), prims.end(), module_name) !=
@@ -295,11 +294,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
           if (actual.is_chunk()) {
             const RTLIL::SigChunk chunk = actual.as_chunk();
             if(chunk.wire == NULL) continue;
-            if(chunk.wire->name.str() == rhs_wire->name.str() &&
-              ((module_name.substr(0, 2) == "I_") || (module_name.substr(0, 4) == "CLK_")))
-            {
-              is_fab_input = true;
-            }
             if(chunk.wire->name.str() == lhs_wire->name.str() &&
               (module_name.substr(0, 2) == "O_"))
             {
@@ -309,7 +303,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-    return is_fab_input && is_fab_output;
+    return is_fab_output;
   }
 
   void update_prim_connections(Module* mod, std::unordered_set<std::string> &prims, std::unordered_set<Wire *> &del_intermediate_wires)
@@ -518,9 +512,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
         {
           if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
-            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output))
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
+            (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_conn(original_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            if(!is_fab_out(original_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
@@ -599,9 +594,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
         {
           if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
-            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output))
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
+            (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_conn(interface_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            if(!is_fab_out(interface_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
