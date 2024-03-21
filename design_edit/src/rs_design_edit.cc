@@ -233,6 +233,18 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void intersect(const std::unordered_set<std::string>& set1,
+    const std::unordered_set<std::string>& set2)
+  {
+    for (const auto& element : set1)
+    {
+      if (set2.find(element) != set2.end())
+      {
+        out_clks.insert(element);
+      }
+    }
+  }
+
   void intersection_copy_remove(std::unordered_set<std::string> &set1,
     std::unordered_set<std::string> &set2,
     std::unordered_set<std::string> &wires) {
@@ -477,6 +489,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     intersection_copy_remove(new_ins, new_outs, interface_wires);
+    intersect(interface_wires, keep_wires);
 
     for (auto wire : original_mod->wires()) {
       std::string wire_name = wire->name.str();
@@ -486,6 +499,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       if (new_outs.find(wire_name) != new_outs.end()) {
         wire->port_output = true;
+        continue;
+      }
+      if (out_clks.find(wire_name) != out_clks.end())
+      {
+        wire->port_input = true;
         continue;
       }
       if (interface_wires.find(wire_name) != interface_wires.end()) {
@@ -570,6 +588,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       if (new_outs.find(wire_name) != new_outs.end()) {
         wire->port_input = true;
+        continue;
+      }
+      if (out_clks.find(wire_name) != out_clks.end())
+      {
+        wire->port_output = true;
         continue;
       }
       if (interface_wires.find(wire_name) != interface_wires.end()) {
