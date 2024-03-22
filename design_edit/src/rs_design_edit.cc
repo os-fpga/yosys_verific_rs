@@ -692,8 +692,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     wrapper_mod->fixup_ports();
 
-    new_design->add(interface_mod);
     new_design->add(wrapper_mod);
+    new_design->add(interface_mod);
+    Pass::call(new_design, "flatten");
 
     for (auto file : wrapper_files) {
       std::string extension = get_extension(file);
