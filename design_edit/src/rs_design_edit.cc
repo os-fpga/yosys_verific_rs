@@ -77,10 +77,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
+  std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
+  std::unordered_set<Wire *> orig_intermediate_wires;
+  std::unordered_set<Wire *> interface_intermediate_wires;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
-  ;
   primitives_data io_prim;
 
   void clear_flags() override { wrapper_files = {}; }
@@ -157,7 +159,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     json instances_array = json::array();
     for(auto cell : mod->cells()) {
       json instance_object;
-			instance_object["module"] = remove_backslashes(cell->type.str());
+      instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
 
       for(auto conn : cell->connections()) {
@@ -167,21 +169,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
         json port_obj;
 
         if (actual.is_chunk())
-				{
+        {
           if (actual.as_chunk().wire != NULL)
-            connection = process_connection(actual.as_chunk());
+          connection = process_connection(actual.as_chunk());
         } else {
-					for (auto it = actual.chunks().rbegin(); 
-                    	it != actual.chunks().rend(); ++it)
-					{
-						RTLIL::Wire* wire = (*it).wire;
-						if(wire != NULL)
-						{
-							connection = process_connection(*it);
-              break;
-						}
-					}
-				}
+	for (auto it = actual.chunks().rbegin(); 
+          it != actual.chunks().rend(); ++it)
+	{
+	  RTLIL::Wire* wire = (*it).wire;
+	  if(wire != NULL)
+	  {
+	    connection = process_connection(*it);
+            break;
+	  }
+        }
+      }
         connection = remove_backslashes(connection);
         instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
 
@@ -232,8 +234,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   void intersection_copy_remove(std::unordered_set<std::string> &set1,
-                  std::unordered_set<std::string> &set2,
-                  std::unordered_set<std::string> &wires) {
+    std::unordered_set<std::string> &set2,
+    std::unordered_set<std::string> &wires) {
     for (auto it = set1.begin(); it != set1.end();) {
       if (set2.find(*it) != set2.end()) {
         wires.insert(*it);
@@ -268,6 +270,91 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void remove_extra_conns(Module* mod)
+  {
+    for (const auto& conn : connections_to_remove) {
+    mod->connections_.erase(std::remove_if(mod->connections_.begin(),
+      mod->connections_.end(),
+      [&](const std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>& p) {
+          return p == conn;
+      }), mod->connections_.end());
+    }
+  }
+
+  bool is_fab_out(Module *mod, Wire* lhs_wire, Wire* rhs_wire, std::unordered_set<std::string> &prims)
+  {
+    bool is_fab_output = false;
+    for (auto cell : mod->cells()) {
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(prims.begin(), prims.end(), module_name) !=
+          prims.end()) {
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
+          RTLIL::SigSpec actual = conn.second;
+          if (actual.is_chunk()) {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
+            if(chunk.wire == NULL) continue;
+            if(chunk.wire->name.str() == lhs_wire->name.str() &&
+              (module_name.substr(0, 2) == "O_"))
+            {
+              is_fab_output = true;
+            }
+          }
+        }
+      }
+    }
+    return is_fab_output;
+  }
+
+  void update_prim_connections(Module* mod, std::unordered_set<std::string> &prims, std::unordered_set<Wire *> &del_intermediate_wires)
+  {
+    for (auto cell : mod->cells()) {
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(prims.begin(), prims.end(), module_name) !=
+          prims.end()) {
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
+          RTLIL::SigSpec actual = conn.second;
+          if (actual.is_chunk()) {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
+            RTLIL::Wire *wire = actual.as_chunk().wire;
+            if(chunk.wire == NULL) continue;
+            for (const auto& connection : connections_to_remove)
+            {
+              const Yosys::RTLIL::SigSpec lhs = connection.first;
+              const Yosys::RTLIL::SigSpec rhs = connection.second;
+              const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+              const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+              if ((chunk.width == chunk.wire->width && chunk.offset == 0) &&
+                (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0) &&
+                (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
+              {
+                cell->unsetPort(portName);
+                cell->setPort(portName, rhs);
+                del_intermediate_wires.insert(wire);
+              } else if ((chunk.width == 1) &&
+                (lhs_chunk.wire->name.str() == chunk.wire->name.str()))
+              {
+                if (lhs_chunk.width == 1)
+                {
+                  cell->unsetPort(portName);
+                  cell->setPort(portName, rhs);
+                  del_intermediate_wires.insert(wire);
+                } else if (lhs_chunk.width == lhs_chunk.wire->width && lhs_chunk.offset == 0) {
+                  unsigned offset = chunk.offset + chunk.wire->start_offset ;
+                  auto conn_rhs = connection.second.to_sigbit_vector();
+                  cell->unsetPort(portName);
+                  cell->setPort(portName, conn_rhs.at(offset));
+                  del_intermediate_wires.insert(wire);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -295,22 +382,31 @@ struct DesignEditRapidSilicon : public ScriptPass {
         argidx = next_argidx - 1;
         continue;
       }
-			if (args[argidx] == "-tech" && argidx + 1 < args.size())
-			{
-				tech = args[++argidx];
+      if (args[argidx] == "-pr" && argidx + 1 < args.size()) {
+        size_t next_argidx = argidx + 1;
+        while (next_argidx < args.size() && !is_flag(args[next_argidx])) {
+          post_route_wrapper.push_back(args[next_argidx]);
+          ++next_argidx;
+        }
+        argidx = next_argidx - 1;
         continue;
-			}
-			if (args[argidx] == "-json" && argidx + 1 < args.size())
-			{
-				io_config_json = args[++argidx];
+      }
+      if (args[argidx] == "-tech" && argidx + 1 < args.size())
+      {
+        tech = args[++argidx];
         continue;
-			}
-			if (args[argidx] == "-sdc" && argidx + 1 < args.size())
-			{
-				sdc_file = args[++argidx];
+      }
+      if (args[argidx] == "-json" && argidx + 1 < args.size())
+      {
+        io_config_json = args[++argidx];
+        continue;
+      }
+      if (args[argidx] == "-sdc" && argidx + 1 < args.size())
+      {
+        sdc_file = args[++argidx];
         sdc_passed = true;
         continue;
-			}
+      }
       break;
     }
     primitives = io_prim.get_primitives(tech);
@@ -323,10 +419,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
-        remove_backslashes(_design->top_module()->name.str());
+      remove_backslashes(_design->top_module()->name.str());
     if (original_mod_name.find("fabric_") == std::string::npos) {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
+
     Module *interface_mod = _design->top_module()->clone();
     std::string interface_mod_name = "\\interface_" + original_mod_name;
     interface_mod->name = interface_mod_name;
@@ -379,8 +476,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    delete_cells(original_mod, remove_prims);
-
     intersection_copy_remove(new_ins, new_outs, interface_wires);
 
     for (auto wire : original_mod->wires()) {
@@ -408,6 +503,36 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     for (auto &conn : original_mod->connections()) {
+      RTLIL::SigSpec lhs = conn.first;
+      RTLIL::SigSpec rhs = conn.second;
+      if(lhs.is_chunk() && rhs.is_chunk())
+      {
+        const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+        const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+        if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
+        {
+          if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
+            (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
+          {
+            if(!is_fab_out(original_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            {
+              lhs_chunk.wire->port_input = false;
+              lhs_chunk.wire->port_output = false;
+              rhs_chunk.wire->port_input = false;
+              rhs_chunk.wire->port_output = false;
+              connections_to_remove.insert(conn);
+            }
+          }
+        }
+      }
+    }
+
+    remove_extra_conns(original_mod);
+    update_prim_connections(original_mod, primitives, orig_intermediate_wires);
+    delete_cells(original_mod, remove_prims);
+
+    for (auto &conn : original_mod->connections()) {
       std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
       std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
       for (size_t i = 0; i < conn_lhs.size(); i++) {
@@ -423,6 +548,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
+    connections_to_remove.clear();
 
     original_mod->fixup_ports();
 
@@ -458,15 +584,48 @@ struct DesignEditRapidSilicon : public ScriptPass {
       del_interface_wires.insert(wire);
     }
 
+    for (auto &conn : interface_mod->connections()) {
+      RTLIL::SigSpec lhs = conn.first;
+      RTLIL::SigSpec rhs = conn.second;
+      if(lhs.is_chunk() && rhs.is_chunk())
+      {
+        const RTLIL::SigChunk lhs_chunk = lhs.as_chunk();
+        const RTLIL::SigChunk rhs_chunk = rhs.as_chunk();
+        if((lhs_chunk.wire != nullptr) && (rhs_chunk.wire != nullptr))
+        {
+          if((lhs_chunk.wire->port_input || lhs_chunk.wire->port_output) &&
+            (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
+            (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
+          {
+            if(!is_fab_out(interface_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            {
+              lhs_chunk.wire->port_input = false;
+              lhs_chunk.wire->port_output = false;
+              rhs_chunk.wire->port_input = false;
+              rhs_chunk.wire->port_output = false;
+              connections_to_remove.insert(conn);
+            }
+          }
+        }
+      }
+    }
+
+    update_prim_connections(interface_mod, primitives, interface_intermediate_wires);
+
     interface_mod->connections_.clear();
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
+
+    
+    delete_wires(original_mod, orig_intermediate_wires);
+    original_mod->fixup_ports();
+    delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
       std::ifstream input_sdc(sdc_file);
       if (!input_sdc.is_open()) {
-        std::cerr << "Error opening input sd file: " << sdc_file << std::endl;
+        std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
       }
       processSdcFile(input_sdc);
       get_loc_map_by_io();
@@ -492,7 +651,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     // Add instances of the original and interface modules to the wrapper module
     Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
     Cell *interface_mod_inst =
-        wrapper_mod->addCell(NEW_ID, interface_mod->name);
+      wrapper_mod->addCell(NEW_ID, interface_mod->name);
     for (auto wire : original_mod->wires()) {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
@@ -513,8 +672,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
       if (orig_inst_conns.find(wire_name) == orig_inst_conns.end() &&
-          interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
-          interface_wires.find(wire_name) == interface_wires.end()) {
+        interface_inst_conns.find(wire_name) == interface_inst_conns.end() &&
+        interface_wires.find(wire_name) == interface_wires.end()) {
         del_wrapper_wires.insert(wire);
       } else {
         if (orig_inst_conns.find(wire_name) != orig_inst_conns.end()) {
@@ -533,15 +692,57 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     wrapper_mod->fixup_ports();
 
-    new_design->add(interface_mod->clone());
-    new_design->add(wrapper_mod->clone());
+    new_design->add(interface_mod);
+    new_design->add(wrapper_mod);
+
+    for (auto file : wrapper_files) {
+      std::string extension = get_extension(file);
+      if (!extension.empty()) {
+        if (extension == ".v") {
+          Pass::call(new_design, "write_verilog -noexpr -norename " + file);
+          continue;
+        }
+        if (extension == ".eblif") {
+          Pass::call(new_design, "write_blif -param " + file);
+          continue;
+        }
+      }
+    }
+
+    for(auto cell : wrapper_mod->cells())
+    {
+      if(cell->type.str() == orig_mod_inst->type.str())
+      {
+        for(const auto& conn : cell->connections())
+        {
+          RTLIL::SigSpec actual = conn.second;
+          IdString portName = conn.first;
+          if (actual.is_chunk())
+          {
+            const RTLIL::SigChunk chunk = actual.as_chunk();
+            RTLIL::Wire *wire = actual.as_chunk().wire;
+            if(chunk.wire == NULL) continue;
+            if(wire->width > 1)
+            {
+              cell->unsetPort(portName);
+              RTLIL::SigSpec conn = wire;
+              for(int i=0; i<wire->width; i++)
+              {
+                IdString nportName = std::string(portName.c_str()) + "[" + std::to_string(i) + "]";
+                cell->setPort(nportName, conn[i]);
+              }
+            }
+          }
+        }
+      }
+    }
 
     run_script(new_design);
   }
 
   void script() override {
     std::cout << "Run Script" << std::endl;
-    for (auto file : wrapper_files) {
+    for (auto file : post_route_wrapper) {
       std::string extension = get_extension(file);
       if (!extension.empty()) {
         if (extension == ".v") {
