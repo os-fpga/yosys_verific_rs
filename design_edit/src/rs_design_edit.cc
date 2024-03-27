@@ -692,8 +692,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     wrapper_mod->fixup_ports();
 
-    new_design->add(interface_mod);
     new_design->add(wrapper_mod);
+    new_design->add(interface_mod);
+    Pass::call(new_design, "flatten");
 
     for (auto file : wrapper_files) {
       std::string extension = get_extension(file);
@@ -726,10 +727,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
             {
               cell->unsetPort(portName);
               RTLIL::SigSpec conn = wire;
-              for(int i=0; i<wire->width; i++)
+              int width = wire->width;
+              for(int i=0; i<width; i++)
               {
                 IdString nportName = std::string(portName.c_str()) + "[" + std::to_string(i) + "]";
-                cell->setPort(nportName, conn[i]);
+                unsigned index = (wire->upto) ? (width - 1 - i) : i;
+                cell->setPort(nportName, conn[index]);
               }
             }
           }
