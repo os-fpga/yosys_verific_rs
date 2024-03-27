@@ -21,50 +21,6 @@ COMMON			= ../yosys-rs-plugin/common
 GENESIS			= ../yosys-rs-plugin/genesis
 GENESIS2		= ../yosys-rs-plugin/genesis2
 GENESIS3		= ../yosys-rs-plugin/genesis3
-VERILOG_MODULES	= $(COMMON)/cells_sim.v \
-				  $(COMMON)/simlib.v \
-				  $(GENESIS)/cells_sim.v \
-				  $(GENESIS)/dsp_sim.v \
-				  $(GENESIS)/ffs_map.v \
-				  $(GENESIS)/dsp_map.v \
-				  $(GENESIS)/dsp_final_map.v \
-				  $(GENESIS)/arith_map.v \
-				  $(GENESIS)/all_arith_map.v \
-				  $(GENESIS)/brams_map.v \
-				  $(GENESIS)/brams_map_new.v \
-				  $(GENESIS)/brams_final_map.v \
-				  $(GENESIS)/brams_final_map_new.v \
-				  $(GENESIS)/brams.txt \
-				  $(GENESIS)/brams_new.txt \
-				  $(GENESIS)/brams_async.txt \
-				  $(GENESIS)/TDP18K_FIFO.v \
-				  $(GENESIS)/sram1024x18.v \
-				  $(GENESIS)/ufifo_ctl.v \
-				  $(GENESIS)/cells_sim.vhd \
-				  $(GENESIS)/adder_carry.vhdl \
-				  $(GENESIS)/dffnsre.vhdl \
-				  $(GENESIS)/dffsre.vhdl \
-				  $(GENESIS)/latchsre.vhdl \
-				  $(GENESIS)/lut.vhdl \
-				  $(GENESIS)/shr.vhdl \
-				  $(GENESIS3)/cells_sim.vhd \
-				  $(GENESIS3)/ffs_map.v \
-				  $(GENESIS3)/dsp_map.v \
-				  $(GENESIS3)/dsp_final_map.v \
-				  $(GENESIS3)/arith_map.v \
-				  $(GENESIS3)/all_arith_map.v \
-				  $(GENESIS3)/brams_map.v \
-				  $(GENESIS3)/brams_map_new.v \
-				  $(GENESIS3)/brams_final_map.v \
-				  $(GENESIS3)/brams_final_map_new.v \
-				  $(GENESIS3)/brams.txt \
-				  $(GENESIS3)/brams_new.txt \
-				  $(GENESIS3)/brams_new_swap.txt \
-				  $(GENESIS3)/brams_async.txt \
-				  $(GENESIS3)/FPGA_PRIMITIVES_MODELS/blackbox_models/cell_sim_blackbox.v \
-				  $(GENESIS3)/llatches_sim.v \
-				  $(GENESIS3)/dsp38_map.v \
-				  $(GENESIS3)/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DSP38.v
 
 NAME = pow-extract
 SOURCES = src/rs_pow_extract.cc 
@@ -82,7 +38,7 @@ $(NAME).so: $(OBJS)
 install_plugin: $(NAME).so
 	install -D $< $(PLUGINS_DIR)/$<
 
-install_modules: $(VERILOG_MODULES)
+install_modules: 
 	$(foreach f,$^,install -D $(f) $(DATA_DIR)/rapidsilicon/$(f);)
 
 .PHONY: install
