@@ -320,8 +320,8 @@ bool PRIMITIVES_EXTRACTOR::get_ports(RTLIL::Module* module) {
         std::string port_fullname = wire->name.str();
         std::string port_realname = wire->name.str();
         if (wire->width > 1) {
-          port_fullname = stringf("%s [%d]", wire->name.c_str(), index);
-          port_realname = stringf("%s [%d]", wire->name.c_str(),
+          port_fullname = stringf("%s[%d]", wire->name.c_str(), index);
+          port_realname = stringf("%s[%d]", wire->name.c_str(),
                                   wire->start_offset + index);
         }
         m_status = trace_and_create_port(
@@ -392,7 +392,7 @@ std::map<std::string, std::string> PRIMITIVES_EXTRACTOR::is_connected_cell(
         std::find(db->outputs.begin(), db->outputs.end(), it.first.str()) !=
             db->outputs.end()) {
       std::ostringstream wire;
-      RTLIL_BACKEND::dump_sigspec(wire, it.second);
+      RTLIL_BACKEND::dump_sigspec(wire, it.second, true, true);
       connections[it.first.str()] = wire.str();
       total_connections++;
     }
@@ -504,8 +504,8 @@ bool PRIMITIVES_EXTRACTOR::trace_next_primitive(Yosys::RTLIL::Module* module,
     for (auto it : module->connections()) {
       std::ostringstream left;
       std::ostringstream right;
-      RTLIL_BACKEND::dump_sigspec(left, it.first);
-      RTLIL_BACKEND::dump_sigspec(right, it.second);
+      RTLIL_BACKEND::dump_sigspec(left, it.first, true, true);
+      RTLIL_BACKEND::dump_sigspec(right, it.second, true, true);
       if (right.str() == connection) {
         found = trace_next_primitive(module, module_name, parent, left.str());
         if (found) {
