@@ -233,6 +233,18 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void intersect(const std::unordered_set<std::string>& set1,
+    const std::unordered_set<std::string>& set2)
+  {
+    for (const auto& element : set1)
+    {
+      if (set2.find(element) != set2.end())
+      {
+        common_clks_resets.insert(element);
+      }
+    }
+  }
+
   void intersection_copy_remove(std::unordered_set<std::string> &set1,
     std::unordered_set<std::string> &set2,
     std::unordered_set<std::string> &wires) {
@@ -281,7 +293,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  bool is_fab_out(Module *mod, Wire* lhs_wire, Wire* rhs_wire, std::unordered_set<std::string> &prims)
+  bool is_fab_out(Module *mod, Wire* lhs_wire, std::unordered_set<std::string> &prims)
   {
     bool is_fab_output = false;
     for (auto cell : mod->cells()) {
@@ -477,6 +489,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     intersection_copy_remove(new_ins, new_outs, interface_wires);
+    intersect(interface_wires, keep_wires);
 
     for (auto wire : original_mod->wires()) {
       std::string wire_name = wire->name.str();
@@ -486,6 +499,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       if (new_outs.find(wire_name) != new_outs.end()) {
         wire->port_output = true;
+        continue;
+      }
+      if (common_clks_resets.find(wire_name) != common_clks_resets.end())
+      {
+        wire->port_input = true;
         continue;
       }
       if (interface_wires.find(wire_name) != interface_wires.end()) {
@@ -515,7 +533,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(original_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            if(!is_fab_out(original_mod, lhs_chunk.wire, primitives))
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
@@ -572,6 +590,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
         wire->port_input = true;
         continue;
       }
+      if (common_clks_resets.find(wire_name) != common_clks_resets.end())
+      {
+        wire->port_output = true;
+        continue;
+      }
       if (interface_wires.find(wire_name) != interface_wires.end()) {
         continue;
       }
@@ -597,7 +620,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(interface_mod, lhs_chunk.wire, rhs_chunk.wire, primitives))
+            if(!is_fab_out(interface_mod, lhs_chunk.wire, primitives))
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
