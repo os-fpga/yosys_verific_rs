@@ -436,12 +436,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
 
-    Module *interface_mod = _design->top_module()->clone();
-    std::string interface_mod_name = "\\interface_" + original_mod_name;
-    interface_mod->name = interface_mod_name;
-    Module *wrapper_mod = original_mod->clone();
-    std::string wrapper_mod_name = "\\" + original_mod_name;
-    wrapper_mod->name = wrapper_mod_name;
     for (auto cell : original_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
@@ -455,6 +449,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
             RTLIL::Wire *wire = actual.as_chunk().wire;
             if (wire != NULL) {
               process_wire(cell, portName, wire);
+            } else {
+              RTLIL::SigSpec const_sig = actual;
+              if (GetSize(const_sig) != 0)
+              {
+                RTLIL::SigSig new_conn;
+                RTLIL::Wire *new_wire = original_mod->addWire(NEW_ID, GetSize(const_sig));
+                cell->unsetPort(portName);
+                cell->setPort(portName, new_wire);
+                new_conn.first = new_wire;
+                new_conn.second = const_sig;
+                original_mod->connect(new_conn);
+                process_wire(cell, portName, new_wire);
+              }
             }
           } else {
             for (auto it = actual.chunks().rbegin();
@@ -487,6 +494,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+    Module *interface_mod = _design->top_module()->clone();
+    std::string interface_mod_name = "\\interface_" + original_mod_name;
+    interface_mod->name = interface_mod_name;
+    Module *wrapper_mod = original_mod->clone();
+    std::string wrapper_mod_name = "\\" + original_mod_name;
+    wrapper_mod->name = wrapper_mod_name;
 
     intersection_copy_remove(new_ins, new_outs, interface_wires);
     intersect(interface_wires, keep_wires);
