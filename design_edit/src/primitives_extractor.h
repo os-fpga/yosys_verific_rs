@@ -9,7 +9,30 @@
 
 enum IO_DIR { IN, OUT, INOUT, UNKNOWN };
 
+enum PORT_REQ { DONT_CARE, IS_PORT, NOT_PORT };
+
 struct MSG;
+/*
+  Structure that store simple information about port
+*/
+struct PORT_INFO {
+  PORT_INFO(IO_DIR d, const std::string& pn, const std::string& pf,
+            const std::string& pr, int oidx, uint32_t idx, uint32_t w)
+      : dir(d),
+        name(pn),
+        fullname(pf),
+        realname(pr),
+        offset_index(oidx),
+        index(idx),
+        width(w) {}
+  const IO_DIR dir = IO_DIR::UNKNOWN;
+  const std::string name = "";
+  const std::string fullname = "";
+  const std::string realname = "";
+  const int offset_index = 0;
+  const int index = 0;
+  const uint32_t width = 0;
+};
 struct PRIMITIVE_DB;
 struct PRIMITIVE;
 struct PORT_PRIMITIVE;
@@ -29,13 +52,22 @@ class PRIMITIVES_EXTRACTOR {
   void post_msg(uint32_t offset, const std::string& msg);
   void remove_msg();
   bool get_ports(Yosys::RTLIL::Module* module);
-  const PRIMITIVE_DB* is_supported_primitive(const std::string& name);
+  const PRIMITIVE_DB* is_supported_primitive(const std::string& name,
+                                             PORT_REQ req);
   void get_primitive_parameters(Yosys::RTLIL::Cell* cell, PRIMITIVE* primitive);
-  bool trace_and_create_port(Yosys::RTLIL::Module* module, IO_DIR dir,
-                             const std::string& port_name,
-                             const std::string& port_fullname,
-                             const std::string& port_realname, int oindex,
-                             int index, uint32_t width);
+  bool trace_and_create_port(Yosys::RTLIL::Module* module,
+                             std::vector<PORT_INFO>& port_infos);
+  bool get_connected_port(Yosys::RTLIL::Module* module,
+                          const std::string& cell_port_name,
+                          const std::string& connection, IO_DIR dir,
+                          std::vector<PORT_INFO>& port_infos,
+                          std::vector<size_t>& port_trackers,
+                          std::vector<PORT_INFO>& connected_ports,
+                          int loop=0);
+  bool get_port_cell_connections(
+      Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
+      std::map<std::string, std::string>& primary_connections,
+      std::map<std::string, std::string>& secondary_connections);
   std::map<std::string, std::string> is_connected_cell(
       Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
       const std::string& connection);
@@ -43,13 +75,19 @@ class PRIMITIVES_EXTRACTOR {
   bool trace_next_primitive(Yosys::RTLIL::Module* module,
                             const std::string& module_name, PRIMITIVE*& parent,
                             const std::string& connection);
+  void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
+                  std::vector<std::string>& signals);
+  void get_signals(const Yosys::RTLIL::SigSpec& sig,
+                   std::vector<std::string>& signals);
   void gen_instances();
-  void gen_instance(const std::string& linked_object,
+  void gen_instance(std::vector<std::string> linked_objects,
                     const PRIMITIVE* primitive);
   void gen_wire(const PORT_PRIMITIVE* port, const std::string& child);
   void write_instance(const INSTANCE* instance, std::ofstream& json);
   void write_instance_map(std::map<std::string, std::string> map,
-                          std::ofstream& json);
+                          std::ofstream& json, uint32_t space = 4);
+  void write_instance_array(std::vector<std::string> array, std::ofstream& json,
+                            uint32_t space = 4);
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);

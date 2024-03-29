@@ -652,6 +652,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       processSdcFile(input_sdc);
       get_loc_map_by_io();
+      for (auto &p : location_map_by_io) {
+        #if GEN_JSON_METHOD
+        extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
+        #endif
+      }
     }
 
     #if GEN_JSON_METHOD
