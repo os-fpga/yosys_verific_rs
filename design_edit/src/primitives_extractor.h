@@ -55,7 +55,7 @@ class PRIMITIVES_EXTRACTOR {
   const PRIMITIVE_DB* is_supported_primitive(const std::string& name,
                                              PORT_REQ req);
   void get_primitive_parameters(Yosys::RTLIL::Cell* cell, PRIMITIVE* primitive);
-  bool trace_and_create_port(Yosys::RTLIL::Module* module,
+  void trace_and_create_port(Yosys::RTLIL::Module* module,
                              std::vector<PORT_INFO>& port_infos);
   bool get_connected_port(Yosys::RTLIL::Module* module,
                           const std::string& cell_port_name,
@@ -63,7 +63,7 @@ class PRIMITIVES_EXTRACTOR {
                           std::vector<PORT_INFO>& port_infos,
                           std::vector<size_t>& port_trackers,
                           std::vector<PORT_INFO>& connected_ports,
-                          int loop=0);
+                          int loop = 0);
   bool get_port_cell_connections(
       Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
       std::map<std::string, std::string>& primary_connections,
@@ -71,7 +71,9 @@ class PRIMITIVES_EXTRACTOR {
   std::map<std::string, std::string> is_connected_cell(
       Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
       const std::string& connection);
-  void trace_clk_buf(Yosys::RTLIL::Module* module);
+  void trace_none_port_primitive(Yosys::RTLIL::Module* module,
+                                 const std::string& port_primitive_name,
+                                 const std::string& none_port_primitive_name);
   bool trace_next_primitive(Yosys::RTLIL::Module* module,
                             const std::string& module_name, PRIMITIVE*& parent,
                             const std::string& connection);
