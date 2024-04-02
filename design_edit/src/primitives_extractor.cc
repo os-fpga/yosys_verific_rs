@@ -327,7 +327,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Step 3: Trace CLK_BUF connection
   trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
 
-  // Step 5: Trace I_DDR connection
+  // Step 4: Trace I_DDR connection
   trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\I_DDR");
 
   // Step 5: Trace O_DDR connection
