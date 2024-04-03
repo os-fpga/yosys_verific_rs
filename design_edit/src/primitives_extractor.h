@@ -71,9 +71,9 @@ class PRIMITIVES_EXTRACTOR {
   std::map<std::string, std::string> is_connected_cell(
       Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
       const std::string& connection);
-  void trace_none_port_primitive(Yosys::RTLIL::Module* module,
-                                 const std::string& port_primitive_name,
-                                 const std::string& none_port_primitive_name);
+  void trace_next_primitive(Yosys::RTLIL::Module* module,
+                            const std::string& src_primitive_name,
+                            const std::string& dest_primitive_name);
   bool trace_next_primitive(Yosys::RTLIL::Module* module,
                             const std::string& module_name, PRIMITIVE*& parent,
                             const std::string& connection);
@@ -82,9 +82,14 @@ class PRIMITIVES_EXTRACTOR {
   void get_signals(const Yosys::RTLIL::SigSpec& sig,
                    std::vector<std::string>& signals);
   void gen_instances();
+  void gen_instances(const std::string& linked_object,
+                     std::vector<std::string> linked_objects,
+                     const PRIMITIVE* primitive);
   void gen_instance(std::vector<std::string> linked_objects,
                     const PRIMITIVE* primitive);
-  void gen_wire(const PORT_PRIMITIVE* port, const std::string& child);
+  void gen_wire(const std::string& linked_object,
+                std::vector<std::string> linked_objects, const PRIMITIVE* port,
+                const std::string& child);
   void write_instance(const INSTANCE* instance, std::ofstream& json);
   void write_instance_map(std::map<std::string, std::string> map,
                           std::ofstream& json, uint32_t space = 4);
@@ -98,6 +103,7 @@ class PRIMITIVES_EXTRACTOR {
   std::vector<MSG*> m_msgs;
   std::vector<PORT_PRIMITIVE*> m_ports;
   std::vector<PRIMITIVE*> m_child_primitives;
+  std::vector<PRIMITIVE*> m_all_primitives;
   std::vector<INSTANCE*> m_instances;
   bool m_status = true;
   const std::string m_technology = "";

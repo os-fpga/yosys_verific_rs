@@ -337,19 +337,21 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   }
 
   // Step 3: Trace CLK_BUF connection
-  trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
+  trace_next_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
 
   // Step 5: Trace I_DELAY connection
-  trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\I_DELAY");
+  trace_next_primitive(design->top_module(), "\\I_BUF", "\\I_DELAY");
 
   // Step 6: Trace I_DDR connection
-  trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\I_DDR");
+  trace_next_primitive(design->top_module(), "\\I_DELAY", "\\I_DDR");
+  trace_next_primitive(design->top_module(), "\\I_BUF", "\\I_DDR");
 
   // Step 7: Trace O_DELAY connection
-  trace_none_port_primitive(design->top_module(), "\\O_BUF", "\\O_DELAY");
+  trace_next_primitive(design->top_module(), "\\O_BUF", "\\O_DELAY");
 
   // Step 8: Trace O_DDR connection
-  trace_none_port_primitive(design->top_module(), "\\O_BUF", "\\O_DDR");
+  trace_next_primitive(design->top_module(), "\\O_DELAY", "\\O_DDR");
+  trace_next_primitive(design->top_module(), "\\O_BUF", "\\O_DDR");
 
   // Step 9: Support more primitive once more use cases are understood
 
@@ -594,6 +596,7 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
           }
           m_ports.push_back(new PORT_PRIMITIVE(db, cell->name.str(),
                                                connections, connected_ports));
+          m_all_primitives.push_back((PRIMITIVE*)(m_ports.back()));
           get_primitive_parameters(cell, (PRIMITIVE*)(m_ports.back()));
           for (auto& it : cell->parameters) {
             std::ostringstream parameter;
@@ -684,21 +687,21 @@ bool PRIMITIVES_EXTRACTOR::get_connected_port(
 /*
   Trace clock buffer
 */
-void PRIMITIVES_EXTRACTOR::trace_none_port_primitive(
-    Yosys::RTLIL::Module* module, const std::string& port_primitive_name,
-    const std::string& none_port_primitive_name) {
-  POST_MSG(1, "Trace %s", none_port_primitive_name.c_str());
-  for (PORT_PRIMITIVE*& port : m_ports) {
-    if (port->db->name == port_primitive_name) {
-      PRIMITIVE* primitive = (PRIMITIVE*)(port);
-      std::string trace_connection = port->get_outtrace_connection();
+void PRIMITIVES_EXTRACTOR::trace_next_primitive(
+    Yosys::RTLIL::Module* module, const std::string& src_primitive_name,
+    const std::string& dest_primitive_name) {
+  POST_MSG(1, "Trace %s --> %s", src_primitive_name.c_str(),
+           dest_primitive_name.c_str());
+  for (PRIMITIVE*& primitive : m_all_primitives) {
+    if (primitive->db->name == src_primitive_name) {
+      std::string trace_connection = primitive->get_outtrace_connection();
       size_t original_msg_size = m_msgs.size();
-      POST_MSG(2, "Try %s %s out connection: %s", port->db->name.c_str(),
-               port->name.c_str(), trace_connection.c_str());
-      bool found = trace_next_primitive(module, none_port_primitive_name,
-                                        primitive, trace_connection);
+      POST_MSG(2, "Try %s %s out connection: %s", primitive->db->name.c_str(),
+               primitive->name.c_str(), trace_connection.c_str());
+      bool found = trace_next_primitive(module, dest_primitive_name, primitive,
+                                        trace_connection);
       if (found) {
-        for (auto& a : port->child_connections[none_port_primitive_name]) {
+        for (auto& a : primitive->child_connections[dest_primitive_name]) {
           POST_MSG(4, "Additional Connection: %s", a.c_str());
         }
       } else {
@@ -732,6 +735,7 @@ bool PRIMITIVES_EXTRACTOR::trace_next_primitive(Yosys::RTLIL::Module* module,
         m_child_primitives.push_back(
             new PRIMITIVE(db, cell->name.str(), parent, connections, false));
         parent->child[module_name] = m_child_primitives.back();
+        m_all_primitives.push_back(m_child_primitives.back());
         get_primitive_parameters(cell, m_child_primitives.back());
         found = true;
         break;
@@ -815,20 +819,36 @@ void PRIMITIVES_EXTRACTOR::gen_instances() {
   log_assert(m_instances.size() == 0);
   for (PORT_PRIMITIVE*& port : m_ports) {
     PRIMITIVE* primitive = (PRIMITIVE*)(port);
-    std::vector<std::string> linked_objects = port->linked_objects();
-    if (primitive->db->dir == IO_DIR::IN) {
-      // Generate instance: parent first then child
+    gen_instances(port->linked_object(), port->linked_objects(), primitive);
+  }
+}
+
+/*
+  Generate instances (recursive for children) that being used in JSON
+*/
+void PRIMITIVES_EXTRACTOR::gen_instances(
+    const std::string& linked_object, std::vector<std::string> linked_objects,
+    const PRIMITIVE* primitive) {
+  log_assert(m_status);
+  if (primitive->db->dir == IO_DIR::IN) {
+    // Generate instance: parent first then child
+    if (primitive->is_port) {
       gen_instance(linked_objects, primitive);
-      for (auto child : port->child) {
-        gen_wire(port, child.first);
-        gen_instance(linked_objects, child.second);
-      }
-    } else {
-      // Reverse the sequence to generate instance, child first, then parent
-      for (auto child : port->child) {
-        gen_instance(linked_objects, child.second);
-        gen_wire(port, child.first);
-      }
+    }
+    for (auto child : primitive->child) {
+      gen_wire(linked_object, linked_objects, primitive, child.first);
+      gen_instance(linked_objects, child.second);
+      gen_instances(linked_object, linked_objects, child.second);
+    }
+
+  } else {
+    // Reverse the sequence to generate instance, child first, then parent
+    for (auto child : primitive->child) {
+      gen_instances(linked_object, linked_objects, child.second);
+      gen_instance(linked_objects, child.second);
+      gen_wire(linked_object, linked_objects, primitive, child.first);
+    }
+    if (primitive->is_port) {
       gen_instance(linked_objects, primitive);
     }
   }
@@ -848,18 +868,21 @@ void PRIMITIVES_EXTRACTOR::gen_instance(std::vector<std::string> linked_objects,
 /*
   Generate wire that connecting primitives
 */
-void PRIMITIVES_EXTRACTOR::gen_wire(const PORT_PRIMITIVE* port,
+void PRIMITIVES_EXTRACTOR::gen_wire(const std::string& linked_object,
+                                    std::vector<std::string> linked_objects,
+                                    const PRIMITIVE* primitive,
                                     const std::string& child) {
-  log_assert(port->child.find(child) != port->child.end());
-  if (port->child_connections.find(child) != port->child_connections.end()) {
+  log_assert(primitive->child.find(child) != primitive->child.end());
+  if (primitive->child_connections.find(child) !=
+      primitive->child_connections.end()) {
     uint32_t index = 0;
-    std::string trace_connection = port->get_outtrace_connection();
-    for (auto& wire : port->child_connections.at(child)) {
+    std::string trace_connection = primitive->get_outtrace_connection();
+    for (auto& wire : primitive->child_connections.at(child)) {
       std::string primitive_name =
           stringf("AUTO_%s_%s_#%d", get_original_name(child).c_str(),
-                  port->linked_object().c_str(), index);
-      m_instances.push_back(new INSTANCE("WIRE", primitive_name,
-                                         port->linked_objects(), nullptr));
+                  linked_object.c_str(), index);
+      m_instances.push_back(
+          new INSTANCE("WIRE", primitive_name, linked_objects, nullptr));
       m_instances.back()->add_connections(
           {{"I", trace_connection}, {"O", wire}});
       trace_connection = wire;
