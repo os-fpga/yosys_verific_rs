@@ -28,15 +28,19 @@
     c. CLK_BUF  [connected internally]
     d. I_DDR    [connected internally]
     e. O_DDR    [connected internally]
+    f. I_DELAY  [connected internally]
+    g. O_DELAY  [connected internally]
 
     and more when other use cases are understood
 
   Currently supported use cases are:
-    a. normal input port:  I_BUF
-    b. clock port:         I_BUF -> CLK_BUF
-    c. normal output port: O_BUF/O_BUFT
-    d. DDR input:          I_BUF -> I_DDR (become two bits)
-    e. DDR output:         (from two bits) O_DDR -> O_BUF
+    a. normal input port:   I_BUF
+    b. clock port:          I_BUF -> CLK_BUF
+    c. normal output port:  O_BUF/O_BUFT
+    d. DDR input:           I_BUF -> I_DDR (become two bits)
+    e. DDR output:          (from two bits) O_DDR -> O_BUF
+    f. I_DELAY:             I_BUF -> I_DELAY
+    g. O_DELAY:             O_DELAY -> O_BUF
 */
 /*
   Author: Chai, Chung Shien
@@ -147,10 +151,12 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
     {"genesis3",
      // These are Port Primitive, they are directly connected to the
      // PIN/PORT/PAD
+     // Inputs
      {{PRIMITIVE_DB("\\I_BUF", true, true, IO_DIR::IN, {"\\I"}, {"\\O"}, "\\I",
                     "\\O")},
       {PRIMITIVE_DB("\\I_BUF_DS", false, true, IO_DIR::IN, {"\\I_P", "\\I_N"},
                     {"\\O"}, "", "\\O")},
+      // Output
       {PRIMITIVE_DB("\\O_BUF", true, true, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
                     "\\I")},
       {PRIMITIVE_DB("\\O_BUFT", true, true, IO_DIR::OUT, {"\\I"}, {"\\O"},
@@ -160,10 +166,16 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {PRIMITIVE_DB("\\O_BUFT_DS", false, true, IO_DIR::OUT, {"\\I"},
                     {"\\O_P", "\\O_N"}, "", "\\I")},
       // These are none-Port Primitive
+      // In direction
       {PRIMITIVE_DB("\\CLK_BUF", true, false, IO_DIR::IN, {"\\I"}, {"\\O"},
+                    "\\I", "\\O")},
+      {PRIMITIVE_DB("\\I_DELAY", true, false, IO_DIR::IN, {"\\I"}, {"\\O"},
                     "\\I", "\\O")},
       {PRIMITIVE_DB("\\I_DDR", true, false, IO_DIR::IN, {"\\D"}, {}, "\\D",
                     "")},
+      // Out direction
+      {PRIMITIVE_DB("\\O_DELAY", true, false, IO_DIR::OUT, {"\\I"}, {"\\O"},
+                    "\\O", "\\I")},
       {PRIMITIVE_DB("\\O_DDR", true, false, IO_DIR::OUT, {}, {"\\Q"}, "\\Q",
                     "")}}}};
 
@@ -327,13 +339,19 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Step 3: Trace CLK_BUF connection
   trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
 
-  // Step 4: Trace I_DDR connection
+  // Step 5: Trace I_DELAY connection
+  trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\I_DELAY");
+
+  // Step 6: Trace I_DDR connection
   trace_none_port_primitive(design->top_module(), "\\I_BUF", "\\I_DDR");
 
-  // Step 5: Trace O_DDR connection
+  // Step 7: Trace O_DELAY connection
+  trace_none_port_primitive(design->top_module(), "\\O_BUF", "\\O_DELAY");
+
+  // Step 8: Trace O_DDR connection
   trace_none_port_primitive(design->top_module(), "\\O_BUF", "\\O_DDR");
 
-  // Step 6: Support more primitive once more use cases are understood
+  // Step 9: Support more primitive once more use cases are understood
 
   // Lastly generate instance(s)
   if (m_status) {
