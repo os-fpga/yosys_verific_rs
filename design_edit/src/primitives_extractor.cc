@@ -38,7 +38,9 @@
     b. clock port:          I_BUF -> CLK_BUF
     c. normal output port:  O_BUF/O_BUFT
     d. DDR input:           I_BUF -> I_DDR (become two bits)
+                            I_DELAY -> I_DDR (become two bits)
     e. DDR output:          (from two bits) O_DDR -> O_BUF
+                            (become two bits) O_DDR --> O_DELAY
     f. I_DELAY:             I_BUF -> I_DELAY
     g. O_DELAY:             O_DELAY -> O_BUF
 */
