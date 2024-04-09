@@ -350,6 +350,39 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void check_undriven_IO(Module *mod){
+        pool<SigBit> driven_bits_list;
+        RTLIL::Cell *remove_I_BUF = nullptr;
+        //Collected all driven bits
+        for (auto cell : mod->cells()){
+            if (cell->type == RTLIL::escape_id("I_BUF"))
+                continue;
+			for (auto port : cell->connections())
+				for (auto bit : port.second){
+					driven_bits_list.insert(bit);
+				}
+		}
+        //Remove undriven I_BUF having output port which is nt driving any cell
+        for (auto cell : mod->cells()){
+            if (cell->type != RTLIL::escape_id("I_BUF"))
+                continue;
+            for (auto port : cell->connections()){
+                IdString portName = port.first;
+                if(!driven_bits_list.count(port.second) && (portName == RTLIL::escape_id("O")) ){
+                    remove_I_BUF=cell;
+				}
+            }
+		}
+        SigBit data_sig_out= remove_I_BUF->getPort(ID::O).as_bit();
+
+        RTLIL::SigSig new_conn;
+        RTLIL::Wire *new_wire = mod->addWire(NEW_ID,GetSize(remove_I_BUF->getPort(ID::O)));
+        new_wire->port_output = true;
+        new_conn.first = new_wire;
+        new_conn.second = data_sig_out;
+        mod->connect(new_conn);
+    }
+
   void remove_extra_conns(Module* mod)
   {
     for (const auto& conn : connections_to_remove) {
@@ -635,7 +668,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(original_mod, lhs_chunk.wire, primitives))
+            if(!is_fab_out(original_mod, lhs_chunk.wire, primitives) && 
+              inputs.find(rhs_chunk.wire->name.str()) == inputs.end())
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
@@ -650,6 +684,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     remove_extra_conns(original_mod);
     update_prim_connections(original_mod, primitives, orig_intermediate_wires);
+    check_undriven_IO(original_mod);
     delete_cells(original_mod, remove_prims);
 
     for (auto &conn : original_mod->connections()) {
@@ -722,7 +757,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(interface_mod, lhs_chunk.wire, primitives))
+            if(!is_fab_out(interface_mod, lhs_chunk.wire, primitives) &&
+              inputs.find(rhs_chunk.wire->name.str()) == inputs.end())
             {
               lhs_chunk.wire->port_input = false;
               lhs_chunk.wire->port_output = false;
@@ -741,7 +777,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
-
     
     delete_wires(original_mod, orig_intermediate_wires);
     original_mod->fixup_ports();
