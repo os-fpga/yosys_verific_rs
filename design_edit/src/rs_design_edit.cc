@@ -351,37 +351,37 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   void check_undriven_IO(Module *mod){
-        pool<SigBit> driven_bits_list;
-        RTLIL::Cell *remove_I_BUF = nullptr;
-        //Collected all driven bits
-        for (auto cell : mod->cells()){
-            if (cell->type == RTLIL::escape_id("I_BUF"))
-                continue;
-			for (auto port : cell->connections())
-				for (auto bit : port.second){
-					driven_bits_list.insert(bit);
-				}
+    pool<SigBit> driven_bits_list;
+    //RTLIL::Cell *remove_I_BUF = nullptr;
+    //Collected all driven bits
+    for (auto cell : mod->cells()){
+        if (cell->type == RTLIL::escape_id("I_BUF"))
+          continue;
+		for (auto port : cell->connections())
+			for (auto bit : port.second){
+				driven_bits_list.insert(bit);
+			}
 		}
-        //Remove undriven I_BUF having output port which is nt driving any cell
-        for (auto cell : mod->cells()){
-            if (cell->type != RTLIL::escape_id("I_BUF"))
-                continue;
-            for (auto port : cell->connections()){
-                IdString portName = port.first;
-                if(!driven_bits_list.count(port.second) && (portName == RTLIL::escape_id("O")) ){
-                    remove_I_BUF=cell;
-				}
-            }
-		}
-        SigBit data_sig_out= remove_I_BUF->getPort(ID::O).as_bit();
-
-        RTLIL::SigSig new_conn;
-        RTLIL::Wire *new_wire = mod->addWire(NEW_ID,GetSize(remove_I_BUF->getPort(ID::O)));
-        new_wire->port_output = true;
-        new_conn.first = new_wire;
-        new_conn.second = data_sig_out;
-        mod->connect(new_conn);
-    }
+    //Remove undriven I_BUF having output port which is nt driving any cell
+    for (auto cell : mod->cells()){
+      if (cell->type != RTLIL::escape_id("I_BUF"))
+        continue;
+      for (auto port : cell->connections()){
+        IdString portName = port.first;
+        for (auto bit : port.second){
+			    if(!driven_bits_list.count(bit) && (portName == RTLIL::escape_id("O")) ){
+            SigBit data_sig_out= cell->getPort(ID::O).as_bit();
+            RTLIL::SigSig new_conn;
+            RTLIL::Wire *new_wire = mod->addWire(NEW_ID,GetSize(cell->getPort(ID::O)));
+            new_wire->port_output = true;
+            new_conn.first = new_wire;
+            new_conn.second = data_sig_out;
+            mod->connect(new_conn);
+          }
+			  }
+      }
+		} 
+  }
 
   void remove_extra_conns(Module* mod)
   {
@@ -685,6 +685,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     remove_extra_conns(original_mod);
     update_prim_connections(original_mod, primitives, orig_intermediate_wires);
     check_undriven_IO(original_mod);
+    log("After Adding wire\n");
     delete_cells(original_mod, remove_prims);
 
     for (auto &conn : original_mod->connections()) {
