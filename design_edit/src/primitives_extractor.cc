@@ -158,16 +158,16 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
      // Inputs
      {{PRIMITIVE_DB("\\I_BUF", true, true, IO_DIR::IN, {"\\I"}, {"\\O"}, "\\I",
                     "\\O")},
-      {PRIMITIVE_DB("\\I_BUF_DS", false, true, IO_DIR::IN, {"\\I_P", "\\I_N"},
+      {PRIMITIVE_DB("\\I_BUF_DS", true, true, IO_DIR::IN, {"\\I_P", "\\I_N"},
                     {"\\O"}, "", "\\O")},
       // Output
       {PRIMITIVE_DB("\\O_BUF", true, true, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
                     "\\I")},
       {PRIMITIVE_DB("\\O_BUFT", true, true, IO_DIR::OUT, {"\\I"}, {"\\O"},
                     "\\O", "\\I")},
-      {PRIMITIVE_DB("\\O_BUF_DS", false, true, IO_DIR::OUT, {"\\I"},
+      {PRIMITIVE_DB("\\O_BUF_DS", true, true, IO_DIR::OUT, {"\\I"},
                     {"\\O_P", "\\O_N"}, "", "\\I")},
-      {PRIMITIVE_DB("\\O_BUFT_DS", false, true, IO_DIR::OUT, {"\\I"},
+      {PRIMITIVE_DB("\\O_BUFT_DS", true, true, IO_DIR::OUT, {"\\I"},
                     {"\\O_P", "\\O_N"}, "", "\\I")},
       // These are none-Port Primitive
       // In direction
