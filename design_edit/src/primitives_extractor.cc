@@ -22,27 +22,37 @@
 /*
   This piece of code extract important information from RTLIL::Design class
   directly. These important information includes:
-    a. I_BUF    [connected to PORT]
-    b. O_BUF    [connected to PORT]
-    c. O_BUFT   [connected to PORT]
-    c. CLK_BUF  [connected internally]
-    d. I_DDR    [connected internally]
-    e. O_DDR    [connected internally]
-    f. I_DELAY  [connected internally]
-    g. O_DELAY  [connected internally]
+    a. I_BUF      [connected to PORT]
+    b. I_BUF_DS   [connected to PORT]
+    c. O_BUF      [connected to PORT]
+    d. O_BUFT     [connected to PORT]
+    e. O_BUF_DS   [connected to PORT]
+    f. O_BUFT_DS  [connected to PORT]
+    g. CLK_BUF    [connected internally]
+    h. I_DELAY    [connected internally]
+    i. O_DELAY    [connected internally]
+    j. I_DDR      [connected internally]
+    k. O_DDR      [connected internally]
+    j. PLL        [connected internally]
 
     and more when other use cases are understood
 
   Currently supported use cases are:
     a. normal input port:   I_BUF
+                            I_BUF_DS
     b. clock port:          I_BUF -> CLK_BUF
     c. normal output port:  O_BUF/O_BUFT
+                            O_BUF_DS
     d. DDR input:           I_BUF -> I_DDR (become two bits)
                             I_DELAY -> I_DDR (become two bits)
+                            I_BUF_DS -> I_DDR (become two bits)
     e. DDR output:          (from two bits) O_DDR -> O_BUF
-                            (become two bits) O_DDR --> O_DELAY
+                            (from two bits) O_DDR --> O_DELAY
+                            (from two bits) O_DDR --> O_BUF_DS
     f. I_DELAY:             I_BUF -> I_DELAY
+                            I_BUF_DS -> I_DELAY
     g. O_DELAY:             O_DELAY -> O_BUF
+                            O_DELAY -> O_BUF_DS
 */
 /*
   Author: Chai, Chung Shien
@@ -121,7 +131,8 @@ struct MSG {
 struct PRIMITIVE_DB {
   PRIMITIVE_DB(const std::string& n, bool r, bool i, IO_DIR d,
                std::vector<std::string> is, std::vector<std::string> os,
-               const std::string& it, const std::string& ot)
+               const std::string& it, const std::string& ot,
+               bool any_is = false, bool any_os = false)
       : name(n),
         ready(r),
         is_port(i),
@@ -129,7 +140,9 @@ struct PRIMITIVE_DB {
         inputs(is),
         outputs(os),
         intrace_connection(it),
-        outtrace_connection(ot) {
+        outtrace_connection(ot),
+        any_inputs(any_is),
+        any_outputs(any_os) {
     log_assert(dir == IO_DIR::IN || dir == IO_DIR::OUT);
   }
   std::vector<std::string> get_checking_ports() const {
@@ -146,6 +159,8 @@ struct PRIMITIVE_DB {
   const std::vector<std::string> outputs;
   const std::string intrace_connection = "";
   const std::string outtrace_connection = "";
+  const bool any_inputs = false;
+  const bool any_outputs = false;
 };
 
 /*
@@ -177,6 +192,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
                     "\\I", "\\O")},
       {PRIMITIVE_DB("\\I_DDR", true, false, IO_DIR::IN, {"\\D"}, {}, "\\D",
                     "")},
+      {PRIMITIVE_DB(
+          "\\PLL", true, false, IO_DIR::IN, {"\\CLK_IN"},
+          {"\\CLK_OUT", "\\CLK_OUT_DIV2", "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+          "\\CLK_IN", "", false, true)},
       // Out direction
       {PRIMITIVE_DB("\\O_DELAY", true, false, IO_DIR::OUT, {"\\I"}, {"\\O"},
                     "\\O", "\\I")},
@@ -343,21 +362,30 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Step 3: Trace CLK_BUF connection
   trace_next_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
 
-  // Step 5: Trace I_DELAY connection
-  trace_next_primitive(design->top_module(), "\\I_BUF", "\\I_DELAY");
+  // Step 4: Trace PLL connection
+  trace_next_primitive(design->top_module(), "\\I_BUF", "\\PLL");
 
-  // Step 6: Trace I_DDR connection
-  trace_next_primitive(design->top_module(), "\\I_DELAY", "\\I_DDR");
-  trace_next_primitive(design->top_module(), "\\I_BUF", "\\I_DDR");
+  // Step 5: Trace primitives that might go to I_DELAY and I_DDR
+  for (auto input :
+       std::vector<std::string>({"\\I_BUF", "\\I_BUF_DS", "\\I_DELAY"})) {
+    for (auto output : std::vector<std::string>({"\\I_DELAY", "\\I_DDR"})) {
+      if (input != output) {
+        trace_next_primitive(design->top_module(), input, output);
+      }
+    }
+  }
 
-  // Step 7: Trace O_DELAY connection
-  trace_next_primitive(design->top_module(), "\\O_BUF", "\\O_DELAY");
+  // Step 6: Trace primitives that might go to O_DELAY and O_DDR
+  for (auto input : std::vector<std::string>(
+           {"\\O_BUF", "\\O_BUFT", "\\O_BUF_DS", "\\O_BUFT_DS", "\\O_DELAY"})) {
+    for (auto output : std::vector<std::string>({"\\O_DELAY", "\\O_DDR"})) {
+      if (input != output) {
+        trace_next_primitive(design->top_module(), input, output);
+      }
+    }
+  }
 
-  // Step 8: Trace O_DDR connection
-  trace_next_primitive(design->top_module(), "\\O_DELAY", "\\O_DDR");
-  trace_next_primitive(design->top_module(), "\\O_BUF", "\\O_DDR");
-
-  // Step 9: Support more primitive once more use cases are understood
+  // Step 7: Support more primitive once more use cases are understood
 
   // Lastly generate instance(s)
   if (m_status) {
@@ -534,20 +562,32 @@ std::map<std::string, std::string> PRIMITIVES_EXTRACTOR::is_connected_cell(
   log_assert(cell->type.str() == db->name);
   size_t total_expected_connections = db->inputs.size() + db->outputs.size();
   log_assert(total_expected_connections);
-  size_t total_connections = 0;
+  size_t input_connections = 0;
+  size_t output_connections = 0;
   std::map<std::string, std::string> connections;
   for (auto& it : cell->connections()) {
-    if (std::find(db->inputs.begin(), db->inputs.end(), it.first.str()) !=
-            db->inputs.end() ||
-        std::find(db->outputs.begin(), db->outputs.end(), it.first.str()) !=
-            db->outputs.end()) {
+    bool is_input = false;
+    bool is_output = false;
+    if ((is_input = (std::find(db->inputs.begin(), db->inputs.end(),
+                               it.first.str()) != db->inputs.end())) ||
+        (is_output = (std::find(db->outputs.begin(), db->outputs.end(),
+                                it.first.str()) != db->outputs.end()))) {
+      log_assert(is_input ^ is_output);
       std::ostringstream wire;
       RTLIL_BACKEND::dump_sigspec(wire, it.second, true, true);
       connections[it.first.str()] = wire.str();
-      total_connections++;
+      if (is_input) {
+        input_connections++;
+      }
+      if (is_output) {
+        output_connections++;
+      }
     }
   }
-  if (total_expected_connections == total_connections) {
+  if ((db->inputs.size() == input_connections ||
+       (db->any_inputs && input_connections > 0)) &&
+      (db->outputs.size() == output_connections ||
+       (db->any_outputs && output_connections > 0))) {
     bool found = false;
     for (auto& key : db->get_checking_ports()) {
       if (connections.at(key) == connection) {
