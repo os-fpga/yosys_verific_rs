@@ -72,6 +72,7 @@ USING_YOSYS_NAMESPACE
   { post_msg(space, stringf(__VA_ARGS__)); }
 
 #define ENABLE_DEBUG_MSG (0)
+#define GENERATION_ALWAYS_INWARD_DIRECTION (1)
 
 /*
   Get rid the first character if it is '\\'
@@ -390,6 +391,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Lastly generate instance(s)
   if (m_status) {
     gen_instances();
+    determine_fabric_clock();
   }
 
 EXTRACT_END:
@@ -891,7 +893,9 @@ void PRIMITIVES_EXTRACTOR::gen_instances(
     const std::string& linked_object, std::vector<std::string> linked_objects,
     const PRIMITIVE* primitive) {
   log_assert(m_status);
+#if GENERATION_ALWAYS_INWARD_DIRECTION == 0
   if (primitive->db->dir == IO_DIR::IN) {
+#endif
     // Generate instance: parent first then child
     if (primitive->is_port) {
       gen_instance(linked_objects, primitive);
@@ -901,7 +905,7 @@ void PRIMITIVES_EXTRACTOR::gen_instances(
       gen_instance(linked_objects, child.second);
       gen_instances(linked_object, linked_objects, child.second);
     }
-
+#if GENERATION_ALWAYS_INWARD_DIRECTION == 0
   } else {
     // Reverse the sequence to generate instance, child first, then parent
     for (auto child : primitive->child) {
@@ -913,6 +917,7 @@ void PRIMITIVES_EXTRACTOR::gen_instances(
       gen_instance(linked_objects, primitive);
     }
   }
+#endif
 }
 
 /*
@@ -979,6 +984,44 @@ void PRIMITIVES_EXTRACTOR::assign_location(
 }
 
 /*
+  Auto determine the clock
+*/
+void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
+  log_assert(m_status);
+  log_assert(m_instances.size());
+  for (auto& instance : m_instances) {
+    if (instance->module == "CLK_BUF") {
+      std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
+      instance->parameters["ROUTE_TO_FABRIC_CLK"] = clock;
+      for (auto object : instance->linked_objects) {
+        log_assert(instance->properties.find(object) !=
+                   instance->properties.end());
+        instance->properties[object]["ROUTE_TO_FABRIC_CLK"] = clock;
+      }
+      fabric_clocks.push_back(instance->connections["O"]);
+    } else if (instance->module == "PLL") {
+      size_t i = 0;
+      for (auto out : std::vector<std::string>(
+               {"CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"})) {
+        if (instance->connections.find(out) != instance->connections.end()) {
+          std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
+          std::string name =
+              stringf("OUT%d_ROUTE_TO_FABRIC_CLK", (uint32_t)(i));
+          instance->parameters[name] = clock;
+          for (auto object : instance->linked_objects) {
+            log_assert(instance->properties.find(object) !=
+                       instance->properties.end());
+            instance->properties[object][name] = clock;
+          }
+          fabric_clocks.push_back(instance->connections[out]);
+        }
+        i++;
+      }
+    }
+  }
+}
+
+/*
   Write out message and instances information into JSON
 */
 void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
@@ -1038,7 +1081,7 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
     write_json_object(5, "location", instance->locations.at(object), json);
     json << ",\n";
     json << "          \"properties\" : {\n";
-    write_instance_map(instance->properties.at(object), json);
+    write_instance_map(instance->properties.at(object), json, 6);
     json << "          }\n";
     json << "        }";
     index++;
@@ -1128,4 +1171,22 @@ void PRIMITIVES_EXTRACTOR::write_json_data(const std::string& str,
     }
     json << c;
   }
+}
+
+/*
+  Write out fabric clock or mode SDC
+*/
+void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
+  std::ofstream sdc(file.c_str());
+  // Clock
+  uint32_t i = 0;
+  for (auto clk : fabric_clocks) {
+    sdc << stringf("set_clock_pin -device_clock {clk[%d]} -design_clock {%s}\n",
+                   i, clk.c_str())
+               .c_str();
+    i++;
+  }
+  // Mode
+  // To be supported
+  sdc.close();
 }
