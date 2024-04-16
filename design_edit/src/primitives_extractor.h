@@ -47,6 +47,7 @@ class PRIMITIVES_EXTRACTOR {
       const std::string& port, const std::string& location,
       std::unordered_map<std::string, std::string>& properties);
   void write_json(const std::string& file);
+  void write_sdc(const std::string& file);
 
  private:
   void post_msg(uint32_t offset, const std::string& msg);
@@ -90,6 +91,7 @@ class PRIMITIVES_EXTRACTOR {
   void gen_wire(const std::string& linked_object,
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
+  void determine_fabric_clock();
   void write_instance(const INSTANCE* instance, std::ofstream& json);
   void write_instance_map(std::map<std::string, std::string> map,
                           std::ofstream& json, uint32_t space = 4);
@@ -106,6 +108,7 @@ class PRIMITIVES_EXTRACTOR {
   std::vector<INSTANCE*> m_instances;
   bool m_status = true;
   const std::string m_technology = "";
+  std::vector<std::string> fabric_clocks;
 };
 
 #endif
