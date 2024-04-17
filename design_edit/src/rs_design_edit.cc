@@ -799,6 +799,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     #if GEN_JSON_METHOD
     extractor.write_json(io_config_json);
+    extractor.write_sdc("design_edit.sdc");
     #else
     dump_io_config_json(interface_mod, io_config_json);
     #endif
