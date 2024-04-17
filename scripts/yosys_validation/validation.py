@@ -72,19 +72,35 @@ def generate_task_conf(gen_file, final_output):
     write_job.close()
 
 def plugin(arch):
-    plugins =  YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_map.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/genesis3/RS_PRIMITIVES/LUT/LUT.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "
-
-    if flow == "rtl":
-        plugins = plugins + "/nfs_scratch/scratch/FV/awais/Synthesis/v1/yosys_verific_rs/scripts/yosys_validation/file_list.sv"
+    if (arch == "genesis3"):
+        plugins =   YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT1.v " + \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT2.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT3.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT4.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT5.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/LUT6.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DFFRE.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DFFNRE.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/CARRY.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DSP38.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/DSP19X2.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/TDP_RAM18KX2.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/FPGA_PRIMITIVES_MODELS/sim_models/verilog/TDP_RAM36K.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "
     else:
-        plugins = plugins + YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/brams_sim.v " + \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/TDP18K_FIFO.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/ufifo_ctl.v "+ \
-                YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/sram1024x18.v"
+        plugins =  YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/cells_sim.v " + \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_sim.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/dsp_map.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/sram1024x18.v"+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/simlib.v "
+
+        if flow == "rtl":
+            plugins = plugins + "/nfs_scratch/scratch/FV/awais/Synthesis/v1/yosys_verific_rs/scripts/yosys_validation/file_list.sv"
+        else:
+            plugins = plugins + YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/brams_sim.v " + \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/TDP18K_FIFO.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/ufifo_ctl.v "+ \
+                    YS_ROOT+"/../../yosys/install/share/yosys/rapidsilicon/" + arch + "/sram1024x18.v"
     return plugins
 
 def _create_new_project_dir_():
@@ -160,7 +176,7 @@ def parse_log_backward(log_file):
     return result_lines, synth_stat
 
 def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
-    stat = False ;next_command = False; dffsre = [];Data=[];DSP = [];BRAM=[];_Luts_=[];Carry_cells=[]
+    stat = False ;next_command = False; dffsre = [];Data=[];DSP38 = [];DSP19X2 = []; BRAM36K=[];BRAM18K=[];_Luts_=[];Carry_cells=[]
     RS_DSP_MULT = 0
     RS_DSP_MULT_REGIN = 0
     RS_DSP_MULT_REGOUT = 0
@@ -184,7 +200,7 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
         for line in result:
             # print(line)
             try:
-                if (re.search(r".*fa_.*bit.*", line)):
+                if (re.search(r".*CARRY.*", line)):
                     Carry_cells.append(int(line.split()[1]))
             except:
                 pass
@@ -192,9 +208,12 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 # print(line)
                 _Luts_.append(int(line.split()[1]))
             
-            if (re.search(r".*RS_DSP.*", line)):
+            if (re.search(r".*DSP38.*", line)):
                 # print(line)
-                DSP.append(int(line.split()[1]))
+                DSP38.append(int(line.split()[1]))
+            if (re.search(r".*DSP19X2.*", line)):
+                # print(line)
+                DSP19X2.append(int(line.split()[1]))
 
             if (re.search(r".*RS_DSP_MULT ", line)):
                 # print(line)
@@ -244,20 +263,26 @@ def yosys_parser(PROJECT_NAME,raptor_log,synth_status,test_):
                 # print(line)
                 RS_DSP_MULTADD_REGIN = int(line.split()[1])
 
-            if (re.search(r".*TDP.*K", line)):
+            if (re.search(r".*TDP_RAM18KX2", line)):
                 # print(line)
-                BRAM.append(int(line.split()[1]))
+                BRAM18K.append(int(line.split()[1]))
+                
+            if (re.search(r".*TDP_RAM36K", line)):
+                # print(line)
+                BRAM36K.append(int(line.split()[1]))
 
-            if (re.search(r".*dff.*", line)):
+            if (re.search(r".*DFF.*", line)):
                 # print(line)
                 dffsre.append(int(line.split()[1]))
             
 
             # print(line__)
 
-
-    Data = [PROJECT_NAME,str(sum(_Luts_)),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM)),str(sum(DSP)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), str(RS_DSP_MULTACC_REGOUT), str(RS_DSP_MULTACC_REGIN_REGOUT), str(RS_DSP_MULTADD), str(RS_DSP_MULTADD_REGIN), str(RS_DSP_MULTADD_REGOUT), str(RS_DSP_MULTADD_REGIN_REGOUT), synth_status]
-
+    if (args.tech == "genesis3"):
+        Data = [PROJECT_NAME,str(sum(_Luts_)),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM36K)),str(sum(BRAM18K)),str(sum(DSP38)),str(sum(DSP19X2)), synth_status]
+    else:
+        Data = [PROJECT_NAME,str(sum(_Luts_)),str(sum(dffsre)),str(sum(Carry_cells)),str(sum(BRAM36K)),str(sum(BRAM18K)),str(sum(DSP38)),str(sum(DSP19X2)),str(RS_DSP_MULT),str(RS_DSP_MULT_REGIN),str(RS_DSP_MULT_REGOUT), str(RS_DSP_MULT_REGIN_REGOUT), str(RS_DSP_MULTACC), str(RS_DSP_MULTACC_REGIN), str(RS_DSP_MULTACC_REGOUT), str(RS_DSP_MULTACC_REGIN_REGOUT), str(RS_DSP_MULTADD), str(RS_DSP_MULTADD_REGIN), str(RS_DSP_MULTADD_REGOUT), str(RS_DSP_MULTADD_REGIN_REGOUT), synth_status]
+    
     print(CGREEN+synth_status+" for "+test_+CEND)
     return Data
 
@@ -297,7 +322,7 @@ def compile(project_path,rtl_path,top_module,test_):
 def simulate(project_path,rtl_path,top_module,test_):
     vcs_cmd = "vcs -sverilog " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + YS_ROOT +"/../../" + rtl_path +"/tb.sv " + plugin(args.tech) + " -full64 -debug_all -kdb -lca -timescale=1ns/100ps +define+VCS_MODE=1"
     iverilog_cmd = "iverilog -g2012 -o " + top_module+"_ " + plugin(args.tech) + " " +YS_ROOT +"/../../" + rtl_path +"/"+top_module+".sv  " + project_path+"/"+top_module+"_post_synth.v " + YS_ROOT +"/../../" + rtl_path +"/tb.sv "
-    # print(iverilog_cmd)
+    #print(iverilog_cmd)
     if (glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")):
         mem_init = glob.glob(YS_ROOT +"/../../" + rtl_path+"/*.mem")
         for _file_ in mem_init:
@@ -320,14 +345,17 @@ def simulate(project_path,rtl_path,top_module,test_):
         print (str(e))
 
 def test():
-    header = ['Design Name', 'LUTs','DFF','Carry Logic','BRAM\'s','DSP\'s', 'RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN', 'RS_DSP_MULTACC_REGOUT', 'RS_DSP_MULTACC_REGIN_REGOUT', 'RS_DSP_MULTADD', 'RS_DSP_MULTADD_REGIN', 'RS_DSP_MULTADD_REGOUT', 'RS_DSP_MULTADD_REGIN_REGOUT', "Synthesis Status", "Simulation Status"]
+    if (args.tech == "genesis3"):
+        header = ['Design Name', 'LUTs','DFF','Carry Logic','TDP_RAM36K','TDP_RAM18KX2','DSP38', 'DSP19X2', "Synthesis Status", "Simulation Status"]
+    else:
+        header = ['Design Name', 'LUTs','DFF','Carry Logic','TDP_RAM36K','TDP_RAM18KX2','DSP38', 'DSP19X2','RS_DSP_MULT', 'RS_DSP_MULT_REGIN' ,'RS_DSP_MULT_REGOUT', 'RS_DSP_MULT_REGIN_REGOUT', 'RS_DSP_MULTACC', 'RS_DSP_MULTACC_REGIN', 'RS_DSP_MULTACC_REGOUT', 'RS_DSP_MULTACC_REGIN_REGOUT', 'RS_DSP_MULTADD', 'RS_DSP_MULTADD_REGIN', 'RS_DSP_MULTADD_REGOUT', 'RS_DSP_MULTADD_REGIN_REGOUT', "Synthesis Status", "Simulation Status"]
     CSV_File = open(path+"/results.csv",'w')
     writer = csv.writer(CSV_File)
     writer.writerow(header)
     CSV_File.close()
     Tool_settings_gen = "-de -goal delay -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
     Tool_settings_gen2 = "-de -goal delay -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
-    Tool_settings_gen3 = "-de -goal delay -no_iobuf -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528 -de_max_threads -1"
+    Tool_settings_gen3 = "-de -goal delay -no_iobuf -new_tdp36k -new_dsp19x2 -max_device_dsp 500 -max_device_bram 500 -max_device_carry_length 528 -max_dsp 500 -max_bram 500 -max_carry_length 528 -de_max_threads -1"
     Tool_seting = ""
     for test in JSON_data["benchmarks"]:
         Data = []
@@ -339,16 +367,18 @@ def test():
                 top_module = JSON_data["benchmarks"][test]["top_module"]
                 # os.makedirs(project_path)
                 shutil.copytree("../../"+rtl_path,project_path)
-                
+                sim_model_blackbox = args.tech
                 TASK_template = get_template(project_path+"/yosys.ys")
                 if (args.tech == "genesis"):
                     Tool_seting = Tool_settings_gen
                 if (args.tech == "genesis2"):
                     Tool_seting = Tool_settings_gen2
+                    device = args.tech
                 if (args.tech == "genesis3"):
                     Tool_seting = Tool_settings_gen3
+                    device = args.tech+"/FPGA_PRIMITIVES_MODELS/blackbox_models"
 
-                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",RTL_PATH = rtl_path, ARCHITECTURE=args.tech, TOP = top_module, SYNTH_SETTING = Tool_seting)
+                Gen_Template = TASK_template.substitute(ROOT_PATH = YS_ROOT+"/../../",RTL_PATH = rtl_path, ARCHITECTURE=device, TOP = top_module, SYNTH_SETTING = args.tech + " " + Tool_seting)
                 generate_task_conf(project_path+"/yosys.ys", Gen_Template)
                 os.chdir(project_path)
                 synth = compile(project_path,rtl_path,top_module,test)
