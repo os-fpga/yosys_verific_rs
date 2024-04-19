@@ -81,6 +81,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
   std::map<RTLIL::SigSpec, std::vector<RTLIL::Wire *>> io_prim_conn;
+  pool<SigBit> prim_out_bits;
+  pool<SigBit> unused_prim_outs;
+  pool<SigBit> in_bits;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -350,35 +353,26 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  void check_undriven_IO(Module *mod){
-    pool<SigBit> driven_bits_list;
-    //RTLIL::Cell *remove_I_BUF = nullptr;
-    //Collected all driven bits
+  void check_undriven_IO(Module *mod, std::unordered_set<std::string> &primitives){
     for (auto cell : mod->cells()){
-        if (cell->type == RTLIL::escape_id("I_BUF"))
-          continue;
-		for (auto port : cell->connections())
-			for (auto bit : port.second){
-				driven_bits_list.insert(bit);
-			}
-		}
-    //Remove undriven I_BUF having output port which is nt driving any cell
-    for (auto cell : mod->cells()){
-      if (cell->type != RTLIL::escape_id("I_BUF"))
-        continue;
-      for (auto port : cell->connections()){
-        IdString portName = port.first;
-        for (auto bit : port.second){
-			    if(!driven_bits_list.count(bit) && (portName == RTLIL::escape_id("O")) ){
-            SigBit data_sig_out= cell->getPort(ID::O).as_bit();
-            RTLIL::SigSig new_conn;
-            RTLIL::Wire *new_wire = mod->addWire(NEW_ID,GetSize(cell->getPort(ID::O)));
-            new_wire->port_output = true;
-            new_conn.first = new_wire;
-            new_conn.second = data_sig_out;
-            mod->connect(new_conn);
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(primitives.begin(), primitives.end(), module_name) !=
+          primitives.end()) {
+        bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+        if (is_out_prim) continue;
+        for (auto port : cell->connections()){
+          IdString portName = port.first;
+          for (SigBit bit : port.second){
+            if(unused_prim_outs.count(bit) && cell->output(portName)){
+              RTLIL::SigSig new_conn;
+              RTLIL::Wire *new_wire = mod->addWire(NEW_ID, 1);
+              new_wire->port_output = true;
+              new_conn.first = new_wire;
+              new_conn.second = bit;
+              mod->connect(new_conn);
+            }
           }
-			  }
+        }
       }
 		} 
   }
@@ -554,10 +548,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
               if (is_out_prim) {
                 if (cell->input(portName)) {
                   out_prim_ins.insert(wire->name.str());
+                  for (auto bit : conn.second){
+                    in_bits.insert(bit);
+                  }
                 }
               } else {
                 if (cell->output(portName)) {
                   in_prim_outs.insert(wire->name.str());
+                  for (auto bit : conn.second){
+                    prim_out_bits.insert(bit);
+                  }
+                } else if (cell->input(portName)) {
+                  for (auto bit : conn.second){
+                    in_bits.insert(bit);
+                  }
                 }
               }
             } else {
@@ -583,10 +587,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 if (is_out_prim) {
                   if (cell->input(portName)) {
                     out_prim_ins.insert(wire->name.str());
+                    for (auto bit : conn.second){
+                      in_bits.insert(bit);
+                    }
                   }
                 } else {
                   if (cell->output(portName)) {
                     in_prim_outs.insert(wire->name.str());
+                    for (auto bit : conn.second){
+                      prim_out_bits.insert(bit);
+                    }
+                  } else if (cell->input(portName)) {
+                    for (auto bit : conn.second){
+                      in_bits.insert(bit);
+                    }
                   }
                 }
               }
@@ -601,6 +615,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
             RTLIL::Wire *wire = actual.as_chunk().wire;
             if (wire != NULL) {
               keep_wires.insert(wire->name.str());
+              if (cell->input(portName)) {
+                for (auto bit : conn.second){
+                  in_bits.insert(bit);
+                }
+              }
             }
           } else {
             for (auto it = actual.chunks().rbegin();
@@ -608,10 +627,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
               RTLIL::Wire *wire = (*it).wire;
               if (wire != NULL) {
                 keep_wires.insert(wire->name.str());
+                if (cell->input(portName)) {
+                  for (auto bit : conn.second){
+                    in_bits.insert(bit);
+                  }
+                }
               }
             }
           }
         }
+      }
+    }
+
+    for (auto bit : prim_out_bits) {
+			if(!in_bits.count(bit)) {
+        unused_prim_outs.insert(bit);
       }
     }
 
@@ -684,8 +714,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     remove_extra_conns(original_mod);
     update_prim_connections(original_mod, primitives, orig_intermediate_wires);
-    check_undriven_IO(original_mod);
-    log("After Adding wire\n");
+    check_undriven_IO(original_mod, primitives);
     delete_cells(original_mod, remove_prims);
 
     for (auto &conn : original_mod->connections()) {
