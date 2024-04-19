@@ -988,7 +988,7 @@ void PRIMITIVES_EXTRACTOR::assign_location(
 */
 void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
   log_assert(m_status);
-  log_assert(m_instances.size());
+  //log_assert(m_instances.size());
   for (auto& instance : m_instances) {
     if (instance->module == "CLK_BUF") {
       std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
