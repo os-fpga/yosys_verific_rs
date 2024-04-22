@@ -16,7 +16,7 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)
 
 
-set(VERSION_PATCH 303)
+set(VERSION_PATCH 304)
 
 
 project(yosys_verific_rs)
