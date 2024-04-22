@@ -374,7 +374,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       }
-		} 
+    } 
   }
 
   void remove_extra_conns(Module* mod)
