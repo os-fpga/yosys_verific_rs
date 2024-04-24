@@ -78,6 +78,7 @@ class PRIMITIVES_EXTRACTOR {
   bool trace_next_primitive(Yosys::RTLIL::Module* module,
                             const std::string& module_name, PRIMITIVE*& parent,
                             const std::string& connection);
+  void trace_gearbox_clock();
   void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
                   std::vector<std::string>& signals);
   void get_signals(const Yosys::RTLIL::SigSpec& sig,
@@ -85,9 +86,11 @@ class PRIMITIVES_EXTRACTOR {
   void gen_instances();
   void gen_instances(const std::string& linked_object,
                      std::vector<std::string> linked_objects,
-                     const PRIMITIVE* primitive);
+                     const PRIMITIVE* primitive,
+                     const std::string& pre_primitive);
   void gen_instance(std::vector<std::string> linked_objects,
-                    const PRIMITIVE* primitive);
+                    const PRIMITIVE* primitive,
+                    const std::string& pre_primitive);
   void gen_wire(const std::string& linked_object,
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
