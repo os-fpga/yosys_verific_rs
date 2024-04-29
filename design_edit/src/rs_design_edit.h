@@ -40,10 +40,12 @@ struct primitives_data_default {
 struct location_data {
   std::string _name;
   std::string _associated_pin;
+  std::string _internal_pin;
   std::unordered_map<string, std::string> _properties;
   void print(std::ostream &output) {
     output << "name: " << _name << std::endl;
     output << "  pin: " << _associated_pin << std::endl;
+    output << "  internal pin: " << _internal_pin << std::endl;
     output << "  properties: " << std::endl;
     for (auto &pr : _properties) {
       output << "    " << pr.first << " : " << pr.second << std::endl;

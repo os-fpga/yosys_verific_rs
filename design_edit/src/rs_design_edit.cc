@@ -115,10 +115,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
           location_map[tokens[3]]._name = tokens[3];
         }
       } else if ("set_pin_loc" == tokens[0]) {
-        if (tokens.size() == 3) {
-          constrained_pins.insert(tokens[1]);
-          location_map[tokens[2]]._associated_pin = tokens[1];
-          location_map[tokens[2]]._name = tokens[2];
+        if (tokens.size() < 3 || tokens.size() > 4) continue;
+        constrained_pins.insert(tokens[1]);
+        location_map[tokens[2]]._associated_pin = tokens[1];
+        location_map[tokens[2]]._name = tokens[2];
+        if (tokens.size() == 4) {
+          location_map[tokens[2]]._internal_pin = tokens[3];
         }
       }
     }
