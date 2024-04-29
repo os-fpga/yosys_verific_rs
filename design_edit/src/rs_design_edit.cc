@@ -526,6 +526,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     extractor.extract(_design);
     #endif
 
+    Pass::call(_design, "splitnets");
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
       remove_backslashes(_design->top_module()->name.str());
