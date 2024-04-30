@@ -814,7 +814,6 @@ void PRIMITIVES_EXTRACTOR::trace_next_primitive(
       all_primitives.push_back(c);
     }
   }
-  g_enable_debug = src_primitive_name == "\\BOOT_CLOCK";
   for (PRIMITIVE*& primitive : all_primitives) {
     if (primitive->db->name == src_primitive_name) {
       std::string trace_connection = primitive->get_outtrace_connection();
