@@ -830,6 +830,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     #if GEN_JSON_METHOD
     extractor.write_json(io_config_json);
+    if (io_config_json.size() > 5 &&
+        io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
+      std::string simple_file =
+          io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
+      extractor.write_json(simple_file, true);
+    } else {
+      extractor.write_json("abc.simple.json", true);
+    }
     extractor.write_sdc("design_edit.sdc");
     #else
     dump_io_config_json(interface_mod, io_config_json);

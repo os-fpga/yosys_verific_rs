@@ -9,7 +9,7 @@
 
 enum IO_DIR { IN, OUT, INOUT, UNKNOWN };
 
-enum PORT_REQ { DONT_CARE, IS_PORT, NOT_PORT };
+enum PORT_REQ { DONT_CARE, IS_PORT, NOT_PORT, IS_STANDALONE };
 
 struct MSG;
 /*
@@ -46,7 +46,7 @@ class PRIMITIVES_EXTRACTOR {
   void assign_location(
       const std::string& port, const std::string& location,
       std::unordered_map<std::string, std::string>& properties);
-  void write_json(const std::string& file);
+  void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file);
 
  private:
@@ -95,7 +95,8 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock();
-  void write_instance(const INSTANCE* instance, std::ofstream& json);
+  void write_instance(const INSTANCE* instance, std::ofstream& json,
+                      bool simple);
   void write_instance_map(std::map<std::string, std::string> map,
                           std::ofstream& json, uint32_t space = 4);
   void write_instance_array(std::vector<std::string> array, std::ofstream& json,

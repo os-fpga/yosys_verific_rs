@@ -22,18 +22,19 @@
 /*
   This piece of code extract important information from RTLIL::Design class
   directly. These important information includes:
-    a. I_BUF      [connected to PORT]
-    b. I_BUF_DS   [connected to PORT]
-    c. O_BUF      [connected to PORT]
-    d. O_BUFT     [connected to PORT]
-    e. O_BUF_DS   [connected to PORT]
-    f. O_BUFT_DS  [connected to PORT]
-    g. CLK_BUF    [connected internally]
-    h. I_DELAY    [connected internally]
-    i. O_DELAY    [connected internally]
-    j. I_DDR      [connected internally]
-    k. O_DDR      [connected internally]
-    j. PLL        [connected internally]
+    a. I_BUF        [connected to PORT]
+    b. I_BUF_DS     [connected to PORT]
+    c. O_BUF        [connected to PORT]
+    d. O_BUFT       [connected to PORT]
+    e. O_BUF_DS     [connected to PORT]
+    f. O_BUFT_DS    [connected to PORT]
+    g. CLK_BUF      [connected internally]
+    h. I_DELAY      [connected internally]
+    i. O_DELAY      [connected internally]
+    j. I_DDR        [connected internally]
+    k. O_DDR        [connected internally]
+    j. PLL          [connected internally]
+    k. BOOT_CLOCK   [connected internally]
 
     and more when other use cases are understood
 
@@ -43,16 +44,19 @@
     b. clock port:          I_BUF -> CLK_BUF
     c. normal output port:  O_BUF/O_BUFT
                             O_BUF_DS
-    d. DDR input:           I_BUF -> I_DDR (become two bits)
+    d. I_DELAY:             I_BUF -> I_DELAY
+                            I_BUF_DS -> I_DELAY
+    e. O_DELAY:             O_DELAY -> O_BUF
+                            O_DELAY -> O_BUF_DS
+    f. DDR input:           I_BUF -> I_DDR (become two bits)
                             I_DELAY -> I_DDR (become two bits)
                             I_BUF_DS -> I_DDR (become two bits)
-    e. DDR output:          (from two bits) O_DDR -> O_BUF
+    g. DDR output:          (from two bits) O_DDR -> O_BUF
                             (from two bits) O_DDR --> O_DELAY
                             (from two bits) O_DDR --> O_BUF_DS
-    f. I_DELAY:             I_BUF -> I_DELAY
-                            I_BUF_DS -> I_DELAY
-    g. O_DELAY:             O_DELAY -> O_BUF
-                            O_DELAY -> O_BUF_DS
+    h. PLL                  I_BUF -> CLK_BUF -> PLL
+    h. OSC + PLL            BOOT_CLOCK -> PLL
+
 */
 /*
   Author: Chai, Chung Shien
@@ -73,6 +77,15 @@ USING_YOSYS_NAMESPACE
 
 #define ENABLE_DEBUG_MSG (0)
 #define GENERATION_ALWAYS_INWARD_DIRECTION (1)
+
+#define P_IS_NULL (0)
+#define P_IS_NOT_READY (1)
+#define P_IS_PORT (2)
+#define P_IS_STANDALONE (4)
+#define P_IS_CLOCK (8)
+
+std::map<std::string, uint32_t> g_standalone_tracker;
+bool g_enable_debug = false;
 
 /*
   Get rid the first character if it is '\\'
@@ -130,14 +143,12 @@ struct MSG {
   Structure that store database of supported primitive
 */
 struct PRIMITIVE_DB {
-  PRIMITIVE_DB(const std::string& n, bool r, bool i, bool ic, IO_DIR d,
+  PRIMITIVE_DB(const std::string& n, uint32_t f, IO_DIR d,
                std::vector<std::string> is, std::vector<std::string> os,
                const std::string& it, const std::string& ot, std::string c = "",
                bool any_is = false, bool any_os = false)
       : name(n),
-        ready(r),
-        is_port(i),
-        is_clock(ic),
+        feature(f),
         dir(d),
         inputs(is),
         outputs(os),
@@ -154,10 +165,14 @@ struct PRIMITIVE_DB {
     }
     return outputs;
   }
+  bool is_ready() const { return (feature & P_IS_NOT_READY) == P_IS_NULL; }
+  bool is_port() const { return (feature & P_IS_PORT) != P_IS_NULL; }
+  bool is_standalone() const {
+    return (feature & P_IS_STANDALONE) != P_IS_NULL;
+  }
+  bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
   const std::string name = "";
-  const bool ready = false;
-  const bool is_port = false;
-  const bool is_clock = false;
+  const uint32_t feature = 0;
   const IO_DIR dir = IO_DIR::UNKNOWN;
   const std::vector<std::string> inputs;
   const std::vector<std::string> outputs;
@@ -176,36 +191,38 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
      // These are Port Primitive, they are directly connected to the
      // PIN/PORT/PAD
      // Inputs
-     {{PRIMITIVE_DB("\\I_BUF", true, true, false, IO_DIR::IN, {"\\I"}, {"\\O"},
-                    "\\I", "\\O")},
-      {PRIMITIVE_DB("\\I_BUF_DS", true, true, false, IO_DIR::IN,
-                    {"\\I_P", "\\I_N"}, {"\\O"}, "", "\\O")},
+     {{PRIMITIVE_DB("\\I_BUF", P_IS_PORT, IO_DIR::IN, {"\\I"}, {"\\O"}, "\\I",
+                    "\\O")},
+      {PRIMITIVE_DB("\\I_BUF_DS", P_IS_PORT, IO_DIR::IN, {"\\I_P", "\\I_N"},
+                    {"\\O"}, "", "\\O")},
       // Output
-      {PRIMITIVE_DB("\\O_BUF", true, true, false, IO_DIR::OUT, {"\\I"}, {"\\O"},
-                    "\\O", "\\I")},
-      {PRIMITIVE_DB("\\O_BUFT", true, true, false, IO_DIR::OUT, {"\\I"},
-                    {"\\O"}, "\\O", "\\I")},
-      {PRIMITIVE_DB("\\O_BUF_DS", true, true, false, IO_DIR::OUT, {"\\I"},
+      {PRIMITIVE_DB("\\O_BUF", P_IS_PORT, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
+                    "\\I")},
+      {PRIMITIVE_DB("\\O_BUFT", P_IS_PORT, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
+                    "\\I")},
+      {PRIMITIVE_DB("\\O_BUF_DS", P_IS_PORT, IO_DIR::OUT, {"\\I"},
                     {"\\O_P", "\\O_N"}, "", "\\I")},
-      {PRIMITIVE_DB("\\O_BUFT_DS", true, true, false, IO_DIR::OUT, {"\\I"},
+      {PRIMITIVE_DB("\\O_BUFT_DS", P_IS_PORT, IO_DIR::OUT, {"\\I"},
                     {"\\O_P", "\\O_N"}, "", "\\I")},
       // These are none-Port Primitive
       // In direction
-      {PRIMITIVE_DB("\\CLK_BUF", true, false, true, IO_DIR::IN, {"\\I"},
-                    {"\\O"}, "\\I", "\\O")},
-      {PRIMITIVE_DB("\\I_DELAY", true, false, false, IO_DIR::IN,
-                    {"\\I", "\\CLK_IN"}, {"\\O"}, "\\I", "\\O", "\\CLK_IN")},
-      {PRIMITIVE_DB("\\I_DDR", true, false, false, IO_DIR::IN, {"\\D", "\\C"},
-                    {}, "\\D", "", "\\C")},
+      {PRIMITIVE_DB("\\CLK_BUF", P_IS_CLOCK, IO_DIR::IN, {"\\I"}, {"\\O"},
+                    "\\I", "\\O")},
+      {PRIMITIVE_DB("\\I_DELAY", P_IS_NULL, IO_DIR::IN, {"\\I", "\\CLK_IN"},
+                    {"\\O"}, "\\I", "\\O", "\\CLK_IN")},
+      {PRIMITIVE_DB("\\I_DDR", P_IS_NULL, IO_DIR::IN, {"\\D", "\\C"}, {}, "\\D",
+                    "", "\\C")},
+      {PRIMITIVE_DB("\\BOOT_CLOCK", P_IS_STANDALONE, IO_DIR::IN, {}, {"\\O"},
+                    "", "\\O")},
       {PRIMITIVE_DB(
-          "\\PLL", true, false, true, IO_DIR::IN, {"\\CLK_IN"},
+          "\\PLL", P_IS_CLOCK, IO_DIR::IN, {"\\CLK_IN"},
           {"\\CLK_OUT", "\\CLK_OUT_DIV2", "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
           "\\CLK_IN", "", "", false, true)},
       // Out direction
-      {PRIMITIVE_DB("\\O_DELAY", true, false, false, IO_DIR::OUT,
-                    {"\\I", "\\CLK_IN"}, {"\\O"}, "\\O", "\\I", "\\CLK_IN")},
-      {PRIMITIVE_DB("\\O_DDR", true, false, false, IO_DIR::OUT, {"\\C"},
-                    {"\\Q"}, "\\Q", "", "\\C")}}}};
+      {PRIMITIVE_DB("\\O_DELAY", P_IS_NULL, IO_DIR::OUT, {"\\I", "\\CLK_IN"},
+                    {"\\O"}, "\\O", "\\I", "\\CLK_IN")},
+      {PRIMITIVE_DB("\\O_DDR", P_IS_NULL, IO_DIR::OUT, {"\\C"}, {"\\Q"}, "\\Q",
+                    "", "\\C")}}}};
 
 /*
   Base structure of primitive
@@ -245,32 +262,53 @@ struct PORT_PRIMITIVE : PRIMITIVE {
                  std::vector<PORT_INFO> ps)
       : PRIMITIVE(db, p, nullptr, c, true),
         port_infos(ps),
-        dir(ps.size() ? ps[0].dir : IO_DIR::UNKNOWN) {
-    log_assert(port_infos.size());
+        dir(db->is_standalone() ? IO_DIR::IN
+                                : (ps.size() ? ps[0].dir : IO_DIR::UNKNOWN)) {
+    log_assert(port_infos.size() || db->is_standalone());
     log_assert(dir == IO_DIR::IN || dir == IO_DIR::OUT);
     for (auto port : port_infos) {
       log_assert(dir == port.dir);
     }
+    if (db->is_standalone()) {
+      standalone_name = get_original_name(db->name);
+      if (g_standalone_tracker.find(standalone_name) ==
+          g_standalone_tracker.end()) {
+        g_standalone_tracker[standalone_name] = 0;
+      }
+      standalone_name = stringf("%s#%d", standalone_name.c_str(),
+                                g_standalone_tracker[standalone_name]);
+      g_standalone_tracker[standalone_name] =
+          g_standalone_tracker[standalone_name] + 1;
+    }
   }
   std::string linked_object() const {
     std::string name = "";
-    for (auto port : port_infos) {
-      name = stringf("%s+%s", name.c_str(),
-                     get_original_name(port.realname).c_str());
+    if (db->is_standalone()) {
+      name = standalone_name;
+    } else {
+      for (auto port : port_infos) {
+        name = stringf("%s+%s", name.c_str(),
+                       get_original_name(port.realname).c_str());
+      }
+      name.erase(0, 1);
     }
-    name.erase(0, 1);
     return name;
   }
   std::vector<std::string> linked_objects() const {
     std::vector<std::string> names;
-    for (auto port : port_infos) {
-      names.push_back(get_original_name(port.realname));
+    if (db->is_standalone()) {
+      names.push_back(standalone_name);
+    } else {
+      for (auto port : port_infos) {
+        names.push_back(get_original_name(port.realname));
+      }
     }
     return names;
   }
   // Constructor
   const std::vector<PORT_INFO> port_infos;
   const IO_DIR dir = IO_DIR::UNKNOWN;
+  std::string standalone_name = "";
 };
 
 /*
@@ -363,23 +401,28 @@ PRIMITIVES_EXTRACTOR::~PRIMITIVES_EXTRACTOR() {
   Entry point of EXTRACTOR to extract
 */
 bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
-  // Step 1: Make sure the technology is supported (check in constructor)
+  // Step 1: Misc - dump rtlil for easier debug
+  run_pass("write_rtlil design.rtlil", design);
+  g_standalone_tracker.clear();
+
+  // Step 2: Make sure the technology is supported (check in constructor)
   if (!m_status) {
     goto EXTRACT_END;
   }
 
-  // Step 2: Get Input and Output ports
+  // Step 3: Get Input and Output ports
   if (!get_ports(design->top_module())) {
     goto EXTRACT_END;
   }
 
-  // Step 3: Trace CLK_BUF connection
+  // Step 4: Trace CLK_BUF connection
   trace_next_primitive(design->top_module(), "\\I_BUF", "\\CLK_BUF");
 
-  // Step 4: Trace PLL connection
+  // Step 5: Trace PLL connection
   trace_next_primitive(design->top_module(), "\\CLK_BUF", "\\PLL");
+  trace_next_primitive(design->top_module(), "\\BOOT_CLOCK", "\\PLL");
 
-  // Step 5: Trace primitives that might go to I_DELAY and I_DDR
+  // Step 6: Trace primitives that might go to I_DELAY and I_DDR
   for (auto input :
        std::vector<std::string>({"\\I_BUF", "\\I_BUF_DS", "\\I_DELAY"})) {
     for (auto output : std::vector<std::string>({"\\I_DELAY", "\\I_DDR"})) {
@@ -389,7 +432,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
     }
   }
 
-  // Step 6: Trace primitives that might go to O_DELAY and O_DDR
+  // Step 7: Trace primitives that might go to O_DELAY and O_DDR
   for (auto input : std::vector<std::string>(
            {"\\O_BUF", "\\O_BUFT", "\\O_BUF_DS", "\\O_BUFT_DS", "\\O_DELAY"})) {
     for (auto output : std::vector<std::string>({"\\O_DELAY", "\\O_DDR"})) {
@@ -399,9 +442,9 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
     }
   }
 
-  // Step 7: Support more primitive once more use cases are understood
+  // Step 8: Support more primitive once more use cases are understood
 
-  // Step 8: Trace primitive that the clock need to routed to gearbox
+  // Step 9: Trace primitive that the clock need to routed to gearbox
   trace_gearbox_clock();
 
   // Lastly generate instance(s)
@@ -487,10 +530,11 @@ const PRIMITIVE_DB* PRIMITIVES_EXTRACTOR::is_supported_primitive(
     const std::string& name, PORT_REQ req) {
   const PRIMITIVE_DB* db = nullptr;
   for (auto& d : SUPPORTED_PRIMITIVES.at(m_technology)) {
-    if (d.ready && d.name == name) {
+    if (d.is_ready() && d.name == name) {
       if (req == PORT_REQ::DONT_CARE ||
-          (req == PORT_REQ::IS_PORT && d.is_port) ||
-          (req == PORT_REQ::NOT_PORT && !d.is_port)) {
+          (req == PORT_REQ::IS_PORT && d.is_port()) ||
+          (req == PORT_REQ::NOT_PORT && !d.is_port()) ||
+          (req == PORT_REQ::IS_STANDALONE && d.is_standalone())) {
         db = &d;
       }
       break;
@@ -523,10 +567,10 @@ bool PRIMITIVES_EXTRACTOR::get_port_cell_connections(
     std::map<std::string, std::string>& secondary_connections) {
   log_assert(cell != nullptr);
   log_assert(db != nullptr);
-  log_assert(db->is_port);
+  log_assert(db->is_port() || db->is_standalone());
   log_assert(cell->type.str() == db->name);
   std::vector<std::string> checking_ports = db->get_checking_ports();
-  log_assert(checking_ports.size());
+  log_assert(checking_ports.size() != 0 || db->is_standalone());
   bool status = false;
   primary_connections.clear();
   secondary_connections.clear();
@@ -629,10 +673,13 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
     Yosys::RTLIL::Module* module, std::vector<PORT_INFO>& port_infos) {
   std::string primitive_name = "";
   std::vector<size_t> port_trackers;
-  POST_MSG(1, "Get Port Primitives");
+  POST_MSG(1, "Get Port/Standalone Primitives");
   for (auto cell : module->cells()) {
     const PRIMITIVE_DB* db =
         is_supported_primitive(cell->type.str(), PORT_REQ::IS_PORT);
+    if (db == nullptr) {
+      db = is_supported_primitive(cell->type.str(), PORT_REQ::IS_STANDALONE);
+    }
     if (db != nullptr) {
       bool status = true;
       std::map<std::string, std::string> primary_connections;
@@ -758,7 +805,7 @@ void PRIMITIVES_EXTRACTOR::trace_next_primitive(
       PRIMITIVES_EXTRACTOR::is_supported_primitive(src_primitive_name,
                                                    PORT_REQ::DONT_CARE);
   log_assert(src_primitive != nullptr);
-  if (src_primitive->is_port) {
+  if (src_primitive->is_port() || src_primitive->is_standalone()) {
     for (auto& p : m_ports) {
       all_primitives.push_back((PRIMITIVE*)(p));
     }
@@ -767,6 +814,7 @@ void PRIMITIVES_EXTRACTOR::trace_next_primitive(
       all_primitives.push_back(c);
     }
   }
+  g_enable_debug = src_primitive_name == "\\BOOT_CLOCK";
   for (PRIMITIVE*& primitive : all_primitives) {
     if (primitive->db->name == src_primitive_name) {
       std::string trace_connection = primitive->get_outtrace_connection();
@@ -871,7 +919,7 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
                clock.c_str());
       bool found = false;
       for (auto& clock_primitive : m_child_primitives) {
-        if (clock_primitive->db->is_clock) {
+        if (clock_primitive->db->is_clock()) {
           for (auto& clock_o : clock_primitive->db->outputs) {
             if (clock_primitive->connections.find(clock_o) !=
                     clock_primitive->connections.end() &&
@@ -1064,7 +1112,7 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
   log_assert(m_status);
   // log_assert(m_instances.size());
   for (auto& instance : m_instances) {
-    if (instance->module == "CLK_BUF") {
+    if (instance->module == "CLK_BUF" || instance->module == "BOOT_CLOCK") {
       std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
       instance->parameters["ROUTE_TO_FABRIC_CLK"] = clock;
       for (auto object : instance->linked_objects) {
@@ -1098,7 +1146,7 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
 /*
   Write out message and instances information into JSON
 */
-void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
+void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
   std::ofstream json(file.c_str());
   json << "{\n  \"messages\" : [\n";
   json << "    \"Start of IO Analysis\",\n";
@@ -1119,7 +1167,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
       if (index) {
         json << ",";
       }
-      write_instance(instance, json);
+      write_instance(instance, json, simple);
       json.flush();
       index++;
     }
@@ -1136,7 +1184,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
   Write out instance information into JSON
 */
 void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
-                                          std::ofstream& json) {
+                                          std::ofstream& json, bool simple) {
   json << "\n    {\n";
   write_json_object(3, "module", instance->module, json);
   json << ",\n";
@@ -1167,25 +1215,29 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << "      },\n";
   json << "      \"parameters\" : {\n";
   write_instance_map(instance->parameters, json);
-  json << "      },\n";
-  write_json_object(3, "pre_primitive", instance->pre_primitive, json);
-  json << ",\n";
-  json << "      \"post_primitives\" : [\n",
-      write_instance_array(instance->post_primitives, json, 4);
-  json << "      ],\n";
-  index = 0;
-  json << "      \"route_clock_to\" : {\n";
-  for (auto c : instance->gearbox_clocks) {
-    if (index) {
-      json << ",\n";
+  if (simple) {
+    json << "      }\n";
+  } else {
+    json << "      },\n";
+    write_json_object(3, "pre_primitive", instance->pre_primitive, json);
+    json << ",\n";
+    json << "      \"post_primitives\" : [\n",
+        write_instance_array(instance->post_primitives, json, 4);
+    json << "      ],\n";
+    index = 0;
+    json << "      \"route_clock_to\" : {\n";
+    for (auto c : instance->gearbox_clocks) {
+      if (index) {
+        json << ",\n";
+      }
+      json << "        \"" << c.first.c_str() << "\" : [\n";
+      write_instance_array(c.second, json, 5);
+      json << "        ]";
+      index++;
     }
-    json << "        \"" << c.first.c_str() << "\" : [\n";
-    write_instance_array(c.second, json, 5);
-    json << "        ]";
-    index++;
-  }
-  if (index) {
-    json << "\n";
+    if (index) {
+      json << "\n";
+    }
   }
   json << "      }\n";
   json << "    }";
