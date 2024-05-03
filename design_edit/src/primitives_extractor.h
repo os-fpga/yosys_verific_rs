@@ -75,8 +75,8 @@ class PRIMITIVES_EXTRACTOR {
   void trace_next_primitive(Yosys::RTLIL::Module* module,
                             const std::string& src_primitive_name,
                             const std::string& dest_primitive_name);
-  bool trace_next_primitive(Yosys::RTLIL::Module* module,
-                            const std::string& module_name, PRIMITIVE*& parent,
+  bool trace_next_primitive(Yosys::RTLIL::Module* module, PRIMITIVE*& parent,
+                            Yosys::RTLIL::Cell* cell,
                             const std::string& connection);
   void trace_gearbox_clock();
   void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
@@ -95,6 +95,11 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock();
+  void summarize();
+  void summarize(const PRIMITIVE* primitive,
+                 const std::vector<std::string> traces, bool is_in_dir);
+  void summarize(const PRIMITIVE* primitive, const std::string& object_name,
+                 const std::vector<std::string> traces, bool is_in_dir);
   void write_instance(const INSTANCE* instance, std::ofstream& json,
                       bool simple);
   void write_instance_map(std::map<std::string, std::string> map,
@@ -113,6 +118,9 @@ class PRIMITIVES_EXTRACTOR {
   bool m_status = true;
   const std::string m_technology = "";
   std::vector<std::string> fabric_clocks;
+  int max_in_object_name = 0;
+  int max_out_object_name = 0;
+  int max_trace = 0;
 };
 
 #endif

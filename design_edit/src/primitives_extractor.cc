@@ -79,10 +79,13 @@ USING_YOSYS_NAMESPACE
 #define GENERATION_ALWAYS_INWARD_DIRECTION (1)
 
 #define P_IS_NULL (0)
-#define P_IS_NOT_READY (1)
-#define P_IS_PORT (2)
-#define P_IS_STANDALONE (4)
-#define P_IS_CLOCK (8)
+#define P_IS_NOT_READY (1 << 0)
+#define P_IS_PORT (1 << 1)
+#define P_IS_STANDALONE (1 << 2)
+#define P_IS_CLOCK (1 << 3)
+#define P_IS_ANY_INPUTS (1 << 4)
+#define P_IS_ANY_OUTPUTS (1 << 5)
+#define P_IS_IN_DIR (1 << 6)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -143,24 +146,18 @@ struct MSG {
   Structure that store database of supported primitive
 */
 struct PRIMITIVE_DB {
-  PRIMITIVE_DB(const std::string& n, uint32_t f, IO_DIR d,
-               std::vector<std::string> is, std::vector<std::string> os,
-               const std::string& it, const std::string& ot, std::string c = "",
-               bool any_is = false, bool any_os = false)
+  PRIMITIVE_DB(const std::string& n, uint32_t f, std::vector<std::string> is,
+               std::vector<std::string> os, const std::string& it,
+               const std::string& ot, std::string c = "")
       : name(n),
         feature(f),
-        dir(d),
         inputs(is),
         outputs(os),
         intrace_connection(it),
         outtrace_connection(ot),
-        trace_clock(c),
-        any_inputs(any_is),
-        any_outputs(any_os) {
-    log_assert(dir == IO_DIR::IN || dir == IO_DIR::OUT);
-  }
+        trace_clock(c) {}
   std::vector<std::string> get_checking_ports() const {
-    if (dir == IO_DIR::IN) {
+    if (is_in_dir()) {
       return inputs;
     }
     return outputs;
@@ -171,58 +168,123 @@ struct PRIMITIVE_DB {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
+  bool is_any_inputs() const {
+    return (feature & P_IS_ANY_INPUTS) != P_IS_NULL;
+  }
+  bool is_any_outputs() const {
+    return (feature & P_IS_ANY_OUTPUTS) != P_IS_NULL;
+  }
+  bool is_in_dir() const { return (feature & P_IS_IN_DIR) != P_IS_NULL; }
+  bool is_out_dir() const { return (feature & P_IS_IN_DIR) == P_IS_NULL; }
   const std::string name = "";
   const uint32_t feature = 0;
-  const IO_DIR dir = IO_DIR::UNKNOWN;
   const std::vector<std::string> inputs;
   const std::vector<std::string> outputs;
   const std::string intrace_connection = "";
   const std::string outtrace_connection = "";
   const std::string trace_clock = "";
-  const bool any_inputs = false;
-  const bool any_outputs = false;
 };
 
 /*
   Supported primitives
 */
+// clang-format off
 const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
-    {"genesis3",
-     // These are Port Primitive, they are directly connected to the
-     // PIN/PORT/PAD
-     // Inputs
-     {{PRIMITIVE_DB("\\I_BUF", P_IS_PORT, IO_DIR::IN, {"\\I"}, {"\\O"}, "\\I",
-                    "\\O")},
-      {PRIMITIVE_DB("\\I_BUF_DS", P_IS_PORT, IO_DIR::IN, {"\\I_P", "\\I_N"},
-                    {"\\O"}, "", "\\O")},
+  {"genesis3",
+    // These are Port Primitive, they are directly connected to the
+    // PIN/PORT/PAD
+    // Inputs
+    {
+      {PRIMITIVE_DB("\\I_BUF", P_IS_PORT | P_IS_IN_DIR,
+                    {"\\I"},                              // inputs
+                    {"\\O"},                              // outputs
+                    "\\I",                                // intrace_connection
+                    "\\O")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\I_BUF_DS", P_IS_PORT | P_IS_IN_DIR,
+                    {"\\I_P", "\\I_N"},                   // inputs
+                    {"\\O"},                              // outputs
+                    "",                                   // intrace_connection
+                    "\\O")},                              // outtrace_connection
       // Output
-      {PRIMITIVE_DB("\\O_BUF", P_IS_PORT, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
-                    "\\I")},
-      {PRIMITIVE_DB("\\O_BUFT", P_IS_PORT, IO_DIR::OUT, {"\\I"}, {"\\O"}, "\\O",
-                    "\\I")},
-      {PRIMITIVE_DB("\\O_BUF_DS", P_IS_PORT, IO_DIR::OUT, {"\\I"},
-                    {"\\O_P", "\\O_N"}, "", "\\I")},
-      {PRIMITIVE_DB("\\O_BUFT_DS", P_IS_PORT, IO_DIR::OUT, {"\\I"},
-                    {"\\O_P", "\\O_N"}, "", "\\I")},
+      {PRIMITIVE_DB("\\O_BUF", P_IS_PORT,
+                    {"\\I"},                              // inputs
+                    {"\\O"},                              // outputs
+                    "\\O",                                // intrace_connection
+                    "\\I")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\O_BUFT", P_IS_PORT,
+                    {"\\I"},                              // inputs
+                    {"\\O"},                              // outputs
+                    "\\O",                                // intrace_connection
+                    "\\I")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\O_BUF_DS", P_IS_PORT, 
+                    {"\\I"},                              // inputs
+                    {"\\O_P", "\\O_N"},                   // outputs
+                    "",                                   // intrace_connection
+                    "\\I")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\O_BUFT_DS", P_IS_PORT, 
+                    {"\\I"},                              // inputs
+                    {"\\O_P", "\\O_N"},                   // outputs
+                    "",                                   // intrace_connection
+                    "\\I")},                              // outtrace_connection
       // These are none-Port Primitive
       // In direction
-      {PRIMITIVE_DB("\\CLK_BUF", P_IS_CLOCK, IO_DIR::IN, {"\\I"}, {"\\O"},
-                    "\\I", "\\O")},
-      {PRIMITIVE_DB("\\I_DELAY", P_IS_NULL, IO_DIR::IN, {"\\I", "\\CLK_IN"},
-                    {"\\O"}, "\\I", "\\O", "\\CLK_IN")},
-      {PRIMITIVE_DB("\\I_DDR", P_IS_NULL, IO_DIR::IN, {"\\D", "\\C"}, {}, "\\D",
-                    "", "\\C")},
-      {PRIMITIVE_DB("\\BOOT_CLOCK", P_IS_STANDALONE, IO_DIR::IN, {}, {"\\O"},
-                    "", "\\O")},
-      {PRIMITIVE_DB(
-          "\\PLL", P_IS_CLOCK, IO_DIR::IN, {"\\CLK_IN"},
-          {"\\CLK_OUT", "\\CLK_OUT_DIV2", "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
-          "\\CLK_IN", "", "", false, true)},
+      {PRIMITIVE_DB("\\CLK_BUF", P_IS_CLOCK | P_IS_IN_DIR, 
+                    {"\\I"},                              // inputs
+                    {"\\O"},                              // outputs
+                    "\\I",                                // intrace_connection
+                    "\\O")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\I_DELAY", P_IS_IN_DIR, 
+                    {"\\I", "\\CLK_IN"},                  // inputs
+                    {"\\O"},                              // outputs
+                    "\\I",                                // intrace_connection
+                    "\\O",                                // outtrace_connection
+                    "\\CLK_IN")},                         // trace_clock
+      {PRIMITIVE_DB("\\I_DDR", P_IS_IN_DIR, 
+                    {"\\D", "\\C"},                       // inputs
+                    {},                                   // outputs
+                    "\\D",                                // intrace_connection
+                    "",                                   // outtrace_connection
+                    "\\C")},                              // trace_clock
+      {PRIMITIVE_DB("\\I_SERDES", P_IS_IN_DIR, 
+                    {"\\D", "\\CLK_IN", "\\PLL_CLK"},     // inputs
+                    {},                                   // outputs
+                    "\\D",                                // intrace_connection
+                    "",                                   // outtrace_connection
+                    "\\PLL_CLK")},                        // trace_clock
+      {PRIMITIVE_DB("\\BOOT_CLOCK", P_IS_STANDALONE | P_IS_IN_DIR, 
+                    {},                                   // inputs
+                    {"\\O"},                              // outputs
+                    "",                                   // intrace_connection
+                    "\\O")},                              // outtrace_connection
+      {PRIMITIVE_DB("\\PLL", P_IS_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR, 
+                    {"\\CLK_IN"},                         // inputs
+                    {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
+                     "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+                    "\\CLK_IN",                           // intrace_connection
+                    "")},                                 // outtrace_connection
       // Out direction
-      {PRIMITIVE_DB("\\O_DELAY", P_IS_NULL, IO_DIR::OUT, {"\\I", "\\CLK_IN"},
-                    {"\\O"}, "\\O", "\\I", "\\CLK_IN")},
-      {PRIMITIVE_DB("\\O_DDR", P_IS_NULL, IO_DIR::OUT, {"\\C"}, {"\\Q"}, "\\Q",
-                    "", "\\C")}}}};
+      {PRIMITIVE_DB("\\O_DELAY", P_IS_NULL, 
+                    {"\\I", "\\CLK_IN"},                  // inputs
+                    {"\\O"},                              // outputs
+                    "\\O",                                // intrace_connection
+                    "\\I",                                // outtrace_connection
+                    "\\CLK_IN")},                         // trace_clock
+      {PRIMITIVE_DB("\\O_DDR", P_IS_NULL, 
+                    {"\\C"},                              // inputs
+                    {"\\Q"},                              // outputs
+                    "\\Q",                                // intrace_connection
+                    "",                                   // outtrace_connection
+                    "\\C")},                              // trace_clock
+      {PRIMITIVE_DB("\\O_SERDES", P_IS_NULL, 
+                    {"\\CLK_IN", "\\PLL_CLK"},            // inputs
+                    {"\\Q"},                              // outputs
+                    "\\Q",                                // intrace_connection
+                    "",                                   // outtrace_connection
+                    "\\PLL_CLK")}                         // trace_clock
+    }
+  }
+};
+// clang-format on
 
 /*
   Base structure of primitive
@@ -425,7 +487,8 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Step 6: Trace primitives that might go to I_DELAY and I_DDR
   for (auto input :
        std::vector<std::string>({"\\I_BUF", "\\I_BUF_DS", "\\I_DELAY"})) {
-    for (auto output : std::vector<std::string>({"\\I_DELAY", "\\I_DDR"})) {
+    for (auto output :
+         std::vector<std::string>({"\\I_DELAY", "\\I_DDR", "\\I_SERDES"})) {
       if (input != output) {
         trace_next_primitive(design->top_module(), input, output);
       }
@@ -435,7 +498,8 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Step 7: Trace primitives that might go to O_DELAY and O_DDR
   for (auto input : std::vector<std::string>(
            {"\\O_BUF", "\\O_BUFT", "\\O_BUF_DS", "\\O_BUFT_DS", "\\O_DELAY"})) {
-    for (auto output : std::vector<std::string>({"\\O_DELAY", "\\O_DDR"})) {
+    for (auto output :
+         std::vector<std::string>({"\\O_DELAY", "\\O_DDR", "\\O_SERDES"})) {
       if (input != output) {
         trace_next_primitive(design->top_module(), input, output);
       }
@@ -451,6 +515,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   if (m_status) {
     gen_instances();
     determine_fabric_clock();
+    summarize();
   }
 
 EXTRACT_END:
@@ -587,8 +652,7 @@ bool PRIMITIVES_EXTRACTOR::get_port_cell_connections(
     if (is_input || is_output) {
       // These are signal we care about
       std::map<std::string, std::string>* connections = &secondary_connections;
-      if ((db->dir == IO_DIR::IN && is_input) ||
-          (db->dir == IO_DIR::OUT && is_output)) {
+      if ((db->is_in_dir() && is_input) || (db->is_out_dir() && is_output)) {
         connections = &primary_connections;
       }
       std::ostringstream wire;
@@ -647,9 +711,9 @@ std::map<std::string, std::string> PRIMITIVES_EXTRACTOR::is_connected_cell(
     }
   }
   if ((db->inputs.size() == input_connections ||
-       (db->any_inputs && input_connections > 0)) &&
+       (db->is_any_inputs() && input_connections > 0)) &&
       (db->outputs.size() == output_connections ||
-       (db->any_outputs && output_connections > 0))) {
+       (db->is_any_outputs() && output_connections > 0))) {
     bool found = false;
     for (auto& key : db->get_checking_ports()) {
       if (connections.at(key) == connection) {
@@ -689,7 +753,8 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
         // Expect PORT primitive should direct connect to input/output port
         std::vector<PORT_INFO> connected_ports;
         for (auto iter : primary_connections) {
-          if (!get_connected_port(module, iter.first, iter.second, db->dir,
+          if (!get_connected_port(module, iter.first, iter.second,
+                                  db->is_in_dir() ? IO_DIR::IN : IO_DIR::OUT,
                                   port_infos, port_trackers, connected_ports)) {
             status = false;
             break;
@@ -800,41 +865,44 @@ void PRIMITIVES_EXTRACTOR::trace_next_primitive(
     const std::string& dest_primitive_name) {
   POST_MSG(1, "Trace %s --> %s", src_primitive_name.c_str(),
            dest_primitive_name.c_str());
-  std::vector<PRIMITIVE*> all_primitives;
+  std::vector<PRIMITIVE*> src_primitives;
   const PRIMITIVE_DB* src_primitive =
       PRIMITIVES_EXTRACTOR::is_supported_primitive(src_primitive_name,
                                                    PORT_REQ::DONT_CARE);
   log_assert(src_primitive != nullptr);
   if (src_primitive->is_port() || src_primitive->is_standalone()) {
     for (auto& p : m_ports) {
-      all_primitives.push_back((PRIMITIVE*)(p));
+      src_primitives.push_back((PRIMITIVE*)(p));
     }
   } else {
     for (auto& c : m_child_primitives) {
-      all_primitives.push_back(c);
+      src_primitives.push_back(c);
     }
   }
-  for (PRIMITIVE*& primitive : all_primitives) {
-    if (primitive->db->name == src_primitive_name) {
-      std::string trace_connection = primitive->get_outtrace_connection();
+  for (PRIMITIVE*& primitive : src_primitives) {
+    for (auto cell : module->cells()) {
+      if (primitive->db->name == src_primitive_name &&
+          cell->type.str() == dest_primitive_name) {
+        std::string trace_connection = primitive->get_outtrace_connection();
 #if ENABLE_DEBUG_MSG == 0
-      size_t original_msg_size = m_msgs.size();
+        size_t original_msg_size = m_msgs.size();
 #endif
-
-      POST_MSG(2, "Try %s %s out connection: %s", primitive->db->name.c_str(),
-               primitive->name.c_str(), trace_connection.c_str());
-      bool found = trace_next_primitive(module, dest_primitive_name, primitive,
-                                        trace_connection);
-      if (found) {
-        for (auto& a : primitive->child_connections[dest_primitive_name]) {
-          POST_MSG(4, "Additional Connection: %s", a.c_str());
-        }
-      } else {
+        POST_MSG(2, "Try %s %s out connection: %s -> %s",
+                 primitive->db->name.c_str(), primitive->name.c_str(),
+                 trace_connection.c_str(), cell->name.c_str());
+        bool found =
+            trace_next_primitive(module, primitive, cell, trace_connection);
+        if (found) {
+          for (auto& a : primitive->child_connections[cell->name.str()]) {
+            POST_MSG(4, "Additional Connection: %s", a.c_str());
+          }
+        } else {
 #if ENABLE_DEBUG_MSG == 0
-        while (m_msgs.size() > original_msg_size) {
-          remove_msg();
-        }
+          while (m_msgs.size() > original_msg_size) {
+            remove_msg();
+          }
 #endif
+        }
       }
     }
   }
@@ -845,28 +913,23 @@ void PRIMITIVES_EXTRACTOR::trace_next_primitive(
   connected to port)
 */
 bool PRIMITIVES_EXTRACTOR::trace_next_primitive(Yosys::RTLIL::Module* module,
-                                                const std::string& module_name,
                                                 PRIMITIVE*& parent,
+                                                Yosys::RTLIL::Cell* cell,
                                                 const std::string& connection) {
-  log_assert(parent->child.find(module_name) == parent->child.end());
+  log_assert(parent->child.find(cell->name.str()) == parent->child.end());
   const PRIMITIVE_DB* db =
-      is_supported_primitive(module_name, PORT_REQ::NOT_PORT);
+      is_supported_primitive(cell->type.str(), PORT_REQ::NOT_PORT);
   log_assert(db != nullptr);
   bool found = false;
-  for (auto cell : module->cells()) {
-    if (cell->type.str() == db->name) {
-      std::map<std::string, std::string> connections =
-          is_connected_cell(cell, db, connection);
-      if (connections.size()) {
-        POST_MSG(3, "Connected %s", cell->name.c_str());
-        m_child_primitives.push_back(
-            new PRIMITIVE(db, cell->name.str(), parent, connections, false));
-        parent->child[module_name] = m_child_primitives.back();
-        get_primitive_parameters(cell, m_child_primitives.back());
-        found = true;
-        break;
-      }
-    }
+  std::map<std::string, std::string> connections =
+      is_connected_cell(cell, db, connection);
+  if (connections.size()) {
+    POST_MSG(3, "Connected %s", cell->name.c_str());
+    m_child_primitives.push_back(
+        new PRIMITIVE(db, cell->name.str(), parent, connections, false));
+    parent->child[cell->name.str()] = m_child_primitives.back();
+    get_primitive_parameters(cell, m_child_primitives.back());
+    found = true;
   }
   if (!found) {
     for (auto it : module->connections()) {
@@ -876,19 +939,17 @@ bool PRIMITIVES_EXTRACTOR::trace_next_primitive(Yosys::RTLIL::Module* module,
       get_signals(it.second, right_signals);
       log_assert(left_signals.size() == right_signals.size());
       for (size_t i = 0; i < right_signals.size(); i++) {
-        std::string src =
-            db->dir == IO_DIR::IN ? right_signals[i] : left_signals[i];
-        std::string dest =
-            db->dir == IO_DIR::IN ? left_signals[i] : right_signals[i];
+        std::string src = db->is_in_dir() ? right_signals[i] : left_signals[i];
+        std::string dest = db->is_in_dir() ? left_signals[i] : right_signals[i];
         if (src == connection) {
-          found = trace_next_primitive(module, module_name, parent, dest);
+          found = trace_next_primitive(module, parent, cell, dest);
           if (found) {
-            if (parent->child_connections.find(module_name) ==
+            if (parent->child_connections.find(cell->name.str()) ==
                 parent->child_connections.end()) {
-              parent->child_connections[module_name] = {};
+              parent->child_connections[cell->name.str()] = {};
             }
-            parent->child_connections[module_name].insert(
-                parent->child_connections[module_name].begin(), dest);
+            parent->child_connections[cell->name.str()].insert(
+                parent->child_connections[cell->name.str()].begin(), dest);
           }
           break;
         }
@@ -1138,6 +1199,157 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
         }
         i++;
       }
+    }
+  }
+}
+
+/*
+  Function to summarize what primitive connectivity
+*/
+void PRIMITIVES_EXTRACTOR::summarize() {
+  POST_MSG(1, "Summary");
+  log_assert(m_status);
+  // log_assert(m_instances.size());
+  max_in_object_name = 0;
+  max_out_object_name = 0;
+  max_trace = 0;
+  for (PORT_PRIMITIVE*& port : m_ports) {
+    std::string object_name = port->linked_object();
+    if (port->db->is_in_dir()) {
+      if (int(object_name.size()) > max_in_object_name) {
+        max_in_object_name = int(object_name.size());
+      }
+    } else {
+      if (int(object_name.size()) > max_out_object_name) {
+        max_out_object_name = int(object_name.size());
+      }
+    }
+  }
+  for (PORT_PRIMITIVE*& port : m_ports) {
+    PRIMITIVE* primitive = (PRIMITIVE*)(port);
+    summarize(primitive, {get_original_name(port->db->name)},
+              port->db->is_in_dir());
+  }
+  max_trace += 32;
+  std::string dashes = "";
+  std::string stars = "";
+  while (dashes.size() <
+         (size_t)(max_in_object_name + max_trace + max_out_object_name + 8)) {
+    dashes.push_back('-');
+  }
+  while (stars.size() < (size_t)(max_trace + 4)) {
+    stars.push_back('*');
+  }
+  POST_MSG(2, "    |%s|", dashes.c_str());
+  POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
+           max_out_object_name + 1, "");
+  for (PORT_PRIMITIVE*& port : m_ports) {
+    PRIMITIVE* primitive = (PRIMITIVE*)(port);
+    summarize(primitive, port->linked_object(),
+              {get_original_name(port->db->name)}, port->db->is_in_dir());
+  }
+  POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
+           max_out_object_name + 1, "");
+  POST_MSG(2, "    |%s|", dashes.c_str());
+}
+
+/*
+  Function to summarize what primitive connectivity (recursive for children)
+  This only calculate the string size
+*/
+void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
+                                     const std::vector<std::string> traces,
+                                     bool is_in_dir) {
+  log_assert(traces.size());
+  if (primitive->child.size()) {
+    for (auto child : primitive->child) {
+      log_assert(is_in_dir == child.second->db->is_in_dir());
+      std::vector<std::string> temp = traces;
+      temp.push_back(get_original_name(child.second->db->name));
+      summarize(child.second, temp, is_in_dir);
+    }
+  } else {
+    std::string trace = "";
+    for (auto t : traces) {
+      log_assert(t.size());
+      if (trace.size()) {
+        trace = stringf("%s -> %s", trace.c_str(), t.c_str());
+      } else {
+        trace = t;
+      }
+    }
+    if ((int)(trace.size()) > max_trace) {
+      max_trace = (int)(trace.size());
+    }
+  }
+}
+
+/*
+  Function to summarize what primitive connectivity (recursive for children)
+*/
+void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
+                                     const std::string& object_name,
+                                     const std::vector<std::string> traces,
+                                     bool is_in_dir) {
+  log_assert(traces.size());
+  if (primitive->child.size()) {
+    uint32_t i = 0;
+    for (auto child : primitive->child) {
+      log_assert(is_in_dir == child.second->db->is_in_dir());
+      std::vector<std::string> temp;
+      if (i == 0) {
+        temp = traces;
+      } else {
+        int s = 0;
+        for (auto t : traces) {
+          log_assert(t.size());
+          s += (int)(t.size());
+        }
+        s += int((traces.size() - 1) * 5);
+        temp = {stringf("%*s", s, " ")};
+      }
+      temp.push_back(get_original_name(child.second->db->name));
+      summarize(child.second, object_name, temp, is_in_dir);
+      i++;
+    }
+  } else {
+    std::string trace = "";
+    if (is_in_dir) {
+      for (auto t = traces.begin(); t != traces.end(); t++) {
+        log_assert(t->size());
+        if (trace.size()) {
+          trace = stringf("%s |-> %s", trace.c_str(), t->c_str());
+        } else {
+          trace = *t;
+        }
+      }
+      bool is_child = true;
+      for (auto c : traces.front()) {
+        if (c != ' ') {
+          is_child = false;
+          break;
+        }
+      }
+      if (is_child) {
+        POST_MSG(2, "IN  | %*s * %-*s * %*s |", max_in_object_name, "",
+                 max_trace, trace.c_str(), max_out_object_name, "");
+      } else {
+        POST_MSG(2, "IN  | %*s * %-*s * %*s |", max_in_object_name,
+                 object_name.c_str(), max_trace, trace.c_str(),
+                 max_out_object_name, "");
+      }
+
+    } else {
+      for (auto t = traces.rbegin(); t != traces.rend(); t++) {
+        log_assert(t->size());
+        if (trace.size()) {
+          trace = stringf("%s |-> %s", trace.c_str(), t->c_str());
+        } else {
+          trace = *t;
+        }
+      }
+      POST_MSG(2, "OUT | %*s * %*s * %-*s |", max_in_object_name, "", max_trace,
+               trace.c_str(), max_out_object_name, object_name.c_str());
     }
   }
 }
