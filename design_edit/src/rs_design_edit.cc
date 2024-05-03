@@ -379,15 +379,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                     }
                   }
                   if (cell->output(portName)) {
-                    RTLIL::SigSig new_conn;
-                    for(const auto conn_wire : connected_wires) {
-                      std::string wire_name = conn_wire->name.str();
-                      if (new_outs.find(wire_name) != new_outs.end()) {
-                        new_conn.first = conn_wire;
-                        new_conn.second = wire;
-                        additional_connections.insert(new_conn);
-                      }
-                    }
+                    std::cerr << "Error: Multiple drivers for " << wire->name.str() << std::endl ;
                   }
                 }
               }
@@ -414,15 +406,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                       }
                     }
                     if (cell->output(portName)) {
-                      RTLIL::SigSig new_conn;
-                      for(const auto conn_wire : connected_wires) {
-                        std::string wire_name = conn_wire->name.str();
-                        if (new_outs.find(wire_name) != new_outs.end()) {
-                          new_conn.first = conn_wire;
-                          new_conn.second = wire;
-                          additional_connections.insert(new_conn);
-                        }
-                      }
+                      std::cerr << "Error: Multiple drivers for " << wire->name.str() << std::endl ;
                     }
                   }
                 }
