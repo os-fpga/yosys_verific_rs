@@ -461,6 +461,49 @@ struct DesignEditRapidSilicon : public ScriptPass {
     } 
   }
 
+  static bool fixup_ports_compare_(const RTLIL::Wire *a, const RTLIL::Wire *b)
+  {
+  	size_t pos_a = a->name.str().find("[");
+    size_t pos_b = b->name.str().find("[");
+    std::string prefix_a = pos_a == std::string::npos ? a->name.str() : a->name.str().substr(0, pos_a);
+    std::string prefix_b = pos_b == std::string::npos ? b->name.str() : b->name.str().substr(0, pos_b);
+
+    if (prefix_a != prefix_b)
+    {
+      return prefix_a < prefix_b;
+    }
+
+    if (pos_a == std::string::npos || pos_b == std::string::npos)
+    {
+      return false;
+    }
+
+    std::string a_index_str = a->name.str().substr(pos_a + 1, a->name.str().find("]"));
+    std::string b_index_str = b->name.str().substr(pos_b + 1, b->name.str().find("]"));
+    return std::stoi(a_index_str) < std::stoi(b_index_str);
+  }
+
+  void fixup_mod_ports (Module* mod)
+  {
+    std::vector<RTLIL::Wire*> all_ports;
+
+    for (auto w : mod->wires())
+    {
+      if (w->port_input || w->port_output)
+        all_ports.push_back(w);
+      else
+        w->port_id = 0;
+    }
+
+    std::sort(all_ports.begin(), all_ports.end(), fixup_ports_compare_);
+    mod->ports.clear();
+    for (size_t i = 0; i < all_ports.size(); i++) 
+    {
+      mod->ports.push_back(all_ports[i]->name);
+      all_ports[i]->port_id = i+1;
+    }
+  }
+
   void remove_extra_conns(Module* mod)
   {
     for (const auto& conn : connections_to_remove) {
@@ -820,7 +863,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, del_outs);
     connections_to_remove.clear();
 
-    original_mod->fixup_ports();
+    fixup_mod_ports(original_mod);
 
     for (auto cell : interface_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
@@ -894,7 +937,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     
     delete_wires(original_mod, orig_intermediate_wires);
-    original_mod->fixup_ports();
+    fixup_mod_ports(original_mod);
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
