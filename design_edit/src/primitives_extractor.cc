@@ -52,10 +52,16 @@
                             I_DELAY -> I_DDR (become two bits)
                             I_BUF_DS -> I_DDR (become two bits)
     g. DDR output:          (from two bits) O_DDR -> O_BUF
-                            (from two bits) O_DDR --> O_DELAY
-                            (from two bits) O_DDR --> O_BUF_DS
-    h. PLL                  I_BUF -> CLK_BUF -> PLL
-    h. OSC + PLL            BOOT_CLOCK -> PLL
+                            (from two bits) O_DDR -> O_DELAY
+                            (from two bits) O_DDR -> O_BUF_DS
+    h. I_SERDES:            I_BUF -> I_SERDES
+                            I_DELAY -> I_SERDES
+                            I_BUF_DS -> I_SERDES
+    i. O_SERDES:            O_SERDES -> O_BUF
+                            O_SERDES -> O_DELAY
+                            O_SERDES -> O_BUF_DS
+    j. PLL                  I_BUF -> CLK_BUF -> PLL
+    k. OSC + PLL            BOOT_CLOCK -> PLL
 
 */
 /*
@@ -77,15 +83,17 @@ USING_YOSYS_NAMESPACE
 
 #define ENABLE_DEBUG_MSG (0)
 #define GENERATION_ALWAYS_INWARD_DIRECTION (1)
+#define ROUTE_ALL_CLOCK_TO_FABRIC (0)
 
 #define P_IS_NULL (0)
 #define P_IS_NOT_READY (1 << 0)
 #define P_IS_PORT (1 << 1)
 #define P_IS_STANDALONE (1 << 2)
 #define P_IS_CLOCK (1 << 3)
-#define P_IS_ANY_INPUTS (1 << 4)
-#define P_IS_ANY_OUTPUTS (1 << 5)
-#define P_IS_IN_DIR (1 << 6)
+#define P_IS_GEARBOX_CLOCK (1 << 4)
+#define P_IS_ANY_INPUTS (1 << 5)
+#define P_IS_ANY_OUTPUTS (1 << 6)
+#define P_IS_IN_DIR (1 << 7)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -148,14 +156,15 @@ struct MSG {
 struct PRIMITIVE_DB {
   PRIMITIVE_DB(const std::string& n, uint32_t f, std::vector<std::string> is,
                std::vector<std::string> os, const std::string& it,
-               const std::string& ot, std::string c = "")
+               const std::string& ot, std::string c, std::string cc)
       : name(n),
         feature(f),
         inputs(is),
         outputs(os),
         intrace_connection(it),
         outtrace_connection(ot),
-        trace_clock(c) {}
+        fast_clock(c),
+        core_clock(cc) {}
   std::vector<std::string> get_checking_ports() const {
     if (is_in_dir()) {
       return inputs;
@@ -168,6 +177,9 @@ struct PRIMITIVE_DB {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
+  bool is_gearbox_clock() const {
+    return (feature & P_IS_GEARBOX_CLOCK) != P_IS_NULL;
+  }
   bool is_any_inputs() const {
     return (feature & P_IS_ANY_INPUTS) != P_IS_NULL;
   }
@@ -182,7 +194,8 @@ struct PRIMITIVE_DB {
   const std::vector<std::string> outputs;
   const std::string intrace_connection = "";
   const std::string outtrace_connection = "";
-  const std::string trace_clock = "";
+  const std::string fast_clock = "";
+  const std::string core_clock = "";
 };
 
 /*
@@ -195,92 +208,176 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
     // PIN/PORT/PAD
     // Inputs
     {
-      {PRIMITIVE_DB("\\I_BUF", P_IS_PORT | P_IS_IN_DIR,
-                    {"\\I"},                              // inputs
-                    {"\\O"},                              // outputs
-                    "\\I",                                // intrace_connection
-                    "\\O")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\I_BUF_DS", P_IS_PORT | P_IS_IN_DIR,
-                    {"\\I_P", "\\I_N"},                   // inputs
-                    {"\\O"},                              // outputs
-                    "",                                   // intrace_connection
-                    "\\O")},                              // outtrace_connection
+      {
+        PRIMITIVE_DB(
+          "\\I_BUF",
+          P_IS_PORT | P_IS_IN_DIR,
+          {"\\I"},                              // inputs
+          {"\\O"},                              // outputs
+          "",                                   // intrace_connection
+          "\\O",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\I_BUF_DS",
+          P_IS_PORT | P_IS_IN_DIR,
+          {"\\I_P", "\\I_N"},                   // inputs
+          {"\\O"},                              // outputs
+          "",                                   // intrace_connection
+          "\\O",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
       // Output
-      {PRIMITIVE_DB("\\O_BUF", P_IS_PORT,
-                    {"\\I"},                              // inputs
-                    {"\\O"},                              // outputs
-                    "\\O",                                // intrace_connection
-                    "\\I")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\O_BUFT", P_IS_PORT,
-                    {"\\I"},                              // inputs
-                    {"\\O"},                              // outputs
-                    "\\O",                                // intrace_connection
-                    "\\I")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\O_BUF_DS", P_IS_PORT, 
-                    {"\\I"},                              // inputs
-                    {"\\O_P", "\\O_N"},                   // outputs
-                    "",                                   // intrace_connection
-                    "\\I")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\O_BUFT_DS", P_IS_PORT, 
-                    {"\\I"},                              // inputs
-                    {"\\O_P", "\\O_N"},                   // outputs
-                    "",                                   // intrace_connection
-                    "\\I")},                              // outtrace_connection
+      {
+        PRIMITIVE_DB(
+          "\\O_BUF",
+          P_IS_PORT,
+          {"\\I"},                              // inputs
+          {"\\O"},                              // outputs
+          "",                                   // intrace_connection
+          "\\I",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_BUFT",
+          P_IS_PORT,
+          {"\\I"},                              // inputs
+          {"\\O"},                              // outputs
+          "",                                   // intrace_connection
+          "\\I",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_BUF_DS",
+          P_IS_PORT,
+          {"\\I"},                              // inputs
+          {"\\O_P", "\\O_N"},                   // outputs
+          "",                                   // intrace_connection
+          "\\I",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_BUFT_DS",
+          P_IS_PORT,
+          {"\\I"},                              // inputs
+          {"\\O_P", "\\O_N"},                   // outputs
+          "",                                   // intrace_connection
+          "\\I",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
       // These are none-Port Primitive
       // In direction
-      {PRIMITIVE_DB("\\CLK_BUF", P_IS_CLOCK | P_IS_IN_DIR, 
-                    {"\\I"},                              // inputs
-                    {"\\O"},                              // outputs
-                    "\\I",                                // intrace_connection
-                    "\\O")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\I_DELAY", P_IS_IN_DIR, 
-                    {"\\I", "\\CLK_IN"},                  // inputs
-                    {"\\O"},                              // outputs
-                    "\\I",                                // intrace_connection
-                    "\\O",                                // outtrace_connection
-                    "\\CLK_IN")},                         // trace_clock
-      {PRIMITIVE_DB("\\I_DDR", P_IS_IN_DIR, 
-                    {"\\D", "\\C"},                       // inputs
-                    {},                                   // outputs
-                    "\\D",                                // intrace_connection
-                    "",                                   // outtrace_connection
-                    "\\C")},                              // trace_clock
-      {PRIMITIVE_DB("\\I_SERDES", P_IS_IN_DIR, 
-                    {"\\D", "\\CLK_IN", "\\PLL_CLK"},     // inputs
-                    {},                                   // outputs
-                    "\\D",                                // intrace_connection
-                    "",                                   // outtrace_connection
-                    "\\PLL_CLK")},                        // trace_clock
-      {PRIMITIVE_DB("\\BOOT_CLOCK", P_IS_STANDALONE | P_IS_IN_DIR, 
-                    {},                                   // inputs
-                    {"\\O"},                              // outputs
-                    "",                                   // intrace_connection
-                    "\\O")},                              // outtrace_connection
-      {PRIMITIVE_DB("\\PLL", P_IS_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR, 
-                    {"\\CLK_IN"},                         // inputs
-                    {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
-                     "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
-                    "\\CLK_IN",                           // intrace_connection
-                    "")},                                 // outtrace_connection
+      {
+        PRIMITIVE_DB(
+          "\\CLK_BUF",
+          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
+          {"\\I"},                              // inputs
+          {"\\O"},                              // outputs
+          "\\I",                                // intrace_connection
+          "\\O",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\I_DELAY",
+          P_IS_IN_DIR,
+          {"\\I", "\\CLK_IN"},                  // inputs
+          {"\\O"},                              // outputs
+          "\\I",                                // intrace_connection
+          "\\O",                                // outtrace_connection
+          "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
+          ""                                    // core_clock 
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\I_DDR",
+          P_IS_IN_DIR,
+          {"\\D", "\\C"},                       // inputs
+          {},                                   // outputs
+          "\\D",                                // intrace_connection
+          "",                                   // outtrace_connection
+          "\\C",                                // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\I_SERDES",
+          P_IS_IN_DIR,
+          {"\\D", "\\CLK_IN", "\\PLL_CLK"},     // inputs
+          {},                                   // outputs
+          "\\D",                                // intrace_connection
+          "",                                   // outtrace_connection
+          "\\PLL_CLK",                          // fast_clock
+          "\\CLK_IN"                            // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\BOOT_CLOCK",
+          P_IS_CLOCK | P_IS_STANDALONE | P_IS_IN_DIR,
+          {},                                   // inputs
+          {"\\O"},                              // outputs
+          "",                                   // intrace_connection
+          "\\O",                                // outtrace_connection
+          "",                                   // fast_clock
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\PLL",
+          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR,
+          {"\\CLK_IN"},                         // inputs
+          {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
+           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+          "\\CLK_IN",                           // intrace_connection
+          "",                                   // outtrace_connection
+          "",                                   // fast_clock
+          "\\BOOT_CLOCK:\\CLK_IN"               // core_clock
+      )},
       // Out direction
-      {PRIMITIVE_DB("\\O_DELAY", P_IS_NULL, 
-                    {"\\I", "\\CLK_IN"},                  // inputs
-                    {"\\O"},                              // outputs
-                    "\\O",                                // intrace_connection
-                    "\\I",                                // outtrace_connection
-                    "\\CLK_IN")},                         // trace_clock
-      {PRIMITIVE_DB("\\O_DDR", P_IS_NULL, 
-                    {"\\C"},                              // inputs
-                    {"\\Q"},                              // outputs
-                    "\\Q",                                // intrace_connection
-                    "",                                   // outtrace_connection
-                    "\\C")},                              // trace_clock
-      {PRIMITIVE_DB("\\O_SERDES", P_IS_NULL, 
-                    {"\\CLK_IN", "\\PLL_CLK"},            // inputs
-                    {"\\Q"},                              // outputs
-                    "\\Q",                                // intrace_connection
-                    "",                                   // outtrace_connection
-                    "\\PLL_CLK")}                         // trace_clock
+      {
+        PRIMITIVE_DB(
+          "\\O_DELAY",
+          P_IS_NULL,
+          {"\\I", "\\CLK_IN"},                  // inputs
+          {"\\O"},                              // outputs
+          "\\O",                                // intrace_connection
+          "\\I",                                // outtrace_connection
+          "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
+          ""                                    // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_DDR",
+          P_IS_NULL,
+          {"\\C"},                              // inputs
+          {"\\Q"},                              // outputs
+          "\\Q",                                // intrace_connection
+          "",                                   // outtrace_connection
+          "",                                   // fast_clock
+          "\\C"                                 // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_SERDES",
+          P_IS_NULL,
+          {"\\CLK_IN", "\\PLL_CLK"},            // inputs
+          {"\\Q"},                              // outputs
+          "\\Q",                                // intrace_connection
+          "",                                   // outtrace_connection
+          "\\PLL_CLK",                          // fast_clock
+          "\\CLK_IN"                            // core_clock
+      )}
     }
   }
 };
@@ -514,7 +611,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
   // Lastly generate instance(s)
   if (m_status) {
     gen_instances();
-    determine_fabric_clock();
+    determine_fabric_clock(design->top_module());
     summarize();
   }
 
@@ -968,18 +1065,18 @@ bool PRIMITIVES_EXTRACTOR::trace_next_primitive(Yosys::RTLIL::Module* module,
 void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
   POST_MSG(1, "Trace gearbox clock source");
   for (auto& primitive : m_child_primitives) {
-    if (primitive->db->trace_clock.size()) {
+    if (primitive->db->fast_clock.size()) {
       log_assert(primitive->db->name != "\\CLK_BUF" &&
                  primitive->db->name != "\\PLL");
-      log_assert(primitive->connections.find(primitive->db->trace_clock) !=
+      log_assert(primitive->connections.find(primitive->db->fast_clock) !=
                  primitive->connections.end());
-      std::string clock = primitive->connections.at(primitive->db->trace_clock);
+      std::string clock = primitive->connections.at(primitive->db->fast_clock);
       POST_MSG(2, "%s %s port %s: %s", primitive->db->name.c_str(),
-               primitive->name.c_str(), primitive->db->trace_clock.c_str(),
+               primitive->name.c_str(), primitive->db->fast_clock.c_str(),
                clock.c_str());
       bool found = false;
       for (auto& clock_primitive : m_child_primitives) {
-        if (clock_primitive->db->is_clock()) {
+        if (clock_primitive->db->is_gearbox_clock()) {
           for (auto& clock_o : clock_primitive->db->outputs) {
             if (clock_primitive->connections.find(clock_o) !=
                     clock_primitive->connections.end() &&
@@ -1168,39 +1265,104 @@ void PRIMITIVES_EXTRACTOR::assign_location(
 /*
   Auto determine the clock
 */
-void PRIMITIVES_EXTRACTOR::determine_fabric_clock() {
+void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
+    Yosys::RTLIL::Module* module) {
   log_assert(m_status);
   // log_assert(m_instances.size());
   for (auto& instance : m_instances) {
-    if (instance->module == "CLK_BUF" || instance->module == "BOOT_CLOCK") {
-      std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
-      instance->parameters["ROUTE_TO_FABRIC_CLK"] = clock;
-      for (auto object : instance->linked_objects) {
-        log_assert(instance->properties.find(object) !=
-                   instance->properties.end());
-        instance->properties[object]["ROUTE_TO_FABRIC_CLK"] = clock;
-      }
-      fabric_clocks.push_back(instance->connections["O"]);
-    } else if (instance->module == "PLL") {
+    if (instance->primitive->db->is_clock()) {
+      // If it is clock, the direction should be in
+      log_assert(instance->primitive->db->is_in_dir());
+      log_assert(instance->primitive->db->outputs.size());
       size_t i = 0;
-      for (auto out : std::vector<std::string>(
-               {"CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"})) {
-        if (instance->connections.find(out) != instance->connections.end()) {
-          std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
-          std::string name =
-              stringf("OUT%d_ROUTE_TO_FABRIC_CLK", (uint32_t)(i));
-          instance->parameters[name] = clock;
-          for (auto object : instance->linked_objects) {
-            log_assert(instance->properties.find(object) !=
-                       instance->properties.end());
-            instance->properties[object][name] = clock;
+      for (auto& out : instance->primitive->db->outputs) {
+        if (instance->primitive->connections.find(out) !=
+            instance->primitive->connections.end()) {
+          std::string oout = get_original_name(out);
+          log_assert(instance->connections.find(oout) !=
+                     instance->connections.end());
+          if (need_to_route_to_fabric(
+                  module, instance->primitive->db->name,
+                  instance->primitive->name,
+                  instance->primitive->connections.at(out))) {
+            std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
+            std::string name = "ROUTE_TO_FABRIC_CLK";
+            if (instance->primitive->db->outputs.size() > 1) {
+              name = stringf("OUT%d_ROUTE_TO_FABRIC_CLK", (uint32_t)(i));
+            }
+            instance->parameters[name] = clock;
+            for (auto object : instance->linked_objects) {
+              log_assert(instance->properties.find(object) !=
+                         instance->properties.end());
+              instance->properties[object][name] = clock;
+            }
+            fabric_clocks.push_back(instance->connections[oout]);
           }
-          fabric_clocks.push_back(instance->connections[out]);
         }
         i++;
       }
     }
   }
+}
+
+/*
+  Determine if the clock need to route to fabric
+*/
+bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
+    Yosys::RTLIL::Module* module, const std::string& module_type,
+    const std::string& module_name, const std::string& net_name) {
+#if ROUTE_ALL_CLOCK_TO_FABRIC
+  bool fabric = true;
+#else
+  bool fabric = false;
+#endif
+  for (auto cell : module->cells()) {
+    if (cell->name.str() != module_name) {
+      for (auto& it : cell->connections()) {
+        std::ostringstream wire;
+        RTLIL_BACKEND::dump_sigspec(wire, it.second, true, true);
+        if (wire.str() == net_name) {
+          const PRIMITIVE_DB* db =
+              is_supported_primitive(cell->type.str(), PORT_REQ::DONT_CARE);
+          if (db != nullptr) {
+            std::vector<std::string> source_modules;
+            std::string core_clk = db->core_clock;
+            size_t index = core_clk.find(":");
+            if (index != std::string::npos) {
+              std::string temp = db->core_clock.substr(0, index);
+              core_clk = db->core_clock.substr(index + 1);
+              index = temp.find(",");
+              while (index != std::string::npos) {
+                source_modules.push_back(temp.substr(0, index));
+                temp = temp.substr(index + 1);
+                index = temp.find(",");
+              }
+              source_modules.push_back(temp);
+            }
+            if (it.first.str() == core_clk &&
+                (source_modules.size() == 0 ||
+                 std::find(source_modules.begin(), source_modules.end(),
+                           module_type) != source_modules.end())) {
+              // Even though it is used by core_clk
+              // But we need to route it to fabric, only fabric can do something
+              // in IO Tile
+              fabric = true;
+            }
+          } else {
+            // If it is not connected to primitive, then it must be fabric
+            fabric = true;
+          }
+          if (fabric) {
+            break;
+          }
+        }
+      }
+      if (fabric) {
+        break;
+      }
+    }
+  }
+  return fabric;
 }
 
 /*
