@@ -45,7 +45,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
-#define GEN_JSON_METHOD 1
+#define GEN_JSON_METHOD 2
 
 using json = nlohmann::json;
 
@@ -645,11 +645,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
-    #if GEN_JSON_METHOD
+#if GEN_JSON_METHOD == 1
     // Extract the primitive information (before anything is modified)
     PRIMITIVES_EXTRACTOR extractor(tech);
     extractor.extract(_design);
-    #endif
+#endif
 
     Pass::call(_design, "splitnets");
     Module *original_mod = _design->top_module();
@@ -947,14 +947,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       processSdcFile(input_sdc);
       get_loc_map_by_io();
+#if GEN_JSON_METHOD == 1
       for (auto &p : location_map_by_io) {
-        #if GEN_JSON_METHOD
         extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
-        #endif
       }
+#endif
     }
 
-    #if GEN_JSON_METHOD
+#if GEN_JSON_METHOD == 1
     extractor.write_json(io_config_json);
     if (io_config_json.size() > 5 &&
         io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
@@ -962,12 +962,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
           io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
       extractor.write_json(simple_file, true);
     } else {
-      extractor.write_json("abc.simple.json", true);
+      extractor.write_json("config.simple.json", true);
     }
     extractor.write_sdc("design_edit.sdc");
-    #else
+#elif GEN_JSON_METHOD == 0
     dump_io_config_json(interface_mod, io_config_json);
-    #endif
+#endif
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
@@ -1071,8 +1071,25 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-
     run_script(new_design);
+#if GEN_JSON_METHOD == 2
+    // Extract the primitive information (using new_design which is wrapped_mod)
+    PRIMITIVES_EXTRACTOR extractor(tech);
+    extractor.extract(new_design);
+    for (auto &p : location_map_by_io) {
+      extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
+    }
+    extractor.write_json(io_config_json);
+    if (io_config_json.size() > 5 &&
+        io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
+      std::string simple_file =
+          io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
+      extractor.write_json(simple_file, true);
+    } else {
+      extractor.write_json("config.simple.json", true);
+    }
+    extractor.write_sdc("design_edit.sdc");
+#endif
   }
 
   void script() override {
