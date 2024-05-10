@@ -50,7 +50,7 @@ using json = nlohmann::json;
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
-const std::vector<std::string> CONNECTING_PORTS = {"I", "O", "D", "Q"};
+const std::vector<std::string> CONNECTING_PORTS = {"I", "I_P", "I_N", "O", "O_P", "O_N", "D", "Q"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -214,7 +214,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
       instances_array.push_back(instance_object);
       i++;
     }
+#if 0
     // Starting by marking all the "port" primitives
+    // IO bitstream generation will only need a unique name to know which primitives are linked together, any name will do
+    // But it does not work for other flow, which they use linked_object name as port name
     i = 0;
     std::vector<std::string> port_primitives = {"I_BUF", "I_BUF_DS", "O_BUF", "O_BUFT", "O_BUF_DS", "O_BUFT_DS", "BOOT_CLOCK"};
     for (auto& inst : instances_array) {
@@ -222,23 +225,55 @@ struct DesignEditRapidSilicon : public ScriptPass {
         inst["linked_object"] = std::string(stringf("object%ld", i));
         i++;
       }
-    } 
-    // Recursively marks other primitives
-    while (true) {
-      size_t linked = 0;
-      for (auto& inst : instances_array) {
-        if (inst.contains("linked_object")) {
-          for (auto& iter : inst["connectivity"].items()) {
-            if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
-                CONNECTING_PORTS.end()) {
-              linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()));
+    }
+#else
+    // Use the port name to link the instance
+    for (const RTLIL::Wire* wire : mod->wires()) {
+      // We can use one line code: !wire->port_input && !wire->port_output
+      // But prefer list of all the valid possible of Input, Output, Inout
+      if ((wire->port_input && !wire->port_output) || // Input
+          (!wire->port_input && wire->port_output) || // Output
+          (wire->port_input && wire->port_output)) {  // Inout
+        for (int index = 0; index < wire->width; index++) {
+          std::string portname = wire->name.str();
+          if (wire->width > 1) {
+            portname = stringf("%s[%d]", wire->name.c_str(), index);
+          }
+          portname = remove_backslashes(portname);
+          link_instance(instances_array, portname, portname, true);
+        }
+      }
+    }
+#endif
+    // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
+    // We need to loop this recursive loop twice
+    for (i = 0; i < 2; i++) {
+      // first time: only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link for instance)
+      //             you will find these primitives have special name
+      // second time: link the rest
+      while (true) {
+        // Recursively marks other primitives
+        size_t linked = 0;
+        for (auto& inst : instances_array) {
+          if (inst.contains("linked_object")) {
+            for (auto& iter : inst["connectivity"].items()) {
+              if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
+                  CONNECTING_PORTS.end()) {
+                if (i == 0) {
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), true, 
+                                          {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
+                } else {
+                  // dont set allow_dual_name=true, it might become infinite loop
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), false);
+                }
+              }
             }
           }
         }
-      }
-      if (linked == 0) {
-        // until we cannot mark anymore
-        break;
+        if (i == 0 || linked == 0) {
+          // until we cannot mark anymore
+          break;
+        }
       }
     }
     instances["instances"] = instances_array;
@@ -248,17 +283,26 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
   
-  size_t link_instance(json& instances_array, const std::string& object, const std::string& net) {
+  size_t link_instance(json& instances_array, const std::string& object, const std::string& net, bool allow_dual_name,
+                        std::vector<std::string> search_modules = {}) {
     size_t linked = 0;
     for (auto& inst : instances_array) {
       // Only if this instance had not been linked
-      if (!inst.contains("linked_object")) {
+      if (search_modules.size() > 0 &&
+          std::find(search_modules.begin(), search_modules.end(), inst["module"]) == search_modules.end()) {
+        continue;
+      }
+      if (!inst.contains("linked_object") || allow_dual_name) {
         for (auto& iter : inst["connectivity"].items()) {
           if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
               CONNECTING_PORTS.end() || 
               (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
             if ((std::string)(iter.value()) == net) {
-              inst["linked_object"] = object;
+              if (inst.contains("linked_object")) {
+                inst["linked_object"] = stringf("%s+%s", ((std::string)(inst["linked_object"])).c_str(), object.c_str());
+              } else {
+                inst["linked_object"] = object;
+              }
               linked++;
               break;
             }
