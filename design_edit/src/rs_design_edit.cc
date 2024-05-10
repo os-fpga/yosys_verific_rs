@@ -45,13 +45,12 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
-#define GEN_JSON_METHOD 1
-
 using json = nlohmann::json;
-
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
+
+const std::vector<std::string> CONNECTING_PORTS = {"I", "I_P", "I_N", "O", "O_P", "O_N", "D", "Q"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -168,32 +167,27 @@ struct DesignEditRapidSilicon : public ScriptPass {
       json instance_object;
       instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
-
       for(auto conn : cell->connections()) {
         IdString port_name = conn.first;
         RTLIL::SigSpec actual = conn.second;
         std::string connection;
         json port_obj;
-
-        if (actual.is_chunk())
-        {
+        if (actual.is_chunk()) {
           if (actual.as_chunk().wire != NULL)
           connection = process_connection(actual.as_chunk());
         } else {
-	for (auto it = actual.chunks().rbegin(); 
-          it != actual.chunks().rend(); ++it)
-	{
-	  RTLIL::Wire* wire = (*it).wire;
-	  if(wire != NULL)
-	  {
-	    connection = process_connection(*it);
-            break;
-	  }
+          for (auto it = actual.chunks().rbegin(); 
+                it != actual.chunks().rend(); ++it) {
+            RTLIL::Wire* wire = (*it).wire;
+            if(wire != NULL)
+            {
+              connection = process_connection(*it);
+              break;
+            }
+          }
         }
-      }
         connection = remove_backslashes(connection);
         instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
-
         if (location_map_by_io.find(connection) != location_map_by_io.end()) {
           instance_object["location"] = location_map_by_io[connection]._name;
           for (auto &pr : location_map_by_io[connection]._properties) {
@@ -203,15 +197,121 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       }
-
       instances_array.push_back(instance_object);
     }
+    // enhancement to auto create wire primitives
+    size_t i = 0;
+    for (auto it : mod->connections()) {
+      std::ostringstream left;
+      std::ostringstream right;
+      RTLIL_BACKEND::dump_sigspec(left, it.first, true, true);
+      RTLIL_BACKEND::dump_sigspec(right, it.second, true, true);
+      json instance_object;
+      instance_object["module"] = (std::string)("WIRE");
+      instance_object["name"] = (std::string)(stringf("wire%ld", i));
+      instance_object["connectivity"]["I"] = remove_backslashes(right.str());
+      instance_object["connectivity"]["O"] = remove_backslashes(left.str());
+      instances_array.push_back(instance_object);
+      i++;
+    }
+#if 0
+    // Starting by marking all the "port" primitives
+    // IO bitstream generation will only need a unique name to know which primitives are linked together, any name will do
+    // But it does not work for other flow, which they use linked_object name as port name
+    i = 0;
+    std::vector<std::string> port_primitives = {"I_BUF", "I_BUF_DS", "O_BUF", "O_BUFT", "O_BUF_DS", "O_BUFT_DS", "BOOT_CLOCK"};
+    for (auto& inst : instances_array) {
+      if (std::find(port_primitives.begin(), port_primitives.end(), inst["module"]) != port_primitives.end()) {
+        inst["linked_object"] = std::string(stringf("object%ld", i));
+        i++;
+      }
+    }
+#else
+    // Use the port name to link the instance
+    for (const RTLIL::Wire* wire : mod->wires()) {
+      // We can use one line code: !wire->port_input && !wire->port_output
+      // But prefer list of all the valid possible of Input, Output, Inout
+      if ((wire->port_input && !wire->port_output) || // Input
+          (!wire->port_input && wire->port_output) || // Output
+          (wire->port_input && wire->port_output)) {  // Inout
+        for (int index = 0; index < wire->width; index++) {
+          std::string portname = wire->name.str();
+          if (wire->width > 1) {
+            portname = stringf("%s[%d]", wire->name.c_str(), index);
+          }
+          portname = remove_backslashes(portname);
+          link_instance(instances_array, portname, portname, true);
+        }
+      }
+    }
+#endif
+    // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
+    // We need to loop this recursive loop twice
+    for (i = 0; i < 2; i++) {
+      // first time : only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link other instance)
+      //              because the name needs to be "p+n"
+      // second time: link the rest
+      while (true) {
+        // Recursively marks other primitives
+        size_t linked = 0;
+        for (auto& inst : instances_array) {
+          if (inst.contains("linked_object")) {
+            for (auto& iter : inst["connectivity"].items()) {
+              if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
+                  CONNECTING_PORTS.end()) {
+                if (i == 0) {
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), true, 
+                                          {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
+                } else {
+                  // dont set allow_dual_name=true, it might become infinite loop
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), false);
+                }
+              }
+            }
+          }
+        }
+        if (i == 0 || linked == 0) {
+          // 1st time: we do not need recursive loop. One time is enough
+          // 2nd time: we need recursive until we cannot link anymore
+          break;
+        }
+      }
+    }
     instances["instances"] = instances_array;
-
     if (json_file.is_open()) {
       json_file << std::setw(4) << instances << std::endl;
       json_file.close();
     }
+  }
+  
+  size_t link_instance(json& instances_array, const std::string& object, const std::string& net, bool allow_dual_name,
+                        std::vector<std::string> search_modules = {}) {
+    size_t linked = 0;
+    for (auto& inst : instances_array) {
+      // Only if this instance had not been linked
+      if (search_modules.size() > 0 &&
+          std::find(search_modules.begin(), search_modules.end(), inst["module"]) == search_modules.end()) {
+        continue;
+      }
+      if (!inst.contains("linked_object") || allow_dual_name) {
+        for (auto& iter : inst["connectivity"].items()) {
+          if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
+              CONNECTING_PORTS.end() || 
+              (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
+            if ((std::string)(iter.value()) == net) {
+              if (inst.contains("linked_object")) {
+                inst["linked_object"] = stringf("%s+%s", ((std::string)(inst["linked_object"])).c_str(), object.c_str());
+              } else {
+                inst["linked_object"] = object;
+              }
+              linked++;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return linked;
   }
 
   std::string remove_backslashes(const std::string &input) {
@@ -663,11 +763,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
-    #if GEN_JSON_METHOD
     // Extract the primitive information (before anything is modified)
     PRIMITIVES_EXTRACTOR extractor(tech);
     extractor.extract(_design);
-    #endif
 
     Pass::call(_design, "splitnets");
     Module *original_mod = _design->top_module();
@@ -966,26 +1064,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
       processSdcFile(input_sdc);
       get_loc_map_by_io();
       for (auto &p : location_map_by_io) {
-        #if GEN_JSON_METHOD
         extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
-        #endif
       }
     }
 
-    #if GEN_JSON_METHOD
-    extractor.write_json(io_config_json);
-    if (io_config_json.size() > 5 &&
-        io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
+    std::string io_file = "io_" + io_config_json;
+    extractor.write_json(io_file);
+    if (io_file.size() > 5 &&
+        io_file.rfind(".json") == (io_file.size() - 5)) {
       std::string simple_file =
-          io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
+          io_file.substr(0, io_file.size() - 5) + ".simple.json";
       extractor.write_json(simple_file, true);
     } else {
-      extractor.write_json("abc.simple.json", true);
+      extractor.write_json("io_config.simple.json", true);
     }
     extractor.write_sdc("design_edit.sdc");
-    #else
-    dump_io_config_json(interface_mod, io_config_json);
-    #endif
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
@@ -1089,8 +1182,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-
     run_script(new_design);
+    // Dump entire wrap design using "config.json" naming (by default)
+    dump_io_config_json(wrapper_mod, io_config_json);
   }
 
   void script() override {
