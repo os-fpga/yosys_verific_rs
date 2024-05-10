@@ -225,18 +225,18 @@ struct DesignEditRapidSilicon : public ScriptPass {
     } 
     // Recursively marks other primitives
     while (true) {
-      size_t connected = 0;
+      size_t linked = 0;
       for (auto& inst : instances_array) {
         if (inst.contains("linked_object")) {
           for (auto& iter : inst["connectivity"].items()) {
             if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
                 CONNECTING_PORTS.end()) {
-              connected += mark_instance_object(instances_array, inst["linked_object"], (std::string)(iter.value()));
+              linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()));
             }
           }
         }
       }
-      if (connected == 0) {
+      if (linked == 0) {
         // until we cannot mark anymore
         break;
       }
@@ -248,10 +248,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
   
-  size_t mark_instance_object(json& instances_array, const std::string& object, const std::string& net) {
-    size_t marked = 0;
+  size_t link_instance(json& instances_array, const std::string& object, const std::string& net) {
+    size_t linked = 0;
     for (auto& inst : instances_array) {
-      // If this instance had not been marked
+      // Only if this instance had not been linked
       if (!inst.contains("linked_object")) {
         for (auto& iter : inst["connectivity"].items()) {
           if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
@@ -259,14 +259,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
               (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
             if ((std::string)(iter.value()) == net) {
               inst["linked_object"] = object;
-              marked++;
+              linked++;
               break;
             }
           }
         }
       }
     }
-    return marked;
+    return linked;
   }
 
   std::string remove_backslashes(const std::string &input) {
