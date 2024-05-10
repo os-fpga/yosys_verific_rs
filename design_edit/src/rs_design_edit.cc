@@ -81,7 +81,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> additional_connections;
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
-  std::map<RTLIL::SigSpec, std::vector<RTLIL::Wire *>> io_prim_conn;
+  std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> in_bits;
@@ -323,30 +323,48 @@ struct DesignEditRapidSilicon : public ScriptPass {
           primitives.end()) {
         for (auto conn : cell->connections()) {
           IdString portName = conn.first;
-          RTLIL::SigSpec actual = conn.second;
-          if (actual.is_chunk()) {
-            RTLIL::Wire *wire = actual.as_chunk().wire;
-            if (wire != NULL) {
-              if (std::find(io_prim_wires.begin(), io_prim_wires.end(), wire->name.str()) !=
+          bool unset_port = true;
+          RTLIL::SigSpec sigspec;
+          for (SigBit bit : conn.second)
+          {
+            if (bit.wire != nullptr)
+            {
+              if (std::find(io_prim_wires.begin(), io_prim_wires.end(), bit.wire->name.str()) !=
                   io_prim_wires.end()) {
-                RTLIL::Wire *new_wire = mod->addWire(NEW_ID, GetSize(actual));
-                cell->unsetPort(portName);
-                cell->setPort(portName, new_wire);
-                auto it = io_prim_conn.find(actual);
+                if (unset_port)
+                {
+                  cell->unsetPort(portName);
+                  unset_port = false;
+                }
+                RTLIL::Wire *new_wire = mod->addWire(NEW_ID, 1);
+                auto it = io_prim_conn.find(bit);
+
                 if (it != io_prim_conn.end()) {
                   it->second.push_back(new_wire);
                 } else {
                   std::vector<RTLIL::Wire *> new_wires;
                   new_wires.push_back(new_wire);
-                  io_prim_conn.insert({actual, new_wires});
+                  io_prim_conn.insert({bit, new_wires});
                 }
                 if (cell->input(portName)) {
                     new_outs.insert(new_wire->name.str());
                 } else if (cell->output(portName)) {
                     new_ins.insert(new_wire->name.str());
                 }
+                sigspec.append(new_wire);
+
+              }
+              else {
+                sigspec.append(bit);
               }
             }
+            else {
+              sigspec.append(bit);
+            }
+          }
+          if (!unset_port)
+          {
+            cell->setPort(portName, sigspec);
           }
         }
       }
