@@ -50,6 +50,8 @@ using json = nlohmann::json;
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
+const std::vector<std::string> CONNECTING_PORTS = {"I", "O", "D", "Q"};
+
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
       : ScriptPass("design_edit", "Netlist Editing Tool") {}
@@ -212,12 +214,59 @@ struct DesignEditRapidSilicon : public ScriptPass {
       instances_array.push_back(instance_object);
       i++;
     }
+    // Starting by marking all the "port" primitives
+    i = 0;
+    std::vector<std::string> port_primitives = {"I_BUF", "I_BUF_DS", "O_BUF", "O_BUFT", "O_BUF_DS", "O_BUFT_DS", "BOOT_CLOCK"};
+    for (auto& inst : instances_array) {
+      if (std::find(port_primitives.begin(), port_primitives.end(), inst["module"]) != port_primitives.end()) {
+        inst["linked_object"] = std::string(stringf("object%ld", i));
+        i++;
+      }
+    } 
+    // Recursively marks other primitives
+    while (true) {
+      size_t connected = 0;
+      for (auto& inst : instances_array) {
+        if (inst.contains("linked_object")) {
+          for (auto& iter : inst["connectivity"].items()) {
+            if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
+                CONNECTING_PORTS.end()) {
+              connected += mark_instance_object(instances_array, inst["linked_object"], (std::string)(iter.value()));
+            }
+          }
+        }
+      }
+      if (connected == 0) {
+        // until we cannot mark anymore
+        break;
+      }
+    }
     instances["instances"] = instances_array;
-
     if (json_file.is_open()) {
       json_file << std::setw(4) << instances << std::endl;
       json_file.close();
     }
+  }
+  
+  size_t mark_instance_object(json& instances_array, const std::string& object, const std::string& net) {
+    size_t marked = 0;
+    for (auto& inst : instances_array) {
+      // If this instance had not been marked
+      if (!inst.contains("linked_object")) {
+        for (auto& iter : inst["connectivity"].items()) {
+          if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
+              CONNECTING_PORTS.end() || 
+              (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
+            if ((std::string)(iter.value()) == net) {
+              inst["linked_object"] = object;
+              marked++;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return marked;
   }
 
   std::string remove_backslashes(const std::string &input) {
