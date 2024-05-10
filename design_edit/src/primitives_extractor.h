@@ -94,7 +94,11 @@ class PRIMITIVES_EXTRACTOR {
   void gen_wire(const std::string& linked_object,
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
-  void determine_fabric_clock();
+  void determine_fabric_clock(Yosys::RTLIL::Module* module);
+  bool need_to_route_to_fabric(Yosys::RTLIL::Module* module,
+                               const std::string& module_type,
+                               const std::string& module_name,
+                               const std::string& net_name);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);
