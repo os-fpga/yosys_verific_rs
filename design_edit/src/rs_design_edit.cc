@@ -180,7 +180,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             if(wire != NULL)
             {
               connection = process_connection(*it);
-                    break;
+              break;
             }
           }
         }
