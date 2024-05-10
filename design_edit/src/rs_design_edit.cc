@@ -248,8 +248,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
     // We need to loop this recursive loop twice
     for (i = 0; i < 2; i++) {
-      // first time: only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link for instance)
-      //             you will find these primitives have special name
+      // first time : only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link other instance)
+      //              because the name needs to be "p+n"
       // second time: link the rest
       while (true) {
         // Recursively marks other primitives
@@ -271,7 +271,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
         if (i == 0 || linked == 0) {
-          // until we cannot mark anymore
+          // 1st time: we do not need recursive loop. One time is enough
+          // 2nd time: we need recursive until we cannot link anymore
           break;
         }
       }
