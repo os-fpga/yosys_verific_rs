@@ -45,10 +45,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
-#define GEN_JSON_METHOD 2
-
 using json = nlohmann::json;
-
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
@@ -168,32 +165,27 @@ struct DesignEditRapidSilicon : public ScriptPass {
       json instance_object;
       instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
-
       for(auto conn : cell->connections()) {
         IdString port_name = conn.first;
         RTLIL::SigSpec actual = conn.second;
         std::string connection;
         json port_obj;
-
-        if (actual.is_chunk())
-        {
+        if (actual.is_chunk()) {
           if (actual.as_chunk().wire != NULL)
           connection = process_connection(actual.as_chunk());
         } else {
-	for (auto it = actual.chunks().rbegin(); 
-          it != actual.chunks().rend(); ++it)
-	{
-	  RTLIL::Wire* wire = (*it).wire;
-	  if(wire != NULL)
-	  {
-	    connection = process_connection(*it);
-            break;
-	  }
+          for (auto it = actual.chunks().rbegin(); 
+                it != actual.chunks().rend(); ++it) {
+            RTLIL::Wire* wire = (*it).wire;
+            if(wire != NULL)
+            {
+              connection = process_connection(*it);
+                    break;
+            }
+          }
         }
-      }
         connection = remove_backslashes(connection);
         instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
-
         if (location_map_by_io.find(connection) != location_map_by_io.end()) {
           instance_object["location"] = location_map_by_io[connection]._name;
           for (auto &pr : location_map_by_io[connection]._properties) {
@@ -203,8 +195,22 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       }
-
       instances_array.push_back(instance_object);
+    }
+    // enhancement to auto create wire primitives
+    size_t i = 0;
+    for (auto it : mod->connections()) {
+      std::ostringstream left;
+      std::ostringstream right;
+      RTLIL_BACKEND::dump_sigspec(left, it.first, true, true);
+      RTLIL_BACKEND::dump_sigspec(right, it.second, true, true);
+      json instance_object;
+      instance_object["module"] = (std::string)("WIRE");
+      instance_object["name"] = (std::string)(stringf("WIRE_%ld", i));
+      instance_object["connectivity"]["I"] = right.str();
+      instance_object["connectivity"]["O"] = left.str();
+      instances_array.push_back(instance_object);
+      i++;
     }
     instances["instances"] = instances_array;
 
@@ -645,11 +651,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
-#if GEN_JSON_METHOD == 1
     // Extract the primitive information (before anything is modified)
     PRIMITIVES_EXTRACTOR extractor(tech);
     extractor.extract(_design);
-#endif
 
     Pass::call(_design, "splitnets");
     Module *original_mod = _design->top_module();
@@ -947,27 +951,22 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       processSdcFile(input_sdc);
       get_loc_map_by_io();
-#if GEN_JSON_METHOD == 1
       for (auto &p : location_map_by_io) {
         extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
       }
-#endif
     }
 
-#if GEN_JSON_METHOD == 1
-    extractor.write_json(io_config_json);
-    if (io_config_json.size() > 5 &&
-        io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
+    std::string io_file = "io_" + io_config_json;
+    extractor.write_json(io_file);
+    if (io_file.size() > 5 &&
+        io_file.rfind(".json") == (io_file.size() - 5)) {
       std::string simple_file =
-          io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
+          io_file.substr(0, io_file.size() - 5) + ".simple.json";
       extractor.write_json(simple_file, true);
     } else {
-      extractor.write_json("config.simple.json", true);
+      extractor.write_json("io_config.simple.json", true);
     }
     extractor.write_sdc("design_edit.sdc");
-#elif GEN_JSON_METHOD == 0
-    dump_io_config_json(interface_mod, io_config_json);
-#endif
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
@@ -1072,24 +1071,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     run_script(new_design);
-#if GEN_JSON_METHOD == 2
-    // Extract the primitive information (using new_design which is wrapped_mod)
-    PRIMITIVES_EXTRACTOR extractor(tech);
-    extractor.extract(new_design);
-    for (auto &p : location_map_by_io) {
-      extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
-    }
-    extractor.write_json(io_config_json);
-    if (io_config_json.size() > 5 &&
-        io_config_json.rfind(".json") == (io_config_json.size() - 5)) {
-      std::string simple_file =
-          io_config_json.substr(0, io_config_json.size() - 5) + ".simple.json";
-      extractor.write_json(simple_file, true);
-    } else {
-      extractor.write_json("config.simple.json", true);
-    }
-    extractor.write_sdc("design_edit.sdc");
-#endif
+    // Dump entire wrap design using "config.json" naming (by default)
+    dump_io_config_json(wrapper_mod, io_config_json);
   }
 
   void script() override {
