@@ -207,8 +207,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       json instance_object;
       instance_object["module"] = (std::string)("WIRE");
       instance_object["name"] = (std::string)(stringf("WIRE_%ld", i));
-      instance_object["connectivity"]["I"] = right.str();
-      instance_object["connectivity"]["O"] = left.str();
+      instance_object["connectivity"]["I"] = remove_backslashes(right.str());
+      instance_object["connectivity"]["O"] = remove_backslashes(left.str());
       instances_array.push_back(instance_object);
       i++;
     }
