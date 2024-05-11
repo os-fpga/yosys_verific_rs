@@ -202,17 +202,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
     // enhancement to auto create wire primitives
     size_t i = 0;
     for (auto it : mod->connections()) {
-      std::ostringstream left;
-      std::ostringstream right;
-      RTLIL_BACKEND::dump_sigspec(left, it.first, true, true);
-      RTLIL_BACKEND::dump_sigspec(right, it.second, true, true);
-      json instance_object;
-      instance_object["module"] = (std::string)("WIRE");
-      instance_object["name"] = (std::string)(stringf("wire%ld", i));
-      instance_object["connectivity"]["I"] = remove_backslashes(right.str());
-      instance_object["connectivity"]["O"] = remove_backslashes(left.str());
-      instances_array.push_back(instance_object);
-      i++;
+      std::vector<std::string> lefts;
+      std::vector<std::string> rights;
+      get_signals(it.first, lefts);
+      get_signals(it.second, rights);
+      log_assert(lefts.size() == rights.size());
+      // break the bus into bit by bit
+      for (size_t j = 0; j < lefts.size(); j++) {
+        json instance_object;
+        instance_object["module"] = (std::string)("WIRE");
+        instance_object["name"] = (std::string)(stringf("wire%ld", i));
+        instance_object["connectivity"]["I"] = remove_backslashes(rights[j]);
+        instance_object["connectivity"]["O"] = remove_backslashes(lefts[j]);
+        instances_array.push_back(instance_object);
+        i++;
+      }
     }
 #if 0
     // Starting by marking all the "port" primitives
@@ -237,7 +241,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         for (int index = 0; index < wire->width; index++) {
           std::string portname = wire->name.str();
           if (wire->width > 1) {
-            portname = stringf("%s[%d]", wire->name.c_str(), index);
+            portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
           link_instance(instances_array, portname, portname, true);
@@ -312,6 +316,32 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     return linked;
+  }
+  void get_signals(const Yosys::RTLIL::SigSpec& sig, std::vector<std::string>& signals) {
+    if (sig.is_chunk()) {
+      get_chunks(sig.as_chunk(), signals);
+    } else {
+      for (auto iter = sig.chunks().begin(); iter != sig.chunks().end(); ++iter) {
+        get_chunks(*iter, signals);
+      }
+    }
+  }
+  void get_chunks(const Yosys::RTLIL::SigChunk& chunk, std::vector<std::string>& signals) {
+    if (chunk.wire == NULL) {
+      for (int i = 0; i < chunk.width; i++) {
+        signals.push_back("");
+      }
+    } else {
+      // Should use chunk.width? or chunk.wire->width?
+      if (chunk.wire->width == 1 && chunk.width == 1 && chunk.offset == 0) {
+        signals.push_back(chunk.wire->name.str());
+      } else {
+        for (int i = 0; i < chunk.width; i++) {
+          signals.push_back(
+              stringf("%s[%d]", chunk.wire->name.c_str(), chunk.offset + i));
+        }
+      }
+    }
   }
 
   std::string remove_backslashes(const std::string &input) {
