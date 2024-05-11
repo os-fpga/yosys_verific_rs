@@ -317,6 +317,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return linked;
   }
+
   void get_signals(const Yosys::RTLIL::SigSpec& sig, std::vector<std::string>& signals) {
     if (sig.is_chunk()) {
       get_chunks(sig.as_chunk(), signals);
@@ -326,6 +327,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
   }
+
   void get_chunks(const Yosys::RTLIL::SigChunk& chunk, std::vector<std::string>& signals) {
     if (chunk.wire == NULL) {
       for (int i = 0; i < chunk.width; i++) {
