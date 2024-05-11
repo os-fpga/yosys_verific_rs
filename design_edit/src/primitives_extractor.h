@@ -104,6 +104,7 @@ class PRIMITIVES_EXTRACTOR {
                  const std::vector<std::string> traces, bool is_in_dir);
   void summarize(const PRIMITIVE* primitive, const std::string& object_name,
                  const std::vector<std::string> traces, bool is_in_dir);
+  void finalize(Yosys::RTLIL::Module* module);
   void write_instance(const INSTANCE* instance, std::ofstream& json,
                       bool simple);
   void write_instance_map(std::map<std::string, std::string> map,
