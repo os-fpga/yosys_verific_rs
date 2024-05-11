@@ -204,8 +204,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto it : mod->connections()) {
       std::vector<std::string> lefts;
       std::vector<std::string> rights;
-      get_signals(it.first, lefts);
-      get_signals(it.second, rights);
+      PRIMITIVES_EXTRACTOR::get_signals(it.first, lefts);
+      PRIMITIVES_EXTRACTOR::get_signals(it.second, rights);
       log_assert(lefts.size() == rights.size());
       // break the bus into bit by bit
       for (size_t j = 0; j < lefts.size(); j++) {
@@ -316,34 +316,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     return linked;
-  }
-
-  void get_signals(const Yosys::RTLIL::SigSpec& sig, std::vector<std::string>& signals) {
-    if (sig.is_chunk()) {
-      get_chunks(sig.as_chunk(), signals);
-    } else {
-      for (auto iter = sig.chunks().begin(); iter != sig.chunks().end(); ++iter) {
-        get_chunks(*iter, signals);
-      }
-    }
-  }
-
-  void get_chunks(const Yosys::RTLIL::SigChunk& chunk, std::vector<std::string>& signals) {
-    if (chunk.wire == NULL) {
-      for (int i = 0; i < chunk.width; i++) {
-        signals.push_back("");
-      }
-    } else {
-      // Should use chunk.width? or chunk.wire->width?
-      if (chunk.wire->width == 1 && chunk.width == 1 && chunk.offset == 0) {
-        signals.push_back(chunk.wire->name.str());
-      } else {
-        for (int i = 0; i < chunk.width; i++) {
-          signals.push_back(
-              stringf("%s[%d]", chunk.wire->name.c_str(), chunk.offset + i));
-        }
-      }
-    }
   }
 
   std::string remove_backslashes(const std::string &input) {
