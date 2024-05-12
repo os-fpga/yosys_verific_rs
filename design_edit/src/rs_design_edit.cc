@@ -235,16 +235,22 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (const RTLIL::Wire* wire : mod->wires()) {
       // We can use one line code: !wire->port_input && !wire->port_output
       // But prefer list of all the valid possible of Input, Output, Inout
-      if ((wire->port_input && !wire->port_output) || // Input
-          (!wire->port_input && wire->port_output) || // Output
-          (wire->port_input && wire->port_output)) {  // Inout
+      std::string dir = "";
+      if (wire->port_input && !wire->port_output) {
+        dir = "IN";
+      } else if (!wire->port_input && wire->port_output) {
+        dir = "OUT";
+      } else if (wire->port_input && wire->port_output) {
+        dir = "INOUT";
+      }
+      if (dir.size()) {
         for (int index = 0; index < wire->width; index++) {
           std::string portname = wire->name.str();
           if (wire->width > 1) {
             portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
-          link_instance(instances_array, portname, portname, true);
+          link_instance(instances_array, portname, portname, dir, 0, false);
         }
       }
     }
@@ -264,11 +270,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
               if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
                   CONNECTING_PORTS.end()) {
                 if (i == 0) {
-                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), true, 
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), 
+                                          inst["direction"], uint32_t(inst["index"]) + 1, true, 
                                           {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
                 } else {
                   // dont set allow_dual_name=true, it might become infinite loop
-                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), false);
+                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), 
+                                          inst["direction"], uint32_t(inst["index"]) + 1, false);
                 }
               }
             }
@@ -288,8 +296,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
   
-  size_t link_instance(json& instances_array, const std::string& object, const std::string& net, bool allow_dual_name,
-                        std::vector<std::string> search_modules = {}) {
+  size_t link_instance(json& instances_array, const std::string& object, const std::string& net, const std::string& direction, 
+                        uint32_t index, bool allow_dual_name, std::vector<std::string> search_modules = {}) {
     size_t linked = 0;
     for (auto& inst : instances_array) {
       // Only if this instance had not been linked
@@ -308,6 +316,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
               } else {
                 inst["linked_object"] = object;
               }
+              inst["direction"] = direction;
+              inst["index"] = index;
               linked++;
               break;
             }
