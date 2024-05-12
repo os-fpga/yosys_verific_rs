@@ -613,6 +613,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
     gen_instances();
     determine_fabric_clock(design->top_module());
     summarize();
+    finalize(design->top_module());
   }
 
 EXTRACT_END:
@@ -1512,6 +1513,81 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
       }
       POST_MSG(2, "OUT | %*s * %*s * %-*s |", max_in_object_name, "", max_trace,
                trace.c_str(), max_out_object_name, object_name.c_str());
+    }
+  }
+}
+
+/*
+  Function in final stage to check if there is mistake in the design (or code)
+*/
+void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
+  size_t design_count = 0;
+  size_t primitive_count = m_ports.size() + m_child_primitives.size();
+  size_t instance_count = 0;
+  for (auto cell : module->cells()) {
+    if (is_supported_primitive(cell->type.str(), PORT_REQ::DONT_CARE) !=
+        nullptr) {
+      design_count++;
+    }
+  }
+  for (auto& inst : m_instances) {
+    if (inst->module != "WIRE") {
+      instance_count++;
+    }
+  }
+  if (design_count == primitive_count && design_count == instance_count) {
+    POST_MSG(1, "Final checking is good");
+  } else {
+    POST_MSG(1,
+             "Error: Final checking failed. Design count: %ld, Primitive "
+             "count: %ld, Instance count: %ld",
+             design_count, primitive_count, instance_count);
+    if (design_count != primitive_count) {
+      for (auto cell : module->cells()) {
+        if (is_supported_primitive(cell->type.str(), PORT_REQ::DONT_CARE) !=
+            nullptr) {
+          bool found = false;
+          for (auto& p : m_ports) {
+            if (p->name == cell->name.str()) {
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            continue;
+          }
+          for (auto& p : m_child_primitives) {
+            if (p->name == cell->name.str()) {
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            continue;
+          }
+          POST_MSG(2, "Error: Missing %s (%s) in primitive list",
+                   cell->type.c_str(), cell->name.c_str());
+        }
+      }
+    }
+    if (design_count != instance_count) {
+      for (auto cell : module->cells()) {
+        if (is_supported_primitive(cell->type.str(), PORT_REQ::DONT_CARE) !=
+            nullptr) {
+          bool found = false;
+          for (auto& inst : m_instances) {
+            if (inst->name == cell->name.str()) {
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            continue;
+          }
+          POST_MSG(2, "Error: Missing %s (%s) in instance list",
+                   cell->type.c_str(), cell->name.c_str());
+        }
+      }
     }
   }
 }

@@ -48,6 +48,8 @@ class PRIMITIVES_EXTRACTOR {
       std::unordered_map<std::string, std::string>& properties);
   void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file);
+  static void get_signals(const Yosys::RTLIL::SigSpec& sig,
+                          std::vector<std::string>& signals);
 
  private:
   void post_msg(uint32_t offset, const std::string& msg);
@@ -79,10 +81,8 @@ class PRIMITIVES_EXTRACTOR {
                             Yosys::RTLIL::Cell* cell,
                             const std::string& connection);
   void trace_gearbox_clock();
-  void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
-                  std::vector<std::string>& signals);
-  void get_signals(const Yosys::RTLIL::SigSpec& sig,
-                   std::vector<std::string>& signals);
+  static void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
+                         std::vector<std::string>& signals);
   void gen_instances();
   void gen_instances(const std::string& linked_object,
                      std::vector<std::string> linked_objects,
@@ -104,6 +104,7 @@ class PRIMITIVES_EXTRACTOR {
                  const std::vector<std::string> traces, bool is_in_dir);
   void summarize(const PRIMITIVE* primitive, const std::string& object_name,
                  const std::vector<std::string> traces, bool is_in_dir);
+  void finalize(Yosys::RTLIL::Module* module);
   void write_instance(const INSTANCE* instance, std::ofstream& json,
                       bool simple);
   void write_instance_map(std::map<std::string, std::string> map,
