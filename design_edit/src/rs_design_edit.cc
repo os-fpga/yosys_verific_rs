@@ -168,26 +168,25 @@ struct DesignEditRapidSilicon : public ScriptPass {
       instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
       for(auto conn : cell->connections()) {
-        IdString port_name = conn.first;
-        RTLIL::SigSpec actual = conn.second;
-        std::string connection;
-        json port_obj;
-        if (actual.is_chunk()) {
-          if (actual.as_chunk().wire != NULL)
-          connection = process_connection(actual.as_chunk());
+        std::string port_name = remove_backslashes(conn.first.str());
+        std::vector<std::string> signals;
+        PRIMITIVES_EXTRACTOR::get_signals(conn.second, signals);
+        std::string connection = "";
+        for (size_t i = 0; i < signals.size(); i++) {
+          signals[i] = remove_backslashes(signals[i]);
+        }
+        if (signals.size() == 0) {
+          instance_object["connectivity"][port_name] = "";
+        } else if (signals.size() == 1) {
+          instance_object["connectivity"][port_name] = signals[0];
+          connection = signals[0];
         } else {
-          for (auto it = actual.chunks().rbegin(); 
-                it != actual.chunks().rend(); ++it) {
-            RTLIL::Wire* wire = (*it).wire;
-            if(wire != NULL)
-            {
-              connection = process_connection(*it);
-              break;
-            }
+          // array of signals
+          instance_object["connectivity"][port_name] = nlohmann::json::array();
+          for (auto& s : signals) {
+            instance_object["connectivity"][port_name].push_back(s);
           }
         }
-        connection = remove_backslashes(connection);
-        instance_object["connectivity"][remove_backslashes(port_name.str())] = connection;
         if (location_map_by_io.find(connection) != location_map_by_io.end()) {
           instance_object["location"] = location_map_by_io[connection]._name;
           for (auto &pr : location_map_by_io[connection]._properties) {
@@ -269,14 +268,23 @@ struct DesignEditRapidSilicon : public ScriptPass {
             for (auto& iter : inst["connectivity"].items()) {
               if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
                   CONNECTING_PORTS.end()) {
-                if (i == 0) {
-                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), 
-                                          inst["direction"], uint32_t(inst["index"]) + 1, true, 
-                                          {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
+                nlohmann::json signals = iter.value();
+                if (signals.is_string()) {
+                  signals = nlohmann::json::array();
+                  signals.push_back((std::string)(iter.value()));
                 } else {
-                  // dont set allow_dual_name=true, it might become infinite loop
-                  linked += link_instance(instances_array, inst["linked_object"], (std::string)(iter.value()), 
-                                          inst["direction"], uint32_t(inst["index"]) + 1, false);
+                  log_assert(signals.is_array());
+                }
+                for (auto& s : signals) {
+                  if (i == 0) {
+                    linked += link_instance(instances_array, inst["linked_object"], (std::string)(s), 
+                                            inst["direction"], uint32_t(inst["index"]) + 1, true, 
+                                            {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
+                  } else {
+                    // dont set allow_dual_name=true, it might become infinite loop
+                    linked += link_instance(instances_array, inst["linked_object"], (std::string)(s), 
+                                            inst["direction"], uint32_t(inst["index"]) + 1, false);
+                  }
                 }
               }
             }
@@ -307,6 +315,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       if (!inst.contains("linked_object") || allow_dual_name) {
         for (auto& iter : inst["connectivity"].items()) {
+          if (!iter.value().is_string()) {
+            continue;
+          }
           if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
               CONNECTING_PORTS.end() || 
               (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
