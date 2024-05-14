@@ -278,6 +278,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   log_assert(signals.is_array());
                 }
                 for (auto& s : signals) {
+                  if ((std::string)(s) == "") {
+                    continue;
+                  }
                   if (i == 0) {
                     linked += link_instance(instances_array, inst["linked_object"], (std::string)(s), 
                                             inst["direction"], uint32_t(inst["index"]) + 1, true, 
@@ -318,6 +321,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       if (!inst.contains("linked_object") || allow_dual_name) {
         for (auto& iter : inst["connectivity"].items()) {
           if (!iter.value().is_string()) {
+            continue;
+          }
+          if ((std::string)(iter.key()) == "") {
             continue;
           }
           if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
