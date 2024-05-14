@@ -76,6 +76,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
+  std::map<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>,
+    std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> conns_to_update;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> additional_connections;
   std::unordered_set<Wire *> orig_intermediate_wires;
@@ -555,7 +557,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                       }
                     }
                     if (cell->output(portName)) {
-                      std::cerr << "Error: Multiple drivers for " << wire->name.str() << std::endl ;
+                      std::cerr << "Error: Multiple drivers for " << wire->name.str() << std::endl;
                     }
                   }
                 }
@@ -564,6 +566,62 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       }
+    }
+
+    for (auto &conn : mod->connections()) {
+      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+      std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+      RTLIL::SigSpec rhsSigSpec;
+      RTLIL::SigSpec lhsSigSpec;
+      for (size_t i = 0; i < conn_lhs.size(); i++) {
+        if (conn_lhs[i].wire != nullptr) {
+          auto it = io_prim_conn.find(conn_lhs[i]);
+          if (it != io_prim_conn.end())
+          {
+            std::cerr << "Error: Multiple drivers for " << conn_lhs[i].wire->name.str() << std::endl;
+          }
+        }
+        if (conn_rhs[i].wire != nullptr) {
+          auto it = io_prim_conn.find(conn_rhs[i]);
+          if (it != io_prim_conn.end())
+          {
+            const std::vector<RTLIL::Wire *>& wires = it->second;
+            for(const auto conn_wire : wires)
+            {
+              std::string wire_name = conn_wire->name.str();
+              if (new_ins.find(wire_name) != new_ins.end())
+              {
+                conn_rhs[i] = conn_wire;
+              }
+            }
+          }
+        }
+        rhsSigSpec.append(conn_rhs[i]);
+        lhsSigSpec.append(conn_lhs[i]);
+      }
+      if (conn_rhs != conn.second.to_sigbit_vector())
+      {
+        std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> new_conn;
+        new_conn.first = lhsSigSpec;
+        new_conn.second = rhsSigSpec;
+        auto it = conns_to_update.find(conn);
+        if (it == conns_to_update.end())
+        {
+          conns_to_update.insert(std::make_pair(conn, new_conn));
+        }
+      }
+    }
+
+    for (auto it = conns_to_update.begin(); it != conns_to_update.end(); ++it)
+    {
+      const auto& conn = it->first;
+      const auto& new_conn = it->second;
+      mod->connections_.erase(std::remove_if(mod->connections_.begin(),
+        mod->connections_.end(),
+        [&](const std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>& p) {
+            return p == conn;
+        }), mod->connections_.end());
+        mod->connect(new_conn);
     }
 
     for (const auto& conn : additional_connections) {
@@ -584,6 +642,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       mod->connect(new_conn);
     }
+
   }
 
   void check_undriven_IO(Module *mod, std::unordered_set<std::string> &primitives){
@@ -664,9 +723,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  bool is_fab_out(Module *mod, Wire* lhs_wire, std::unordered_set<std::string> &prims)
+  bool is_clk_out(Module *mod, Wire* rhs_wire, std::unordered_set<std::string> &prims)
   {
-    bool is_fab_output = false;
+    bool is_clk_output = false;
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(prims.begin(), prims.end(), module_name) !=
@@ -677,16 +736,16 @@ struct DesignEditRapidSilicon : public ScriptPass {
           if (actual.is_chunk()) {
             const RTLIL::SigChunk chunk = actual.as_chunk();
             if(chunk.wire == NULL) continue;
-            if(chunk.wire->name.str() == lhs_wire->name.str() &&
-              (module_name.substr(0, 2) == "O_"))
+            if(chunk.wire->name.str() == rhs_wire->name.str() &&
+              (module_name.substr(0, 4) == "CLK_"))
             {
-              is_fab_output = true;
+              is_clk_output = true;
             }
           }
         }
       }
     }
-    return is_fab_output;
+    return is_clk_output;
   }
 
   void update_prim_connections(Module* mod, std::unordered_set<std::string> &prims, std::unordered_set<Wire *> &del_intermediate_wires)
@@ -973,7 +1032,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(original_mod, lhs_chunk.wire, primitives) && 
+            if(is_clk_out(original_mod, rhs_chunk.wire, primitives) &&
               inputs.find(rhs_chunk.wire->name.str()) == inputs.end())
             {
               lhs_chunk.wire->port_input = false;
@@ -1062,7 +1121,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             (rhs_chunk.wire->port_input || rhs_chunk.wire->port_output) &&
             (outputs.find(lhs_chunk.wire->name.str()) == outputs.end()))
           {
-            if(!is_fab_out(interface_mod, lhs_chunk.wire, primitives) &&
+            if(is_clk_out(interface_mod, lhs_chunk.wire, primitives) &&
               inputs.find(rhs_chunk.wire->name.str()) == inputs.end())
             {
               lhs_chunk.wire->port_input = false;
