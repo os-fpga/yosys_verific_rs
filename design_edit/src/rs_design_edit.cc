@@ -881,14 +881,16 @@ struct DesignEditRapidSilicon : public ScriptPass {
               process_wire(cell, portName, wire);
               if (is_out_prim) {
                 if (cell->input(portName)) {
-                  out_prim_ins.insert(wire->name.str());
+                  if (portName.str().find("CLK") == std::string::npos)
+                    out_prim_ins.insert(wire->name.str());
                   for (auto bit : conn.second){
                     in_bits.insert(bit);
                   }
                 }
               } else {
                 if (cell->output(portName)) {
-                  in_prim_outs.insert(wire->name.str());
+                  if (module_name != "CLK_BUF")
+                    in_prim_outs.insert(wire->name.str());
                   for (auto bit : conn.second){
                     prim_out_bits.insert(bit);
                   }
@@ -920,14 +922,16 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 process_wire(cell, portName, wire);
                 if (is_out_prim) {
                   if (cell->input(portName)) {
-                    out_prim_ins.insert(wire->name.str());
+                    if (portName.str().find("CLK") == std::string::npos)
+                      out_prim_ins.insert(wire->name.str());
                     for (auto bit : conn.second){
                       in_bits.insert(bit);
                     }
                   }
                 } else {
                   if (cell->output(portName)) {
-                    in_prim_outs.insert(wire->name.str());
+                    if (module_name != "CLK_BUF")
+                      in_prim_outs.insert(wire->name.str());
                     for (auto bit : conn.second){
                       prim_out_bits.insert(bit);
                     }
