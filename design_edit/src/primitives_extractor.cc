@@ -35,33 +35,31 @@
     k. O_DDR        [connected internally]
     j. PLL          [connected internally]
     k. BOOT_CLOCK   [connected internally]
+    l. O_SERDES_CLK [connected internally]
 
     and more when other use cases are understood
 
   Currently supported use cases are:
-    a. normal input port:   I_BUF
+    a. I_PORTS:             I_BUF
                             I_BUF_DS
-    b. clock port:          I_BUF -> CLK_BUF
-    c. normal output port:  O_BUF/O_BUFT
+    b. Clock port:          I_PORTS -> CLK_BUF
+    c. O_PORTS:             O_BUF
+                            O_BUFT
                             O_BUF_DS
-    d. I_DELAY:             I_BUF -> I_DELAY
-                            I_BUF_DS -> I_DELAY
-    e. O_DELAY:             O_DELAY -> O_BUF
-                            O_DELAY -> O_BUF_DS
-    f. DDR input:           I_BUF -> I_DDR (become two bits)
+                            O_BUFT_DS
+    d. I_DELAY:             I_PORTS -> I_DELAY
+    e. O_DELAY:             O_DELAY -> O_PORTS
+    f. I_DDR:               I_PORTS -> I_DDR (become two bits)
                             I_DELAY -> I_DDR (become two bits)
-                            I_BUF_DS -> I_DDR (become two bits)
-    g. DDR output:          (from two bits) O_DDR -> O_BUF
+    g. O_DDR:               (from two bits) O_DDR -> O_PORTS
                             (from two bits) O_DDR -> O_DELAY
-                            (from two bits) O_DDR -> O_BUF_DS
-    h. I_SERDES:            I_BUF -> I_SERDES
+    h. I_SERDES:            I_PORTS -> I_SERDES
                             I_DELAY -> I_SERDES
-                            I_BUF_DS -> I_SERDES
-    i. O_SERDES:            O_SERDES -> O_BUF
+    i. O_SERDES:            O_SERDES -> O_PORTS
                             O_SERDES -> O_DELAY
-                            O_SERDES -> O_BUF_DS
-    j. PLL                  I_BUF -> CLK_BUF -> PLL
-    k. OSC + PLL            BOOT_CLOCK -> PLL
+    j. PLL:                 I_PORTS -> CLK_BUF -> PLL
+                            BOOT_CLOCK -> PLL
+    k. O_SERDES_CLK:        O_SERDES_CLK -> O_BUF/O_BUFT
 
 */
 /*
@@ -377,6 +375,17 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN"                            // core_clock
+      )},
+      {
+        PRIMITIVE_DB(
+          "\\O_SERDES_CLK",
+          P_IS_NULL,
+          {"\\PLL_CLK"},                        // inputs
+          {"\\OUTPUT_CLK"},                     // outputs
+          "\\OUTPUT_CLK",                       // intrace_connection
+          "",                                   // outtrace_connection
+          "\\PLL_CLK",                          // fast_clock
+          ""                                    // core_clock
       )}
     }
   }
@@ -603,9 +612,15 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
     }
   }
 
-  // Step 8: Support more primitive once more use cases are understood
+  // Step 8: Support of O_SERDES_CLK
+  for (auto input : std::vector<std::string>(
+           {"\\O_BUF", "\\O_BUFT", "\\O_BUF_DS", "\\O_BUFT_DS"})) {
+    trace_next_primitive(design->top_module(), input, "\\O_SERDES_CLK");
+  }
 
-  // Step 9: Trace primitive that the clock need to routed to gearbox
+  // Step 9: Support more primitive once more use cases are understood
+
+  // Step 10: Trace primitive that the clock need to routed to gearbox
   trace_gearbox_clock();
 
   // Lastly generate instance(s)
@@ -1270,6 +1285,7 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
     Yosys::RTLIL::Module* module) {
   log_assert(m_status);
   // log_assert(m_instances.size());
+  POST_MSG(1, "Trace Fabric Clock");
   for (auto& instance : m_instances) {
     if (instance->primitive->db->is_clock()) {
       // If it is clock, the direction should be in
@@ -1284,7 +1300,7 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
                      instance->connections.end());
           if (need_to_route_to_fabric(
                   module, instance->primitive->db->name,
-                  instance->primitive->name,
+                  instance->primitive->name, out,
                   instance->primitive->connections.at(out))) {
             std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
             std::string name = "ROUTE_TO_FABRIC_CLK";
@@ -1311,21 +1327,27 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
 */
 bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
     Yosys::RTLIL::Module* module, const std::string& module_type,
-    const std::string& module_name, const std::string& net_name) {
+    const std::string& module_name, const std::string& port_name,
+    const std::string& net_name) {
 #if ROUTE_ALL_CLOCK_TO_FABRIC
   bool fabric = true;
 #else
   bool fabric = false;
 #endif
+  POST_MSG(2, "Module %s %s: clock port %s, net %s", module_type.c_str(),
+           module_name.c_str(), port_name.c_str(), net_name.c_str());
   for (auto cell : module->cells()) {
     if (cell->name.str() != module_name) {
       for (auto& it : cell->connections()) {
         std::ostringstream wire;
         RTLIL_BACKEND::dump_sigspec(wire, it.second, true, true);
         if (wire.str() == net_name) {
+          POST_MSG(3, "Connected to cell %s %s", cell->type.c_str(),
+                   cell->name.c_str());
           const PRIMITIVE_DB* db =
               is_supported_primitive(cell->type.str(), PORT_REQ::DONT_CARE);
           if (db != nullptr) {
+            POST_MSG(4, "Which is a primitive");
             std::vector<std::string> source_modules;
             std::string core_clk = db->core_clock;
             size_t index = core_clk.find(":");
@@ -1347,10 +1369,16 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
               // Even though it is used by core_clk
               // But we need to route it to fabric, only fabric can do something
               // in IO Tile
+              POST_MSG(4, "This is core_clk. Send to fabric");
               fabric = true;
+            } else {
+              POST_MSG(4,
+                       "Does not meet core_clk checking criteria. Not sending "
+                       "to fabric");
             }
           } else {
             // If it is not connected to primitive, then it must be fabric
+            POST_MSG(4, "Which is not a IO primitibve. Send to fabric");
             fabric = true;
           }
           if (fabric) {
