@@ -80,6 +80,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> conns_to_update;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> additional_connections;
+  std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> clk_connections;
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn;
@@ -420,6 +421,61 @@ struct DesignEditRapidSilicon : public ScriptPass {
         new_ins.insert(wire->name.str());
       }
     }
+  }
+
+  void handle_clk_as_data(Module* mod)
+  {
+    for (auto cell : mod->cells()) {
+      string module_name = remove_backslashes(cell->type.str());
+      if (std::find(primitives.begin(), primitives.end(), module_name) !=
+          primitives.end()) {
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
+          if (cell->input(portName) &&
+            portName.str().find("CLK") == std::string::npos)
+          {
+            bool unset_port = true;
+            RTLIL::SigSpec sigspec;
+            RTLIL::SigSig new_conn;
+            for (SigBit bit : conn.second)
+            {
+              if (bit.wire != nullptr)
+              {
+                if (std::find(clk_buf_outs.begin(), clk_buf_outs.end(), bit.wire->name.str()) !=
+                    clk_buf_outs.end()) {
+                  if (unset_port)
+                  {
+                    cell->unsetPort(portName);
+                    unset_port = false;
+                  }
+                  RTLIL::Wire *new_wire = mod->addWire(NEW_ID, 1);
+                  new_outs.insert(new_wire->name.str());
+                  sigspec.append(new_wire);
+                  for (auto w : mod->wires())
+                  {
+                    if(bit.wire->name.str() == w->name.str())
+                    {
+                      new_conn.first = new_wire;
+                      new_conn.second = w;
+                      clk_connections.insert(new_conn);
+                    }
+                  }
+                } else {
+                  sigspec.append(bit);
+                }
+              } else {
+                sigspec.append(bit);
+              }
+            }
+            if (!unset_port)
+            {
+              cell->setPort(portName, sigspec);
+            }
+          }
+        }
+      }
+    }
+
   }
 
   void add_wire_btw_prims(Module* mod)
@@ -889,8 +945,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
               } else {
                 if (cell->output(portName)) {
-                  if (module_name != "CLK_BUF")
-                    in_prim_outs.insert(wire->name.str());
+                  if (module_name == "CLK_BUF")
+                    clk_buf_outs.insert(wire->name.str());
+                  else in_prim_outs.insert(wire->name.str());
                   for (auto bit : conn.second){
                     prim_out_bits.insert(bit);
                   }
@@ -930,8 +987,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   }
                 } else {
                   if (cell->output(portName)) {
-                    if (module_name != "CLK_BUF")
-                      in_prim_outs.insert(wire->name.str());
+                    if (module_name == "CLK_BUF")
+                      clk_buf_outs.insert(wire->name.str());
+                    else in_prim_outs.insert(wire->name.str());
                     for (auto bit : conn.second){
                       prim_out_bits.insert(bit);
                     }
@@ -984,6 +1042,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     add_wire_btw_prims(original_mod);
+    handle_clk_as_data(original_mod);
     intersection_copy_remove(new_ins, new_outs, interface_wires);
     intersect(interface_wires, keep_wires);
     
@@ -1072,6 +1131,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
     connections_to_remove.clear();
+    for (const auto& conn : clk_connections) {
+      original_mod->connect(conn);
+    }
 
     fixup_mod_ports(original_mod);
 
