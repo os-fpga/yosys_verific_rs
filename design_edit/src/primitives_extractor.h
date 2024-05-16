@@ -98,6 +98,7 @@ class PRIMITIVES_EXTRACTOR {
   bool need_to_route_to_fabric(Yosys::RTLIL::Module* module,
                                const std::string& module_type,
                                const std::string& module_name,
+                               const std::string& port_name,
                                const std::string& net_name);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
