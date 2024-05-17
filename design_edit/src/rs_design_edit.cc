@@ -698,17 +698,24 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     for (const auto& [key, value] : io_prim_conn) {
       const std::vector<RTLIL::Wire *>& connected_wires = value;
-      if(connected_wires.size() != 2) continue;
-      RTLIL::SigSig new_conn;
+      if(connected_wires.size() < 2) continue;
+      RTLIL::SigSpec in_prim_out;
+      pool<RTLIL::SigSpec> out_prim_in;
       for(const auto conn_wire : connected_wires) {
         std::string wire_name = conn_wire->name.str();
         if (new_outs.find(wire_name) != new_outs.end()) {
-          new_conn.first = conn_wire;
+          out_prim_in.insert(conn_wire);
         } else if (new_ins.find(wire_name) != new_ins.end()) {
-          new_conn.second = conn_wire;
+          in_prim_out = conn_wire;
         }
       }
-      mod->connect(new_conn);
+      for(const auto prim_in : out_prim_in)
+      {
+        RTLIL::SigSig new_conn;
+        new_conn.first = prim_in;
+        new_conn.second = in_prim_out;
+        mod->connect(new_conn);
+      }
     }
 
   }
@@ -1222,6 +1229,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     
     delete_wires(original_mod, orig_intermediate_wires);
     fixup_mod_ports(original_mod);
+    Pass::call(_design, "clean");
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
