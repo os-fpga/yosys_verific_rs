@@ -419,6 +419,7 @@ struct PRIMITIVE {
   std::map<std::string, PRIMITIVE*> child;
   std::map<std::string, std::vector<std::string>> child_connections;
   std::map<std::string, std::vector<std::string>> gearbox_clocks;
+  std::vector<std::string> errors;
 };
 
 /*
@@ -1082,8 +1083,7 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
   POST_MSG(1, "Trace gearbox clock source");
   for (auto& primitive : m_child_primitives) {
     if (primitive->db->fast_clock.size()) {
-      log_assert(primitive->db->name != "\\CLK_BUF" &&
-                 primitive->db->name != "\\PLL");
+      log_assert(!primitive->db->is_clock());
       log_assert(primitive->connections.find(primitive->db->fast_clock) !=
                  primitive->connections.end());
       std::string clock = primitive->connections.at(primitive->db->fast_clock);
@@ -1118,7 +1118,11 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
         }
       }
       if (!found) {
-        POST_MSG(3, "Warning: Not connected to any clock source");
+        std::string msg =
+            stringf("Not able to route signal %s to port %s", clock.c_str(),
+                    primitive->db->fast_clock.c_str());
+        POST_MSG(3, "Warning: %s", msg.c_str());
+        primitive->errors.push_back(msg);
       }
     }
   }
@@ -1130,8 +1134,21 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
 void PRIMITIVES_EXTRACTOR::get_chunks(const Yosys::RTLIL::SigChunk& chunk,
                                       std::vector<std::string>& signals) {
   if (chunk.wire == NULL) {
-    for (int i = 0; i < chunk.width; i++) {
-      signals.push_back("");
+    std::ostringstream const_value;
+    RTLIL_BACKEND::dump_const(const_value, chunk.data, chunk.width,
+                              chunk.offset);
+    std::string keyword = stringf("%d'", chunk.width);
+    std::string const_str = const_value.str();
+    if (const_str.find(keyword) == 0 &&
+        (const_str.size() == (keyword.size() + (size_t)(chunk.width)))) {
+      for (int i = 0; i < chunk.width; i++) {
+        signals.push_back(stringf("__const_bit_%c__", const_str.back()));
+        const_str.pop_back();
+      }
+    } else {
+      for (int i = 0; i < chunk.width; i++) {
+        signals.push_back("");
+      }
     }
   } else {
     // Should use chunk.width? or chunk.wire->width?
@@ -1378,7 +1395,7 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
             }
           } else {
             // If it is not connected to primitive, then it must be fabric
-            POST_MSG(4, "Which is not a IO primitibve. Send to fabric");
+            POST_MSG(4, "Which is not a IO primitive. Send to fabric");
             fabric = true;
           }
           if (fabric) {
@@ -1716,7 +1733,10 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
       json << "\n";
     }
   }
-  json << "      }\n";
+  json << "      },\n";
+  json << "      \"errors\" : [\n";
+  write_instance_array(instance->primitive->errors, json, 4);
+  json << "      ]\n";
   json << "    }";
 }
 
@@ -1753,7 +1773,9 @@ void PRIMITIVES_EXTRACTOR::write_instance_array(std::vector<std::string> array,
     for (uint8_t i = 0; i < space; i++) {
       json << "  ";
     }
-    json << "\"" << iter.c_str() << "\"";
+    json << "\"";
+    write_json_data(iter, json);
+    json << "\"";
     index++;
   }
   if (index) {

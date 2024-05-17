@@ -160,6 +160,16 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return output.str();
   }
+  
+  bool is_real_net(const std::string& net) {
+    if (net == "" || 
+        ((net.size() > 14) && 
+         (net.find("__const_bit_") == 0) && 
+         (net.rfind("__") == (net.size() - 2)))) {
+      return false;
+    }
+    return true;
+  }
 
   void dump_io_config_json(Module* mod, std::string file) {
     std::ofstream json_file(file.c_str());
@@ -279,16 +289,17 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   log_assert(signals.is_array());
                 }
                 for (auto& s : signals) {
-                  if ((std::string)(s) == "") {
+                  std::string net = (std::string)(s);
+                  if (!is_real_net(net)) {
                     continue;
                   }
                   if (i == 0) {
-                    linked += link_instance(instances_array, inst["linked_object"], (std::string)(s), 
+                    linked += link_instance(instances_array, inst["linked_object"], net, 
                                             inst["direction"], uint32_t(inst["index"]) + 1, true, 
                                             {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
                   } else {
                     // dont set allow_dual_name=true, it might become infinite loop
-                    linked += link_instance(instances_array, inst["linked_object"], (std::string)(s), 
+                    linked += link_instance(instances_array, inst["linked_object"], net, 
                                             inst["direction"], uint32_t(inst["index"]) + 1, false);
                   }
                 }
@@ -324,13 +335,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
           if (!iter.value().is_string()) {
             continue;
           }
-          if ((std::string)(iter.key()) == "") {
+          std::string inst_net = (std::string)(iter.value());
+          if (!is_real_net(inst_net)) {
             continue;
           }
           if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
               CONNECTING_PORTS.end() || 
               (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
-            if ((std::string)(iter.value()) == net) {
+            if (inst_net == net) {
               if (inst.contains("linked_object")) {
                 inst["linked_object"] = stringf("%s+%s", ((std::string)(inst["linked_object"])).c_str(), object.c_str());
               } else {
