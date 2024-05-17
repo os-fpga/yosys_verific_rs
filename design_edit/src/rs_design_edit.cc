@@ -1222,6 +1222,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     
     delete_wires(original_mod, orig_intermediate_wires);
     fixup_mod_ports(original_mod);
+    Pass::call(_design, "clean");
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
     if(sdc_passed) {
