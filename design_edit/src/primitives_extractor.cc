@@ -1642,7 +1642,7 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
           if (primitive->db->name == "\\CLK_BUF") {
             pin->skip_reason = "The clock is not used by fabric.";
           } else {
-            pin->skip_reason = "The clock is not controllable by fabric";
+            pin->skip_reason = "The clock is Gearbox internal fast clock.";
           }
         }
         break;
