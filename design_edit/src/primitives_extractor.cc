@@ -534,6 +534,20 @@ struct INSTANCE {
 };
 
 /*
+  Structure that store pin information
+*/
+struct PIN_PORT {
+  PIN_PORT(bool i, bool s) : is_input(i), is_standalone(s) {}
+  const bool is_input = false;
+  const bool is_standalone = false;
+  bool skip_fabric_clock = false;
+  std::string location = "";
+  std::string mode = "";
+  std::vector<std::string> traces;
+  std::vector<std::string> full_traces;
+};
+
+/*
   Extractor constructor
 */
 PRIMITIVES_EXTRACTOR::PRIMITIVES_EXTRACTOR(const std::string& technology)
@@ -563,6 +577,9 @@ PRIMITIVES_EXTRACTOR::~PRIMITIVES_EXTRACTOR() {
   while (m_instances.size()) {
     delete m_instances.back();
     m_instances.pop_back();
+  }
+  for (auto& iter : m_pin_infos) {
+    delete iter.second;
   }
 }
 
@@ -1280,6 +1297,8 @@ void PRIMITIVES_EXTRACTOR::assign_location(
     if (std::find(instance->linked_objects.begin(),
                   instance->linked_objects.end(),
                   port) != instance->linked_objects.end()) {
+      log_assert(m_pin_infos.find(port) != m_pin_infos.end());
+      m_pin_infos[port]->location = location;
       instance->locations[port] = location;
       if (instance->primitive != nullptr && instance->primitive->is_port) {
         if (instance->properties.find(port) == instance->properties.end()) {
@@ -1434,6 +1453,14 @@ void PRIMITIVES_EXTRACTOR::summarize() {
     }
   }
   for (PORT_PRIMITIVE*& port : m_ports) {
+    for (auto& object : port->linked_objects()) {
+      if (int(object.size()) > max_object_name) {
+        max_object_name = int(object.size());
+      }
+    }
+  }
+
+  for (PORT_PRIMITIVE*& port : m_ports) {
     PRIMITIVE* primitive = (PRIMITIVE*)(port);
     summarize(primitive, {get_original_name(port->db->name)},
               port->db->is_in_dir());
@@ -1452,8 +1479,14 @@ void PRIMITIVES_EXTRACTOR::summarize() {
   POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
            max_out_object_name + 1, "");
   for (PORT_PRIMITIVE*& port : m_ports) {
+    for (auto& object : port->linked_objects()) {
+      log_assert(m_pin_infos.find(object) == m_pin_infos.end());
+      m_pin_infos[object] =
+          new PIN_PORT(port->db->is_in_dir(), port->db->is_standalone());
+    }
     PRIMITIVE* primitive = (PRIMITIVE*)(port);
-    summarize(primitive, port->linked_object(),
+    summarize(primitive, port->linked_object(), port->linked_objects(),
+              {get_original_name(port->db->name)},
               {get_original_name(port->db->name)}, port->db->is_in_dir());
   }
   POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
@@ -1497,14 +1530,20 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
 */
 void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
                                      const std::string& object_name,
+                                     const std::vector<std::string> objects,
                                      const std::vector<std::string> traces,
+                                     const std::vector<std::string> full_traces,
                                      bool is_in_dir) {
   log_assert(traces.size());
   if (primitive->child.size()) {
     uint32_t i = 0;
     for (auto child : primitive->child) {
       log_assert(is_in_dir == child.second->db->is_in_dir());
+      for (auto& object : objects) {
+        update_pin_info(m_pin_infos[object], child.second);
+      }
       std::vector<std::string> temp;
+      std::vector<std::string> fulltemp = full_traces;
       if (i == 0) {
         temp = traces;
       } else {
@@ -1517,10 +1556,16 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
         temp = {stringf("%*s", s, " ")};
       }
       temp.push_back(get_original_name(child.second->db->name));
-      summarize(child.second, object_name, temp, is_in_dir);
+      fulltemp.push_back(get_original_name(child.second->db->name));
+      summarize(child.second, object_name, objects, temp, fulltemp, is_in_dir);
       i++;
     }
   } else {
+    for (auto& object : objects) {
+      update_pin_traces(m_pin_infos[object]->traces, traces, is_in_dir);
+      update_pin_traces(m_pin_infos[object]->full_traces, full_traces,
+                        is_in_dir);
+    }
     std::string trace = "";
     if (is_in_dir) {
       for (auto t = traces.begin(); t != traces.end(); t++) {
@@ -1546,7 +1591,6 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
                  object_name.c_str(), max_trace, trace.c_str(),
                  max_out_object_name, "");
       }
-
     } else {
       for (auto t = traces.rbegin(); t != traces.rend(); t++) {
         log_assert(t->size());
@@ -1560,6 +1604,76 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
                trace.c_str(), max_out_object_name, object_name.c_str());
     }
   }
+}
+
+/*
+  Update pin mode
+  Except the table and valid connection matrix, this is the only function that
+  have hardcoded primitive. When I have time, will see how to make this
+  data-driven
+*/
+void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
+                                           const PRIMITIVE* primitive) {
+  if (primitive->db->name == "\\I_DDR" || primitive->db->name == "\\O_DDR") {
+    log_assert(pin->mode.size() == 0);
+    pin->mode = "DDR";
+  } else if (primitive->db->name == "\\I_SERDES" ||
+             primitive->db->name == "\\O_SERDES" ||
+             primitive->db->name == "\\O_SERDES_CLK") {
+    log_assert(pin->mode.size() == 0);
+    if (primitive->parameters.find("DATA_RATE") !=
+        primitive->parameters.end()) {
+      pin->mode = primitive->parameters.at("DATA_RATE");
+    } else {
+      // If not set, by default is SDR
+      pin->mode = "SDR";
+    }
+    log_assert(pin->mode == "SDR" || pin->mode == "DDR");
+  }
+  if (primitive->db->name == "\\CLK_BUF") {
+    std::string name = get_original_name(primitive->name);
+    bool found = false;
+    for (auto& instance : m_instances) {
+      if (instance->name == name) {
+        found = true;
+        if (instance->parameters.find("ROUTE_TO_FABRIC_CLK") ==
+            instance->parameters.end()) {
+          pin->skip_fabric_clock = true;
+        }
+        break;
+      }
+    }
+    log_assert(found);
+  }
+}
+
+/*
+  Update pin traces
+*/
+void PRIMITIVES_EXTRACTOR::update_pin_traces(
+    std::vector<std::string>& pin_traces, const std::vector<std::string> traces,
+    bool is_in_dir) {
+  std::string trace = "";
+  if (is_in_dir) {
+    for (auto t = traces.begin(); t != traces.end(); t++) {
+      log_assert(t->size());
+      if (trace.size()) {
+        trace = stringf("%s |-> %s", trace.c_str(), t->c_str());
+      } else {
+        trace = *t;
+      }
+    }
+  } else {
+    for (auto t = traces.rbegin(); t != traces.rend(); t++) {
+      log_assert(t->size());
+      if (trace.size()) {
+        trace = stringf("%s |-> %s", trace.c_str(), t->c_str());
+      } else {
+        trace = *t;
+      }
+    }
+  }
+  pin_traces.push_back(trace);
 }
 
 /*
@@ -1824,6 +1938,11 @@ void PRIMITIVES_EXTRACTOR::write_json_data(const std::string& str,
 void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
   std::ofstream sdc(file.c_str());
   // Clock
+  sdc << "#############\n";
+  sdc << "#\n";
+  sdc << "# Fabric clock assignment\n";
+  sdc << "#\n";
+  sdc << "#############\n";
   uint32_t i = 0;
   for (auto clk : fabric_clocks) {
     sdc << stringf("set_clock_pin -device_clock {clk[%d]} -design_clock {%s}\n",
@@ -1832,6 +1951,66 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
     i++;
   }
   // Mode
-  // To be supported
+  sdc << "\n#############\n";
+  sdc << "#\n";
+  sdc << "# Each pin mode and location assignment\n";
+  sdc << "#\n";
+  sdc << "#############\n";
+  for (auto& iter : m_pin_infos) {
+    if (iter.second->is_standalone) {
+      continue;
+    }
+    size_t i = 0;
+    for (auto& trace : iter.second->traces) {
+      if (i == 0) {
+        sdc << stringf("# Pin: %*s :: %s\n", max_object_name,
+                       iter.first.c_str(), trace.c_str())
+                   .c_str();
+      } else {
+        sdc << stringf("#      %*s :: %s\n", max_object_name, "", trace.c_str())
+                   .c_str();
+      }
+      i++;
+    }
+    std::string location = "__NOT_PROVIDED__";
+    char ab = '?';
+    if (iter.second->location.size()) {
+      if (iter.second->location.back() == 'P') {
+        location = iter.second->location;
+        ab = 'A';
+      } else if (iter.second->location.back() == 'N') {
+        location = iter.second->location;
+        ab = 'B';
+      } else {
+        location = stringf("__INVALID::%s__", iter.second->location.c_str());
+      }
+    }
+    std::string mode = "MODE_BP_DIR";
+    if (iter.second->mode == "SDR") {
+      mode = "MODE_BP_SDR";
+    } else if (iter.second->mode == "DDR") {
+      mode = "MODE_BP_DDR";
+    }
+    mode = stringf("%s_%c_%s", mode.c_str(), ab,
+                   iter.second->is_input ? "RX" : "TX");
+    std::string object = stringf("{%s}", iter.first.c_str());
+    int alignment = int(object.size());
+    if (int(mode.size()) > alignment) {
+      alignment = int(mode.size());
+    }
+    if (iter.second->skip_fabric_clock) {
+      sdc << "# Skip this because it is not routed to fabric\n";
+    }
+    std::string skip = "";
+    if (ab == '?' || iter.second->skip_fabric_clock) {
+      skip = "#";
+    }
+    sdc << stringf("%sset_mode %-*s %s\n", skip.c_str(), alignment,
+                   mode.c_str(), location.c_str())
+               .c_str();
+    sdc << stringf("%sset_io   %-*s %s\n\n", skip.c_str(), alignment,
+                   object.c_str(), location.c_str())
+               .c_str();
+  }
   sdc.close();
 }
