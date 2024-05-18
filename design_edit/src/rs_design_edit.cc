@@ -696,8 +696,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       mod->connect(conn);
     }
 
-    for (const auto& [key, value] : io_prim_conn) {
-      const std::vector<RTLIL::Wire *>& connected_wires = value;
+    for (const auto& prim_conn : io_prim_conn) {
+      const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
       if(connected_wires.size() < 2) continue;
       RTLIL::SigSpec in_prim_out;
       pool<RTLIL::SigSpec> out_prim_in;
@@ -709,7 +709,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
           in_prim_out = conn_wire;
         }
       }
-      for(const auto prim_in : out_prim_in)
+      for(const auto& prim_in : out_prim_in)
       {
         RTLIL::SigSig new_conn;
         new_conn.first = prim_in;
@@ -965,7 +965,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
               } else {
                 if (cell->output(portName)) {
                   if (module_name == "CLK_BUF")
+                  {
                     clk_buf_outs.insert(wire->name.str());
+                    keep_wires.insert(wire->name.str());
+                  }
                   else in_prim_outs.insert(wire->name.str());
                   for (auto bit : conn.second){
                     prim_out_bits.insert(bit);
@@ -1007,7 +1010,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 } else {
                   if (cell->output(portName)) {
                     if (module_name == "CLK_BUF")
+                    {
                       clk_buf_outs.insert(wire->name.str());
+                      keep_wires.insert(wire->name.str());
+                    }
                     else in_prim_outs.insert(wire->name.str());
                     for (auto bit : conn.second){
                       prim_out_bits.insert(bit);
