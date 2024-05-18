@@ -540,11 +540,11 @@ struct PIN_PORT {
   PIN_PORT(bool i, bool s) : is_input(i), is_standalone(s) {}
   const bool is_input = false;
   const bool is_standalone = false;
-  bool skip_fabric_clock = false;
   std::string location = "";
   std::string mode = "";
   std::vector<std::string> traces;
   std::vector<std::string> full_traces;
+  std::string skip_reason = "";
 };
 
 /*
@@ -1630,7 +1630,8 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
     }
     log_assert(pin->mode == "SDR" || pin->mode == "DDR");
   }
-  if (primitive->db->name == "\\CLK_BUF") {
+  if (primitive->db->name == "\\CLK_BUF" ||
+      primitive->db->name == "\\O_SERDES_CLK") {
     std::string name = get_original_name(primitive->name);
     bool found = false;
     for (auto& instance : m_instances) {
@@ -1638,7 +1639,11 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
         found = true;
         if (instance->parameters.find("ROUTE_TO_FABRIC_CLK") ==
             instance->parameters.end()) {
-          pin->skip_fabric_clock = true;
+          if (primitive->db->name == "\\CLK_BUF") {
+            pin->skip_reason = "The clock is not used by fabric.";
+          } else {
+            pin->skip_reason = "The clock is not controllable by fabric";
+          }
         }
         break;
       }
@@ -1998,11 +2003,12 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
     if (int(mode.size()) > alignment) {
       alignment = int(mode.size());
     }
-    if (iter.second->skip_fabric_clock) {
-      sdc << "# Skip this because it is not routed to fabric\n";
+    if (iter.second->skip_reason.size()) {
+      sdc << "# Skip this because \'" << iter.second->skip_reason.c_str()
+          << "'\n";
     }
     std::string skip = "";
-    if (ab == '?' || iter.second->skip_fabric_clock) {
+    if (ab == '?' || iter.second->skip_reason.size() > 0) {
       skip = "#";
     }
     sdc << stringf("%sset_mode %-*s %s\n", skip.c_str(), alignment,
