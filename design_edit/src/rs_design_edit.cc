@@ -1227,11 +1227,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       interface_mod->remove({wire});
     }
     
-    delete_wires(original_mod, orig_intermediate_wires);
-    fixup_mod_ports(original_mod);
-    Pass::call(_design, "clean");
-    delete_wires(interface_mod, interface_intermediate_wires);
-    interface_mod->fixup_ports();
     if(sdc_passed) {
       std::ifstream input_sdc(sdc_file);
       if (!input_sdc.is_open()) {
@@ -1255,6 +1250,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
       extractor.write_json("io_config.simple.json", true);
     }
     extractor.write_sdc("design_edit.sdc");
+    
+    // Should only clean the _design after extractor done the work
+    // because extractor is using _design
+    delete_wires(original_mod, orig_intermediate_wires);
+    fixup_mod_ports(original_mod);
+    Pass::call(_design, "clean");
+    delete_wires(interface_mod, interface_intermediate_wires);
+    interface_mod->fixup_ports();
 
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();

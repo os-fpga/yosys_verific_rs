@@ -37,6 +37,7 @@ struct PRIMITIVE_DB;
 struct PRIMITIVE;
 struct PORT_PRIMITIVE;
 struct INSTANCE;
+struct PIN_PORT;
 
 class PRIMITIVES_EXTRACTOR {
  public:
@@ -104,7 +105,12 @@ class PRIMITIVES_EXTRACTOR {
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);
   void summarize(const PRIMITIVE* primitive, const std::string& object_name,
-                 const std::vector<std::string> traces, bool is_in_dir);
+                 const std::vector<std::string> objects,
+                 const std::vector<std::string> traces,
+                 const std::vector<std::string> full_traces, bool is_in_dir);
+  void update_pin_info(PIN_PORT*& pin, const PRIMITIVE* primitive);
+  void update_pin_traces(std::vector<std::string>& pin_traces,
+                         const std::vector<std::string> traces, bool is_in_dir);
   void finalize(Yosys::RTLIL::Module* module);
   void write_instance(const INSTANCE* instance, std::ofstream& json,
                       bool simple);
@@ -126,7 +132,9 @@ class PRIMITIVES_EXTRACTOR {
   std::vector<std::string> fabric_clocks;
   int max_in_object_name = 0;
   int max_out_object_name = 0;
+  int max_object_name = 0;
   int max_trace = 0;
+  std::map<std::string, PIN_PORT*> m_pin_infos;
 };
 
 #endif
