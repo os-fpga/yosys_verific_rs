@@ -435,6 +435,26 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  bool is_out_clk(std::string mod_name, std::string port_name, std::string wire_name)
+  {
+    if (mod_name == "BOOT_CLOCK")
+    {
+      clk_outs.insert(wire_name);
+      return true;
+    }
+    if (mod_name == "CLK_BUF")
+    {
+      clk_outs.insert(wire_name);
+      return true;
+    }
+    if (mod_name == "PLL" && port_name.find("CLK_OUT") != std::string::npos)
+    {
+      clk_outs.insert(wire_name);
+      return true;
+    }
+    return false;
+  }
+
   void handle_clk_as_data(Module* mod)
   {
     for (auto cell : mod->cells()) {
@@ -453,13 +473,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
             {
               if (bit.wire != nullptr)
               {
-                if (std::find(clk_buf_outs.begin(), clk_buf_outs.end(), bit.wire->name.str()) !=
-                    clk_buf_outs.end()) {
+                if (std::find(clk_outs.begin(), clk_outs.end(), bit.wire->name.str()) !=
+                    clk_outs.end()) {
                   if (unset_port)
                   {
                     cell->unsetPort(portName);
                     unset_port = false;
                   }
+                  keep_wires.insert(bit.wire->name.str());
                   RTLIL::Wire *new_wire = mod->addWire(NEW_ID, 1);
                   new_outs.insert(new_wire->name.str());
                   sigspec.append(new_wire);
@@ -964,12 +985,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
               } else {
                 if (cell->output(portName)) {
-                  if (module_name == "CLK_BUF")
-                  {
-                    clk_buf_outs.insert(wire->name.str());
-                    keep_wires.insert(wire->name.str());
-                  }
-                  else in_prim_outs.insert(wire->name.str());
+                  if (!is_out_clk(module_name, portName.str(), wire->name.str()))
+                    in_prim_outs.insert(wire->name.str());
                   for (auto bit : conn.second){
                     prim_out_bits.insert(bit);
                   }
@@ -1009,12 +1026,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   }
                 } else {
                   if (cell->output(portName)) {
-                    if (module_name == "CLK_BUF")
-                    {
-                      clk_buf_outs.insert(wire->name.str());
-                      keep_wires.insert(wire->name.str());
-                    }
-                    else in_prim_outs.insert(wire->name.str());
+                    if (!is_out_clk(module_name, portName.str(), wire->name.str()))
+                      in_prim_outs.insert(wire->name.str());
                     for (auto bit : conn.second){
                       prim_out_bits.insert(bit);
                     }
