@@ -108,7 +108,7 @@ class PRIMITIVES_EXTRACTOR {
                  const std::vector<std::string> objects,
                  const std::vector<std::string> traces,
                  const std::vector<std::string> full_traces, bool is_in_dir);
-  void update_pin_info(PIN_PORT*& pin, const PRIMITIVE* primitive);
+  void update_pin_info(const std::string& pin_name, const PRIMITIVE* primitive);
   void update_pin_traces(std::vector<std::string>& pin_traces,
                          const std::vector<std::string> traces, bool is_in_dir);
   void finalize(Yosys::RTLIL::Module* module);
