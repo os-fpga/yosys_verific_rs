@@ -1535,13 +1535,13 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
                                      const std::vector<std::string> full_traces,
                                      bool is_in_dir) {
   log_assert(traces.size());
+  for (auto& object : objects) {
+    update_pin_info(object, primitive);
+  }
   if (primitive->child.size()) {
     uint32_t i = 0;
     for (auto child : primitive->child) {
       log_assert(is_in_dir == child.second->db->is_in_dir());
-      for (auto& object : objects) {
-        update_pin_info(m_pin_infos[object], child.second);
-      }
       std::vector<std::string> temp;
       std::vector<std::string> fulltemp = full_traces;
       if (i == 0) {
@@ -1612,8 +1612,10 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
   have hardcoded primitive. When I have time, will see how to make this
   data-driven
 */
-void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
+void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
                                            const PRIMITIVE* primitive) {
+  log_assert(m_pin_infos.find(pin_name) != m_pin_infos.end());
+  PIN_PORT*& pin = m_pin_infos[pin_name];
   if (primitive->db->name == "\\I_DDR" || primitive->db->name == "\\O_DDR") {
     log_assert(pin->mode.size() == 0);
     pin->mode = "DDR";
@@ -1649,6 +1651,21 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(PIN_PORT*& pin,
       }
     }
     log_assert(found);
+  } else if (primitive->db->name == "\\I_BUF_DS" ||
+             primitive->db->name == "\\O_BUF_DS" ||
+             primitive->db->name == "\\O_BUFT_DS") {
+    std::string secondary_port =
+        primitive->db->name == "\\I_BUF_DS" ? "\\I_N" : "\\O_N";
+    log_assert(primitive->connections.find(secondary_port) !=
+               primitive->connections.end());
+    std::string name =
+        get_original_name(primitive->connections.at(secondary_port));
+    if (name == pin_name) {
+      pin->skip_reason =
+          "This is secondary pin. But IO bitstream generation will still make "
+          "sure it is used in pair. Otherwise the IO bitstream will be "
+          "invalid.";
+    }
   }
 }
 
@@ -2009,7 +2026,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
     }
     std::string skip = "";
     if (ab == '?' || iter.second->skip_reason.size() > 0) {
-      skip = "#";
+      skip = "# ";
     }
     sdc << stringf("%sset_mode %-*s %s\n", skip.c_str(), alignment,
                    mode.c_str(), location.c_str())
