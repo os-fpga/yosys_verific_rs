@@ -50,7 +50,8 @@ using json = nlohmann::json;
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
-const std::vector<std::string> CONNECTING_PORTS = {"I", "I_P", "I_N", "O", "O_P", "O_N", "D", "Q"};
+const std::vector<std::string> CONNECTING_PORTS = {"I", "I_P", "I_N", "O", "O_P", "O_N", "D", "Q", 
+                                                   "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -173,8 +174,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   void dump_io_config_json(Module* mod, std::string file) {
     std::ofstream json_file(file.c_str());
-		json instances;
-    instances["instances"] = json::object();
+    json instances = json::object();
     json instances_array = json::array();
     for(auto cell : mod->cells()) {
       json instance_object;
@@ -267,6 +267,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 #endif
+    i = 0;
+    for (auto& inst : instances_array) {
+      if (inst["module"] == "BOOT_CLOCK") {
+        inst["linked_object"] = stringf("BOOT_CLOCK#%ld", i);
+        inst["direction"] = "IN";
+        inst["index"] = 0;
+        i++;
+      }
+    }
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
     // We need to loop this recursive loop twice
     for (i = 0; i < 2; i++) {
@@ -957,7 +966,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
       remove_backslashes(_design->top_module()->name.str());
-    design->rename(original_mod, "\\fabric_" + original_mod_name);
+    if (original_mod_name.find("fabric_") == std::string::npos) {
+      design->rename(original_mod, "\\fabric_" + original_mod_name);   
+    }
 
     for (auto cell : original_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
@@ -1256,20 +1267,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    std::string io_file = "io_" + io_config_json;
-    extractor.write_json(io_file);
-    if (io_file.size() > 5 &&
-        io_file.rfind(".json") == (io_file.size() - 5)) {
-      std::string simple_file =
-          io_file.substr(0, io_file.size() - 5) + ".simple.json";
-      extractor.write_json(simple_file, true);
-    } else {
-      extractor.write_json("io_config.simple.json", true);
-    }
-    extractor.write_sdc("design_edit.sdc");
-    
-    // Should only clean the _design after extractor done the work
-    // because extractor is using _design
     delete_wires(original_mod, orig_intermediate_wires);
     fixup_mod_ports(original_mod);
     Pass::call(_design, "clean");
@@ -1381,6 +1378,23 @@ struct DesignEditRapidSilicon : public ScriptPass {
     run_script(new_design);
     // Dump entire wrap design using "config.json" naming (by default)
     dump_io_config_json(wrapper_mod, io_config_json);
+    std::ifstream input(io_config_json.c_str());
+    log_assert(input.is_open() && input.good());
+    nlohmann::json instances = nlohmann::json::parse(input);
+    input.close();
+    log_assert(instances.is_object());
+    log_assert(instances.contains("instances"));
+    extractor.write_sdc("design_edit.sdc", instances["instances"]);
+    std::string io_file = "io_" + io_config_json;
+    extractor.write_json(io_file);
+    if (io_file.size() > 5 &&
+        io_file.rfind(".json") == (io_file.size() - 5)) {
+      std::string simple_file =
+          io_file.substr(0, io_file.size() - 5) + ".simple.json";
+      extractor.write_json(simple_file, true);
+    } else {
+      extractor.write_json("io_config.simple.json", true);
+    }
   }
 
   void script() override {
