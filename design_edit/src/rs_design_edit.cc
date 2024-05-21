@@ -50,8 +50,8 @@ using json = nlohmann::json;
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
-const std::vector<std::string> CONNECTING_PORTS = {"I", "I_P", "I_N", "O", "O_P", "O_N", "D", "Q", 
-                                                   "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"};
+const std::vector<std::string> IN_PORTS = {"I", "I_P", "I_N", "D"};
+const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -262,7 +262,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
-          link_instance(instances_array, portname, portname, dir, 0, false);
+          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false);
         }
       }
     }
@@ -288,8 +288,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
         for (auto& inst : instances_array) {
           if (inst.contains("linked_object")) {
             for (auto& iter : inst["connectivity"].items()) {
-              if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
-                  CONNECTING_PORTS.end()) {
+              bool src_is_in = std::find(IN_PORTS.begin(), IN_PORTS.end(), (std::string)(iter.key())) != IN_PORTS.end();
+              bool src_is_out = std::find(OUT_PORTS.begin(), OUT_PORTS.end(), (std::string)(iter.key())) !=  OUT_PORTS.end();
+              if (src_is_in || src_is_out) {
+                log_assert((src_is_in & src_is_out) == false);
                 nlohmann::json signals = iter.value();
                 if (signals.is_string()) {
                   signals = nlohmann::json::array();
@@ -303,12 +305,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
                     continue;
                   }
                   if (i == 0) {
-                    linked += link_instance(instances_array, inst["linked_object"], net, 
+                    linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
                                             inst["direction"], uint32_t(inst["index"]) + 1, true, 
                                             {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
                   } else {
                     // dont set allow_dual_name=true, it might become infinite loop
-                    linked += link_instance(instances_array, inst["linked_object"], net, 
+                    linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
                                             inst["direction"], uint32_t(inst["index"]) + 1, false);
                   }
                 }
@@ -330,8 +332,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
   
-  size_t link_instance(json& instances_array, const std::string& object, const std::string& net, const std::string& direction, 
-                        uint32_t index, bool allow_dual_name, std::vector<std::string> search_modules = {}) {
+  size_t link_instance(bool use_in_port, json& instances_array, const std::string& object, 
+                        const std::string& net, const std::string& direction, uint32_t index, bool allow_dual_name, 
+                        std::vector<std::string> search_modules = {}) {
     size_t linked = 0;
     for (auto& inst : instances_array) {
       // Only if this instance had not been linked
@@ -348,9 +351,17 @@ struct DesignEditRapidSilicon : public ScriptPass {
           if (!is_real_net(inst_net)) {
             continue;
           }
-          if (std::find(CONNECTING_PORTS.begin(), CONNECTING_PORTS.end(), (std::string)(iter.key())) != 
-              CONNECTING_PORTS.end() || 
-              (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN")) {
+          bool match = false;
+          if (use_in_port && 
+              (std::find(IN_PORTS.begin(), IN_PORTS.end(), (std::string)(iter.key())) != IN_PORTS.end() || 
+               (inst["module"] == "PLL" && (std::string)(iter.key()) == "CLK_IN"))) {
+            match = true;
+          }
+          if (!use_in_port && 
+              (std::find(OUT_PORTS.begin(), OUT_PORTS.end(), (std::string)(iter.key())) !=  OUT_PORTS.end())) {
+            match = true;
+          }
+          if (match) {
             if (inst_net == net) {
               if (inst.contains("linked_object")) {
                 inst["linked_object"] = stringf("%s+%s", ((std::string)(inst["linked_object"])).c_str(), object.c_str());
