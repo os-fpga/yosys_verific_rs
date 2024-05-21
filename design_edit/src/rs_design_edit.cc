@@ -51,7 +51,7 @@ USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
 const std::vector<std::string> IN_PORTS = {"I", "I_P", "I_N", "D"};
-const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4"};
+const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
