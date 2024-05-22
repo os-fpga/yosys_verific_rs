@@ -371,7 +371,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\CLK_IN",                           // intrace_connection
           "",                                   // outtrace_connection
           "",                                   // fast_clock
-          "\\BOOT_CLOCK:\\CLK_IN"               // core_clock
+          ""                                    // core_clock
       )},
       // Out direction
       {
@@ -1457,9 +1457,9 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
                 (source_modules.size() == 0 ||
                  std::find(source_modules.begin(), source_modules.end(),
                            module_type) != source_modules.end())) {
-              // Even though it is used by core_clk
-              // But we need to route it to fabric, only fabric can do something
-              // in IO Tile
+              // For second check: even though it is not used by core_clk
+              //    But we need to route it to fabric, in case only fabric can
+              //    do something on it in IO Tile
               POST_MSG(4, "This is core_clk. Send to fabric");
               fabric = true;
             } else {
