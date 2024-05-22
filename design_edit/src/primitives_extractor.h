@@ -1,6 +1,7 @@
 #ifndef PRIMITIVES_EXTRACTOR_H
 #define PRIMITIVES_EXTRACTOR_H
 
+#include <json.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -38,6 +39,27 @@ struct PRIMITIVE;
 struct PORT_PRIMITIVE;
 struct INSTANCE;
 struct PIN_PORT;
+/*
+  Structure Fabric Clock
+  Mainly used to track how the original JSON (io_config.json) mapped to wrapped
+  JSON (config.json)
+*/
+struct FABRIC_CLOCK {
+  FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
+               const std::string& p, const std::string& n, bool c)
+      : linked_object(l),
+        module(m),
+        name(i),
+        port(p),
+        net(n),
+        is_clock_pin(c) {}
+  const std::string linked_object = "";
+  const std::string module = "";
+  const std::string name = "";
+  const std::string port = "";
+  const std::string net = "";
+  const bool is_clock_pin = false;
+};
 
 class PRIMITIVES_EXTRACTOR {
  public:
@@ -48,7 +70,8 @@ class PRIMITIVES_EXTRACTOR {
       const std::string& port, const std::string& location,
       std::unordered_map<std::string, std::string>& properties);
   void write_json(const std::string& file, bool simple = false);
-  void write_sdc(const std::string& file);
+  void write_sdc(const std::string& file,
+                 const nlohmann::json& wrapped_instances);
   static void get_signals(const Yosys::RTLIL::SigSpec& sig,
                           std::vector<std::string>& signals);
 
@@ -121,6 +144,10 @@ class PRIMITIVES_EXTRACTOR {
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
+  std::string get_wrapped_net(const nlohmann::json& wrapped_instances,
+                              size_t index, const FABRIC_CLOCK& clk);
+  void file_write_string(std::ofstream& file, const std::string& string,
+                         int size = -1);
 
  private:
   std::vector<MSG*> m_msgs;
@@ -129,11 +156,11 @@ class PRIMITIVES_EXTRACTOR {
   std::vector<INSTANCE*> m_instances;
   bool m_status = true;
   const std::string m_technology = "";
-  std::vector<std::string> fabric_clocks;
-  int max_in_object_name = 0;
-  int max_out_object_name = 0;
-  int max_object_name = 0;
-  int max_trace = 0;
+  std::vector<FABRIC_CLOCK> m_fabric_clocks;
+  int m_max_in_object_name = 0;
+  int m_max_out_object_name = 0;
+  int m_max_object_name = 0;
+  int m_max_trace = 0;
   std::map<std::string, PIN_PORT*> m_pin_infos;
 };
 

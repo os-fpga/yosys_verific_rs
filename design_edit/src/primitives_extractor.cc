@@ -68,6 +68,9 @@
 
 #include "primitives_extractor.h"
 
+#include <algorithm>
+#include <set>
+
 #include "backends/rtlil/rtlil_backend.h"
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
@@ -82,6 +85,7 @@ USING_YOSYS_NAMESPACE
 #define ENABLE_DEBUG_MSG (0)
 #define GENERATION_ALWAYS_INWARD_DIRECTION (1)
 #define ROUTE_ALL_CLOCK_TO_FABRIC (0)
+#define ENABLE_INSTANCE_CROSS_CHECK (1)
 
 #define P_IS_NULL (0)
 #define P_IS_NOT_READY (1 << 0)
@@ -92,6 +96,7 @@ USING_YOSYS_NAMESPACE
 #define P_IS_ANY_INPUTS (1 << 5)
 #define P_IS_ANY_OUTPUTS (1 << 6)
 #define P_IS_IN_DIR (1 << 7)
+#define P_IS_CLOCK_PIN (1 << 8)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -104,6 +109,31 @@ std::string get_original_name(const std::string& name) {
     return name.substr(1);
   }
   return name;
+}
+
+/*
+  Precaution: sort the string alphabetically
+*/
+std::string sort_name(std::string names) {
+  std::set<std::string> sorted_names;
+  size_t index = names.find("+");
+  while (index != std::string::npos) {
+    log_assert(index != 0);
+    sorted_names.insert(names.substr(0, index));
+    names = names.substr(index + 1);
+    index = names.find("+");
+  }
+  log_assert(names.size());
+  sorted_names.insert(names);
+  names = "";
+  for (auto iter = sorted_names.begin(); iter != sorted_names.end(); iter++) {
+    if (names.size()) {
+      names = stringf("%s+%s", names.c_str(), (*iter).c_str());
+    } else {
+      names = (*iter);
+    }
+  }
+  return names;
 }
 
 /*
@@ -175,6 +205,7 @@ struct PRIMITIVE_DB {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
+  bool is_clock_pin() const { return (feature & P_IS_CLOCK_PIN) != P_IS_NULL; }
   bool is_gearbox_clock() const {
     return (feature & P_IS_GEARBOX_CLOCK) != P_IS_NULL;
   }
@@ -278,7 +309,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\CLK_BUF",
-          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
+          P_IS_CLOCK_PIN | P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
           {"\\I"},                              // inputs
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
@@ -340,7 +371,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\CLK_IN",                           // intrace_connection
           "",                                   // outtrace_connection
           "",                                   // fast_clock
-          "\\BOOT_CLOCK:\\CLK_IN"               // core_clock
+          ""                                    // core_clock
       )},
       // Out direction
       {
@@ -461,7 +492,7 @@ struct PORT_PRIMITIVE : PRIMITIVE {
       }
       name.erase(0, 1);
     }
-    return name;
+    return sort_name(name);
   }
   std::vector<std::string> linked_objects() const {
     std::vector<std::string> names;
@@ -518,7 +549,7 @@ struct INSTANCE {
       name = stringf("%s+%s", name.c_str(), o.c_str());
     }
     name.erase(0, 1);
-    return name;
+    return sort_name(name);
   }
   const std::string module = "";
   const std::string name = "";
@@ -1338,7 +1369,8 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
                   module, instance->primitive->db->name,
                   instance->primitive->name, out,
                   instance->primitive->connections.at(out))) {
-            std::string clock = stringf("%d", (uint32_t)(fabric_clocks.size()));
+            std::string clock =
+                stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             std::string name = "ROUTE_TO_FABRIC_CLK";
             if (instance->primitive->db->outputs.size() > 1) {
               name = stringf("OUT%d_ROUTE_TO_FABRIC_CLK", (uint32_t)(i));
@@ -1349,7 +1381,30 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
                          instance->properties.end());
               instance->properties[object][name] = clock;
             }
-            fabric_clocks.push_back(instance->connections[oout]);
+            std::string linked_object = instance->linked_object();
+            std::string net = instance->connections[oout];
+            if (instance->primitive->db->is_clock_pin()) {
+              const PRIMITIVE* parent = instance->primitive;
+              while (parent->parent != nullptr) {
+                parent = parent->parent;
+              }
+              log_assert(parent->db->inputs.size());
+              std::string port_name = parent->db->inputs[0];
+              log_assert(parent->connections.find(port_name) !=
+                         parent->connections.end());
+              net = get_original_name(parent->connections.at(port_name));
+              POST_MSG(5,
+                       "This is clock is from PORT primitive. The port is %s",
+                       net.c_str());
+            } else {
+              POST_MSG(
+                  5,
+                  "This is clock is internal generated. Need to map the net %s",
+                  net.c_str());
+            }
+            m_fabric_clocks.push_back(FABRIC_CLOCK(
+                linked_object, instance->module, instance->name, oout, net,
+                instance->primitive->db->is_clock_pin()));
           }
         }
         i++;
@@ -1402,9 +1457,9 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
                 (source_modules.size() == 0 ||
                  std::find(source_modules.begin(), source_modules.end(),
                            module_type) != source_modules.end())) {
-              // Even though it is used by core_clk
-              // But we need to route it to fabric, only fabric can do something
-              // in IO Tile
+              // For second check: even though it is not used by core_clk
+              //    But we need to route it to fabric, in case only fabric can
+              //    do something on it in IO Tile
               POST_MSG(4, "This is core_clk. Send to fabric");
               fabric = true;
             } else {
@@ -1437,25 +1492,26 @@ void PRIMITIVES_EXTRACTOR::summarize() {
   POST_MSG(1, "Summary");
   log_assert(m_status);
   // log_assert(m_instances.size());
-  max_in_object_name = 0;
-  max_out_object_name = 0;
-  max_trace = 0;
+  m_max_in_object_name = 0;
+  m_max_out_object_name = 0;
+  m_max_object_name = 0;
+  m_max_trace = 0;
   for (PORT_PRIMITIVE*& port : m_ports) {
     std::string object_name = port->linked_object();
     if (port->db->is_in_dir()) {
-      if (int(object_name.size()) > max_in_object_name) {
-        max_in_object_name = int(object_name.size());
+      if (int(object_name.size()) > m_max_in_object_name) {
+        m_max_in_object_name = int(object_name.size());
       }
     } else {
-      if (int(object_name.size()) > max_out_object_name) {
-        max_out_object_name = int(object_name.size());
+      if (int(object_name.size()) > m_max_out_object_name) {
+        m_max_out_object_name = int(object_name.size());
       }
     }
   }
   for (PORT_PRIMITIVE*& port : m_ports) {
     for (auto& object : port->linked_objects()) {
-      if (int(object.size()) > max_object_name) {
-        max_object_name = int(object.size());
+      if (int(object.size()) > m_max_object_name) {
+        m_max_object_name = int(object.size());
       }
     }
   }
@@ -1465,19 +1521,19 @@ void PRIMITIVES_EXTRACTOR::summarize() {
     summarize(primitive, {get_original_name(port->db->name)},
               port->db->is_in_dir());
   }
-  max_trace += 32;
+  m_max_trace += 32;
   std::string dashes = "";
   std::string stars = "";
-  while (dashes.size() <
-         (size_t)(max_in_object_name + max_trace + max_out_object_name + 8)) {
+  while (dashes.size() < (size_t)(m_max_in_object_name + m_max_trace +
+                                  m_max_out_object_name + 8)) {
     dashes.push_back('-');
   }
-  while (stars.size() < (size_t)(max_trace + 4)) {
+  while (stars.size() < (size_t)(m_max_trace + 4)) {
     stars.push_back('*');
   }
   POST_MSG(2, "    |%s|", dashes.c_str());
-  POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
-           max_out_object_name + 1, "");
+  POST_MSG(2, "    | %*s%s%*s |", m_max_in_object_name + 1, "", stars.c_str(),
+           m_max_out_object_name + 1, "");
   for (PORT_PRIMITIVE*& port : m_ports) {
     for (auto& object : port->linked_objects()) {
       log_assert(m_pin_infos.find(object) == m_pin_infos.end());
@@ -1489,8 +1545,8 @@ void PRIMITIVES_EXTRACTOR::summarize() {
               {get_original_name(port->db->name)},
               {get_original_name(port->db->name)}, port->db->is_in_dir());
   }
-  POST_MSG(2, "    | %*s%s%*s |", max_in_object_name + 1, "", stars.c_str(),
-           max_out_object_name + 1, "");
+  POST_MSG(2, "    | %*s%s%*s |", m_max_in_object_name + 1, "", stars.c_str(),
+           m_max_out_object_name + 1, "");
   POST_MSG(2, "    |%s|", dashes.c_str());
 }
 
@@ -1519,8 +1575,8 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
         trace = t;
       }
     }
-    if ((int)(trace.size()) > max_trace) {
-      max_trace = (int)(trace.size());
+    if ((int)(trace.size()) > m_max_trace) {
+      m_max_trace = (int)(trace.size());
     }
   }
 }
@@ -1584,12 +1640,12 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
         }
       }
       if (is_child) {
-        POST_MSG(2, "IN  | %*s * %-*s * %*s |", max_in_object_name, "",
-                 max_trace, trace.c_str(), max_out_object_name, "");
+        POST_MSG(2, "IN  | %*s * %-*s * %*s |", m_max_in_object_name, "",
+                 m_max_trace, trace.c_str(), m_max_out_object_name, "");
       } else {
-        POST_MSG(2, "IN  | %*s * %-*s * %*s |", max_in_object_name,
-                 object_name.c_str(), max_trace, trace.c_str(),
-                 max_out_object_name, "");
+        POST_MSG(2, "IN  | %*s * %-*s * %*s |", m_max_in_object_name,
+                 object_name.c_str(), m_max_trace, trace.c_str(),
+                 m_max_out_object_name, "");
       }
     } else {
       for (auto t = traces.rbegin(); t != traces.rend(); t++) {
@@ -1600,8 +1656,9 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
           trace = *t;
         }
       }
-      POST_MSG(2, "OUT | %*s * %*s * %-*s |", max_in_object_name, "", max_trace,
-               trace.c_str(), max_out_object_name, object_name.c_str());
+      POST_MSG(2, "OUT | %*s * %*s * %-*s |", m_max_in_object_name, "",
+               m_max_trace, trace.c_str(), m_max_out_object_name,
+               object_name.c_str());
     }
   }
 }
@@ -1957,7 +2014,35 @@ void PRIMITIVES_EXTRACTOR::write_json_data(const std::string& str,
 /*
   Write out fabric clock or mode SDC
 */
-void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
+void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
+                                     const nlohmann::json& wrapped_instances) {
+  auto get_wrapped_instance = [](const nlohmann::json& wrapped_instances,
+                                 std::string name) {
+    log_assert(name.size());
+    size_t index = 0;
+    bool found = false;
+    for (auto& inst : wrapped_instances) {
+      std::string inst_name = (std::string)(inst["name"]);
+      if (inst_name == name || ((inst_name.size() > (name.size() + 1)) &&
+                                (inst_name.rfind("." + name) ==
+                                 (inst_name.size() - name.size() - 1)))) {
+        found = true;
+        break;
+      }
+      index++;
+    }
+    log_assert(found);
+    return index;
+  };
+#if ENABLE_INSTANCE_CROSS_CHECK
+  POST_MSG(1, "Cross-check instances vs wrapped-instances");
+  for (auto& inst : m_instances) {
+    if (inst->module != "WIRE") {
+      get_wrapped_instance(wrapped_instances, inst->name);
+    }
+  }
+#endif
+  POST_MSG(1, "Generate SDC");
   std::ofstream sdc(file.c_str());
   // Clock
   sdc << "#############\n";
@@ -1966,18 +2051,57 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
   sdc << "#\n";
   sdc << "#############\n";
   uint32_t i = 0;
-  for (auto clk : fabric_clocks) {
-    sdc << stringf("set_clock_pin -device_clock {clk[%d]} -design_clock {%s}\n",
-                   i, clk.c_str())
-               .c_str();
+  for (auto clk : m_fabric_clocks) {
+    if (clk.is_clock_pin) {
+      sdc << "# This clock is from pin. Use the port/pin name\n";
+      sdc << stringf(
+                 "set_clock_pin -device_clock {clk[%d]} -design_clock {%s}\n\n",
+                 i, clk.net.c_str())
+                 .c_str();
+    } else {
+      sdc << "# This clock is internal generated.\n";
+      std::string wrapped_net = get_wrapped_net(
+          wrapped_instances, get_wrapped_instance(wrapped_instances, clk.name),
+          clk);
+      if (wrapped_net.size()) {
+        sdc << stringf(
+                   "# set_clock_pin -device_clock {clk[%d]} -design_clock "
+                   "{%s}\n",
+                   i, clk.net.c_str())
+                   .c_str();
+        sdc << stringf(
+                   "set_clock_pin   -device_clock {clk[%d]} -design_clock "
+                   "{%s}\n\n",
+                   i, wrapped_net.c_str())
+                   .c_str();
+      } else {
+        sdc << "# Failed to find the mapped name\n";
+        sdc << stringf(
+                   "set_clock_pin -device_clock {clk[%d]} -design_clock "
+                   "{%s}\n\n",
+                   i, clk.net.c_str())
+                   .c_str();
+      }
+    }
     i++;
   }
+  if (i == 0) {
+    sdc << "\n";
+  }
   // Mode
-  sdc << "\n#############\n";
+  sdc << "#############\n";
   sdc << "#\n";
   sdc << "# Each pin mode and location assignment\n";
   sdc << "#\n";
   sdc << "#############\n";
+  // Consider {object_name}
+  m_max_object_name += 2;
+  // Consider maximum mode 11 + 5
+  if (m_max_object_name < 16) {
+    m_max_object_name = 16;
+  }
+  m_max_object_name += 1;  // For space
+  // First column is max is "# set_mode" = 10 + 1
   for (auto& iter : m_pin_infos) {
     if (iter.second->is_standalone) {
       continue;
@@ -1985,13 +2109,14 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
     size_t i = 0;
     for (auto& trace : iter.second->traces) {
       if (i == 0) {
-        sdc << stringf("# Pin: %*s :: %s\n", max_object_name,
-                       iter.first.c_str(), trace.c_str())
-                   .c_str();
+        file_write_string(sdc, "# Pin", 11);
+        file_write_string(sdc, iter.first, m_max_object_name);
       } else {
-        sdc << stringf("#      %*s :: %s\n", max_object_name, "", trace.c_str())
-                   .c_str();
+        file_write_string(sdc, "#", 11);
+        file_write_string(sdc, "", m_max_object_name);
       }
+      file_write_string(sdc, ":: " + trace);
+      file_write_string(sdc, "\n");
       i++;
     }
     std::string location = "__NOT_PROVIDED__";
@@ -2028,12 +2153,63 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file) {
     if (ab == '?' || iter.second->skip_reason.size() > 0) {
       skip = "# ";
     }
-    sdc << stringf("%sset_mode %-*s %s\n", skip.c_str(), alignment,
-                   mode.c_str(), location.c_str())
-               .c_str();
-    sdc << stringf("%sset_io   %-*s %s\n\n", skip.c_str(), alignment,
-                   object.c_str(), location.c_str())
-               .c_str();
+    // Mode
+    file_write_string(sdc, skip + "set_mode", 11);
+    file_write_string(sdc, mode, m_max_object_name);
+    file_write_string(sdc, location);
+    file_write_string(sdc, "\n");
+    // IO
+    file_write_string(sdc, skip + "set_io", 11);
+    file_write_string(sdc, object, m_max_object_name);
+    file_write_string(sdc, location);
+    file_write_string(sdc, "\n\n");
   }
   sdc.close();
+}
+
+std::string PRIMITIVES_EXTRACTOR::get_wrapped_net(
+    const nlohmann::json& wrapped_instances, size_t index,
+    const FABRIC_CLOCK& clk) {
+  log_assert(wrapped_instances.is_array());
+  log_assert(index < wrapped_instances.size());
+  const nlohmann::json& instance = wrapped_instances[index];
+  log_assert(instance["connectivity"].contains(clk.port));
+  std::string wrapped_net = instance["connectivity"][clk.port];
+  log_assert(wrapped_net.size());
+  // Any subsequence wire
+  for (auto& instance : wrapped_instances) {
+    if (instance["module"] == "WIRE" && instance.contains("linked_object") &&
+        sort_name(instance["linked_object"]) == clk.linked_object) {
+      if (instance["connectivity"]["I"] == wrapped_net) {
+        wrapped_net = instance["connectivity"]["O"];
+      }
+    }
+  }
+  bool found = false;
+  for (auto& fabric : wrapped_instances) {
+    // All instance are either primitive or WIRE or fabric
+    // primitive and WIRE module name is fix
+    // for fabric, the module name format is "fabric_<project>"
+    if (((std::string)(fabric["module"])).find("fabric_") == 0) {
+      if (wrapped_instances[0]["connectivity"].contains(wrapped_net)) {
+        // good
+        found = true;
+        break;
+      }
+    }
+  }
+  if (!found) {
+    wrapped_net = "";
+  }
+  return wrapped_net;
+}
+
+void PRIMITIVES_EXTRACTOR::file_write_string(std::ofstream& file,
+                                             const std::string& string,
+                                             int size) {
+  if (size == -1) {
+    file << string.c_str();
+  } else {
+    file << stringf("%-*s", size, string.c_str()).c_str();
+  }
 }
