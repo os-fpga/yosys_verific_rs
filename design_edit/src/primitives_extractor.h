@@ -46,19 +46,17 @@ struct PIN_PORT;
 */
 struct FABRIC_CLOCK {
   FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
-               const std::string& p, const std::string& n, bool c)
+               const std::string& p, const std::string& n)
       : linked_object(l),
         module(m),
         name(i),
         port(p),
-        net(n),
-        is_clock_pin(c) {}
+        net(n) {}
   const std::string linked_object = "";
   const std::string module = "";
   const std::string name = "";
   const std::string port = "";
   const std::string net = "";
-  const bool is_clock_pin = false;
 };
 
 class PRIMITIVES_EXTRACTOR {

@@ -96,7 +96,6 @@ USING_YOSYS_NAMESPACE
 #define P_IS_ANY_INPUTS (1 << 5)
 #define P_IS_ANY_OUTPUTS (1 << 6)
 #define P_IS_IN_DIR (1 << 7)
-#define P_IS_CLOCK_PIN (1 << 8)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -205,7 +204,6 @@ struct PRIMITIVE_DB {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
-  bool is_clock_pin() const { return (feature & P_IS_CLOCK_PIN) != P_IS_NULL; }
   bool is_gearbox_clock() const {
     return (feature & P_IS_GEARBOX_CLOCK) != P_IS_NULL;
   }
@@ -309,7 +307,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\CLK_BUF",
-          P_IS_CLOCK_PIN | P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
+          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
           {"\\I"},                              // inputs
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
@@ -1383,28 +1381,8 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
             }
             std::string linked_object = instance->linked_object();
             std::string net = instance->connections[oout];
-            if (instance->primitive->db->is_clock_pin()) {
-              const PRIMITIVE* parent = instance->primitive;
-              while (parent->parent != nullptr) {
-                parent = parent->parent;
-              }
-              log_assert(parent->db->inputs.size());
-              std::string port_name = parent->db->inputs[0];
-              log_assert(parent->connections.find(port_name) !=
-                         parent->connections.end());
-              net = get_original_name(parent->connections.at(port_name));
-              POST_MSG(5,
-                       "This is clock is from PORT primitive. The port is %s",
-                       net.c_str());
-            } else {
-              POST_MSG(
-                  5,
-                  "This is clock is internal generated. Need to map the net %s",
-                  net.c_str());
-            }
             m_fabric_clocks.push_back(FABRIC_CLOCK(
-                linked_object, instance->module, instance->name, oout, net,
-                instance->primitive->db->is_clock_pin()));
+                linked_object, instance->module, instance->name, oout, net));
           }
         }
         i++;
@@ -1814,7 +1792,7 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
             nullptr) {
           bool found = false;
           for (auto& inst : m_instances) {
-            if (inst->name == cell->name.str()) {
+            if (inst->name == get_original_name(cell->name.str())) {
               found = true;
               break;
             }
@@ -2052,36 +2030,27 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   sdc << "#############\n";
   uint32_t i = 0;
   for (auto clk : m_fabric_clocks) {
-    if (clk.is_clock_pin) {
-      sdc << "# This clock is from pin. Use the port/pin name\n";
+    std::string wrapped_net =
+        get_wrapped_net(wrapped_instances,
+                        get_wrapped_instance(wrapped_instances, clk.name), clk);
+    if (wrapped_net.size()) {
       sdc << stringf(
-                 "set_clock_pin -device_clock {clk[%d]} -design_clock {%s}\n\n",
+                 "# set_clock_pin -device_clock {clk[%d]} -design_clock "
+                 "{%s}\n",
                  i, clk.net.c_str())
                  .c_str();
+      sdc << stringf(
+                 "set_clock_pin   -device_clock {clk[%d]} -design_clock "
+                 "{%s}\n\n",
+                 i, wrapped_net.c_str())
+                 .c_str();
     } else {
-      sdc << "# This clock is internal generated.\n";
-      std::string wrapped_net = get_wrapped_net(
-          wrapped_instances, get_wrapped_instance(wrapped_instances, clk.name),
-          clk);
-      if (wrapped_net.size()) {
-        sdc << stringf(
-                   "# set_clock_pin -device_clock {clk[%d]} -design_clock "
-                   "{%s}\n",
-                   i, clk.net.c_str())
-                   .c_str();
-        sdc << stringf(
-                   "set_clock_pin   -device_clock {clk[%d]} -design_clock "
-                   "{%s}\n\n",
-                   i, wrapped_net.c_str())
-                   .c_str();
-      } else {
-        sdc << "# Failed to find the mapped name\n";
-        sdc << stringf(
-                   "set_clock_pin -device_clock {clk[%d]} -design_clock "
-                   "{%s}\n\n",
-                   i, clk.net.c_str())
-                   .c_str();
-      }
+      sdc << "# Failed to find the mapped name\n";
+      sdc << stringf(
+                 "set_clock_pin -device_clock {clk[%d]} -design_clock "
+                 "{%s}\n\n",
+                 i, clk.net.c_str())
+                 .c_str();
     }
     i++;
   }
