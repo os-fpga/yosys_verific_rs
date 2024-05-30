@@ -77,6 +77,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> del_outs;
   std::unordered_set<Wire *> del_interface_wires;
   std::unordered_set<Wire *> del_wrapper_wires;
+  std::unordered_set<Wire *> del_unused;
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
@@ -84,6 +85,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> in_bits;
+  pool<SigBit> used_bits;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -399,6 +401,62 @@ struct DesignEditRapidSilicon : public ScriptPass {
       if (keep_wires.find(wire_name) == keep_wires.end()) {
         module->remove({wire});
       }
+    }
+  }
+
+  void del_undriven_assigned(Module *module)
+  {
+    for(auto cell : module->cells())
+    {
+      for (auto &conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        for (SigBit bit : conn.second)
+        {
+          if (bit.wire != nullptr) used_bits.insert(bit);
+        }
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      for (SigBit bit : conn.second)
+      {
+        if (bit.wire != nullptr) used_bits.insert(bit);
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+      std::vector<RTLIL::SigBit> unused_bits;
+      for (SigBit bit : conn.first)
+      {
+        if (bit.wire != nullptr)
+        {
+          if(!used_bits.count(bit) && !bit.wire->port_output)
+          {
+            unused_bits.push_back(bit);
+            if(conn.first.is_chunk())
+            {
+              if(conn.first.as_chunk().width == conn.first.as_chunk().wire->width)
+                del_unused.insert(bit.wire);
+            }
+          }
+        }
+      }
+      if(unused_bits.size())
+      {
+        if(unused_bits.size() == conn_lhs.size())
+          connections_to_remove.insert(conn);
+        else
+          std::cerr << "Unused bits in assignement" << std::endl;
+      }
+    }
+    remove_extra_conns(module);
+    connections_to_remove.clear();
+    for (auto wire : del_unused) {
+      module->remove({wire});
     }
   }
 
@@ -1052,6 +1110,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     update_prim_connections(interface_mod, primitives, interface_intermediate_wires);
 
     interface_mod->connections_.clear();
+    connections_to_remove.clear();
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
@@ -1069,6 +1128,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     delete_wires(original_mod, orig_intermediate_wires);
+    del_undriven_assigned(original_mod);
     fixup_mod_ports(original_mod);
     Pass::call(_design, "clean");
     delete_wires(interface_mod, interface_intermediate_wires);
