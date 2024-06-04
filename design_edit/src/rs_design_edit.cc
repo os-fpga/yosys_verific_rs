@@ -85,7 +85,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> assign_used_bits;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -421,45 +420,53 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     
-    for(auto &conn : module->connections())
+    while(true)
     {
-      for (SigBit bit : conn.second)
+      unsigned unused_assign = 0;
+      pool<SigBit> assign_used_bits;
+      for(auto &conn : module->connections())
       {
-        if (bit.wire != nullptr) assign_used_bits.insert(bit);
-      }
-    }
-
-    for(auto &conn : module->connections())
-    {
-      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
-      std::vector<RTLIL::SigBit> unused_bits;
-      for (SigBit bit : conn.first)
-      {
-        if (bit.wire != nullptr)
+        for (SigBit bit : conn.second)
         {
-          if(!used_bits.count(bit) && !assign_used_bits.count(bit) && !bit.wire->port_output)
+          if (bit.wire != nullptr) assign_used_bits.insert(bit);
+        }
+      }
+
+      for(auto &conn : module->connections())
+      {
+        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+        std::vector<RTLIL::SigBit> unused_bits;
+        for (SigBit bit : conn.first)
+        {
+          if (bit.wire != nullptr)
           {
-            unused_bits.push_back(bit);
-            if(conn.first.is_chunk())
+            if(!used_bits.count(bit) && !assign_used_bits.count(bit) && !bit.wire->port_output)
             {
-              if(conn.first.as_chunk().width == conn.first.as_chunk().wire->width)
-                del_unused.insert(bit.wire);
+              unused_bits.push_back(bit);
+              if(conn.first.is_chunk())
+              {
+                if(conn.first.as_chunk().width == conn.first.as_chunk().wire->width)
+                  del_unused.insert(bit.wire);
+              }
             }
           }
         }
+        if(unused_bits.size())
+        {
+          unused_assign++;
+          if(unused_bits.size() == conn_lhs.size())
+            connections_to_remove.insert(conn);
+          else
+            std::cerr << "Unused bits in assignement" << std::endl;
+        }
       }
-      if(unused_bits.size())
-      {
-        if(unused_bits.size() == conn_lhs.size())
-          connections_to_remove.insert(conn);
-        else
-          std::cerr << "Unused bits in assignement" << std::endl;
+      remove_extra_conns(module);
+      connections_to_remove.clear();
+      for (auto wire : del_unused) {
+        module->remove({wire});
       }
-    }
-    remove_extra_conns(module);
-    connections_to_remove.clear();
-    for (auto wire : del_unused) {
-      module->remove({wire});
+      del_unused.clear();
+      if (!unused_assign) break;
     }
 
     for(auto &conn : module->connections())
@@ -476,10 +483,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
           primitives.end()) {
         bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
         if (is_out_prim) continue;
+        // Upgrading dangling outs of input primtives to output ports
         for (auto port : cell->connections()){
           IdString portName = port.first;
           for (SigBit bit : port.second){
-            if(!used_bits.count(bit) && cell->output(portName) && !bit.wire->port_output){
+            if(!used_bits.count(bit) && cell->output(portName)
+              && !bit.wire->port_output){
               RTLIL::SigSig new_conn;
               RTLIL::Wire *new_wire = module->addWire(NEW_ID, 1);
               new_wire->port_output = true;
@@ -489,15 +498,17 @@ struct DesignEditRapidSilicon : public ScriptPass {
             }
           }
         }
-      } else {
-        for (auto port : cell->connections()){
-          IdString portName = port.first;
-          for (SigBit bit : port.second){
-            if(!used_bits.count(bit) && cell->output(portName) && !bit.wire->port_output){
-              bit.wire->port_output = true;
-            }
-          }
-        }
+      // Upgrading dangling outs of fabric primitives like TDPRAM is causing issues for AES_DECRYPT_partitioner
+      //} else {
+      //  for (auto port : cell->connections()){
+      //    IdString portName = port.first;
+      //    for (SigBit bit : port.second){
+      //      if(!used_bits.count(bit) && cell->output(portName)
+      //       && !bit.wire->port_output){
+      //        bit.wire->port_output = true;
+      //      }
+      //    }
+      //  }
       }
     }
   }
