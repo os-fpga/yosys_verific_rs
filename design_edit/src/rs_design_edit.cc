@@ -841,14 +841,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     primitives = io_prim.get_primitives(tech);
 
+    auto start = high_resolution_clock::now();
+    auto start_time = start;
     // Extract the primitive information (before anything is modified)
     PRIMITIVES_EXTRACTOR extractor(tech);
     extractor.extract(_design);
-
-    auto start = high_resolution_clock::now();
-    Pass::call(_design, "splitnets");
     auto end = high_resolution_clock::now();
-    std::string argstr = "Running SplitNets\nTime elapsed : ";
+    std::string argstr = "Extracting primitives\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
+
+    start = high_resolution_clock::now();
+    Pass::call(_design, "splitnets");
+    end = high_resolution_clock::now();
+    argstr = "Running SplitNets\nTime elapsed : ";
     elapsed_time (start, end, argstr);
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
@@ -1198,9 +1203,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto cell : remove_wrapper_cells) {
       wrapper_mod->remove(cell);
     }
+    end = high_resolution_clock::now();
+    argstr = "Removing cells from wrapper module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
     wrapper_mod->connections_.clear();
 
+    start = high_resolution_clock::now();
     // Add instances of the original and interface modules to the wrapper module
     Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
     Cell *interface_mod_inst =
@@ -1238,17 +1247,25 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+    end = high_resolution_clock::now();
+    argstr = "Instantiating fabric and interface modules\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
+    start = high_resolution_clock::now();
     for (auto wire : del_wrapper_wires) {
       wrapper_mod->remove({wire});
     }
+    end = high_resolution_clock::now();
+    argstr = "Removing extra wires from wrapper module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
+    start = high_resolution_clock::now();
     wrapper_mod->fixup_ports();
 
     new_design->add(wrapper_mod);
     new_design->add(interface_mod);
     end = high_resolution_clock::now();
-    argstr = "Processing wrapper module\nTime elapsed : ";
+    argstr = "Fixing wrapper ports\nTime elapsed : ";
     elapsed_time (start, end, argstr);
     start = high_resolution_clock::now();
     Pass::call(new_design, "flatten");
@@ -1327,6 +1344,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     end = high_resolution_clock::now();
     argstr = "Updating sdc\nTime elapsed : ";
     elapsed_time (start, end, argstr);
+    auto end_time = end;
+    auto duration = duration_cast<seconds>(end_time - start_time);
+    std::cout << "Time elapsed in design editing : " << duration.count() << " seconds\n";
   }
 
   void script() override {
