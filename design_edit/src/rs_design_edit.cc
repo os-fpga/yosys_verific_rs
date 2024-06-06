@@ -21,6 +21,7 @@
 #include "rs_design_edit.h"
 #include "rs_primitive.h"
 #include <json.hpp>
+#include <chrono>
 
 #ifdef PRODUCTION_BUILD
 #include "License_manager.hpp"
@@ -46,6 +47,7 @@ PRIVATE_NAMESPACE_BEGIN
 #define VERSION_PATCH 1
 
 using json = nlohmann::json;
+using namespace std::chrono;
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL;
@@ -776,6 +778,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void elapsed_time (time_point<high_resolution_clock> start,
+    time_point<high_resolution_clock> end, std::string &str)
+  {
+    auto duration = duration_cast<microseconds>(end - start);
+    std::cout << str << duration.count() << " microseconds\n";
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -836,7 +845,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
     PRIMITIVES_EXTRACTOR extractor(tech);
     extractor.extract(_design);
 
+    auto start = high_resolution_clock::now();
     Pass::call(_design, "splitnets");
+    auto end = high_resolution_clock::now();
+    std::string argstr = "Running SplitNets\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
       remove_backslashes(_design->top_module()->name.str());
@@ -844,6 +857,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
 
+    start = high_resolution_clock::now();
     for (auto cell : original_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
@@ -931,8 +945,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+    end = high_resolution_clock::now();
+    argstr = "Gathering Wires Data\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
+    start = high_resolution_clock::now();
     add_wire_btw_prims(original_mod);
+    end = high_resolution_clock::now();
+    argstr = "Adding wires between directly connected input and output primitives\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
     intersection_copy_remove(new_ins, new_outs, interface_wires);
     intersect(interface_wires, keep_wires);
     
@@ -943,6 +964,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     std::string wrapper_mod_name = "\\" + original_mod_name;
     wrapper_mod->name = wrapper_mod_name;
 
+    start = high_resolution_clock::now();
     for (auto wire : original_mod->wires()) {
       std::string wire_name = wire->name.str();
       if (new_ins.find(wire_name) != new_ins.end()) {
@@ -971,7 +993,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
         continue;
       }
     }
+    end = high_resolution_clock::now();
+    argstr = "Upgrading fabric wires to ports\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
+    start = high_resolution_clock::now();
     for (auto &conn : original_mod->connections()) {
       RTLIL::SigSpec lhs = conn.first;
       RTLIL::SigSpec rhs = conn.second;
@@ -1002,7 +1028,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
     remove_extra_conns(original_mod);
     connections_to_remove.clear();
     update_prim_connections(original_mod, primitives, orig_intermediate_wires);
+    end = high_resolution_clock::now();
+    argstr = "Handling I_BUF->Fabric->CLK_BUF\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
+    start = high_resolution_clock::now();
     handle_dangling_outs(original_mod);
+    end = high_resolution_clock::now();
+    argstr = "Handling Dangling outs\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
+    start = high_resolution_clock::now();
     delete_cells(original_mod, remove_prims);
 
     for (auto &conn : original_mod->connections()) {
@@ -1021,6 +1055,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
+    end = high_resolution_clock::now();
+    argstr = "Deleting primitive cells and extra wires\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
     for (const auto& prim_conn : io_prim_conn) {
       const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
@@ -1042,6 +1079,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     fixup_mod_ports(original_mod);
 
+    start = high_resolution_clock::now();
     for (auto cell : interface_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) ==
@@ -1078,7 +1116,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       del_interface_wires.insert(wire);
     }
+    end = high_resolution_clock::now();
+    argstr = "Deleting non-primitive cells and upgrading wires to ports in interface module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
+    start = high_resolution_clock::now();
     for (auto &conn : interface_mod->connections()) {
       RTLIL::SigSpec lhs = conn.first;
       RTLIL::SigSpec rhs = conn.second;
@@ -1107,13 +1149,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     update_prim_connections(interface_mod, primitives, interface_intermediate_wires);
+    end = high_resolution_clock::now();
+    argstr = "Handling I_BUF->Fabric->CLK_BUF in interface module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
     interface_mod->connections_.clear();
     connections_to_remove.clear();
+    start = high_resolution_clock::now();
     for (auto wire : del_interface_wires) {
       interface_mod->remove({wire});
     }
+    end = high_resolution_clock::now();
+    argstr = "Removing extra wires from interface module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
     
+    start = high_resolution_clock::now();
     if(sdc_passed) {
       std::ifstream input_sdc(sdc_file);
       if (!input_sdc.is_open()) {
@@ -1125,13 +1175,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
         extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
       }
     }
+    end = high_resolution_clock::now();
+    argstr = "Processing SDC file\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
     delete_wires(original_mod, orig_intermediate_wires);
     fixup_mod_ports(original_mod);
+    start = high_resolution_clock::now();
     Pass::call(_design, "clean");
+    end = high_resolution_clock::now();
+    argstr = "Cleaning fabric netlist\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
 
+    start = high_resolution_clock::now();
     for (auto cell : wrapper_mod->cells()) {
       string module_name = cell->type.str();
       remove_wrapper_cells.push_back(cell);
@@ -1189,7 +1247,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     new_design->add(wrapper_mod);
     new_design->add(interface_mod);
+    end = high_resolution_clock::now();
+    argstr = "Processing wrapper module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
+    start = high_resolution_clock::now();
     Pass::call(new_design, "flatten");
+    end = high_resolution_clock::now();
+    argstr = "Flattening wrapper module\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
 
     for (auto file : wrapper_files) {
       std::string extension = get_extension(file);
@@ -1235,8 +1300,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     run_script(new_design);
+    start = high_resolution_clock::now();
     // Dump entire wrap design using "config.json" naming (by default)
     dump_io_config_json(wrapper_mod, io_config_json);
+    end = high_resolution_clock::now();
+    argstr = "Dumping config.json\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
+    start = high_resolution_clock::now();
     std::ifstream input(io_config_json.c_str());
     log_assert(input.is_open() && input.good());
     nlohmann::json instances = nlohmann::json::parse(input);
@@ -1254,6 +1324,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     } else {
       extractor.write_json("io_config.simple.json", true);
     }
+    end = high_resolution_clock::now();
+    argstr = "Updating sdc\nTime elapsed : ";
+    elapsed_time (start, end, argstr);
   }
 
   void script() override {
