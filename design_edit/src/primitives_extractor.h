@@ -10,7 +10,13 @@
 
 enum IO_DIR { IN, OUT, INOUT, UNKNOWN };
 
-enum PORT_REQ { DONT_CARE, IS_PORT, NOT_PORT, IS_STANDALONE };
+enum PRIMITIVE_REQ {
+  DONT_CARE,
+  IS_PORT,
+  NOT_PORT,
+  IS_STANDALONE,
+  IS_FABRIC_CLKBUF
+};
 
 struct MSG;
 /*
@@ -46,17 +52,24 @@ struct PIN_PORT;
 */
 struct FABRIC_CLOCK {
   FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
-               const std::string& p, const std::string& n)
+               const std::string& ip, const std::string& op,
+               const std::string& in, const std::string& on, bool fc)
       : linked_object(l),
         module(m),
         name(i),
-        port(p),
-        net(n) {}
+        iport(ip),
+        oport(op),
+        inet(in),
+        onet(on),
+        is_fabric_clkbuf(fc) {}
   const std::string linked_object = "";
   const std::string module = "";
   const std::string name = "";
-  const std::string port = "";
-  const std::string net = "";
+  const std::string iport = "";
+  const std::string oport = "";
+  const std::string inet = "";
+  const std::string onet = "";
+  const bool is_fabric_clkbuf = false;
 };
 
 class PRIMITIVES_EXTRACTOR {
@@ -72,13 +85,14 @@ class PRIMITIVES_EXTRACTOR {
                  const nlohmann::json& wrapped_instances);
   static void get_signals(const Yosys::RTLIL::SigSpec& sig,
                           std::vector<std::string>& signals);
+  static bool is_real_net(const std::string& net);
 
  private:
   void post_msg(uint32_t offset, const std::string& msg);
   void remove_msg();
   bool get_ports(Yosys::RTLIL::Module* module);
   const PRIMITIVE_DB* is_supported_primitive(const std::string& name,
-                                             PORT_REQ req);
+                                             PRIMITIVE_REQ req);
   void get_primitive_parameters(Yosys::RTLIL::Cell* cell, PRIMITIVE* primitive);
   void trace_and_create_port(Yosys::RTLIL::Module* module,
                              std::vector<PORT_INFO>& port_infos);
@@ -102,6 +116,7 @@ class PRIMITIVES_EXTRACTOR {
   bool trace_next_primitive(Yosys::RTLIL::Module* module, PRIMITIVE*& parent,
                             Yosys::RTLIL::Cell* cell,
                             const std::string& connection);
+  void trace_fabric_clkbuf(Yosys::RTLIL::Module* module);
   void trace_gearbox_clock();
   static void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
                          std::vector<std::string>& signals);
@@ -142,8 +157,10 @@ class PRIMITIVES_EXTRACTOR {
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
-  std::string get_wrapped_net(const nlohmann::json& wrapped_instances,
-                              size_t index, const FABRIC_CLOCK& clk);
+  std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
+                                    size_t index, const FABRIC_CLOCK& clk);
+  std::string get_output_wrapped_net(const nlohmann::json& wrapped_instances,
+                                     size_t index, const FABRIC_CLOCK& clk);
   void file_write_string(std::ofstream& file, const std::string& string,
                          int size = -1);
 

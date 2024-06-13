@@ -158,16 +158,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return output.str();
   }
-  
-  bool is_real_net(const std::string& net) {
-    if (net == "" || 
-        ((net.size() > 14) && 
-         (net.find("__const_bit_") == 0) && 
-         (net.rfind("__") == (net.size() - 2)))) {
-      return false;
-    }
-    return true;
-  }
 
   void dump_io_config_json(Module* mod, std::string file) {
     std::ofstream json_file(file.c_str());
@@ -298,7 +288,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
                 for (auto& s : signals) {
                   std::string net = (std::string)(s);
-                  if (!is_real_net(net)) {
+                  if (!PRIMITIVES_EXTRACTOR::is_real_net(net)) {
                     continue;
                   }
                   if (i == 0) {
@@ -345,7 +335,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             continue;
           }
           std::string inst_net = (std::string)(iter.value());
-          if (!is_real_net(inst_net)) {
+          if (!PRIMITIVES_EXTRACTOR::is_real_net(inst_net)) {
             continue;
           }
           bool match = false;
