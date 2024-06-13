@@ -494,10 +494,10 @@ struct PORT_PRIMITIVE : PRIMITIVE {
           g_standalone_tracker.end()) {
         g_standalone_tracker[standalone_name] = 0;
       }
-      standalone_name = stringf("%s#%d", standalone_name.c_str(),
-                                g_standalone_tracker[standalone_name]);
+      uint32_t index = g_standalone_tracker[standalone_name];
       g_standalone_tracker[standalone_name] =
           g_standalone_tracker[standalone_name] + 1;
+      standalone_name = stringf("%s#%d", standalone_name.c_str(), index);
     }
   }
   std::string linked_object() const {
@@ -587,11 +587,14 @@ struct INSTANCE {
   Structure that store pin information
 */
 struct PIN_PORT {
-  PIN_PORT(bool i, bool s) : is_input(i), is_standalone(s) {}
+  PIN_PORT(bool i, bool s, bool f)
+      : is_input(i), is_standalone(s), is_fabric_clkbuf(f) {}
   const bool is_input = false;
   const bool is_standalone = false;
+  const bool is_fabric_clkbuf = false;
   std::string location = "";
   std::string mode = "";
+  std::string internal_pin = "";
   std::vector<std::string> traces;
   std::vector<std::string> full_traces;
   std::string skip_reason = "";
@@ -1431,7 +1434,8 @@ void PRIMITIVES_EXTRACTOR::gen_wire(const std::string& linked_object,
 */
 void PRIMITIVES_EXTRACTOR::assign_location(
     const std::string& port, const std::string& location,
-    std::unordered_map<std::string, std::string>& properties) {
+    std::unordered_map<std::string, std::string>& properties,
+    const std::string& internal_pin) {
   POST_MSG(1, "Assign location %s (and properties) to Port %s",
            location.c_str(), port.c_str());
   for (auto& instance : m_instances) {
@@ -1440,6 +1444,7 @@ void PRIMITIVES_EXTRACTOR::assign_location(
                   port) != instance->linked_objects.end()) {
       log_assert(m_pin_infos.find(port) != m_pin_infos.end());
       m_pin_infos[port]->location = location;
+      m_pin_infos[port]->internal_pin = internal_pin;
       instance->locations[port] = location;
       if (instance->primitive != nullptr &&
           instance->primitive->is_port_primitive) {
@@ -1659,7 +1664,8 @@ void PRIMITIVES_EXTRACTOR::summarize() {
     for (auto& object : port->linked_objects()) {
       log_assert(m_pin_infos.find(object) == m_pin_infos.end());
       m_pin_infos[object] =
-          new PIN_PORT(port->db->is_in_dir(), port->db->is_standalone());
+          new PIN_PORT(port->db->is_in_dir(), port->db->is_standalone(),
+                       port->db->is_fabric_clkbuf());
     }
     PRIMITIVE* primitive = (PRIMITIVE*)(port);
     summarize(primitive, port->linked_object(), port->linked_objects(),
@@ -2246,7 +2252,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   m_max_object_name += 1;  // For space
   // First column is max is "# set_mode" = 10 + 1
   for (auto& iter : m_pin_infos) {
-    if (iter.second->is_standalone) {
+    if (iter.second->is_standalone || iter.second->is_fabric_clkbuf) {
       continue;
     }
     size_t i = 0;
@@ -2304,7 +2310,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
     // IO
     file_write_string(sdc, skip + "set_io", 11);
     file_write_string(sdc, object, m_max_object_name);
-    file_write_string(sdc, location);
+    if (iter.second->internal_pin.size()) {
+      file_write_string(sdc, location + " " + iter.second->internal_pin);
+    } else {
+      file_write_string(sdc, location);
+    }
     file_write_string(sdc, "\n\n");
   }
   sdc.close();

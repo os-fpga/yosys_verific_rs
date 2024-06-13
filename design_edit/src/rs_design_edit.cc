@@ -1112,7 +1112,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       processSdcFile(input_sdc);
       get_loc_map_by_io();
       for (auto &p : location_map_by_io) {
-        extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
+        extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties, p.second._internal_pin);
       }
     }
 
