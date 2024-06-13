@@ -689,8 +689,8 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
 
   // Step 9: Support more primitive once more use cases are understood
 
-  // Step 10: Let's make fabric clock buffer as the last item to trace (need to add
-  // to the chain)
+  // Step 10: Let's make fabric clock buffer as the last item to trace (need to
+  // add to the chain)
   trace_fabric_clkbuf(design->top_module());
 
   // Step 11: Trace primitive that the clock need to routed to gearbox (does not
