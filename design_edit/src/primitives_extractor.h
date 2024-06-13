@@ -77,9 +77,9 @@ class PRIMITIVES_EXTRACTOR {
   PRIMITIVES_EXTRACTOR(const std::string& technology);
   ~PRIMITIVES_EXTRACTOR();
   bool extract(Yosys::RTLIL::Design* design);
-  void assign_location(
-      const std::string& port, const std::string& location,
-      std::unordered_map<std::string, std::string>& properties);
+  void assign_location(const std::string& port, const std::string& location,
+                       std::unordered_map<std::string, std::string>& properties,
+                       const std::string& internal_pin);
   void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file,
                  const nlohmann::json& wrapped_instances);
