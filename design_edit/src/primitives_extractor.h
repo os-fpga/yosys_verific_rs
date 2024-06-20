@@ -157,6 +157,11 @@ class PRIMITIVES_EXTRACTOR {
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
+  void write_sdc_internal_control_signal(
+      std::ofstream& sdc, const nlohmann::json& wrapped_instances,
+      const std::string& module, const std::string& linked_object,
+      const std::string& location, const std::string& port,
+      const std::string& internal_signal);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
                                     size_t index, const FABRIC_CLOCK& clk);
   std::string get_output_wrapped_net(const nlohmann::json& wrapped_instances,

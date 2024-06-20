@@ -186,7 +186,8 @@ struct MSG {
 struct PRIMITIVE_DB {
   PRIMITIVE_DB(const std::string& n, uint32_t f, std::vector<std::string> is,
                std::vector<std::string> os, const std::string& it,
-               const std::string& ot, std::string c, std::string cc)
+               const std::string& ot, std::string c, std::string cc,
+               std::map<std::string, std::string> csm = {})
       : name(n),
         feature(f),
         inputs(is),
@@ -194,7 +195,8 @@ struct PRIMITIVE_DB {
         intrace_connection(it),
         outtrace_connection(ot),
         fast_clock(c),
-        core_clock(cc) {}
+        core_clock(cc),
+        control_signal_map(csm) {}
   std::vector<std::string> get_checking_ports() const {
     if (is_in_dir()) {
       return inputs;
@@ -229,6 +231,7 @@ struct PRIMITIVE_DB {
   const std::string outtrace_connection = "";
   const std::string fast_clock = "";
   const std::string core_clock = "";
+  const std::map<std::string, std::string> control_signal_map;
 };
 
 /*
@@ -250,7 +253,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // intrace_connection
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
-          ""                                    // core_clock
+          "",                                   // core_clock
+          {                                     // control_signal_map
+            {"EN", "f2g_in_en_{X}"}
+          }
       )},
       {
         PRIMITIVE_DB(
@@ -261,7 +267,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // intrace_connection
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
-          ""                                    // core_clock
+          "",                                   // core_clock
+          {                                     // control_signal_map
+            {"EN", "f2g_in_en_{X}"}
+          }
       )},
       // Output
       {
@@ -330,7 +339,13 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\I",                                // intrace_connection
           "\\O",                                // outtrace_connection
           "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
-          ""                                    // core_clock 
+          "",                                   // core_clock 
+          {                                     // control_signal_map
+            {"DLY_LOAD", "f2g_trx_dly_ld"},
+            {"DLY_ADJ", "f2g_trx_dly_adj"},
+            {"DLY_INCDEC", "f2g_trx_dly_inc"},
+            {"DLY_TAP_VALUE", "g2f_trx_dly_tap"}
+          }
       )},
       {
         PRIMITIVE_DB(
@@ -569,6 +584,30 @@ struct INSTANCE {
     }
     name.erase(0, 1);
     return sort_name(name);
+  }
+  std::string get_location_with_priority(std::vector<std::string> ports) {
+    // Check the design port name from the connectivity
+    std::string design_port_name = "";
+    for (auto port : ports) {
+      if (connections.find(port) != connections.end()) {
+        design_port_name = connections.at(port);
+        break;
+      }
+    }
+    std::string location = "";
+    if (design_port_name.size() > 0 &&
+        locations.find(design_port_name) != locations.end()) {
+      location = locations.at(design_port_name);
+    } else {
+      // Just loop through locations, first non-empty will be used
+      for (auto iter : locations) {
+        if (iter.second.size()) {
+          location = iter.second;
+          break;
+        }
+      }
+    }
+    return location;
   }
   const std::string module = "";
   const std::string name = "";
@@ -2317,7 +2356,140 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
     }
     file_write_string(sdc, "\n\n");
   }
+  // Internal control signals
+  sdc << "#############\n";
+  sdc << "#\n";
+  sdc << "# Internal Control Signals\n";
+  sdc << "#\n";
+  sdc << "#############\n";
+  POST_MSG(2, "Determine internal control signals");
+  for (auto& inst : m_instances) {
+    if (inst->module != "WIRE") {
+      const PRIMITIVE_DB* db = inst->primitive->db;
+      log_assert(db != nullptr);
+      std::string linked_object = inst->linked_object();
+      std::string location = inst->get_location_with_priority({"I_P", "O_P"});
+      for (auto iter : db->control_signal_map) {
+        write_sdc_internal_control_signal(sdc, wrapped_instances, inst->module,
+                                          linked_object, location, iter.first,
+                                          iter.second);
+      }
+    }
+  }
   sdc.close();
+}
+
+void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
+    std::ofstream& sdc, const nlohmann::json& wrapped_instances,
+    const std::string& module, const std::string& linked_object,
+    const std::string& location, const std::string& port,
+    const std::string& internal_signal) {
+  std::string info =
+      stringf("Module=%s LinkedObject=%s Location=%s Port=%s Signal=%s",
+              module.c_str(), linked_object.c_str(), location.c_str(),
+              port.c_str(), internal_signal.c_str());
+  POST_MSG(3, "%s", info.c_str());
+  sdc << "# " << info.c_str() << "\n";
+  if (location.size()) {
+    bool found_instance = false;
+    bool found_port = false;
+    std::vector<std::string> wrapped_nets;
+    for (auto& instance : wrapped_instances) {
+      if (instance["module"] == module &&
+          sort_name(instance["linked_object"]) == linked_object) {
+        found_instance = true;
+        for (auto iter : instance["connectivity"].items()) {
+          std::string key = iter.key();
+          nlohmann::json value = iter.value();
+          if (key == port) {
+            found_port = true;
+            if (value.is_array()) {
+              for (nlohmann::json v : value) {
+                log_assert(v.is_string());
+                wrapped_nets.push_back((std::string)(v));
+              }
+            } else {
+              log_assert(value.is_string());
+              wrapped_nets.push_back((std::string)(value));
+            }
+          }
+        }
+        break;
+      }
+    }
+    if (found_instance) {
+      if (found_port) {
+        // Any subsequence wire
+        for (size_t i = 0; i < wrapped_nets.size(); i++) {
+          for (auto& instance : wrapped_instances) {
+            if (instance["module"] == "WIRE") {
+              if (instance["connectivity"]["O"] == wrapped_nets[i]) {
+                wrapped_nets[i] = instance["connectivity"]["I"];
+              } else if (instance["connectivity"]["I"] == wrapped_nets[i]) {
+                wrapped_nets[i] = instance["connectivity"]["O"];
+              }
+            }
+          }
+        }
+        size_t wrapped_net_i = 0;
+        for (auto wrapped_net : wrapped_nets) {
+          bool found = false;
+          for (auto& fabric : wrapped_instances) {
+            // All instance are either primitive or WIRE or fabric
+            // primitive and WIRE module name is fix
+            // for fabric, the module name format is "fabric_<project>"
+            if (((std::string)(fabric["module"])).find("fabric_") == 0) {
+              if (fabric["connectivity"].contains(wrapped_net)) {
+                // good
+                found = true;
+                break;
+              }
+            }
+          }
+          if (found) {
+            std::string final_internal_signal = internal_signal;
+            size_t index = final_internal_signal.find("{X}");
+            if (index != std::string::npos) {
+              std::string AB = location[location.size() - 1] == 'N' ? "B" : "A";
+              final_internal_signal =
+                  final_internal_signal.replace(index, 3, AB);
+            }
+            if (wrapped_nets.size() > 1) {
+              final_internal_signal = stringf(
+                  "%s[%ld]", final_internal_signal.c_str(), wrapped_net_i);
+            }
+            std::string assignment =
+                stringf("set_io {%s} %s %s", wrapped_net.c_str(),
+                        location.c_str(), final_internal_signal.c_str());
+            sdc << assignment.c_str() << "\n";
+          } else {
+            POST_MSG(4, "Fail to trace fabric module connection: %s",
+                     wrapped_net.c_str());
+            sdc << "# "
+                << "Fail to trace fabric module connection: "
+                << wrapped_net.c_str() << "\n";
+          }
+          wrapped_net_i++;
+        }
+      } else {
+        POST_MSG(4, "Wrapped instance port not found");
+        sdc << "# "
+            << "Wrapped instance port not found"
+            << "\n";
+      }
+    } else {
+      POST_MSG(4, "Wrapped instance not found");
+      sdc << "# "
+          << "Wrapped instance not found"
+          << "\n";
+    }
+  } else {
+    POST_MSG(4, "Pin location is not assigned");
+    sdc << "# "
+        << "Pin location is not assigned"
+        << "\n";
+  }
+  sdc << "\n";
 }
 
 std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
@@ -2346,7 +2518,7 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
     // primitive and WIRE module name is fix
     // for fabric, the module name format is "fabric_<project>"
     if (((std::string)(fabric["module"])).find("fabric_") == 0) {
-      if (wrapped_instances[0]["connectivity"].contains(wrapped_net)) {
+      if (fabric["connectivity"].contains(wrapped_net)) {
         // good
         found = true;
         break;
