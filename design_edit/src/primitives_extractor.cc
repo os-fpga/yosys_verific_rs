@@ -2300,7 +2300,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                  i, wrapped_net.c_str())
                  .c_str();
     } else {
-      sdc << "# Failed to find the mapped name\n";
+      sdc << "# Failure reason: Failed to find the mapped name\n";
       sdc << stringf(
                  "set_clock_pin   -device_clock clk[%d] -design_clock "
                  "%s\n",
@@ -2324,7 +2324,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                    j, wrapped_net.c_str())
                    .c_str();
       } else {
-        sdc << "# Failed to find the mapped name\n";
+        sdc << "# Failure reason: Failed to find the mapped name\n";
         sdc << stringf(
                    "set_clock_out   -device_clock clk[%d] -design_clock "
                    "%s\n",
@@ -2413,7 +2413,13 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       data_reason = get_fabric_data(wrapped_instances, object, data_nets,
                                     found_data_nets, data_input);
       if (data_reason.size()) {
-        entry.comments.push_back(stringf("# %s", data_reason.c_str()));
+        if (data_reason.find("but data signal is not defined") ==
+            std::string::npos) {
+          entry.comments.push_back(
+              stringf("# Failure reason: %s", data_reason.c_str()));
+        } else {
+          entry.comments.push_back(stringf("# %s", data_reason.c_str()));
+        }
       }
     }
     // Mode
@@ -2728,8 +2734,9 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
         }
       }
     } else {
-      reason = stringf("Object %s is primitive %s but without data signal",
-                       object.c_str(), db->name.c_str());
+      reason =
+          stringf("Object %s is primitive %s but data signal is not defined",
+                  object.c_str(), db->name.c_str());
     }
   } else {
     reason = stringf("Unable to find instance for object %s", object.c_str());
