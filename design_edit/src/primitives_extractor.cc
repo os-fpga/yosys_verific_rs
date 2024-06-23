@@ -1948,6 +1948,8 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
           } else {
             pin->skip_reason = "The clock is Gearbox internal fast clock.";
           }
+        } else {
+          pin->skip_reason = "Temporarily disable all clock constraint.";
         }
         break;
       }
