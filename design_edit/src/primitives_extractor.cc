@@ -2528,7 +2528,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
   entry.comments.push_back(stringf("# Port: %s", port.c_str()));
   entry.comments.push_back(stringf("# Signal: %s", internal_signal.c_str()));
 #endif
-  PIN_LOCATION pin;
+  PIN_PARSER pin;
   bool location_status = validate_location(location, pin);
   if (location_status) {
     std::vector<std::string> wrapped_nets;
@@ -2600,10 +2600,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
               std::string unique =
                   stringf("%s+%s", final_internal_signal.c_str(),
                           assigned_location.c_str());
-              bool found =
-                  std::find(m_unique_assigned_location.begin(),
-                            m_unique_assigned_location.end(),
-                            unique) != m_unique_assigned_location.end();
+              bool found = std::find(m_auto_assigned_location.begin(),
+                                     m_auto_assigned_location.end(),
+                                     unique) != m_auto_assigned_location.end();
               if (found) {
                 entry.comments.push_back(stringf(
                     "# Assigned location %s and internal signal %s had been "
@@ -2611,7 +2610,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                     assigned_location.c_str(), final_internal_signal.c_str()));
                 skip = "# ";
               } else {
-                m_unique_assigned_location.push_back(unique);
+                m_auto_assigned_location.push_back(unique);
               }
             }
             std::string set_io = stringf("%sset_io", skip.c_str());
@@ -2655,7 +2654,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
   Validate the user assigned location
 */
 bool PRIMITIVES_EXTRACTOR::validate_location(const std::string& location,
-                                             PIN_LOCATION& pin) {
+                                             PIN_PARSER& pin) {
   bool status = false;
   if (location.size()) {
     std::regex const e{"H([PR])_([1-6])_(CC_|)([0-9]+)_([0-9]+)([PN])"};
@@ -2701,7 +2700,7 @@ bool PRIMITIVES_EXTRACTOR::validate_location(const std::string& location,
 */
 std::string PRIMITIVES_EXTRACTOR::get_assigned_location(
     SDC_ENTRY& entry, const std::string& rule, const std::string& location,
-    PIN_LOCATION& pin) {
+    PIN_PARSER& pin) {
   std::string assigned_location = location;
   log_assert(rule == "" || rule == "half-first");
   log_assert(pin.failure_reason.empty());

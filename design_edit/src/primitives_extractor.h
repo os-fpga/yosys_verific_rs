@@ -89,7 +89,10 @@ struct SDC_ENTRY {
   std::vector<SDC_ASSIGNMENT> assignments;
 };
 
-struct PIN_LOCATION {
+/*
+  Structure to store pin information
+*/
+struct PIN_PARSER {
   std::string type = "";
   std::string bank = "";
   bool is_clock = false;
@@ -188,10 +191,10 @@ class PRIMITIVES_EXTRACTOR {
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& location,
       const std::string& port, const std::string& internal_signal);
-  bool validate_location(const std::string& location, PIN_LOCATION& pin);
+  bool validate_location(const std::string& location, PIN_PARSER& pin);
   std::string get_assigned_location(SDC_ENTRY& entry, const std::string& rule,
                                     const std::string& location,
-                                    PIN_LOCATION& pin);
+                                    PIN_PARSER& pin);
   size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
                               const std::string& name);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
@@ -229,7 +232,7 @@ class PRIMITIVES_EXTRACTOR {
   int m_max_object_name = 0;
   int m_max_trace = 0;
   std::vector<PIN_PORT*> m_pin_infos;
-  std::vector<std::string> m_unique_assigned_location;
+  std::vector<std::string> m_auto_assigned_location;
 };
 
 #endif
