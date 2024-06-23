@@ -89,6 +89,14 @@ struct SDC_ENTRY {
   std::vector<SDC_ASSIGNMENT> assignments;
 };
 
+struct PIN_LOCATION {
+  std::string type = "";
+  std::string bank = "";
+  bool is_clock = false;
+  int index = 0;
+  std::string failure_reason = "";
+};
+
 class PRIMITIVES_EXTRACTOR {
  public:
   PRIMITIVES_EXTRACTOR(const std::string& technology);
@@ -154,6 +162,7 @@ class PRIMITIVES_EXTRACTOR {
                                const std::string& module_name,
                                const std::string& port_name,
                                const std::string& net_name);
+  PIN_PORT* get_pin_info(const std::string& name);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);
@@ -179,6 +188,10 @@ class PRIMITIVES_EXTRACTOR {
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& location,
       const std::string& port, const std::string& internal_signal);
+  bool validate_location(const std::string& location, PIN_LOCATION& pin);
+  std::string get_assigned_location(SDC_ENTRY& entry, const std::string& rule,
+                                    const std::string& location,
+                                    PIN_LOCATION& pin);
   size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
                               const std::string& name);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
@@ -215,7 +228,8 @@ class PRIMITIVES_EXTRACTOR {
   int m_max_out_object_name = 0;
   int m_max_object_name = 0;
   int m_max_trace = 0;
-  std::map<std::string, PIN_PORT*> m_pin_infos;
+  std::vector<PIN_PORT*> m_pin_infos;
+  std::vector<std::string> m_unique_assigned_location;
 };
 
 #endif

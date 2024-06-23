@@ -71,6 +71,7 @@
 #include "primitives_extractor.h"
 
 #include <algorithm>
+#include <regex>
 #include <set>
 
 #include "backends/rtlil/rtlil_backend.h"
@@ -360,10 +361,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
           "",                                   // core_clock 
           {                                     // control_signal_map
-            {"DLY_LOAD", "in:f2g_trx_dly_ld"},
-            {"DLY_ADJ", "in:f2g_trx_dly_adj"},
-            {"DLY_INCDEC", "in:f2g_trx_dly_inc"},
-            {"DLY_TAP_VALUE", "out:g2f_trx_dly_tap"}
+            {"DLY_LOAD", "in:rule=half-first:f2g_trx_dly_ld"},
+            {"DLY_ADJ", "in:rule=half-first:f2g_trx_dly_adj"},
+            {"DLY_INCDEC", "in:rule=half-first:f2g_trx_dly_inc"},
+            {"DLY_TAP_VALUE", "out:rule=half-first:g2f_trx_dly_tap"}
           },
           "\\O"                                 // data_signal
       )},
@@ -446,10 +447,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"DLY_LOAD", "in:f2g_trx_dly_ld"},
-            {"DLY_ADJ", "in:f2g_trx_dly_adj"},
-            {"DLY_INCDEC", "in:f2g_trx_dly_inc"},
-            {"DLY_TAP_VALUE", "out:g2f_trx_dly_tap"}
+            {"DLY_LOAD", "in:rule=half-first:f2g_trx_dly_ld"},
+            {"DLY_ADJ", "in:rule=half-first:f2g_trx_dly_adj"},
+            {"DLY_INCDEC", "in:rule=half-first:f2g_trx_dly_inc"},
+            {"DLY_TAP_VALUE", "out:rule=half-first:g2f_trx_dly_tap"}
           },
           "\\I"                                 // data_signal
       )},
@@ -697,8 +698,9 @@ struct INSTANCE {
   Structure that store pin information
 */
 struct PIN_PORT {
-  PIN_PORT(bool i, bool s, bool f)
-      : is_input(i), is_standalone(s), is_fabric_clkbuf(f) {}
+  PIN_PORT(std::string n, bool i, bool s, bool f)
+      : name(n), is_input(i), is_standalone(s), is_fabric_clkbuf(f) {}
+  const std::string name = "";
   const bool is_input = false;
   const bool is_standalone = false;
   const bool is_fabric_clkbuf = false;
@@ -741,8 +743,9 @@ PRIMITIVES_EXTRACTOR::~PRIMITIVES_EXTRACTOR() {
     delete m_instances.back();
     m_instances.pop_back();
   }
-  for (auto& iter : m_pin_infos) {
-    delete iter.second;
+  while (m_pin_infos.size()) {
+    delete m_pin_infos.back();
+    m_pin_infos.pop_back();
   }
 }
 
@@ -1089,6 +1092,9 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
   }
 }
 
+/*
+  Check if the input/output port is connected to primitive port
+*/
 bool PRIMITIVES_EXTRACTOR::get_connected_port(
     Yosys::RTLIL::Module* module, const std::string& cell_port_name,
     const std::string& connection, IO_DIR dir,
@@ -1552,9 +1558,10 @@ void PRIMITIVES_EXTRACTOR::assign_location(
     if (std::find(instance->linked_objects.begin(),
                   instance->linked_objects.end(),
                   port) != instance->linked_objects.end()) {
-      log_assert(m_pin_infos.find(port) != m_pin_infos.end());
-      m_pin_infos[port]->location = location;
-      m_pin_infos[port]->internal_pin = internal_pin;
+      PIN_PORT* p = get_pin_info(port);
+      log_assert(p != nullptr);
+      p->location = location;
+      p->internal_pin = internal_pin;
       instance->locations[port] = location;
       if (instance->primitive != nullptr &&
           instance->primitive->is_port_primitive) {
@@ -1722,6 +1729,20 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
 }
 
 /*
+  Function to get pin info
+*/
+PIN_PORT* PRIMITIVES_EXTRACTOR::get_pin_info(const std::string& name) {
+  PIN_PORT* port = nullptr;
+  for (auto& p : m_pin_infos) {
+    if (p->name == name) {
+      port = p;
+      break;
+    }
+  }
+  return port;
+}
+
+/*
   Function to summarize what primitive connectivity
 */
 void PRIMITIVES_EXTRACTOR::summarize() {
@@ -1772,10 +1793,10 @@ void PRIMITIVES_EXTRACTOR::summarize() {
            m_max_out_object_name + 1, "");
   for (PORT_PRIMITIVE*& port : m_ports) {
     for (auto& object : port->linked_objects()) {
-      log_assert(m_pin_infos.find(object) == m_pin_infos.end());
-      m_pin_infos[object] =
-          new PIN_PORT(port->db->is_in_dir(), port->db->is_standalone(),
-                       port->db->is_fabric_clkbuf());
+      log_assert(get_pin_info(object) == nullptr);
+      m_pin_infos.push_back(new PIN_PORT(object, port->db->is_in_dir(),
+                                         port->db->is_standalone(),
+                                         port->db->is_fabric_clkbuf()));
     }
     PRIMITIVE* primitive = (PRIMITIVE*)(port);
     summarize(primitive, port->linked_object(), port->linked_objects(),
@@ -1855,9 +1876,10 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
     }
   } else {
     for (auto& object : objects) {
-      update_pin_traces(m_pin_infos[object]->traces, traces, is_in_dir);
-      update_pin_traces(m_pin_infos[object]->full_traces, full_traces,
-                        is_in_dir);
+      PIN_PORT* p = get_pin_info(object);
+      log_assert(p != nullptr);
+      update_pin_traces(p->traces, traces, is_in_dir);
+      update_pin_traces(p->full_traces, full_traces, is_in_dir);
     }
     std::string trace = "";
     if (is_in_dir) {
@@ -1908,8 +1930,8 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
 */
 void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
                                            const PRIMITIVE* primitive) {
-  log_assert(m_pin_infos.find(pin_name) != m_pin_infos.end());
-  PIN_PORT*& pin = m_pin_infos[pin_name];
+  PIN_PORT* pin = get_pin_info(pin_name);
+  log_assert(pin != nullptr);
   if (primitive->db->name == "\\I_DDR" || primitive->db->name == "\\O_DDR") {
     log_assert(pin->mode.size() == 0);
     pin->mode = "DDR";
@@ -2355,16 +2377,16 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   // First column is max is "# set_mode" = 10 + 1
   POST_MSG(2, "Determine data signals");
   std::vector<SDC_ENTRY> sdc_entries;
-  for (auto& iter : m_pin_infos) {
-    if (iter.second->is_standalone || iter.second->is_fabric_clkbuf) {
+  for (auto& pin : m_pin_infos) {
+    if (pin->is_standalone || pin->is_fabric_clkbuf) {
       continue;
     }
     SDC_ENTRY entry;
     size_t i = 0;
-    for (auto& trace : iter.second->traces) {
+    for (auto& trace : pin->traces) {
       if (i == 0) {
         entry.assignments.push_back(
-            SDC_ASSIGNMENT("# Pin", iter.first, ":: " + trace, ""));
+            SDC_ASSIGNMENT("# Pin", pin->name, ":: " + trace, ""));
       } else {
         entry.assignments.push_back(SDC_ASSIGNMENT("#", "", ":: " + trace, ""));
       }
@@ -2372,42 +2394,41 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
     }
     std::string location = "__NOT_PROVIDED__";
     char ab = '?';
-    if (iter.second->location.size()) {
-      if (iter.second->location.back() == 'P') {
-        location = iter.second->location;
+    if (pin->location.size()) {
+      if (pin->location.back() == 'P') {
+        location = pin->location;
         ab = 'A';
-      } else if (iter.second->location.back() == 'N') {
-        location = iter.second->location;
+      } else if (pin->location.back() == 'N') {
+        location = pin->location;
         ab = 'B';
       } else {
-        location = stringf("__INVALID::%s__", iter.second->location.c_str());
+        location = stringf("__INVALID::%s__", pin->location.c_str());
       }
     }
     std::string mode = "MODE_BP_DIR";
-    if (iter.second->mode == "SDR") {
+    if (pin->mode == "SDR") {
       mode = "MODE_BP_SDR";
-    } else if (iter.second->mode == "DDR") {
+    } else if (pin->mode == "DDR") {
       mode = "MODE_BP_DDR";
-    } else if (iter.second->mode.find("RATE_") == 0) {
-      mode = stringf("MODE_%s", iter.second->mode.c_str());
+    } else if (pin->mode.find("RATE_") == 0) {
+      mode = stringf("MODE_%s", pin->mode.c_str());
     }
-    mode = stringf("%s_%c_%s", mode.c_str(), ab,
-                   iter.second->is_input ? "RX" : "TX");
-    std::string object = stringf("%s", iter.first.c_str());
+    mode = stringf("%s_%c_%s", mode.c_str(), ab, pin->is_input ? "RX" : "TX");
+    std::string object = stringf("%s", pin->name.c_str());
     int alignment = int(object.size());
     if (int(mode.size()) > alignment) {
       alignment = int(mode.size());
     }
-    if (iter.second->skip_reason.size()) {
-      entry.comments.push_back(stringf("# Skip this because \'%s\'",
-                                       iter.second->skip_reason.c_str()));
+    if (pin->skip_reason.size()) {
+      entry.comments.push_back(
+          stringf("# Skip this because \'%s\'", pin->skip_reason.c_str()));
     }
     std::string skip = "";
     std::string data_reason = "";
     std::vector<std::string> data_nets;
     std::vector<bool> found_data_nets;
     bool data_input = false;
-    if (ab == '?' || iter.second->skip_reason.size() > 0) {
+    if (ab == '?' || pin->skip_reason.size() > 0) {
       skip = "# ";
     } else {
       data_reason = get_fabric_data(wrapped_instances, object, data_nets,
@@ -2427,10 +2448,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
     // IO
     if (data_reason.empty() && data_nets.size() > 0 &&
         data_nets.size() == found_data_nets.size()) {
-      if (iter.second->internal_pin.size()) {
-        entry.assignments.push_back(SDC_ASSIGNMENT(
-            "# set_io", object, location,
-            iter.second->internal_pin + std::string(" --> (original)")));
+      if (pin->internal_pin.size()) {
+        entry.assignments.push_back(
+            SDC_ASSIGNMENT("# set_io", object, location,
+                           pin->internal_pin + std::string(" --> (original)")));
       } else {
         entry.assignments.push_back(
             SDC_ASSIGNMENT("# set_io", object, location, "--> (original)"));
@@ -2443,8 +2464,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                     data_i, ab)));
       }
     } else {
-      entry.assignments.push_back(SDC_ASSIGNMENT(
-          skip + "set_io", object, location, iter.second->internal_pin));
+      entry.assignments.push_back(
+          SDC_ASSIGNMENT(skip + "set_io", object, location, pin->internal_pin));
     }
     sdc_entries.push_back(entry);
   }
@@ -2507,7 +2528,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
   entry.comments.push_back(stringf("# Port: %s", port.c_str()));
   entry.comments.push_back(stringf("# Signal: %s", internal_signal.c_str()));
 #endif
-  if (location.size()) {
+  PIN_LOCATION pin;
+  bool location_status = validate_location(location, pin);
+  if (location_status) {
     std::vector<std::string> wrapped_nets;
     std::string reason = get_wrapped_instance_net_by_port(
         wrapped_instances, module, linked_object, port, wrapped_nets);
@@ -2520,9 +2543,25 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
           check_fabric_port(wrapped_instances, wrapped_nets);
       if (wrapped_nets.size() == founds.size()) {
         size_t wrapped_net_i = 0;
+        std::string rule = "";
+        if (internal_signal_name.find("rule=") == 0) {
+          size_t index = internal_signal_name.find(":");
+          log_assert(index != std::string::npos);
+          rule = internal_signal_name.substr(5, index - 5);
+          internal_signal_name = internal_signal_name.substr(index + 1);
+          log_assert(rule.size());
+          log_assert(internal_signal_name.size());
+        }
+        log_assert(rule == "" || rule == "half-first");
+        std::string assigned_location =
+            get_assigned_location(entry, rule, location, pin);
+        log_assert(assigned_location.size());
         for (auto wrapped_net : wrapped_nets) {
           if (founds[wrapped_net_i]) {
-            std::string AB = location[location.size() - 1] == 'N' ? "B" : "A";
+            // Currently only support half-first
+            std::string AB =
+                assigned_location[assigned_location.size() - 1] == 'N' ? "B"
+                                                                       : "A";
             std::string final_internal_signal = internal_signal_name;
             size_t index = final_internal_signal.find("{X}");
             if (index != std::string::npos) {
@@ -2553,13 +2592,31 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                     "%s[%ld]", final_internal_signal.c_str(), wrapped_net_i);
               }
             }
+            std::string skip = "";
             if (internal_signal_name == "TO_BE_DETERMINED") {
-              entry.assignments.push_back(SDC_ASSIGNMENT(
-                  "# set_io", wrapped_net, location, final_internal_signal));
-            } else {
-              entry.assignments.push_back(SDC_ASSIGNMENT(
-                  "set_io", wrapped_net, location, final_internal_signal));
+              skip = "# ";
+            } else if (rule == "half-first") {
+              log_assert(final_internal_signal.size());
+              std::string unique =
+                  stringf("%s+%s", final_internal_signal.c_str(),
+                          assigned_location.c_str());
+              bool found =
+                  std::find(m_unique_assigned_location.begin(),
+                            m_unique_assigned_location.end(),
+                            unique) != m_unique_assigned_location.end();
+              if (found) {
+                entry.comments.push_back(stringf(
+                    "# Assigned location %s and internal signal %s had been "
+                    "used",
+                    assigned_location.c_str(), final_internal_signal.c_str()));
+                skip = "# ";
+              } else {
+                m_unique_assigned_location.push_back(unique);
+              }
             }
+            std::string set_io = stringf("%sset_io", skip.c_str());
+            entry.assignments.push_back(SDC_ASSIGNMENT(
+                set_io, wrapped_net, assigned_location, final_internal_signal));
           } else {
             POST_MSG(4, "Fail to trace fabric module connection: %s",
                      wrapped_net.c_str());
@@ -2572,19 +2629,100 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
       } else {
         log_assert(founds.size() == 0);
         POST_MSG(4, "Unable find fabric instance");
-        entry.comments.push_back("# Unable find fabric instance");
+        entry.comments.push_back(
+            "# Failure reason: Unable find fabric instance");
       }
     } else {
       POST_MSG(4, "%s", reason.c_str());
-      entry.comments.push_back((std::string)("# ") + reason);
+      if (reason.find("User design does not utilize") == 0) {
+        entry.comments.push_back((std::string)("# ") + reason);
+      } else {
+        entry.comments.push_back((std::string)("# Failure reason: ") + reason);
+      }
     }
-  } else {
+  } else if (location.size() == 0) {
     POST_MSG(4, "Pin location is not assigned");
     entry.comments.push_back("# Pin location is not assigned");
+  } else {
+    POST_MSG(4, "%s", pin.failure_reason.c_str());
+    entry.comments.push_back(
+        stringf("# Failure reason: %s", pin.failure_reason.c_str()));
   }
   sdc_entries.push_back(entry);
 }
 
+/*
+  Validate the user assigned location
+*/
+bool PRIMITIVES_EXTRACTOR::validate_location(const std::string& location,
+                                             PIN_LOCATION& pin) {
+  bool status = false;
+  if (location.size()) {
+    std::regex const e{"H([PR])_([1-6])_(CC_|)([0-9]+)_([0-9]+)([PN])"};
+    std::smatch m;
+    if (std::regex_match(location, m, e) && m.size() == 7) {
+      // double check
+      pin.type = m[1].str();
+      log_assert(pin.type == "P" || pin.type == "R");
+      // As long as they are 1-6
+      pin.bank = m[2].str();
+      // If it is clock
+      pin.is_clock = m[3].str() == "CC_";
+      // Index
+      pin.index = std::stoi(m[4].str());
+      if (pin.index >= 0 && pin.index < 40) {
+        int pair_index = (int)(pin.index / 2);
+        if (pair_index == std::stoi(m[5].str())) {
+          if (((pin.index % 2) == 0 && m[6].str() == "P") ||
+              ((pin.index % 2) == 1 && m[6].str() == "N")) {
+            status = true;
+          } else {
+            pin.failure_reason =
+                stringf("Location %s P/N is invalid", location.c_str());
+          }
+        } else {
+          pin.failure_reason =
+              stringf("Location %s pair index is invalid", location.c_str());
+        }
+      } else {
+        pin.failure_reason =
+            stringf("Location %s is range of index range", location.c_str());
+      }
+    } else {
+      pin.failure_reason =
+          stringf("Location %s does not meet regex", location.c_str());
+    }
+  }
+  return status;
+}
+
+/*
+  Function to get auto-determined assigned location
+*/
+std::string PRIMITIVES_EXTRACTOR::get_assigned_location(
+    SDC_ENTRY& entry, const std::string& rule, const std::string& location,
+    PIN_LOCATION& pin) {
+  std::string assigned_location = location;
+  log_assert(rule == "" || rule == "half-first");
+  log_assert(pin.failure_reason.empty());
+  if (rule == "half-first") {
+    if (pin.index < 20) {
+      assigned_location =
+          stringf("H%s_%s_0_0P", pin.type.c_str(), pin.bank.c_str());
+    } else {
+      assigned_location =
+          stringf("H%s_%s_20_10P", pin.type.c_str(), pin.bank.c_str());
+    }
+    entry.comments.push_back(stringf("# Remap location from %s to %s",
+                                     location.c_str(),
+                                     assigned_location.c_str()));
+  }
+  return assigned_location;
+}
+
+/*
+  Get the wrapped instance
+*/
 size_t PRIMITIVES_EXTRACTOR::get_wrapped_instance(
     const nlohmann::json& wrapped_instances, const std::string& name) {
   log_assert(name.size());
@@ -2604,6 +2742,9 @@ size_t PRIMITIVES_EXTRACTOR::get_wrapped_instance(
   return index;
 }
 
+/*
+  Get the wrapped instance's input net
+*/
 std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
     const nlohmann::json& wrapped_instances, size_t index,
     const FABRIC_CLOCK& clk) {
@@ -2643,6 +2784,9 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
   return wrapped_net;
 }
 
+/*
+  Get the wrapped instance's output net
+*/
 std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
     const nlohmann::json& wrapped_instances, size_t index,
     const FABRIC_CLOCK& clk) {
@@ -2682,6 +2826,9 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
   return wrapped_net;
 }
 
+/*
+  Get the fabric data of the last data primitive
+*/
 std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     const nlohmann::json& wrapped_instances, const std::string& object,
     std::vector<std::string>& data_nets, std::vector<bool>& found_nets,
@@ -2747,6 +2894,9 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   return reason;
 }
 
+/*
+  Get the net that connected to the port of the wrapped instance
+*/
 std::string PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
     const nlohmann::json& wrapped_instances, const std::string& module,
     const std::string& linked_object, const std::string& port,
@@ -2786,9 +2936,10 @@ std::string PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
             linked_object.c_str(), port.c_str());
       }
     } else {
-      reason =
-          stringf("Unable to find linked-object %s wrapped-instance port %s",
-                  linked_object.c_str(), port.c_str());
+      reason = stringf(
+          "User design does not utilize linked-object %s wrapped-instance port "
+          "%s",
+          linked_object.c_str(), port.c_str());
     }
   } else {
     reason = stringf("Unable to find linked-object %s wrapped-instance",
@@ -2797,6 +2948,9 @@ std::string PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
   return reason;
 }
 
+/*
+  Get the subsequent potential wire
+*/
 void PRIMITIVES_EXTRACTOR::get_wrapped_instance_potential_next_wire(
     const nlohmann::json& wrapped_instances, const std::string& src,
     const std::string& dest, std::vector<std::string>& nets) {
@@ -2815,6 +2969,9 @@ void PRIMITIVES_EXTRACTOR::get_wrapped_instance_potential_next_wire(
   }
 }
 
+/*
+  Make sure the net exists as port of the fabric
+*/
 std::vector<bool> PRIMITIVES_EXTRACTOR::check_fabric_port(
     const nlohmann::json& wrapped_instances,
     const std::vector<std::string> nets) {
@@ -2833,6 +2990,9 @@ std::vector<bool> PRIMITIVES_EXTRACTOR::check_fabric_port(
   return founds;
 }
 
+/*
+  Write string to the text output
+*/
 void PRIMITIVES_EXTRACTOR::file_write_string(std::ofstream& file,
                                              const std::string& string,
                                              int size) {
@@ -2843,6 +3003,9 @@ void PRIMITIVES_EXTRACTOR::file_write_string(std::ofstream& file,
   }
 }
 
+/*
+  Write out SDC entries
+*/
 void PRIMITIVES_EXTRACTOR::write_sdc_entries(
     std::ofstream& sdc, std::vector<SDC_ENTRY>& sdc_entries) {
   size_t col1 = 0;
