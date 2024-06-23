@@ -72,6 +72,35 @@ struct FABRIC_CLOCK {
   const bool is_fabric_clkbuf = false;
 };
 
+/*
+  Both structures are for SDC
+*/
+struct SDC_ASSIGNMENT {
+  SDC_ASSIGNMENT(const std::string& s1, const std::string& s2,
+                 const std::string& s3, const std::string& s4)
+      : str1(s1), str2(s2), str3(s3), str4(s4) {}
+  const std::string str1 = "";
+  const std::string str2 = "";
+  const std::string str3 = "";
+  const std::string str4 = "";
+};
+
+struct SDC_ENTRY {
+  std::vector<std::string> comments;
+  std::vector<SDC_ASSIGNMENT> assignments;
+};
+
+/*
+  Structure to store pin information
+*/
+struct PIN_PARSER {
+  std::string type = "";
+  std::string bank = "";
+  bool is_clock = false;
+  int index = 0;
+  std::string failure_reason = "";
+};
+
 class PRIMITIVES_EXTRACTOR {
  public:
   PRIMITIVES_EXTRACTOR(const std::string& technology);
@@ -137,6 +166,7 @@ class PRIMITIVES_EXTRACTOR {
                                const std::string& module_name,
                                const std::string& port_name,
                                const std::string& net_name);
+  PIN_PORT* get_pin_info(const std::string& name);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);
@@ -157,26 +187,55 @@ class PRIMITIVES_EXTRACTOR {
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
+  void write_sdc_internal_control_signal(
+      std::vector<SDC_ENTRY>& sdc_entries,
+      const nlohmann::json& wrapped_instances, const std::string& module,
+      const std::string& linked_object, const std::string& location,
+      const std::string& port, const std::string& internal_signal);
+  bool validate_location(const std::string& location, PIN_PARSER& pin);
+  std::string get_assigned_location(SDC_ENTRY& entry, const std::string& rule,
+                                    const std::string& location,
+                                    PIN_PARSER& pin);
+  size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
+                              const std::string& name);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
-                                    size_t index, const FABRIC_CLOCK& clk);
+                                    size_t index, const FABRIC_CLOCK* clk);
   std::string get_output_wrapped_net(const nlohmann::json& wrapped_instances,
-                                     size_t index, const FABRIC_CLOCK& clk);
+                                     size_t index, const FABRIC_CLOCK* clk);
+  std::string get_fabric_data(const nlohmann::json& wrapped_instances,
+                              const std::string& object,
+                              std::vector<std::string>& data_nets,
+                              std::vector<bool>& found_nets, bool& input);
+  std::string get_wrapped_instance_net_by_port(
+      const nlohmann::json& wrapped_instances, const std::string& module,
+      const std::string& linked_object, const std::string& port,
+      std::vector<std::string>& nets);
+  void get_wrapped_instance_potential_next_wire(
+      const nlohmann::json& wrapped_instances, const std::string& src,
+      const std::string& dest, std::vector<std::string>& nets);
+  std::vector<bool> check_fabric_port(const nlohmann::json& wrapped_instances,
+                                      const std::vector<std::string> nets);
   void file_write_string(std::ofstream& file, const std::string& string,
                          int size = -1);
+  void write_sdc_entries(std::ofstream& sdc,
+                         std::vector<SDC_ENTRY>& sdc_entries);
 
  private:
-  std::vector<MSG*> m_msgs;
-  std::vector<PORT_PRIMITIVE*> m_ports;
-  std::vector<PRIMITIVE*> m_child_primitives;
-  std::vector<INSTANCE*> m_instances;
-  bool m_status = true;
   const std::string m_technology = "";
-  std::vector<FABRIC_CLOCK> m_fabric_clocks;
+  bool m_status = true;
   int m_max_in_object_name = 0;
   int m_max_out_object_name = 0;
   int m_max_object_name = 0;
   int m_max_trace = 0;
-  std::map<std::string, PIN_PORT*> m_pin_infos;
+  std::vector<std::string> m_auto_assigned_location;
+  std::map<std::string, std::string> m_location_mode;
+  std::vector<std::string> m_internal_signal_net;
+  std::vector<MSG*> m_msgs;
+  std::vector<PORT_PRIMITIVE*> m_ports;
+  std::vector<PRIMITIVE*> m_child_primitives;
+  std::vector<INSTANCE*> m_instances;
+  std::vector<FABRIC_CLOCK*> m_fabric_clocks;
+  std::vector<PIN_PORT*> m_pin_infos;
 };
 
 #endif
