@@ -76,7 +76,8 @@ struct FABRIC_CLOCK {
   Both structures are for SDC
 */
 struct SDC_ASSIGNMENT {
-  SDC_ASSIGNMENT(std::string s1, std::string s2, std::string s3, std::string s4)
+  SDC_ASSIGNMENT(const std::string& s1, const std::string& s2,
+                 const std::string& s3, const std::string& s4)
       : str1(s1), str2(s2), str3(s3), str4(s4) {}
   const std::string str1 = "";
   const std::string str2 = "";
@@ -198,9 +199,9 @@ class PRIMITIVES_EXTRACTOR {
   size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
                               const std::string& name);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
-                                    size_t index, const FABRIC_CLOCK& clk);
+                                    size_t index, const FABRIC_CLOCK* clk);
   std::string get_output_wrapped_net(const nlohmann::json& wrapped_instances,
-                                     size_t index, const FABRIC_CLOCK& clk);
+                                     size_t index, const FABRIC_CLOCK* clk);
   std::string get_fabric_data(const nlohmann::json& wrapped_instances,
                               const std::string& object,
                               std::vector<std::string>& data_nets,
@@ -220,19 +221,21 @@ class PRIMITIVES_EXTRACTOR {
                          std::vector<SDC_ENTRY>& sdc_entries);
 
  private:
-  std::vector<MSG*> m_msgs;
-  std::vector<PORT_PRIMITIVE*> m_ports;
-  std::vector<PRIMITIVE*> m_child_primitives;
-  std::vector<INSTANCE*> m_instances;
-  bool m_status = true;
   const std::string m_technology = "";
-  std::vector<FABRIC_CLOCK> m_fabric_clocks;
+  bool m_status = true;
   int m_max_in_object_name = 0;
   int m_max_out_object_name = 0;
   int m_max_object_name = 0;
   int m_max_trace = 0;
-  std::vector<PIN_PORT*> m_pin_infos;
   std::vector<std::string> m_auto_assigned_location;
+  std::map<std::string, std::string> m_location_mode;
+  std::vector<std::string> m_internal_signal_net;
+  std::vector<MSG*> m_msgs;
+  std::vector<PORT_PRIMITIVE*> m_ports;
+  std::vector<PRIMITIVE*> m_child_primitives;
+  std::vector<INSTANCE*> m_instances;
+  std::vector<FABRIC_CLOCK*> m_fabric_clocks;
+  std::vector<PIN_PORT*> m_pin_infos;
 };
 
 #endif

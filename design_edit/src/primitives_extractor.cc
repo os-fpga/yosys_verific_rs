@@ -743,6 +743,10 @@ PRIMITIVES_EXTRACTOR::~PRIMITIVES_EXTRACTOR() {
     delete m_instances.back();
     m_instances.pop_back();
   }
+  while (m_fabric_clocks.size()) {
+    delete m_fabric_clocks.back();
+    m_fabric_clocks.pop_back();
+  }
   while (m_pin_infos.size()) {
     delete m_pin_infos.back();
     m_pin_infos.pop_back();
@@ -1645,7 +1649,7 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
               }
             }
             std::string linked_object = instance->linked_object();
-            m_fabric_clocks.push_back(FABRIC_CLOCK(
+            m_fabric_clocks.push_back(new FABRIC_CLOCK(
                 linked_object, instance->module, instance->name, iport, oport,
                 inet, onet, instance->primitive->db->is_fabric_clkbuf()));
           }
@@ -2304,17 +2308,17 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   uint32_t i = 0;
   uint32_t j = 0;
   for (auto clk : m_fabric_clocks) {
-    if (clk.is_fabric_clkbuf) {
+    if (clk->is_fabric_clkbuf) {
       sdc << "# This is fabric clock buffer\n";
     }
     std::string wrapped_net = get_output_wrapped_net(
-        wrapped_instances, get_wrapped_instance(wrapped_instances, clk.name),
+        wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
         clk);
     if (wrapped_net.size()) {
       sdc << stringf(
                  "# set_clock_pin -device_clock clk[%d] -design_clock "
                  "%s\n",
-                 i, clk.onet.c_str())
+                 i, clk->onet.c_str())
                  .c_str();
       sdc << stringf(
                  "set_clock_pin   -device_clock clk[%d] -design_clock "
@@ -2326,19 +2330,19 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       sdc << stringf(
                  "set_clock_pin   -device_clock clk[%d] -design_clock "
                  "%s\n",
-                 i, clk.onet.c_str())
+                 i, clk->onet.c_str())
                  .c_str();
     }
-    if (clk.is_fabric_clkbuf) {
+    if (clk->is_fabric_clkbuf) {
       sdc << "\n# For fabric clock buffer output\n";
       std::string wrapped_net = get_input_wrapped_net(
-          wrapped_instances, get_wrapped_instance(wrapped_instances, clk.name),
+          wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
           clk);
       if (wrapped_net.size()) {
         sdc << stringf(
                    "# set_clock_out -device_clock clk[%d] -design_clock "
                    "%s\n",
-                   j, clk.inet.c_str())
+                   j, clk->inet.c_str())
                    .c_str();
         sdc << stringf(
                    "set_clock_out   -device_clock clk[%d] -design_clock "
@@ -2350,7 +2354,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
         sdc << stringf(
                    "set_clock_out   -device_clock clk[%d] -design_clock "
                    "%s\n",
-                   j, clk.inet.c_str())
+                   j, clk->inet.c_str())
                    .c_str();
       }
       j++;
@@ -2444,7 +2448,16 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       }
     }
     // Mode
-    entry.assignments.push_back(SDC_ASSIGNMENT("set_mode", mode, location, ""));
+    if (ab == '?') {
+      entry.assignments.push_back(
+          SDC_ASSIGNMENT("# set_mode", mode, location, ""));
+    } else {
+      entry.assignments.push_back(
+          SDC_ASSIGNMENT("set_mode", mode, location, ""));
+      if (m_location_mode.find(location) == m_location_mode.end()) {
+        m_location_mode[location] = mode;
+      }
+    }
     // IO
     if (data_reason.empty() && data_nets.size() > 0 &&
         data_nets.size() == found_data_nets.size()) {
@@ -2613,6 +2626,28 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                 m_auto_assigned_location.push_back(unique);
               }
             }
+            if (skip == "") {
+              if (std::find(m_internal_signal_net.begin(),
+                            m_internal_signal_net.end(),
+                            wrapped_net) == m_internal_signal_net.end()) {
+                m_internal_signal_net.push_back(wrapped_net);
+              } else {
+                POST_MSG(4, "Found conflict internal signal: %s",
+                         wrapped_net.c_str());
+                entry.comments.push_back(stringf(
+                    "# Failure reason: Found conflict internal signal: %s",
+                    wrapped_net.c_str()));
+                skip = "# ";
+              }
+            }
+            if (skip == "" &&
+                m_location_mode.find(assigned_location) ==
+                    m_location_mode.end() &&
+                m_location_mode.find(location) != m_location_mode.end()) {
+              entry.assignments.push_back(
+                  SDC_ASSIGNMENT("set_mode", m_location_mode[location],
+                                 assigned_location, ""));
+            }
             std::string set_io = stringf("%sset_io", skip.c_str());
             entry.assignments.push_back(SDC_ASSIGNMENT(
                 set_io, wrapped_net, assigned_location, final_internal_signal));
@@ -2746,19 +2781,19 @@ size_t PRIMITIVES_EXTRACTOR::get_wrapped_instance(
 */
 std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
     const nlohmann::json& wrapped_instances, size_t index,
-    const FABRIC_CLOCK& clk) {
+    const FABRIC_CLOCK* clk) {
   log_assert(wrapped_instances.is_array());
   log_assert(index < wrapped_instances.size());
   const nlohmann::json& instance = wrapped_instances[index];
-  log_assert(instance["connectivity"].contains(clk.iport));
-  std::string wrapped_net = instance["connectivity"][clk.iport];
+  log_assert(instance["connectivity"].contains(clk->iport));
+  std::string wrapped_net = instance["connectivity"][clk->iport];
   log_assert(wrapped_net.size());
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
     if (instance["module"] == "WIRE" &&
-        ((clk.is_fabric_clkbuf && !instance.contains("linked_object")) ||
+        ((clk->is_fabric_clkbuf && !instance.contains("linked_object")) ||
          (instance.contains("linked_object") &&
-          sort_name(instance["linked_object"]) == clk.linked_object))) {
+          sort_name(instance["linked_object"]) == clk->linked_object))) {
       if (instance["connectivity"]["O"] == wrapped_net) {
         wrapped_net = instance["connectivity"]["I"];
       }
@@ -2788,19 +2823,19 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
 */
 std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
     const nlohmann::json& wrapped_instances, size_t index,
-    const FABRIC_CLOCK& clk) {
+    const FABRIC_CLOCK* clk) {
   log_assert(wrapped_instances.is_array());
   log_assert(index < wrapped_instances.size());
   const nlohmann::json& instance = wrapped_instances[index];
-  log_assert(instance["connectivity"].contains(clk.oport));
-  std::string wrapped_net = instance["connectivity"][clk.oport];
+  log_assert(instance["connectivity"].contains(clk->oport));
+  std::string wrapped_net = instance["connectivity"][clk->oport];
   log_assert(wrapped_net.size());
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
     if (instance["module"] == "WIRE" &&
-        ((clk.is_fabric_clkbuf && !instance.contains("linked_object")) ||
+        ((clk->is_fabric_clkbuf && !instance.contains("linked_object")) ||
          (instance.contains("linked_object") &&
-          sort_name(instance["linked_object"]) == clk.linked_object))) {
+          sort_name(instance["linked_object"]) == clk->linked_object))) {
       if (instance["connectivity"]["I"] == wrapped_net) {
         wrapped_net = instance["connectivity"]["O"];
       }
