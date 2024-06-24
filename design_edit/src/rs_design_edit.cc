@@ -160,16 +160,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return output.str();
   }
-  
-  bool is_real_net(const std::string& net) {
-    if (net == "" || 
-        ((net.size() > 14) && 
-         (net.find("__const_bit_") == 0) && 
-         (net.rfind("__") == (net.size() - 2)))) {
-      return false;
-    }
-    return true;
-  }
 
   void dump_io_config_json(Module* mod, std::string file) {
     std::ofstream json_file(file.c_str());
@@ -300,7 +290,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
                 for (auto& s : signals) {
                   std::string net = (std::string)(s);
-                  if (!is_real_net(net)) {
+                  if (!PRIMITIVES_EXTRACTOR::is_real_net(net)) {
                     continue;
                   }
                   if (i == 0) {
@@ -347,7 +337,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
             continue;
           }
           std::string inst_net = (std::string)(iter.value());
-          if (!is_real_net(inst_net)) {
+          if (!PRIMITIVES_EXTRACTOR::is_real_net(inst_net)) {
             continue;
           }
           bool match = false;
@@ -844,8 +834,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     auto start = high_resolution_clock::now();
     auto start_time = start;
     // Extract the primitive information (before anything is modified)
-    PRIMITIVES_EXTRACTOR extractor(tech);
-    extractor.extract(_design);
+    PRIMITIVES_EXTRACTOR* extractor = new PRIMITIVES_EXTRACTOR(tech);
+    extractor->extract(_design);
     auto end = high_resolution_clock::now();
     std::string argstr = "Extracting primitives\nTime elapsed : ";
     elapsed_time (start, end, argstr);
@@ -1177,7 +1167,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       processSdcFile(input_sdc);
       get_loc_map_by_io();
       for (auto &p : location_map_by_io) {
-        extractor.assign_location(p.second._associated_pin, p.second._name, p.second._properties);
+        extractor->assign_location(p.second._associated_pin, p.second._name, p.second._properties, p.second._internal_pin);
       }
     }
     end = high_resolution_clock::now();
@@ -1330,23 +1320,25 @@ struct DesignEditRapidSilicon : public ScriptPass {
     input.close();
     log_assert(instances.is_object());
     log_assert(instances.contains("instances"));
-    extractor.write_sdc("design_edit.sdc", instances["instances"]);
+    extractor->write_sdc("design_edit.sdc", instances["instances"]);
     std::string io_file = "io_" + io_config_json;
-    extractor.write_json(io_file);
+    extractor->write_json(io_file);
     if (io_file.size() > 5 &&
         io_file.rfind(".json") == (io_file.size() - 5)) {
       std::string simple_file =
           io_file.substr(0, io_file.size() - 5) + ".simple.json";
-      extractor.write_json(simple_file, true);
+      extractor->write_json(simple_file, true);
     } else {
-      extractor.write_json("io_config.simple.json", true);
+      extractor->write_json("io_config.simple.json", true);
     }
+    delete extractor;
     end = high_resolution_clock::now();
     argstr = "Updating sdc\nTime elapsed : ";
     elapsed_time (start, end, argstr);
     auto end_time = end;
-    auto duration = duration_cast<seconds>(end_time - start_time);
-    std::cout << "Time elapsed in design editing : " << duration.count() << " seconds\n";
+    auto duration = duration_cast<nanoseconds>(end_time - start_time);
+    float totalTime = duration.count() * 1e-9;
+    std::cout << "Time elapsed in design editing : " << " [" << totalTime << " sec.]\n";
   }
 
   void script() override {
