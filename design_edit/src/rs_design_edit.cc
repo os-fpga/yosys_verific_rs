@@ -771,8 +771,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
   void elapsed_time (time_point<high_resolution_clock> start,
     time_point<high_resolution_clock> end, std::string &str)
   {
-    auto duration = duration_cast<microseconds>(end - start);
-    std::cout << str << duration.count() << " microseconds\n";
+    auto duration = duration_cast<nanoseconds>(end - start);
+    float totalTime = duration.count() * 1e-9;
+    std::cout << str << " [" << totalTime << " sec.]\n";
   }
 
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
