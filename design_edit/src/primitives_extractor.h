@@ -77,12 +77,17 @@ struct FABRIC_CLOCK {
 */
 struct SDC_ASSIGNMENT {
   SDC_ASSIGNMENT(const std::string& s1, const std::string& s2,
-                 const std::string& s3, const std::string& s4)
-      : str1(s1), str2(s2), str3(s3), str4(s4) {}
+                 const std::string& s3, const std::string& s4,
+                 const std::string& s5 = "", const std::string& s6 = "",
+                 const std::string& s7 = "")
+      : str1(s1), str2(s2), str3(s3), str4(s4), str5(s5), str6(s6), str7(s7) {}
   const std::string str1 = "";
   const std::string str2 = "";
   const std::string str3 = "";
   const std::string str4 = "";
+  const std::string str5 = "";
+  const std::string str6 = "";
+  const std::string str7 = "";
 };
 
 struct SDC_ENTRY {
