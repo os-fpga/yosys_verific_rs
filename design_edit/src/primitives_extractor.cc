@@ -549,6 +549,7 @@ struct PRIMITIVE {
   const PRIMITIVE* parent = nullptr;
   const std::map<std::string, std::string> connections;
   const bool is_port_primitive = false;
+  int data_width = -2;
   std::map<std::string, std::string> parameters;
   std::map<std::string, PRIMITIVE*> child;
   std::map<std::string, std::vector<std::string>> child_connections;
@@ -926,9 +927,22 @@ void PRIMITIVES_EXTRACTOR::get_primitive_parameters(Yosys::RTLIL::Cell* cell,
     RTLIL_BACKEND::dump_const(parameter, it.second);
     primitive->parameters[it.first.str()] = parameter.str();
   }
+  primitive->data_width = -2;
+  if (primitive->db->data_signal.size()) {
+    primitive->data_width = -1;
+    for (auto& it : cell->connections()) {
+      if (it.first.str() == primitive->db->data_signal) {
+        std::vector<std::string> signals;
+        get_signals(it.second, signals);
+        primitive->data_width = int(signals.size());
+        break;
+      }
+    }
+  }
   for (auto& it : primitive->parameters) {
     POST_MSG(4, "Parameter %s: %s", it.first.c_str(), it.second.c_str());
   }
+  POST_MSG(4, "Data Width: %d", primitive->data_width);
 }
 
 /*
@@ -1080,11 +1094,6 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
           m_ports.push_back(new PORT_PRIMITIVE(db, cell->name.str(),
                                                connections, connected_ports));
           get_primitive_parameters(cell, (PRIMITIVE*)(m_ports.back()));
-          for (auto& it : cell->parameters) {
-            std::ostringstream parameter;
-            RTLIL_BACKEND::dump_const(parameter, it.second);
-            m_ports.back()->parameters[it.first.str()] = parameter.str();
-          }
         } else {
           POST_MSG(4, "Error: Ignore cell %s", cell->name.c_str());
         }
@@ -1943,15 +1952,13 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
              primitive->db->name == "\\O_SERDES" ||
              primitive->db->name == "\\O_SERDES_CLK") {
     log_assert(pin->mode.size() == 0);
-    if (primitive->parameters.find("\\DATA_RATE") !=
-        primitive->parameters.end()) {
-      pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
-    }
     if (primitive->parameters.find("\\WIDTH") != primitive->parameters.end()) {
       int width = std::stoi(primitive->parameters.at("\\WIDTH"));
-      if (width >= 3) {
-        pin->mode = stringf("RATE_%d", width);
-      }
+      pin->mode = stringf("RATE_%d", width);
+    } else if (primitive->data_width > 0) {
+      pin->mode = stringf("RATE_%d", primitive->data_width);
+    } else if (primitive->parameters.find("\\DATA_RATE") != primitive->parameters.end()) {
+      pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
     }
     if (pin->mode.size() == 0) {
       // If not set, by default is SDR
@@ -2845,7 +2852,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
   std::string reason = "";
-  POST_MSG(3, "Data signal from object %s", object.c_str());
+  POST_MSG(4, "Data signal from object %s", object.c_str());
   for (auto& inst : m_instances) {
     if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
@@ -2872,7 +2879,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
         if (data_nets.size() == found_nets.size()) {
           bool found = false;
           for (size_t i = 0; i < data_nets.size(); i++) {
-            POST_MSG(4, "Module=%s Linked-object=%s Port=%s Net=%s - %s",
+            POST_MSG(5, "Module=%s Linked-object=%s Port=%s Net=%s - %s",
                      instance->module.c_str(), linked_object.c_str(),
                      data_port.c_str(), data_nets[i].c_str(),
                      found_nets[i] ? "Found" : "Not found");
@@ -2897,7 +2904,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     reason = stringf("Unable to find instance for object %s", object.c_str());
   }
   if (reason.size()) {
-    POST_MSG(4, "Failure reason: %s", reason.c_str());
+    POST_MSG(5, "Failure reason: %s", reason.c_str());
   }
   return reason;
 }
