@@ -259,7 +259,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"EN", "in:f2g_in_en_{X}"}
+            {"EN", "in:f2g_in_en_{A|B}"}
           },
           "\\O"                                 // data_signal
       )},
@@ -274,7 +274,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"EN", "in:f2g_in_en_{X}"}
+            {"EN", "in:f2g_in_en_{A|B}"}
           },
           "\\O"                                 // data_signal
       )},
@@ -303,7 +303,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"T", "in:f2g_tx_oe_{X}"}
+            {"T", "in:f2g_tx_oe_{A|B}"}
           },
           "\\I"                                 // data_signal
       )},
@@ -331,7 +331,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"T", "in:f2g_tx_oe_{X}"}
+            {"T", "in:f2g_tx_oe_{A|B}"}
           },
           "\\I"                                 // data_signal
       )},
@@ -395,10 +395,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
-            {"RX_RST", "in:TO_BE_DETERMINED"},
+            {"RX_RST", "in:f2g_trx_reset_n_{A|B}"},
             {"BITSLIP_ADJ", "in:TO_BE_DETERMINED"},
             {"EN", "in:TO_BE_DETERMINED"},
-            {"DATA_VALID", "out:TO_BE_DETERMINED"},
+            {"DATA_VALID", "out:g2f_rx_dvalid_{A|B}"},
             {"DPA_LOCK", "out:TO_BE_DETERMINED"},
             {"DPA_ERROR", "out:TO_BE_DETERMINED"},
             {"PLL_LOCK", "in:TO_BE_DETERMINED"}
@@ -481,8 +481,8 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
-            {"RST", "in:TO_BE_DETERMINED"},
-            {"LOAD_WORD", "in:TO_BE_DETERMINED"},
+            {"RST", "in:f2g_trx_reset_n_{A|B}"},
+            {"LOAD_WORD", "in:f2g_tx_dvalid_{A|B}"},
             {"OE_IN", "in:TO_BE_DETERMINED"},
             {"OE_OUT", "out:TO_BE_DETERMINED"},
             {"CHANNEL_BOND_SYNC_IN", "in:TO_BE_DETERMINED"},
@@ -1957,7 +1957,8 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
       pin->mode = stringf("RATE_%d", width);
     } else if (primitive->data_width > 0) {
       pin->mode = stringf("RATE_%d", primitive->data_width);
-    } else if (primitive->parameters.find("\\DATA_RATE") != primitive->parameters.end()) {
+    } else if (primitive->parameters.find("\\DATA_RATE") !=
+               primitive->parameters.end()) {
       pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
     }
     if (pin->mode.size() == 0) {
@@ -1967,30 +1968,9 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
     log_assert(pin->mode == "SDR" || pin->mode == "DDR" ||
                pin->mode.find("RATE_") == 0);
   }
-  if (primitive->db->name == "\\CLK_BUF" ||
-      primitive->db->name == "\\O_SERDES_CLK") {
-    std::string name = get_original_name(primitive->name);
-    bool found = false;
-    for (auto& instance : m_instances) {
-      if (instance->name == name) {
-        found = true;
-        if (instance->parameters.find("ROUTE_TO_FABRIC_CLK") ==
-            instance->parameters.end()) {
-          if (primitive->db->name == "\\CLK_BUF") {
-            pin->skip_reason = "The clock is not used by fabric";
-          } else {
-            pin->skip_reason = "The clock is Gearbox internal fast clock";
-          }
-        } else {
-          pin->skip_reason = "Temporarily disable all clock constraint";
-        }
-        break;
-      }
-    }
-    log_assert(found);
-  } else if (primitive->db->name == "\\I_BUF_DS" ||
-             primitive->db->name == "\\O_BUF_DS" ||
-             primitive->db->name == "\\O_BUFT_DS") {
+  if (primitive->db->name == "\\I_BUF_DS" ||
+      primitive->db->name == "\\O_BUF_DS" ||
+      primitive->db->name == "\\O_BUFT_DS") {
     std::string secondary_port =
         primitive->db->name == "\\I_BUF_DS" ? "\\I_N" : "\\O_N";
     log_assert(primitive->connections.find(secondary_port) !=
@@ -2433,7 +2413,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                             found_data_nets, data_input);
         if (data_reason.size()) {
           if (data_reason.find("but data signal is not defined") ==
-              std::string::npos) {
+                  std::string::npos &&
+              data_reason.find("Clock data from object") == std::string::npos) {
             entry.comments.push_back(
                 stringf("# Failure reason: %s", data_reason.c_str()));
           } else {
@@ -2565,10 +2546,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                 assigned_location[assigned_location.size() - 1] == 'N' ? "B"
                                                                        : "A";
             std::string final_internal_signal = internal_signal_name;
-            size_t index = final_internal_signal.find("{X}");
+            size_t index = final_internal_signal.find("{A|B}");
             if (index != std::string::npos) {
               final_internal_signal =
-                  final_internal_signal.replace(index, 3, AB);
+                  final_internal_signal.replace(index, 5, AB);
             }
             if (wrapped_nets.size() > 1) {
               index = final_internal_signal.find("{[");
@@ -2851,15 +2832,19 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
+  size_t instance_index = 0;
   std::string reason = "";
   POST_MSG(4, "Data signal from object %s", object.c_str());
+  size_t i = 0;
   for (auto& inst : m_instances) {
     if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
-      if (inst->module != "WIRE") {
+      if (inst->module != "WIRE" && inst->module != "CLK_BUF") {
         instance = inst;
+        instance_index = i;
       }
     }
+    i++;
   }
   if (instance != nullptr) {
     const PRIMITIVE_DB* db = instance->primitive->db;
@@ -2888,10 +2873,28 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
             }
           }
           if (!found) {
-            reason = stringf(
-                "Fail to map all data signal(s) from object %s port %s to "
-                "fabric",
-                object.c_str(), data_port.c_str());
+            if ((instance->module == "I_BUF" ||
+                 instance->module == "I_BUF_DS") &&
+                (((instance_index + 1) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object()) ||
+                 ((instance_index + 2) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "WIRE" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object() &&
+                  m_instances[instance_index + 2]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 2]->linked_object()))) {
+              reason = stringf(
+                  "Clock data from object %s port %s is not routed to fabric",
+                  object.c_str(), data_port.c_str());
+            } else {
+              reason = stringf(
+                  "Fail to map all data signal(s) from object %s port %s to "
+                  "fabric",
+                  object.c_str(), data_port.c_str());
+            }
           }
         }
       }
