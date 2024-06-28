@@ -2413,7 +2413,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                             found_data_nets, data_input);
         if (data_reason.size()) {
           if (data_reason.find("but data signal is not defined") ==
-              std::string::npos) {
+                  std::string::npos &&
+              data_reason.find("Clock data from object") == std::string::npos) {
             entry.comments.push_back(
                 stringf("# Failure reason: %s", data_reason.c_str()));
           } else {
@@ -2831,15 +2832,19 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
+  size_t instance_index = 0;
   std::string reason = "";
   POST_MSG(4, "Data signal from object %s", object.c_str());
+  size_t i = 0;
   for (auto& inst : m_instances) {
     if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
       if (inst->module != "WIRE" && inst->module != "CLK_BUF") {
         instance = inst;
+        instance_index = i;
       }
     }
+    i++;
   }
   if (instance != nullptr) {
     const PRIMITIVE_DB* db = instance->primitive->db;
@@ -2868,10 +2873,28 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
             }
           }
           if (!found) {
-            reason = stringf(
-                "Fail to map all data signal(s) from object %s port %s to "
-                "fabric",
-                object.c_str(), data_port.c_str());
+            if ((instance->module == "I_BUF" ||
+                 instance->module == "I_BUF_DS") &&
+                (((instance_index + 1) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object()) ||
+                 ((instance_index + 2) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "WIRE" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object() &&
+                  m_instances[instance_index + 2]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 2]->linked_object()))) {
+              reason = stringf(
+                  "Clock data from object %s port %s is not routed to fabric",
+                  object.c_str(), data_port.c_str());
+            } else {
+              reason = stringf(
+                  "Fail to map all data signal(s) from object %s port %s to "
+                  "fabric",
+                  object.c_str(), data_port.c_str());
+            }
           }
         }
       }
