@@ -2301,10 +2301,19 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
     std::string wrapped_net = get_output_wrapped_net(
         wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
         clk);
+    if (!wrapped_net.size()) {
+      sdc << "# Failure reason: Failed to find the mapped name\n";
+    }
+    // Always print the port name
+    sdc << stringf(
+               "# set_clock_pin -device_clock clk[%d] -design_clock "
+               "%s (Physical port name)\n",
+               i, clk->linked_object.c_str())
+               .c_str();
     if (wrapped_net.size()) {
       sdc << stringf(
                  "# set_clock_pin -device_clock clk[%d] -design_clock "
-                 "%s\n",
+                 "%s (Original clock primitive out-net to fabric)\n",
                  i, clk->onet.c_str())
                  .c_str();
       sdc << stringf(
@@ -2313,7 +2322,6 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                  i, wrapped_net.c_str())
                  .c_str();
     } else {
-      sdc << "# Failure reason: Failed to find the mapped name\n";
       sdc << stringf(
                  "set_clock_pin   -device_clock clk[%d] -design_clock "
                  "%s\n",
