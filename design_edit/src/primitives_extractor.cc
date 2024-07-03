@@ -259,7 +259,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"EN", "in:f2g_in_en_{X}"}
+            {"EN", "in:f2g_in_en_{A|B}"}
           },
           "\\O"                                 // data_signal
       )},
@@ -274,7 +274,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"EN", "in:f2g_in_en_{X}"}
+            {"EN", "in:f2g_in_en_{A|B}"}
           },
           "\\O"                                 // data_signal
       )},
@@ -303,7 +303,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"T", "in:f2g_tx_oe_{X}"}
+            {"T", "in:f2g_tx_oe_{A|B}"}
           },
           "\\I"                                 // data_signal
       )},
@@ -331,7 +331,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // fast_clock
           "",                                   // core_clock
           {                                     // control_signal_map
-            {"T", "in:f2g_tx_oe_{X}"}
+            {"T", "in:f2g_tx_oe_{A|B}"}
           },
           "\\I"                                 // data_signal
       )},
@@ -395,10 +395,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
-            {"RX_RST", "in:TO_BE_DETERMINED"},
+            {"RX_RST", "in:f2g_trx_reset_n_{A|B}"},
             {"BITSLIP_ADJ", "in:TO_BE_DETERMINED"},
             {"EN", "in:TO_BE_DETERMINED"},
-            {"DATA_VALID", "out:TO_BE_DETERMINED"},
+            {"DATA_VALID", "out:g2f_rx_dvalid_{A|B}"},
             {"DPA_LOCK", "out:TO_BE_DETERMINED"},
             {"DPA_ERROR", "out:TO_BE_DETERMINED"},
             {"PLL_LOCK", "in:TO_BE_DETERMINED"}
@@ -481,8 +481,8 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
-            {"RST", "in:TO_BE_DETERMINED"},
-            {"LOAD_WORD", "in:TO_BE_DETERMINED"},
+            {"RST", "in:f2g_trx_reset_n_{A|B}"},
+            {"LOAD_WORD", "in:f2g_tx_dvalid_{A|B}"},
             {"OE_IN", "in:TO_BE_DETERMINED"},
             {"OE_OUT", "out:TO_BE_DETERMINED"},
             {"CHANNEL_BOND_SYNC_IN", "in:TO_BE_DETERMINED"},
@@ -549,6 +549,7 @@ struct PRIMITIVE {
   const PRIMITIVE* parent = nullptr;
   const std::map<std::string, std::string> connections;
   const bool is_port_primitive = false;
+  int data_width = -2;
   std::map<std::string, std::string> parameters;
   std::map<std::string, PRIMITIVE*> child;
   std::map<std::string, std::vector<std::string>> child_connections;
@@ -926,9 +927,22 @@ void PRIMITIVES_EXTRACTOR::get_primitive_parameters(Yosys::RTLIL::Cell* cell,
     RTLIL_BACKEND::dump_const(parameter, it.second);
     primitive->parameters[it.first.str()] = parameter.str();
   }
+  primitive->data_width = -2;
+  if (primitive->db->data_signal.size()) {
+    primitive->data_width = -1;
+    for (auto& it : cell->connections()) {
+      if (it.first.str() == primitive->db->data_signal) {
+        std::vector<std::string> signals;
+        get_signals(it.second, signals);
+        primitive->data_width = int(signals.size());
+        break;
+      }
+    }
+  }
   for (auto& it : primitive->parameters) {
     POST_MSG(4, "Parameter %s: %s", it.first.c_str(), it.second.c_str());
   }
+  POST_MSG(4, "Data Width: %d", primitive->data_width);
 }
 
 /*
@@ -1080,11 +1094,6 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
           m_ports.push_back(new PORT_PRIMITIVE(db, cell->name.str(),
                                                connections, connected_ports));
           get_primitive_parameters(cell, (PRIMITIVE*)(m_ports.back()));
-          for (auto& it : cell->parameters) {
-            std::ostringstream parameter;
-            RTLIL_BACKEND::dump_const(parameter, it.second);
-            m_ports.back()->parameters[it.first.str()] = parameter.str();
-          }
         } else {
           POST_MSG(4, "Error: Ignore cell %s", cell->name.c_str());
         }
@@ -1943,15 +1952,14 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
              primitive->db->name == "\\O_SERDES" ||
              primitive->db->name == "\\O_SERDES_CLK") {
     log_assert(pin->mode.size() == 0);
-    if (primitive->parameters.find("\\DATA_RATE") !=
-        primitive->parameters.end()) {
-      pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
-    }
     if (primitive->parameters.find("\\WIDTH") != primitive->parameters.end()) {
       int width = std::stoi(primitive->parameters.at("\\WIDTH"));
-      if (width >= 3) {
-        pin->mode = stringf("RATE_%d", width);
-      }
+      pin->mode = stringf("RATE_%d", width);
+    } else if (primitive->data_width > 0) {
+      pin->mode = stringf("RATE_%d", primitive->data_width);
+    } else if (primitive->parameters.find("\\DATA_RATE") !=
+               primitive->parameters.end()) {
+      pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
     }
     if (pin->mode.size() == 0) {
       // If not set, by default is SDR
@@ -1960,30 +1968,9 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
     log_assert(pin->mode == "SDR" || pin->mode == "DDR" ||
                pin->mode.find("RATE_") == 0);
   }
-  if (primitive->db->name == "\\CLK_BUF" ||
-      primitive->db->name == "\\O_SERDES_CLK") {
-    std::string name = get_original_name(primitive->name);
-    bool found = false;
-    for (auto& instance : m_instances) {
-      if (instance->name == name) {
-        found = true;
-        if (instance->parameters.find("ROUTE_TO_FABRIC_CLK") ==
-            instance->parameters.end()) {
-          if (primitive->db->name == "\\CLK_BUF") {
-            pin->skip_reason = "The clock is not used by fabric.";
-          } else {
-            pin->skip_reason = "The clock is Gearbox internal fast clock.";
-          }
-        } else {
-          pin->skip_reason = "Temporarily disable all clock constraint.";
-        }
-        break;
-      }
-    }
-    log_assert(found);
-  } else if (primitive->db->name == "\\I_BUF_DS" ||
-             primitive->db->name == "\\O_BUF_DS" ||
-             primitive->db->name == "\\O_BUFT_DS") {
+  if (primitive->db->name == "\\I_BUF_DS" ||
+      primitive->db->name == "\\O_BUF_DS" ||
+      primitive->db->name == "\\O_BUFT_DS") {
     std::string secondary_port =
         primitive->db->name == "\\I_BUF_DS" ? "\\I_N" : "\\O_N";
     log_assert(primitive->connections.find(secondary_port) !=
@@ -1994,7 +1981,7 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
       pin->skip_reason =
           "This is secondary pin. But IO bitstream generation will still make "
           "sure it is used in pair. Otherwise the IO bitstream will be "
-          "invalid.";
+          "invalid";
     }
   }
 }
@@ -2396,89 +2383,70 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       }
       i++;
     }
-    std::string location = "__NOT_PROVIDED__";
-    char ab = '?';
-    if (pin->location.size()) {
-      if (pin->location.back() == 'P') {
-        location = pin->location;
-        ab = 'A';
-      } else if (pin->location.back() == 'N') {
-        location = pin->location;
-        ab = 'B';
-      } else {
-        location = stringf("__INVALID::%s__", pin->location.c_str());
+    PIN_PARSER parsed_pin;
+    POST_MSG(3, "Pin object=%s, location: %s", pin->name.c_str(),
+             pin->location.c_str());
+    if (validate_location(pin->location, parsed_pin)) {
+      char ab = pin->location.back() == 'P' ? 'A' : 'B';
+      std::string mode = "MODE_BP_DIR";
+      if (pin->mode == "SDR") {
+        mode = "MODE_BP_SDR";
+      } else if (pin->mode == "DDR") {
+        mode = "MODE_BP_DDR";
+      } else if (pin->mode.find("RATE_") == 0) {
+        mode = stringf("MODE_%s", pin->mode.c_str());
       }
-    }
-    std::string mode = "MODE_BP_DIR";
-    if (pin->mode == "SDR") {
-      mode = "MODE_BP_SDR";
-    } else if (pin->mode == "DDR") {
-      mode = "MODE_BP_DDR";
-    } else if (pin->mode.find("RATE_") == 0) {
-      mode = stringf("MODE_%s", pin->mode.c_str());
-    }
-    mode = stringf("%s_%c_%s", mode.c_str(), ab, pin->is_input ? "RX" : "TX");
-    std::string object = stringf("%s", pin->name.c_str());
-    int alignment = int(object.size());
-    if (int(mode.size()) > alignment) {
-      alignment = int(mode.size());
-    }
-    if (pin->skip_reason.size()) {
-      entry.comments.push_back(
-          stringf("# Skip this because \'%s\'", pin->skip_reason.c_str()));
-    }
-    std::string skip = "";
-    std::string data_reason = "";
-    std::vector<std::string> data_nets;
-    std::vector<bool> found_data_nets;
-    bool data_input = false;
-    if (ab == '?' || pin->skip_reason.size() > 0) {
-      skip = "# ";
-    } else {
-      data_reason = get_fabric_data(wrapped_instances, object, data_nets,
-                                    found_data_nets, data_input);
-      if (data_reason.size()) {
-        if (data_reason.find("but data signal is not defined") ==
-            std::string::npos) {
-          entry.comments.push_back(
-              stringf("# Failure reason: %s", data_reason.c_str()));
+      mode = stringf("%s_%c_%s", mode.c_str(), ab, pin->is_input ? "RX" : "TX");
+      if (m_location_mode.find(pin->location) == m_location_mode.end()) {
+        m_location_mode[pin->location] = mode;
+      }
+      if (pin->skip_reason.size()) {
+        POST_MSG(4, "Skip this because \'%s\'", pin->skip_reason.c_str());
+        entry.comments.push_back(
+            stringf("# Skip this because \'%s\'", pin->skip_reason.c_str()));
+      } else {
+        std::vector<std::string> data_nets;
+        std::vector<bool> found_data_nets;
+        bool data_input = false;
+        std::string data_reason =
+            get_fabric_data(wrapped_instances, pin->name, data_nets,
+                            found_data_nets, data_input);
+        if (data_reason.size()) {
+          if (data_reason.find("but data signal is not defined") ==
+                  std::string::npos &&
+              data_reason.find("Clock data from object") == std::string::npos) {
+            entry.comments.push_back(
+                stringf("# Failure reason: %s", data_reason.c_str()));
+          } else {
+            entry.comments.push_back(stringf("# %s", data_reason.c_str()));
+          }
         } else {
-          entry.comments.push_back(stringf("# %s", data_reason.c_str()));
+          entry.assignments.push_back(
+              SDC_ASSIGNMENT("# set_mode", mode, pin->location, ""));
+          entry.assignments.push_back(SDC_ASSIGNMENT(
+              "# set_io", pin->name, pin->location, "--> (original)"));
+          std::string location =
+              ab == 'A' ? pin->location
+                        : stringf("H%s_%s%s_%d_%dP", parsed_pin.type.c_str(),
+                                  parsed_pin.bank.c_str(),
+                                  parsed_pin.is_clock ? "_CC" : "",
+                                  parsed_pin.index - 1, parsed_pin.index / 2);
+          for (size_t data_i = 0, data_j = (ab == 'A' ? 0 : 5);
+               data_i < data_nets.size(); data_i++, data_j++) {
+            entry.assignments.push_back(SDC_ASSIGNMENT(
+                (std::string)(found_data_nets[data_i] ? "" : "# ") + "set_io",
+                data_nets[data_i], location, "-mode", mode, "-internal_pin",
+                stringf("%s[%ld]_A", data_input ? "g2f_rx_in" : "f2g_tx_out",
+                        data_j)));
+          }
         }
       }
-    }
-    // Mode
-    if (ab == '?') {
-      entry.assignments.push_back(
-          SDC_ASSIGNMENT("# set_mode", mode, location, ""));
+    } else if (pin->location.size()) {
+      POST_MSG(4, "Pin location is invalid");
+      entry.comments.push_back("# Pin location is invalid");
     } else {
-      entry.assignments.push_back(
-          SDC_ASSIGNMENT("set_mode", mode, location, ""));
-      if (m_location_mode.find(location) == m_location_mode.end()) {
-        m_location_mode[location] = mode;
-      }
-    }
-    // IO
-    if (data_reason.empty() && data_nets.size() > 0 &&
-        data_nets.size() == found_data_nets.size()) {
-      if (pin->internal_pin.size()) {
-        entry.assignments.push_back(
-            SDC_ASSIGNMENT("# set_io", object, location,
-                           pin->internal_pin + std::string(" --> (original)")));
-      } else {
-        entry.assignments.push_back(
-            SDC_ASSIGNMENT("# set_io", object, location, "--> (original)"));
-      }
-      for (size_t data_i = 0; data_i < data_nets.size(); data_i++) {
-        entry.assignments.push_back(SDC_ASSIGNMENT(
-            (std::string)(found_data_nets[data_i] ? "" : "# ") + "set_io",
-            data_nets[data_i], location,
-            stringf("%s[%ld]_%c", data_input ? "g2f_rx_in" : "f2g_tx_out",
-                    data_i, ab)));
-      }
-    } else {
-      entry.assignments.push_back(
-          SDC_ASSIGNMENT(skip + "set_io", object, location, pin->internal_pin));
+      POST_MSG(4, "Pin location is not assigned");
+      entry.comments.push_back("# Pin location is not assigned");
     }
     sdc_entries.push_back(entry);
   }
@@ -2541,9 +2509,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
   entry.comments.push_back(stringf("# Port: %s", port.c_str()));
   entry.comments.push_back(stringf("# Signal: %s", internal_signal.c_str()));
 #endif
-  PIN_PARSER pin;
-  bool location_status = validate_location(location, pin);
-  if (location_status) {
+  // If the mode is available, then the location had been parsed correctly in
+  // the first place
+  if (m_location_mode.find(location) != m_location_mode.end()) {
+    PIN_PARSER pin;
+    log_assert(validate_location(location, pin));
     std::vector<std::string> wrapped_nets;
     std::string reason = get_wrapped_instance_net_by_port(
         wrapped_instances, module, linked_object, port, wrapped_nets);
@@ -2576,10 +2546,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                 assigned_location[assigned_location.size() - 1] == 'N' ? "B"
                                                                        : "A";
             std::string final_internal_signal = internal_signal_name;
-            size_t index = final_internal_signal.find("{X}");
+            size_t index = final_internal_signal.find("{A|B}");
             if (index != std::string::npos) {
               final_internal_signal =
-                  final_internal_signal.replace(index, 3, AB);
+                  final_internal_signal.replace(index, 5, AB);
             }
             if (wrapped_nets.size() > 1) {
               index = final_internal_signal.find("{[");
@@ -2640,23 +2610,17 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                 skip = "# ";
               }
             }
-            if (skip == "" &&
-                m_location_mode.find(assigned_location) ==
-                    m_location_mode.end() &&
-                m_location_mode.find(location) != m_location_mode.end()) {
-              entry.assignments.push_back(
-                  SDC_ASSIGNMENT("set_mode", m_location_mode[location],
-                                 assigned_location, ""));
-            }
             std::string set_io = stringf("%sset_io", skip.c_str());
-            entry.assignments.push_back(SDC_ASSIGNMENT(
-                set_io, wrapped_net, assigned_location, final_internal_signal));
-          } else {
-            POST_MSG(4, "Fail to trace fabric module connection: %s",
-                     wrapped_net.c_str());
             entry.assignments.push_back(
-                SDC_ASSIGNMENT("# set_io", wrapped_net, location,
-                               "--> Fail to trace fabric connection"));
+                SDC_ASSIGNMENT(set_io, wrapped_net, assigned_location, "-mode",
+                               m_location_mode.at(location), "-internal_pin",
+                               final_internal_signal));
+          } else {
+            reason = stringf("Fail to trace fabric module connection: %s",
+                             wrapped_net.c_str());
+            POST_MSG(4, "%s", reason.c_str());
+            entry.comments.push_back(
+                stringf("# Failure reason: %s", reason.c_str()));
           }
           wrapped_net_i++;
         }
@@ -2674,13 +2638,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
         entry.comments.push_back((std::string)("# Failure reason: ") + reason);
       }
     }
-  } else if (location.size() == 0) {
-    POST_MSG(4, "Pin location is not assigned");
-    entry.comments.push_back("# Pin location is not assigned");
   } else {
-    POST_MSG(4, "%s", pin.failure_reason.c_str());
-    entry.comments.push_back(
-        stringf("# Failure reason: %s", pin.failure_reason.c_str()));
+    std::string reason = stringf(
+        "Location %s does not have any mode to begin with", location.c_str());
+    POST_MSG(4, "%s", reason.c_str());
+    entry.comments.push_back(stringf("# %s", reason.c_str()));
   }
   sdc_entries.push_back(entry);
 }
@@ -2808,8 +2770,8 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
       if (fabric["connectivity"].contains(wrapped_net)) {
         // good
         found = true;
-        break;
       }
+      break;
     }
   }
   if (!found) {
@@ -2850,8 +2812,8 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
       if (fabric["connectivity"].contains(wrapped_net)) {
         // good
         found = true;
-        break;
       }
+      break;
     }
   }
   if (!found) {
@@ -2870,15 +2832,19 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
+  size_t instance_index = 0;
   std::string reason = "";
-  POST_MSG(3, "Data signal from object %s", object.c_str());
+  POST_MSG(4, "Data signal from object %s", object.c_str());
+  size_t i = 0;
   for (auto& inst : m_instances) {
     if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
-      if (inst->module != "WIRE") {
+      if (inst->module != "WIRE" && inst->module != "CLK_BUF") {
         instance = inst;
+        instance_index = i;
       }
     }
+    i++;
   }
   if (instance != nullptr) {
     const PRIMITIVE_DB* db = instance->primitive->db;
@@ -2898,7 +2864,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
         if (data_nets.size() == found_nets.size()) {
           bool found = false;
           for (size_t i = 0; i < data_nets.size(); i++) {
-            POST_MSG(4, "Module=%s Linked-object=%s Port=%s Net=%s - %s",
+            POST_MSG(5, "Module=%s Linked-object=%s Port=%s Net=%s - %s",
                      instance->module.c_str(), linked_object.c_str(),
                      data_port.c_str(), data_nets[i].c_str(),
                      found_nets[i] ? "Found" : "Not found");
@@ -2907,10 +2873,28 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
             }
           }
           if (!found) {
-            reason = stringf(
-                "Fail to map all data signal(s) from object %s port %s to "
-                "fabric",
-                object.c_str(), data_port.c_str());
+            if ((instance->module == "I_BUF" ||
+                 instance->module == "I_BUF_DS") &&
+                (((instance_index + 1) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object()) ||
+                 ((instance_index + 2) < m_instances.size() &&
+                  m_instances[instance_index + 1]->module == "WIRE" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 1]->linked_object() &&
+                  m_instances[instance_index + 2]->module == "CLK_BUF" &&
+                  instance->linked_object() ==
+                      m_instances[instance_index + 2]->linked_object()))) {
+              reason = stringf(
+                  "Clock data from object %s port %s is not routed to fabric",
+                  object.c_str(), data_port.c_str());
+            } else {
+              reason = stringf(
+                  "Fail to map all data signal(s) from object %s port %s to "
+                  "fabric",
+                  object.c_str(), data_port.c_str());
+            }
           }
         }
       }
@@ -2923,7 +2907,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     reason = stringf("Unable to find instance for object %s", object.c_str());
   }
   if (reason.size()) {
-    POST_MSG(4, "Failure reason: %s", reason.c_str());
+    POST_MSG(5, "Failure reason: %s", reason.c_str());
   }
   return reason;
 }
@@ -3019,6 +3003,7 @@ std::vector<bool> PRIMITIVES_EXTRACTOR::check_fabric_port(
         founds.push_back(fabric.contains("connectivity") &&
                          fabric["connectivity"].contains(net));
       }
+      break;
     }
   }
   return founds;
@@ -3045,6 +3030,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
   size_t col1 = 0;
   size_t col2 = 0;
   size_t col3 = 0;
+  size_t col4 = 0;
+  size_t col5 = 0;
+  size_t col6 = 0;
   for (auto& entry : sdc_entries) {
     for (auto& assignment : entry.assignments) {
       if (assignment.str1.size() > col1) {
@@ -3055,6 +3043,15 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
       }
       if (assignment.str3.size() > col3) {
         col3 = assignment.str3.size();
+      }
+      if (assignment.str4.size() > col4) {
+        col4 = assignment.str4.size();
+      }
+      if (assignment.str5.size() > col5) {
+        col5 = assignment.str5.size();
+      }
+      if (assignment.str6.size() > col6) {
+        col6 = assignment.str6.size();
       }
     }
   }
@@ -3067,9 +3064,23 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
       file_write_string(sdc, assignment.str2, (int)(col2 + 1));
       if (assignment.str4.size()) {
         file_write_string(sdc, assignment.str3, (int)(col3 + 1));
-        file_write_string(sdc, assignment.str4);
+        if (assignment.str5.size()) {
+          log_assert(assignment.str6.size());
+          log_assert(assignment.str7.size());
+          file_write_string(sdc, assignment.str4, (int)(col4 + 1));
+          file_write_string(sdc, assignment.str5, (int)(col5 + 1));
+          file_write_string(sdc, assignment.str6, (int)(col6 + 1));
+          file_write_string(sdc, assignment.str7);
+        } else {
+          file_write_string(sdc, assignment.str4);
+          log_assert(assignment.str6.empty());
+          log_assert(assignment.str7.empty());
+        }
       } else {
         file_write_string(sdc, assignment.str3);
+        log_assert(assignment.str5.empty());
+        log_assert(assignment.str6.empty());
+        log_assert(assignment.str7.empty());
       }
       sdc << "\n";
     }

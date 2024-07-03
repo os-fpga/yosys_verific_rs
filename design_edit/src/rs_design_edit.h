@@ -37,14 +37,17 @@ struct primitives_data_default {
   }
 };
 
-struct location_data {
-  std::string _name;
-  std::string _associated_pin;
-  std::string _internal_pin;
+struct pin_data {
+  pin_data(const std::string& n) : _name(n) {
+    log_assert(_name.size());
+  }
+  const std::string _name = "";
+  std::string _location = "";
+  std::string _internal_pin = "";
   std::unordered_map<string, std::string> _properties;
   void print(std::ostream &output) {
     output << "name: " << _name << std::endl;
-    output << "  pin: " << _associated_pin << std::endl;
+    output << "  pin location: " << _location << std::endl;
     output << "  internal pin: " << _internal_pin << std::endl;
     output << "  properties: " << std::endl;
     for (auto &pr : _properties) {
@@ -54,8 +57,7 @@ struct location_data {
 };
 
 enum Technologies { GENERIC, GENESIS, GENESIS_2, GENESIS_3 };
-std::unordered_map<string, location_data> location_map_by_io;
-std::unordered_map<string, location_data> location_map;
+std::vector<pin_data*> pins;
 std::vector<std::string> wrapper_files;
 std::vector<std::string> post_route_wrapper;
 std::unordered_set<std::string> clk_outs;
@@ -72,7 +74,6 @@ std::unordered_set<std::string> common_clks_resets;
 std::unordered_set<std::string> orig_inst_conns;
 std::unordered_set<std::string> interface_inst_conns;
 std::unordered_set<std::string> keep_wires;
-std::unordered_set<std::string> constrained_pins;
 std::string io_config_json;
 std::string sdc_file;
 bool sdc_passed = false;

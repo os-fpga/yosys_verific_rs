@@ -58,6 +58,13 @@ const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
       : ScriptPass("design_edit", "Netlist Editing Tool") {}
+  
+  ~DesignEditRapidSilicon() {
+    while (pins.size()) {
+      delete pins.back();
+      pins.pop_back();
+    }
+  }
 
   void help() override {
     log("\n");
@@ -106,7 +113,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     return tokens;
   }
-
+  
+  pin_data* get_pin(std::string name, bool create_new_if_not_exist = true) {
+    pin_data* pin = nullptr;
+    for (auto& p : pins) {
+      if (p->_name == name) {
+        pin = p;
+        break;
+      }
+    }
+    if (pin == nullptr && create_new_if_not_exist) {
+      pin = new pin_data(name);
+      pins.push_back(pin);
+    }
+    return pin;
+  }
   void processSdcFile(std::istream &input) {
     std::string line;
     while (std::getline(input, line)) {
@@ -115,24 +136,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
         continue;
       if ("set_property" == tokens[0]) {
         if (tokens.size() == 4) {
-          location_map[tokens[3]]._properties[tokens[1]] = tokens[2];
-          location_map[tokens[3]]._name = tokens[3];
+          pin_data* pin = get_pin(tokens[3]);
+          log_assert(pin != nullptr);
+          pin->_properties[tokens[1]] = tokens[2];
         }
       } else if ("set_pin_loc" == tokens[0]) {
         if (tokens.size() < 3 || tokens.size() > 4) continue;
-        constrained_pins.insert(tokens[1]);
-        location_map[tokens[2]]._associated_pin = tokens[1];
-        location_map[tokens[2]]._name = tokens[2];
+        pin_data* pin = get_pin(tokens[1]);
+        log_assert(pin != nullptr);
+        pin->_location = tokens[2];
         if (tokens.size() == 4) {
-          location_map[tokens[2]]._internal_pin = tokens[3];
+          pin->_internal_pin = tokens[3];
         }
       }
-    }
-  }
-
-  void get_loc_map_by_io() {
-    for (auto &p : location_map) {
-      location_map_by_io[p.second._associated_pin] = p.second;
     }
   }
 
@@ -188,14 +204,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
           instance_object["connectivity"][port_name] = nlohmann::json::array();
           for (auto& s : signals) {
             instance_object["connectivity"][port_name].push_back(s);
-          }
-        }
-        if (location_map_by_io.find(connection) != location_map_by_io.end()) {
-          instance_object["location"] = location_map_by_io[connection]._name;
-          for (auto &pr : location_map_by_io[connection]._properties) {
-            if (!pr.second.empty()) {
-              instance_object["properties"][pr.first] = pr.second;
-            }
           }
         }
       }
@@ -1237,9 +1245,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
         std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
       }
       processSdcFile(input_sdc);
-      get_loc_map_by_io();
-      for (auto &p : location_map_by_io) {
-        extractor->assign_location(p.second._associated_pin, p.second._name, p.second._properties, p.second._internal_pin);
+      for (auto &p : pins) {
+        extractor->assign_location(p->_name, p->_location, p->_properties, p->_internal_pin);
       }
     }
     end = high_resolution_clock::now();
