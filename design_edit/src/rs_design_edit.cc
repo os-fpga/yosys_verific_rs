@@ -479,8 +479,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
           primitives.end()) {
-        bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
-        if (is_out_prim) continue;
+        //EDA-3010: output primitives cal also have danlging output wire 
+        //bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+        //if (is_out_prim) continue;
         // Upgrading dangling outs of input primtives to output ports
         for (auto port : cell->connections()){
           IdString portName = port.first;
