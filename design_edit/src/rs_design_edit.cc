@@ -262,13 +262,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 #endif
-    i = 0;
-    for (auto& inst : instances_array) {
-      if (inst["module"] == "BOOT_CLOCK") {
-        inst["linked_object"] = stringf("BOOT_CLOCK#%ld", i);
-        inst["direction"] = "IN";
-        inst["index"] = 0;
-        i++;
+    for (std::string module : std::vector<std::string>({"BOOT_CLOCK", "FCLK_BUF"})) {
+      i = 0;
+      for (auto& inst : instances_array) {
+        if (inst["module"] == module) {
+          if (inst["connectivity"].contains("O")) {
+            inst["linked_object"] = inst["connectivity"]["O"];
+          } else {
+            inst["linked_object"] = stringf("%s#%ld", module.c_str(), i);
+          }
+          inst["direction"] = "IN";
+          inst["index"] = 0;
+          i++;
+        }
       }
     }
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
