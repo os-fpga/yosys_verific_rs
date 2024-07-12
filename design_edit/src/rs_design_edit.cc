@@ -77,6 +77,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<Cell *> remove_prims;
+  std::vector<Cell *> remove_io_fab;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
   std::unordered_set<Wire *> wires_interface;
@@ -518,6 +519,33 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void handle_io_fab(Module* mod)
+  {
+    for (auto cell : remove_io_fab)
+    {
+      RTLIL::SigSig new_conn;
+      std::vector<RTLIL::SigBit> conn_lhs;
+      std::vector<RTLIL::SigBit> conn_rhs;
+      for (auto port : cell->connections())
+      {
+        IdString portName = port.first;
+        for (SigBit bit : port.second){
+          if (bit.wire->port_output)
+          {
+            conn_rhs.push_back(bit);
+          }
+          if (bit.wire->port_input)
+          {
+            conn_lhs.push_back(bit);
+          }
+        }
+      }
+      new_conn.first = conn_rhs;
+      new_conn.second = conn_lhs;
+      mod->connect(new_conn);
+    }
+  }
+
   void intersect(const std::unordered_set<std::string>& set1,
     const std::unordered_set<std::string>& set2)
   {
@@ -916,6 +944,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       } else {
+        if (module_name == "O_FAB" || module_name == "I_FAB")
+        {
+          remove_io_fab.push_back(cell);
+        }
         for (auto conn : cell->connections()) {
           IdString portName = conn.first;
           RTLIL::SigSpec actual = conn.second;
@@ -1009,6 +1041,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     update_prim_connections(original_mod, primitives, orig_intermediate_wires);
     handle_dangling_outs(original_mod);
     delete_cells(original_mod, remove_prims);
+    handle_io_fab(original_mod);
+    delete_cells(original_mod, remove_io_fab);
 
     for (auto &conn : original_mod->connections()) {
       std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
