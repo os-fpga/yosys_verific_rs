@@ -395,7 +395,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
-            {"RX_RST", "in:f2g_trx_reset_n_{A|B}"},
+            {"RST", "in:f2g_trx_reset_n_{A|B}"},
             {"BITSLIP_ADJ", "in:TO_BE_DETERMINED"},
             {"EN", "in:TO_BE_DETERMINED"},
             {"DATA_VALID", "out:g2f_rx_dvalid_{A|B}"},
@@ -482,7 +482,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\CLK_IN",                           // core_clock
           {                                     // control_signal_map
             {"RST", "in:f2g_trx_reset_n_{A|B}"},
-            {"LOAD_WORD", "in:f2g_tx_dvalid_{A|B}"},
+            {"DATA_VALID", "in:f2g_tx_dvalid_{A|B}"},
             {"OE_IN", "in:TO_BE_DETERMINED"},
             {"OE_OUT", "out:TO_BE_DETERMINED"},
             {"CHANNEL_BOND_SYNC_IN", "in:TO_BE_DETERMINED"},
