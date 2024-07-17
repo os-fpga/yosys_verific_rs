@@ -2761,7 +2761,7 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
     if (instance["module"] == "WIRE" &&
-        ((clk->is_fabric_clkbuf && !instance.contains("linked_object")) ||
+        ((clk->is_fabric_clkbuf) ||
          (instance.contains("linked_object") &&
           sort_name(instance["linked_object"]) == clk->linked_object))) {
       if (instance["connectivity"]["O"] == wrapped_net) {
@@ -2803,7 +2803,7 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
     if (instance["module"] == "WIRE" &&
-        ((clk->is_fabric_clkbuf && !instance.contains("linked_object")) ||
+        ((clk->is_fabric_clkbuf) ||
          (instance.contains("linked_object") &&
           sort_name(instance["linked_object"]) == clk->linked_object))) {
       if (instance["connectivity"]["I"] == wrapped_net) {
