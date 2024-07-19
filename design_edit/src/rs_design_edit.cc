@@ -92,6 +92,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
+  pool<SigBit> orig_ins, orig_outs;
+  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
+  pool<SigBit> clk_buf_ins;
+  pool<SigBit> diff;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -781,6 +785,97 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void set_difference(const pool<SigBit>& set1,
+    const pool<SigBit>& set2)
+  {
+    for (auto &bit : set1)
+    {
+      if (!set2.count(bit))
+      {
+        diff.insert(bit);
+      }
+    }
+  }
+
+  void check_buf_conns()
+  {
+    if (orig_ins == i_buf_ins && orig_outs == o_buf_outs)
+    {
+      for (const auto &elem : orig_ins)
+        log("IN : %s\n", log_signal(elem));
+      for (const auto &elem : i_buf_ins)
+        log("I_BUF_INS : %s\n", log_signal(elem));
+      for (const auto &elem : orig_outs)
+        log("OUTS : %s\n", log_signal(elem));
+      for (const auto &elem : o_buf_outs)
+        log("O_BUF_OUTS : %s\n", log_signal(elem));
+      log("All IO connections are correct");
+      return;
+    }
+
+    set_difference(orig_ins, i_buf_ins);
+    if(!diff.empty())
+    {
+      log("The following inputs are not connected to I_BUFs");
+      for (const auto &elem : diff)
+      {
+        log("Input : %s", log_signal(elem));
+      }
+      return;
+    }
+
+    diff.clear();
+    set_difference(i_buf_ins, orig_ins);
+    if(!diff.empty())
+    {
+      log("The following I_BUF inputs are not connected to the design inputs");
+      for (const auto &elem : diff)
+      {
+        log("I_BUF Input : %s", log_signal(elem));
+      }
+      return;
+    }
+
+    diff.clear();
+    set_difference(orig_outs, o_buf_outs);
+    if(!diff.empty())
+    {
+      log("The following outputs are not connected to O_BUFs");
+      for (const auto &elem : diff)
+      {
+        log("Output : %s", log_signal(elem));
+      }
+      return;
+    }
+
+    diff.clear();
+    set_difference(i_buf_ins, orig_ins);
+    if(!diff.empty())
+    {
+      log("The following O_BUF outputs are not connected to the design outputs");
+      for (const auto &elem : diff)
+      {
+        log("O_BUF Output : %s", log_signal(elem));
+      }
+      return;
+    }
+
+    diff.clear();
+    set_difference(clk_buf_ins, i_buf_outs);
+    if(!diff.empty())
+    {
+      log("The following CLK_BUF inputs are not connected to I_BUF outputs");
+      for (const auto &elem : diff)
+      {
+        log("CLK_BUF Input : %s", log_signal(elem));
+      }
+      return;
+    }
+
+    diff.clear();
+    return;
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -849,6 +944,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
       design->rename(original_mod, "\\fabric_" + original_mod_name);   
     }
 
+    for (auto wire : original_mod->wires())
+    {
+      bool is_input = wire->port_input ? true :false;
+      bool is_output = wire->port_output ? true :false;
+      if (!is_input && !is_output) continue;
+
+      RTLIL::SigSpec wire_ = wire;
+      for (auto bit : wire_)
+      {
+        if (is_input) orig_ins.insert(bit);
+        if (is_output) orig_outs.insert(bit);
+      }
+    }
+
     for (auto cell : original_mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
@@ -858,6 +967,25 @@ struct DesignEditRapidSilicon : public ScriptPass {
         remove_prims.push_back(cell);
         for (auto conn : cell->connections()) {
           IdString portName = conn.first;
+          for (SigBit bit : conn.second)
+          {
+            if (bit.wire != nullptr)
+            {
+              if (module_name.substr(0, 5) == "I_BUF")
+              {
+                if (bit.wire->port_input) i_buf_ins.insert(bit);
+                if (bit.wire->port_output) i_buf_outs.insert(bit);
+              }
+              if (module_name.substr(0, 5) == "O_BUF" && bit.wire->port_output)
+              {
+                o_buf_outs.insert(bit);
+              }
+              if (module_name == "CLK_BUF" && cell->input(portName))
+              {
+                clk_buf_ins.insert(bit);
+              }
+            }
+          }
           RTLIL::SigSpec actual = conn.second;
           if (actual.is_chunk()) {
             RTLIL::Wire *wire = actual.as_chunk().wire;
@@ -937,6 +1065,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
+    check_buf_conns();
     add_wire_btw_prims(original_mod);
     intersection_copy_remove(new_ins, new_outs, interface_wires);
     intersect(interface_wires, keep_wires);
