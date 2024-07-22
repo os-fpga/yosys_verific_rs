@@ -51,7 +51,8 @@ USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
 const std::vector<std::string> IN_PORTS = {"I", "I_P", "I_N", "D"};
-const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
+const std::vector<std::string> DATA_OUT_PORTS = {"O", "O_P", "O_N", "Q"};
+const std::vector<std::string> DATA_CLK_OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -257,11 +258,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
             portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
-          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false);
+          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false, DATA_OUT_PORTS);
         }
       }
     }
 #endif
+	// Handle pure-data
+    link_instance_recursively(instances_array, 0, DATA_OUT_PORTS);
+    // Handle clock
     for (std::string module : std::vector<std::string>({"BOOT_CLOCK", "FCLK_BUF"})) {
       i = 0;
       for (auto& inst : instances_array) {
@@ -277,9 +281,21 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+	// Hnadle clock-data
+    link_instance_recursively(instances_array, 1, DATA_CLK_OUT_PORTS);
+
+    instances["instances"] = instances_array;
+    if (json_file.is_open()) {
+      json_file << std::setw(4) << instances << std::endl;
+      json_file.close();
+    }
+  }
+  
+  void link_instance_recursively(json& instances_array, int retry_start_index, const std::vector<std::string>& OUT_PORTS) {
+    log_assert(retry_start_index == 0 || retry_start_index == 1);
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
     // We need to loop this recursive loop twice
-    for (i = 0; i < 2; i++) {
+    for (int i = retry_start_index; i < 2; i++) {
       // first time : only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link other instance)
       //              because the name needs to be "p+n"
       // second time: link the rest
@@ -307,12 +323,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   }
                   if (i == 0) {
                     linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
-                                            inst["direction"], uint32_t(inst["index"]) + 1, true, 
+                                            inst["direction"], uint32_t(inst["index"]) + 1, true, OUT_PORTS,
                                             {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
                   } else {
                     // dont set allow_dual_name=true, it might become infinite loop
                     linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
-                                            inst["direction"], uint32_t(inst["index"]) + 1, false);
+                                            inst["direction"], uint32_t(inst["index"]) + 1, false, OUT_PORTS);
                   }
                 }
               }
@@ -326,16 +342,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-    instances["instances"] = instances_array;
-    if (json_file.is_open()) {
-      json_file << std::setw(4) << instances << std::endl;
-      json_file.close();
-    }
   }
   
   size_t link_instance(bool use_in_port, json& instances_array, const std::string& object, 
                         const std::string& net, const std::string& direction, uint32_t index, bool allow_dual_name, 
-                        std::vector<std::string> search_modules = {}) {
+                        const std::vector<std::string>& OUT_PORTS, std::vector<std::string> search_modules = {}) {
     size_t linked = 0;
     for (auto& inst : instances_array) {
       // Only if this instance had not been linked

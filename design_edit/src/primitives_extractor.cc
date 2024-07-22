@@ -714,6 +714,15 @@ struct PIN_PORT {
 };
 
 /*
+  Structure to store core clock information
+*/
+struct CORE_CLOCK_INFO {
+  CORE_CLOCK_INFO(const std::string& l, uint32_t i) : location(l), index(i) {}
+  const std::string location = "";
+  const uint32_t index = 0;
+};
+
+/*
   Extractor constructor
 */
 PRIMITIVES_EXTRACTOR::PRIMITIVES_EXTRACTOR(const std::string& technology)
@@ -836,6 +845,18 @@ EXTRACT_END:
 */
 void PRIMITIVES_EXTRACTOR::post_msg(uint32_t offset, const std::string& msg) {
   m_msgs.push_back(new MSG(offset, msg));
+}
+
+/*
+  Store the message (used for SDC)
+*/
+void PRIMITIVES_EXTRACTOR::post_sdc_comment(SDC_ENTRY*& entry, uint32_t offset,
+                                            const std::string& type,
+                                            const std::string& comment) {
+  log_assert(type == "Skip" || type == "Fail");
+  POST_MSG(offset, "%s reason: %s", type.c_str(), comment.c_str());
+  entry->comments.push_back(
+      stringf("# %s reason: %s", type.c_str(), comment.c_str()));
 }
 
 /*
@@ -1716,7 +1737,7 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
               // For second check: even though it is not used by core_clk
               //    But we need to route it to fabric, in case only fabric can
               //    do something on it in IO Tile
-              POST_MSG(4, "This is core_clk. Send to fabric");
+              POST_MSG(4, "This is gearbox core_clk. Send to fabric");
               fabric = true;
             } else {
               POST_MSG(4,
@@ -2302,7 +2323,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
         wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
         clk);
     if (!wrapped_net.size()) {
-      sdc << "# Failure reason: Failed to find the mapped name\n";
+      sdc << "# Fail reason: Failed to find the mapped name\n";
     }
     // Always print the port name
     sdc << stringf(
@@ -2345,7 +2366,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                    j, wrapped_net.c_str())
                    .c_str();
       } else {
-        sdc << "# Failure reason: Failed to find the mapped name\n";
+        sdc << "# Fail reason: Failed to find the mapped name\n";
         sdc << stringf(
                    "set_clock_out   -device_clock clk[%d] -design_clock "
                    "%s\n",
@@ -2375,19 +2396,20 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   m_max_object_name += 1;  // For space
   // First column is max is "# set_mode" = 10 + 1
   POST_MSG(2, "Determine data signals");
-  std::vector<SDC_ENTRY> sdc_entries;
+  std::vector<SDC_ENTRY*> sdc_entries;
   for (auto& pin : m_pin_infos) {
     if (pin->is_standalone || pin->is_fabric_clkbuf) {
       continue;
     }
-    SDC_ENTRY entry;
+    SDC_ENTRY* entry = new SDC_ENTRY;
     size_t i = 0;
     for (auto& trace : pin->traces) {
       if (i == 0) {
-        entry.assignments.push_back(
+        entry->assignments.push_back(
             SDC_ASSIGNMENT("# Pin", pin->name, ":: " + trace, ""));
       } else {
-        entry.assignments.push_back(SDC_ASSIGNMENT("#", "", ":: " + trace, ""));
+        entry->assignments.push_back(
+            SDC_ASSIGNMENT("#", "", ":: " + trace, ""));
       }
       i++;
     }
@@ -2410,7 +2432,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       }
       if (pin->skip_reason.size()) {
         POST_MSG(4, "Skip this because \'%s\'", pin->skip_reason.c_str());
-        entry.comments.push_back(
+        entry->comments.push_back(
             stringf("# Skip this because \'%s\'", pin->skip_reason.c_str()));
       } else {
         std::vector<std::string> data_nets;
@@ -2423,15 +2445,15 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
           if (data_reason.find("but data signal is not defined") ==
                   std::string::npos &&
               data_reason.find("Clock data from object") == std::string::npos) {
-            entry.comments.push_back(
-                stringf("# Failure reason: %s", data_reason.c_str()));
+            entry->comments.push_back(
+                stringf("# Fail reason: %s", data_reason.c_str()));
           } else {
-            entry.comments.push_back(stringf("# %s", data_reason.c_str()));
+            entry->comments.push_back(stringf("# %s", data_reason.c_str()));
           }
         } else {
-          entry.assignments.push_back(
+          entry->assignments.push_back(
               SDC_ASSIGNMENT("# set_mode", mode, pin->location, ""));
-          entry.assignments.push_back(SDC_ASSIGNMENT(
+          entry->assignments.push_back(SDC_ASSIGNMENT(
               "# set_io", pin->name, pin->location, "--> (original)"));
           std::string location =
               ab == 'A' ? pin->location
@@ -2441,7 +2463,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                                   parsed_pin.index - 1, parsed_pin.index / 2);
           for (size_t data_i = 0, data_j = (ab == 'A' ? 0 : 5);
                data_i < data_nets.size(); data_i++, data_j++) {
-            entry.assignments.push_back(SDC_ASSIGNMENT(
+            entry->assignments.push_back(SDC_ASSIGNMENT(
                 (std::string)(found_data_nets[data_i] ? "" : "# ") + "set_io",
                 data_nets[data_i], location, "-mode", mode, "-internal_pin",
                 stringf("%s[%ld]_A", data_input ? "g2f_rx_in" : "f2g_tx_out",
@@ -2451,10 +2473,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       }
     } else if (pin->location.size()) {
       POST_MSG(4, "Pin location is invalid");
-      entry.comments.push_back("# Pin location is invalid");
+      entry->comments.push_back("# Pin location is invalid");
     } else {
       POST_MSG(4, "Pin location is not assigned");
-      entry.comments.push_back("# Pin location is not assigned");
+      entry->comments.push_back("# Pin location is not assigned");
     }
     sdc_entries.push_back(entry);
   }
@@ -2467,7 +2489,6 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   sdc << "#\n";
   sdc << "#############\n";
   POST_MSG(2, "Determine internal control signals");
-  sdc_entries.clear();
   for (auto& inst : m_instances) {
     if (inst->module != "WIRE") {
       const PRIMITIVE_DB* db = inst->primitive->db;
@@ -2483,11 +2504,91 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   }
   write_sdc_entries(sdc, sdc_entries);
 #endif
+  // Core Clocks
+  sdc << "#############\n";
+  sdc << "#\n";
+  sdc << "# Each gearbox core clock\n";
+  sdc << "#\n";
+  sdc << "#############\n";
+  std::map<std::string, CORE_CLOCK_INFO*> core_clocks;
+  for (auto& inst : m_instances) {
+    if (inst->module != "WIRE") {
+      const PRIMITIVE_DB* db = inst->primitive->db;
+      log_assert(db != nullptr);
+      std::string core_clk = get_original_name(db->core_clock);
+      size_t index = core_clk.find(":");
+      if (index != std::string::npos) {
+        core_clk = db->core_clock.substr(index + 1);
+      }
+      if (core_clk.size()) {
+        SDC_ENTRY* entry = new SDC_ENTRY;
+        std::string location = inst->get_location_with_priority({"I_P", "O_P"});
+        entry->comments.push_back(
+            stringf("# Module: %s", inst->module.c_str()));
+        entry->comments.push_back(stringf("# Location: %s", location.c_str()));
+        entry->comments.push_back(stringf("# Port: %s", core_clk.c_str()));
+        if (inst->connections.find(core_clk) != inst->connections.end()) {
+          std::string clk_net = inst->connections.at(core_clk);
+          entry->comments.push_back(stringf("# Net: %s", clk_net.c_str()));
+          if (clk_net.size() > 0) {
+            if (location.size() > 0 &&
+                m_location_mode.find(location) != m_location_mode.end()) {
+              uint32_t index = 0;
+              for (auto& fabric_clk : m_fabric_clocks) {
+                if (!fabric_clk->is_fabric_clkbuf &&
+                    fabric_clk->onet == clk_net) {
+                  break;
+                }
+                index++;
+              }
+              if (index < (uint32_t)(m_fabric_clocks.size())) {
+                PIN_PARSER parsed_pin;
+                log_assert(validate_location(location, parsed_pin));
+                std::string key =
+                    stringf("%s_%s_%d", parsed_pin.type.c_str(),
+                            parsed_pin.bank.c_str(), parsed_pin.index / 2);
+                if (core_clocks.find(key) == core_clocks.end()) {
+                  core_clocks[key] = new CORE_CLOCK_INFO(location, index);
+                  entry->assignments.push_back(SDC_ASSIGNMENT(
+                      "set_core_clk", location, stringf("%d", index), ""));
+                } else if (core_clocks.at(key)->index == index) {
+                  entry->comments.push_back(
+                      stringf("# Skip reason: Had been defined by %s",
+                              core_clocks.at(key)->location.c_str()));
+                } else {
+                  entry->comments.push_back(
+                      stringf("# Fail reason: Conflict with %s (index=%d)",
+                              core_clocks.at(key)->location.c_str(),
+                              core_clocks.at(key)->index));
+                }
+              } else {
+                entry->comments.push_back(
+                    "# Fail reason: Cannot locate the fabric clock");
+              }
+            } else {
+              entry->comments.push_back("# Fail reason: Location is invalid");
+            }
+          } else {
+            entry->comments.push_back(
+                "# Fail reason: Port does not connect to valid net");
+          }
+        } else {
+          entry->comments.push_back(
+              "# Fail reason: Port does not connect to valid net");
+        }
+        sdc_entries.push_back(entry);
+      }
+    }
+  }
+  write_sdc_entries(sdc, sdc_entries);
+  for (auto& iter : core_clocks) {
+    delete iter.second;
+  }
   sdc.close();
 }
 
 void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
-    std::vector<SDC_ENTRY>& sdc_entries,
+    std::vector<SDC_ENTRY*>& sdc_entries,
     const nlohmann::json& wrapped_instances, const std::string& module,
     const std::string& linked_object, const std::string& location,
     const std::string& port, const std::string& internal_signal) {
@@ -2506,16 +2607,16 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
               module.c_str(), linked_object.c_str(), location.c_str(),
               port.c_str(), internal_signal.c_str());
   POST_MSG(3, "%s", info.c_str());
-  SDC_ENTRY entry;
+  SDC_ENTRY* entry = new SDC_ENTRY;
 #if 0
-  entry.comments.push_back((std::string)("# ") + info);
+  entry->comments.push_back((std::string)("# ") + info);
 #else
-  entry.comments.push_back(stringf("# Module: %s", module.c_str()));
-  entry.comments.push_back(
+  entry->comments.push_back(stringf("# Module: %s", module.c_str()));
+  entry->comments.push_back(
       stringf("# LinkedObject: %s", linked_object.c_str()));
-  entry.comments.push_back(stringf("# Location: %s", location.c_str()));
-  entry.comments.push_back(stringf("# Port: %s", port.c_str()));
-  entry.comments.push_back(stringf("# Signal: %s", internal_signal.c_str()));
+  entry->comments.push_back(stringf("# Location: %s", location.c_str()));
+  entry->comments.push_back(stringf("# Port: %s", port.c_str()));
+  entry->comments.push_back(stringf("# Signal: %s", internal_signal.c_str()));
 #endif
   // If the mode is available, then the location had been parsed correctly in
   // the first place
@@ -2523,9 +2624,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
     PIN_PARSER pin;
     log_assert(validate_location(location, pin));
     std::vector<std::string> wrapped_nets;
-    std::string reason = get_wrapped_instance_net_by_port(
-        wrapped_instances, module, linked_object, port, wrapped_nets);
-    if (reason.empty()) {
+    std::pair<std::string, std::string> reason =
+        get_wrapped_instance_net_by_port(wrapped_instances, module,
+                                         linked_object, port, wrapped_nets);
+    log_assert(reason.first.empty() == reason.second.empty());
+    if (reason.first.empty()) {
       // Any subsequence wire
       get_wrapped_instance_potential_next_wire(wrapped_instances,
                                                input ? "O" : "I",
@@ -2585,6 +2688,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
             }
             std::string skip = "";
             if (internal_signal_name == "TO_BE_DETERMINED") {
+              post_sdc_comment(entry, 4, "Skip", "TO_BE_DETERMINED");
               skip = "# ";
             } else if (rule == "half-first") {
               log_assert(final_internal_signal.size());
@@ -2595,10 +2699,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                                      m_auto_assigned_location.end(),
                                      unique) != m_auto_assigned_location.end();
               if (found) {
-                entry.comments.push_back(stringf(
-                    "# Assigned location %s and internal signal %s had been "
-                    "used",
-                    assigned_location.c_str(), final_internal_signal.c_str()));
+                post_sdc_comment(entry, 4, "Fail",
+                                 stringf("Assigned location %s and internal "
+                                         "signal %s had already been used",
+                                         assigned_location.c_str(),
+                                         final_internal_signal.c_str()));
                 skip = "# ";
               } else {
                 m_auto_assigned_location.push_back(unique);
@@ -2610,47 +2715,36 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
                             wrapped_net) == m_internal_signal_net.end()) {
                 m_internal_signal_net.push_back(wrapped_net);
               } else {
-                POST_MSG(4, "Found conflict internal signal: %s",
-                         wrapped_net.c_str());
-                entry.comments.push_back(stringf(
-                    "# Failure reason: Found conflict internal signal: %s",
-                    wrapped_net.c_str()));
+                post_sdc_comment(entry, 4, "Fail",
+                                 stringf("Found conflict internal signal: %s",
+                                         wrapped_net.c_str()));
                 skip = "# ";
               }
             }
             std::string set_io = stringf("%sset_io", skip.c_str());
-            entry.assignments.push_back(
+            entry->assignments.push_back(
                 SDC_ASSIGNMENT(set_io, wrapped_net, assigned_location, "-mode",
                                m_location_mode.at(location), "-internal_pin",
                                final_internal_signal));
           } else {
-            reason = stringf("Fail to trace fabric module connection: %s",
-                             wrapped_net.c_str());
-            POST_MSG(4, "%s", reason.c_str());
-            entry.comments.push_back(
-                stringf("# Failure reason: %s", reason.c_str()));
+            post_sdc_comment(
+                entry, 4, "Fail",
+                stringf("Unable to trace fabric module connection: %s",
+                        wrapped_net.c_str()));
           }
           wrapped_net_i++;
         }
       } else {
         log_assert(founds.size() == 0);
-        POST_MSG(4, "Unable find fabric instance");
-        entry.comments.push_back(
-            "# Failure reason: Unable find fabric instance");
+        post_sdc_comment(entry, 4, "Fail", "Unable find fabric instance");
       }
     } else {
-      POST_MSG(4, "%s", reason.c_str());
-      if (reason.find("User design does not utilize") == 0) {
-        entry.comments.push_back((std::string)("# ") + reason);
-      } else {
-        entry.comments.push_back((std::string)("# Failure reason: ") + reason);
-      }
+      post_sdc_comment(entry, 4, reason.first, reason.second);
     }
   } else {
     std::string reason = stringf(
         "Location %s does not have any mode to begin with", location.c_str());
-    POST_MSG(4, "%s", reason.c_str());
-    entry.comments.push_back(stringf("# %s", reason.c_str()));
+    post_sdc_comment(entry, 4, "Skip", reason);
   }
   sdc_entries.push_back(entry);
 }
@@ -2704,7 +2798,7 @@ bool PRIMITIVES_EXTRACTOR::validate_location(const std::string& location,
   Function to get auto-determined assigned location
 */
 std::string PRIMITIVES_EXTRACTOR::get_assigned_location(
-    SDC_ENTRY& entry, const std::string& rule, const std::string& location,
+    SDC_ENTRY*& entry, const std::string& rule, const std::string& location,
     PIN_PARSER& pin) {
   std::string assigned_location = location;
   log_assert(rule == "" || rule == "half-first");
@@ -2717,9 +2811,9 @@ std::string PRIMITIVES_EXTRACTOR::get_assigned_location(
       assigned_location =
           stringf("H%s_%s_20_10P", pin.type.c_str(), pin.bank.c_str());
     }
-    entry.comments.push_back(stringf("# Remap location from %s to %s",
-                                     location.c_str(),
-                                     assigned_location.c_str()));
+    entry->comments.push_back(stringf("# Remap location from %s to %s",
+                                      location.c_str(),
+                                      assigned_location.c_str()));
   }
   return assigned_location;
 }
@@ -2760,10 +2854,10 @@ std::string PRIMITIVES_EXTRACTOR::get_input_wrapped_net(
   log_assert(wrapped_net.size());
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
-    if (instance["module"] == "WIRE" &&
+    if (instance["module"] == "WIRE" /*&&
         ((clk->is_fabric_clkbuf) ||
          (instance.contains("linked_object") &&
-          sort_name(instance["linked_object"]) == clk->linked_object))) {
+          sort_name(instance["linked_object"]) == clk->linked_object))*/) {
       if (instance["connectivity"]["O"] == wrapped_net) {
         wrapped_net = instance["connectivity"]["I"];
       }
@@ -2802,10 +2896,10 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
   log_assert(wrapped_net.size());
   // Any subsequence wire
   for (auto& instance : wrapped_instances) {
-    if (instance["module"] == "WIRE" &&
+    if (instance["module"] == "WIRE" /*&&
         ((clk->is_fabric_clkbuf) ||
          (instance.contains("linked_object") &&
-          sort_name(instance["linked_object"]) == clk->linked_object))) {
+          sort_name(instance["linked_object"]) == clk->linked_object))*/) {
       if (instance["connectivity"]["I"] == wrapped_net) {
         wrapped_net = instance["connectivity"]["O"];
       }
@@ -2861,9 +2955,11 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     if (db->data_signal.size()) {
       std::string linked_object = instance->linked_object();
       std::string data_port = get_original_name(db->data_signal);
-      reason =
+      std::pair<std::string, std::string> wrapped_reason =
           get_wrapped_instance_net_by_port(wrapped_instances, instance->module,
                                            linked_object, data_port, data_nets);
+      log_assert(wrapped_reason.first.empty() == wrapped_reason.second.empty());
+      reason = wrapped_reason.second;
       if (reason.empty()) {
         get_wrapped_instance_potential_next_wire(
             wrapped_instances, db->is_in_dir() ? "I" : "O",
@@ -2915,7 +3011,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     reason = stringf("Unable to find instance for object %s", object.c_str());
   }
   if (reason.size()) {
-    POST_MSG(5, "Failure reason: %s", reason.c_str());
+    POST_MSG(5, "Fail reason: %s", reason.c_str());
   }
   return reason;
 }
@@ -2923,14 +3019,15 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
 /*
   Get the net that connected to the port of the wrapped instance
 */
-std::string PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
+std::pair<std::string, std::string>
+PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
     const nlohmann::json& wrapped_instances, const std::string& module,
     const std::string& linked_object, const std::string& port,
     std::vector<std::string>& nets) {
   log_assert(nets.size() == 0);
   bool found_instance = false;
   bool found_port = false;
-  std::string reason = "";
+  std::pair<std::string, std::string> reason("", "");
   for (auto& instance : wrapped_instances) {
     if (instance["module"] == module &&
         sort_name(instance["linked_object"]) == linked_object) {
@@ -2957,19 +3054,22 @@ std::string PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
   if (found_instance) {
     if (found_port) {
       if (nets.size() == 0) {
-        reason = stringf(
-            "Unable to find linked-object %s wrapped-instance port %s data net",
-            linked_object.c_str(), port.c_str());
+        reason = std::make_pair("Fail",
+                                stringf("Unable to find linked-object %s "
+                                        "wrapped-instance port %s data net",
+                                        linked_object.c_str(), port.c_str()));
       }
     } else {
-      reason = stringf(
-          "User design does not utilize linked-object %s wrapped-instance port "
-          "%s",
-          linked_object.c_str(), port.c_str());
+      reason = std::make_pair("Skip",
+                              stringf("User design does not utilize "
+                                      "linked-object %s wrapped-instance port "
+                                      "%s",
+                                      linked_object.c_str(), port.c_str()));
     }
   } else {
-    reason = stringf("Unable to find linked-object %s wrapped-instance",
-                     linked_object.c_str());
+    reason = std::make_pair(
+        "Fail", stringf("Unable to find linked-object %s wrapped-instance",
+                        linked_object.c_str()));
   }
   return reason;
 }
@@ -3034,7 +3134,7 @@ void PRIMITIVES_EXTRACTOR::file_write_string(std::ofstream& file,
   Write out SDC entries
 */
 void PRIMITIVES_EXTRACTOR::write_sdc_entries(
-    std::ofstream& sdc, std::vector<SDC_ENTRY>& sdc_entries) {
+    std::ofstream& sdc, std::vector<SDC_ENTRY*>& sdc_entries) {
   size_t col1 = 0;
   size_t col2 = 0;
   size_t col3 = 0;
@@ -3042,7 +3142,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
   size_t col5 = 0;
   size_t col6 = 0;
   for (auto& entry : sdc_entries) {
-    for (auto& assignment : entry.assignments) {
+    for (auto& assignment : entry->assignments) {
       if (assignment.str1.size() > col1) {
         col1 = assignment.str1.size();
       }
@@ -3064,10 +3164,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
     }
   }
   for (auto& entry : sdc_entries) {
-    for (auto& comment : entry.comments) {
+    for (auto& comment : entry->comments) {
       sdc << comment.c_str() << "\n";
     }
-    for (auto& assignment : entry.assignments) {
+    for (auto& assignment : entry->assignments) {
       file_write_string(sdc, assignment.str1, (int)(col1 + 1));
       file_write_string(sdc, assignment.str2, (int)(col2 + 1));
       if (assignment.str4.size()) {
@@ -3093,5 +3193,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_entries(
       sdc << "\n";
     }
     sdc << "\n";
+  }
+  while (sdc_entries.size()) {
+    delete sdc_entries.back();
+    sdc_entries.pop_back();
   }
 }

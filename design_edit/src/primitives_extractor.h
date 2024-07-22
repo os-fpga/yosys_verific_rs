@@ -123,6 +123,8 @@ class PRIMITIVES_EXTRACTOR {
 
  private:
   void post_msg(uint32_t offset, const std::string& msg);
+  void post_sdc_comment(SDC_ENTRY*& entry, uint32_t offset,
+                        const std::string& type, const std::string& comment);
   void remove_msg();
   bool get_ports(Yosys::RTLIL::Module* module);
   const PRIMITIVE_DB* is_supported_primitive(const std::string& name,
@@ -193,12 +195,12 @@ class PRIMITIVES_EXTRACTOR {
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
   void write_sdc_internal_control_signal(
-      std::vector<SDC_ENTRY>& sdc_entries,
+      std::vector<SDC_ENTRY*>& sdc_entries,
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& location,
       const std::string& port, const std::string& internal_signal);
   bool validate_location(const std::string& location, PIN_PARSER& pin);
-  std::string get_assigned_location(SDC_ENTRY& entry, const std::string& rule,
+  std::string get_assigned_location(SDC_ENTRY*& entry, const std::string& rule,
                                     const std::string& location,
                                     PIN_PARSER& pin);
   size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
@@ -211,7 +213,7 @@ class PRIMITIVES_EXTRACTOR {
                               const std::string& object,
                               std::vector<std::string>& data_nets,
                               std::vector<bool>& found_nets, bool& input);
-  std::string get_wrapped_instance_net_by_port(
+  std::pair<std::string, std::string> get_wrapped_instance_net_by_port(
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& port,
       std::vector<std::string>& nets);
@@ -223,7 +225,7 @@ class PRIMITIVES_EXTRACTOR {
   void file_write_string(std::ofstream& file, const std::string& string,
                          int size = -1);
   void write_sdc_entries(std::ofstream& sdc,
-                         std::vector<SDC_ENTRY>& sdc_entries);
+                         std::vector<SDC_ENTRY*>& sdc_entries);
 
  private:
   const std::string m_technology = "";
