@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   linux-gcc:
     name: ${{ matrix.mode }}
@@ -23,12 +27,6 @@ jobs:
       MODE: ${{ matrix.mode }}
 
     steps:
-
-    - name: Cancel previous
-      uses: styfle/cancel-workflow-action@0.9.1
-      with:
-        access_token: ${{ github.token }}
-
     - uses: actions/setup-python@v5.0.0
       with:
         python-version: 3.8
@@ -95,33 +93,50 @@ jobs:
 
   centos7-gcc:
     name: centos7-gcc
-    runs-on: ubuntu-latest
     container:
       image: centos:7
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
 
     steps:
-
-    - name: Cancel previous
-      uses: styfle/cancel-workflow-action@0.9.1
-      with:
-        access_token: ${{ github.token }}
-        
     - name: Install git
       run: |
-        yum install -y openssh-server openssh-clients
-        yum-config-manager --enable rhel-server-rhscl-7-rpms
-        yum install -y https://repo.ius.io/ius-release-el7.rpm
-        yum install -y centos-release-scl
-        yum remove -y git
-        yum remove -y git-*
-        yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
-        yum install -y git
+          cd /opt && curl -L -o yumvault.tar.gz https://github.com/os-fpga/post_build_artifacts/releases/download/v0.2/yumvaultn.tar.gz && tar xvzf yumvault.tar.gz && ls -l && mv etc/yum.repos.d/Custom.repo /etc/yum.repos.d
+          yum-config-manager --disable base extras updates
+          yum update -y
+          rm -f /etc/yum.repos.d/Custom.repo
+          yum-config-manager --enable C7.9.2009-extras C7.9.2009-updates C7.9.2009-base
+          yum install -y openssh-server openssh-clients
+          yum-config-manager --enable rhel-server-rhscl-7-rpms
+          yum install -y https://repo.ius.io/ius-release-el7.rpm
+          yum install -y centos-release-scl
+          sed -i 's|^mirrorlist=|#mirrorlist=|' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+          sed -i 's|^#baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/rh/|baseurl=http://vault.centos.org/7.9.2009/sclo/$basearch/rh/|' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+          sed -i 's|^mirrorlist=|#mirrorlist=|' /etc/yum.repos.d/CentOS-SCLo-scl.repo
+          sed -i 's|^# baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/sclo/|baseurl=http://vault.centos.org/7.9.2009/sclo/$basearch/sclo/|' /etc/yum.repos.d/CentOS-SCLo-scl.repo
+          yum install -y devtoolset-11
+          yum install -y devtoolset-11-toolchain
+          yum remove -y git*
+          yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum install -y git
 
     - name: Checkout code
-      uses: actions/checkout@v2
+      run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git init $GITHUB_WORKSPACE
+          git remote add origin https://github.com/$GITHUB_REPOSITORY
+          git remote -v
+          git config --local gc.auto 0
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +${{ github.sha }}:refs/remotes/pull/${{ github.event.pull_request.number }}/merge
+              git checkout --progress --force refs/remotes/pull/${{ github.event.pull_request.number }}/merge
+          else
+              git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+              git checkout origin/$GITHUB_REF_NAME
+          fi
+          git log -1 --format='%H'
         
     - name: Install dependencies
       working-directory: ./.github/scripts
