@@ -809,67 +809,67 @@ struct DesignEditRapidSilicon : public ScriptPass {
         log("OUTS : %s\n", log_signal(elem));
       for (const auto &elem : o_buf_outs)
         log("O_BUF_OUTS : %s\n", log_signal(elem));
-      log("All IO connections are correct");
-      return;
+      log("All IO connections are correct.\n");
+      //return;
     }
 
     set_difference(orig_ins, i_buf_ins);
     if(!diff.empty())
     {
-      log("The following inputs are not connected to I_BUFs");
+      log("The following inputs are not connected to I_BUFs\n");
       for (const auto &elem : diff)
       {
-        log("Input : %s", log_signal(elem));
+        log("Input : %s\n", log_signal(elem));
       }
-      return;
+      //return;
     }
 
     diff.clear();
     set_difference(i_buf_ins, orig_ins);
     if(!diff.empty())
     {
-      log("The following I_BUF inputs are not connected to the design inputs");
+      log("The following I_BUF inputs are not connected to the design inputs\n");
       for (const auto &elem : diff)
       {
-        log("I_BUF Input : %s", log_signal(elem));
+        log("I_BUF Input : %s\n", log_signal(elem));
       }
-      return;
+      //return;
     }
 
     diff.clear();
     set_difference(orig_outs, o_buf_outs);
     if(!diff.empty())
     {
-      log("The following outputs are not connected to O_BUFs");
+      log("The following outputs are not connected to O_BUFs\n");
       for (const auto &elem : diff)
       {
-        log("Output : %s", log_signal(elem));
+        log("Output : %s\n", log_signal(elem));
       }
-      return;
+      //return;
     }
 
     diff.clear();
-    set_difference(i_buf_ins, orig_ins);
+    set_difference(o_buf_outs, orig_outs);
     if(!diff.empty())
     {
-      log("The following O_BUF outputs are not connected to the design outputs");
+      log("The following O_BUF outputs are not connected to the design outputs\n");
       for (const auto &elem : diff)
       {
-        log("O_BUF Output : %s", log_signal(elem));
+        log("O_BUF Output : %s\n", log_signal(elem));
       }
-      return;
+      //return;
     }
 
     diff.clear();
     set_difference(clk_buf_ins, i_buf_outs);
     if(!diff.empty())
     {
-      log("The following CLK_BUF inputs are not connected to I_BUF outputs");
+      log("The following CLK_BUF inputs are not connected to I_BUF outputs\n");
       for (const auto &elem : diff)
       {
-        log("CLK_BUF Input : %s", log_signal(elem));
+        log("CLK_BUF Input : %s\n", log_signal(elem));
       }
-      return;
+      //return;
     }
 
     diff.clear();
@@ -973,10 +973,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
             {
               if (module_name.substr(0, 5) == "I_BUF")
               {
-                if (bit.wire->port_input) i_buf_ins.insert(bit);
-                if (bit.wire->port_output) i_buf_outs.insert(bit);
+                if (cell->input(portName) && remove_backslashes(portName.str()) != "EN") i_buf_ins.insert(bit);
+                if (cell->output(portName)) i_buf_outs.insert(bit);
               }
-              if (module_name.substr(0, 5) == "O_BUF" && bit.wire->port_output)
+              if (module_name.substr(0, 5) == "O_BUF" && cell->output(portName))
               {
                 o_buf_outs.insert(bit);
               }
