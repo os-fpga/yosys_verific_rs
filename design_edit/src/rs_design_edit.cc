@@ -885,6 +885,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     diff.clear();
     return;
+  }
 
   static bool sigName(const RTLIL::SigSpec &sig, std::string &name)
   {
@@ -1043,7 +1044,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       fabric_clocks << std::setw(4) << ports << std::endl;
       fabric_clocks.close();
     }
-}
+  }
 
 
 
