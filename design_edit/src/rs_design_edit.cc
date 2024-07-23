@@ -93,9 +93,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> orig_ins, orig_outs;
+  pool<SigBit> orig_ins, orig_outs, fab_outs;
   pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
   pool<SigBit> clk_buf_ins;
+  pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
 
   RTLIL::Design *_design;
@@ -808,6 +809,35 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void get_fabric_outputs(Module* mod)
+  {
+    for (auto wire : mod->wires())
+    {
+      bool is_output = wire->port_output ? true :false;
+      if (!is_output) continue;
+
+      RTLIL::SigSpec wire_ = wire;
+      for (auto bit : wire_)
+      {
+        if(!orig_outs.count(bit)) fab_outs.insert(bit);
+      }
+    }
+  }
+
+  void check_fclkbuf_conns()
+  {
+    set_difference(fclk_buf_ins, fab_outs);
+    if(!diff.empty())
+    {
+      log("The following fclk_buf_outputs are not fabric outputs\n");
+      for (const auto &elem : diff)
+      {
+        log("FCLK_BUF_IN : %s\n", log_signal(elem));
+      }
+      diff.clear();
+    }
+  }
+
   void check_buf_conns()
   {
     if (orig_ins == i_buf_ins && orig_outs == o_buf_outs)
@@ -1144,6 +1174,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
               {
                 clk_buf_ins.insert(bit);
               }
+              if (module_name == "FCLK_BUF" && cell->input(portName))
+              {
+                fclk_buf_ins.insert(bit);
+              }
             }
           }
           RTLIL::SigSpec actual = conn.second;
@@ -1312,6 +1346,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
+    get_fabric_outputs(original_mod);
+    check_fclkbuf_conns();
     delete_wires(original_mod, wires_interface);
     delete_wires(original_mod, del_ins);
     delete_wires(original_mod, del_outs);
