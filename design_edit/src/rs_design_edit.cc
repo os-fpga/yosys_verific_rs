@@ -781,6 +781,63 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+
+  static bool sigName(const RTLIL::SigSpec &sig, std::string &name)
+  {
+    if (!sig.is_chunk())
+    {
+      return false;
+    }
+
+    const RTLIL::SigChunk chunk = sig.as_chunk();
+
+    if (chunk.wire == NULL)
+    {
+      return false;
+    }
+
+    if (chunk.width == chunk.wire->width && chunk.offset == 0)
+    {
+      name = (chunk.wire->name).substr(0);
+    }
+    else
+    {
+      name = "";
+    }
+
+    return true;
+  }
+
+  static int checkCell(Cell *cell, const string cellName,
+                const string &port, string &actual_name)
+  {
+    if (cell->type != RTLIL::escape_id(cellName))
+    {
+      return 0;
+    }
+
+    std::string name;
+    for (auto &conn : cell->connections())
+    {
+
+      IdString portName = conn.first;
+      RTLIL::SigSpec actual = conn.second;
+
+      if (portName == RTLIL::escape_id(port))
+      {
+        if (sigName(actual, name))
+        {
+          actual_name = name;
+          if (actual_name[0] == '\\') {
+            actual_name = actual_name.substr(1);
+          }
+          return 1;
+        }
+      }
+    }
+    return 1;
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -790,6 +847,101 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return ""; // If no extension found
   }
+
+ static void reportInfoFabricClocks(Module *original_mod) {
+  std::ofstream fabric_clocks("fabric_netlist_info.json");
+    json ports = json::object();
+    json ports_array = json::array();
+    std::set<std::string> reported;
+    for (auto cell : original_mod->cells())
+    {
+      string module_name = cell->type.str();
+      string actual_clock;
+      if (checkCell(cell, "DFFRE",
+                    "C", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_high");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+
+      if (checkCell(cell, "DFFNRE",
+                    "C", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_low");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+      if (checkCell(cell, "DSP38",
+                    "CLK", actual_clock) || checkCell(cell, "DSP19x2",
+                    "CLK", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_high");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+      for (auto formal_clock : {"CLK_A", "CLK_B"})
+      {
+        if (checkCell(cell, "TDP_RAM36K",
+                      formal_clock, actual_clock))
+        {
+          if (reported.find(actual_clock) == reported.end())
+          {
+            json port_object;
+            port_object["name"] = actual_clock;
+            port_object["direction"] = (std::string)("input");
+            port_object["clock"] = (std::string)("active_high");
+            ports_array.push_back(port_object);
+            reported.insert(actual_clock);
+          }
+        }
+      }
+      for (auto formal_clock : {"CLK_A1", "CLK_B1", "CLK_A2", "CLK_B2"})
+      {
+        if (checkCell(cell, "TDP_RAM18KX2",
+                      formal_clock, actual_clock))
+        {
+          if (reported.find(actual_clock) == reported.end())
+          {
+            json port_object;
+            port_object["name"] = actual_clock;
+            port_object["direction"] = (std::string)("input");
+            port_object["clock"] = (std::string)("active_high");
+            ports_array.push_back(port_object);
+            reported.insert(actual_clock);
+          }
+        }
+      }
+    }
+    ports["ports"] = ports_array;
+    if (fabric_clocks.is_open()) {
+      fabric_clocks << std::setw(4) << ports << std::endl;
+      fabric_clocks.close();
+    }
+}
+
+
 
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
@@ -1133,6 +1285,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     delete_wires(original_mod, orig_intermediate_wires);
     fixup_mod_ports(original_mod);
     Pass::call(_design, "clean");
+   
+    reportInfoFabricClocks(original_mod);
+    
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
 
