@@ -940,9 +940,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
       remove_backslashes(_design->top_module()->name.str());
-    if (original_mod_name.find("fabric_") == std::string::npos) {
-      design->rename(original_mod, "\\fabric_" + original_mod_name);   
-    }
+    design->rename(original_mod, "\\fabric_" + original_mod_name);
 
     for (auto wire : original_mod->wires())
     {
