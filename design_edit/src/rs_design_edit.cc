@@ -155,6 +155,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void write_checker_file()
+  {
+    std::ofstream netlist_checker_file("netlist_checker.log");
+    if (netlist_checker_file.is_open())
+    {
+      netlist_checker_file << netlist_checker.str();
+      netlist_checker_file.close();
+    }
+
+    netlist_checker.str("");
+    netlist_checker.clear();
+  }
+
   std::string id(RTLIL::IdString internal_id)
   {
     const char *str = internal_id.c_str();
@@ -826,72 +839,76 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   void check_dly_cntrls()
   {
+    netlist_checker << "\n\nChecking I_DELAY/O_DELAY control signals\n\n";
+    netlist_checker << "\n\n================================================================\n";
     for (auto &bit : dly_in_ctrls)
     {
       if (!ofab_outs.count(bit))
-        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
     }
 
     for (auto &bit : dly_out_ctrls)
     {
       if (!ifab_ins.count(bit))
-        log("%s is an output control signal and must be connected to I_FAB\n", log_signal(bit));
+        netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
     }
+    netlist_checker << "\n================================================================\n";
   }
 
   void check_buf_cntrls()
   {
+    netlist_checker << "\n\nChecking Buffer control signals\n\n";
+    netlist_checker << "\n\n================================================================\n";
     for (auto &bit : i_buf_ctrls)
     {
       if (!ofab_outs.count(bit))
-        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
     }
 
     for (auto &bit : o_buf_ctrls)
     {
       if (!ofab_outs.count(bit))
-        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
     }
+    netlist_checker << "\n================================================================\n";
   }
 
   void check_fclkbuf_conns()
   {
+    netlist_checker << "\n\nChecking FCLK_BUF connections\n\n";
+    netlist_checker << "\n\n================================================================\n";
     set_difference(fclk_buf_ins, fab_outs);
     if(!diff.empty())
     {
-      log("The following fclk_buf_outputs are not fabric outputs\n");
+      netlist_checker << "The following fclk_buf_outputs are not fabric outputs\n";
       for (const auto &elem : diff)
       {
-        log("FCLK_BUF_IN : %s\n", log_signal(elem));
+        netlist_checker << "FCLK_BUF_IN : " << log_signal(elem) << "\n";
       }
       diff.clear();
     }
+    netlist_checker << "\n================================================================\n";
   }
 
   void check_buf_conns()
   {
+    netlist_checker << "Checking Buffer connections\n\n";
     if (orig_ins == i_buf_ins && orig_outs == o_buf_outs)
     {
-      for (const auto &elem : orig_ins)
-        log("IN : %s\n", log_signal(elem));
-      for (const auto &elem : i_buf_ins)
-        log("I_BUF_INS : %s\n", log_signal(elem));
-      for (const auto &elem : orig_outs)
-        log("OUTS : %s\n", log_signal(elem));
-      for (const auto &elem : o_buf_outs)
-        log("O_BUF_OUTS : %s\n", log_signal(elem));
-      log("All IO connections are correct.\n");
+      netlist_checker << "All IO connections are correct.\n";
       //return;
     }
 
     set_difference(orig_ins, i_buf_ins);
     if(!diff.empty())
     {
-      log("The following inputs are not connected to I_BUFs\n");
+      netlist_checker << "\n\n================================================================\n";
+      netlist_checker << "The following inputs are not connected to I_BUFs\n";
       for (const auto &elem : diff)
       {
-        log("Input : %s\n", log_signal(elem));
+        netlist_checker << "Input : " << log_signal(elem) << "\n";
       }
+      netlist_checker << "\n================================================================\n";
       //return;
     }
 
@@ -899,11 +916,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     set_difference(i_buf_ins, orig_ins);
     if(!diff.empty())
     {
-      log("The following I_BUF inputs are not connected to the design inputs\n");
+      netlist_checker << "\n\n================================================================\n";
+      netlist_checker << "The following I_BUF inputs are not connected to the design inputs\n";
       for (const auto &elem : diff)
       {
-        log("I_BUF Input : %s\n", log_signal(elem));
+        netlist_checker << "I_BUF Input : " << log_signal(elem) << "\n";
       }
+      netlist_checker << "\n================================================================\n";
       //return;
     }
 
@@ -911,11 +930,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     set_difference(orig_outs, o_buf_outs);
     if(!diff.empty())
     {
-      log("The following outputs are not connected to O_BUFs\n");
+      netlist_checker << "\n\n================================================================\n";
+      netlist_checker << "The following outputs are not connected to O_BUFs\n";
       for (const auto &elem : diff)
       {
-        log("Output : %s\n", log_signal(elem));
+        netlist_checker << "Output : " << log_signal(elem) << "\n";
       }
+      netlist_checker << "\n================================================================\n";
       //return;
     }
 
@@ -923,11 +944,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     set_difference(o_buf_outs, orig_outs);
     if(!diff.empty())
     {
-      log("The following O_BUF outputs are not connected to the design outputs\n");
+      netlist_checker << "\n\n================================================================\n";
+      netlist_checker << "The following O_BUF outputs are not connected to the design outputs\n";
       for (const auto &elem : diff)
       {
-        log("O_BUF Output : %s\n", log_signal(elem));
+        netlist_checker << "O_BUF Output : " << log_signal(elem) << "\n";
       }
+      netlist_checker << "\n================================================================\n";
       //return;
     }
 
@@ -935,11 +958,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     set_difference(clk_buf_ins, i_buf_outs);
     if(!diff.empty())
     {
-      log("The following CLK_BUF inputs are not connected to I_BUF outputs\n");
+      netlist_checker << "\n\n================================================================\n";
+      netlist_checker << "The following CLK_BUF inputs are not connected to I_BUF outputs\n";
       for (const auto &elem : diff)
       {
-        log("CLK_BUF Input : %s\n", log_signal(elem));
+        netlist_checker << "CLK_BUF Input : " << log_signal(elem) << "\n";
       }
+      netlist_checker << "\n================================================================\n";
       //return;
     }
 
@@ -1642,6 +1667,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
     run_script(new_design);
+    write_checker_file();
     // Dump entire wrap design using "config.json" naming (by default)
     dump_io_config_json(wrapper_mod, io_config_json);
     std::ifstream input(io_config_json.c_str());
