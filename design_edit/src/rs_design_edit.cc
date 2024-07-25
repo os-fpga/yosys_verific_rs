@@ -93,9 +93,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> orig_ins, orig_outs, fab_outs;
-  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
-  pool<SigBit> clk_buf_ins;
+  pool<SigBit> orig_ins, orig_outs, fab_outs, ofab_outs, ifab_ins;
+  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
+  pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
 
@@ -824,6 +824,36 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void check_dly_cntrls()
+  {
+    for (auto &bit : dly_in_ctrls)
+    {
+      if (!ofab_outs.count(bit))
+        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+    }
+
+    for (auto &bit : dly_out_ctrls)
+    {
+      if (!ifab_ins.count(bit))
+        log("%s is an output control signal and must be connected to I_FAB\n", log_signal(bit));
+    }
+  }
+
+  void check_buf_cntrls()
+  {
+    for (auto &bit : i_buf_ctrls)
+    {
+      if (!ofab_outs.count(bit))
+        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+    }
+
+    for (auto &bit : o_buf_ctrls)
+    {
+      if (!ofab_outs.count(bit))
+        log("%s is an input control signal and must be connected to O_FAB\n", log_signal(bit));
+    }
+  }
+
   void check_fclkbuf_conns()
   {
     set_difference(fclk_buf_ins, fab_outs);
@@ -1163,20 +1193,35 @@ struct DesignEditRapidSilicon : public ScriptPass {
             {
               if (module_name.substr(0, 5) == "I_BUF")
               {
-                if (cell->input(portName) && remove_backslashes(portName.str()) != "EN") i_buf_ins.insert(bit);
+                if (cell->input(portName) )
+                  (remove_backslashes(portName.str()) != "EN") ? i_buf_ins.insert(bit) : i_buf_ctrls.insert(bit);
                 if (cell->output(portName)) i_buf_outs.insert(bit);
+                continue;
               }
-              if (module_name.substr(0, 5) == "O_BUF" && cell->output(portName))
+              if (module_name.substr(0, 5) == "O_BUF")
               {
-                o_buf_outs.insert(bit);
+                if(cell->output(portName)) o_buf_outs.insert(bit);
+                if (module_name.substr(5, 6) == "T"
+                  && remove_backslashes(portName.str()) == "T")
+                  o_buf_ctrls.insert(bit);
+                continue;
               }
               if (module_name == "CLK_BUF" && cell->input(portName))
               {
                 clk_buf_ins.insert(bit);
+                continue;
               }
               if (module_name == "FCLK_BUF" && cell->input(portName))
               {
                 fclk_buf_ins.insert(bit);
+                continue;
+              }
+              if (module_name.substr(1, 7) == "_DELAY")
+              {
+                if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
+                {
+                  cell->input(portName) ? dly_in_ctrls.insert(bit) : dly_out_ctrls.insert(bit);
+                }
               }
             }
           }
@@ -1238,6 +1283,34 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
         }
       } else {
+        if (cell->type == RTLIL::escape_id("I_FAB"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            if(remove_backslashes(portName.str()) == "I")
+            {
+              for (SigBit bit : conn.second)
+              {
+                if (bit.wire != nullptr) ifab_ins.insert(bit);
+              }
+            }
+          }
+        }
+        if (cell->type == RTLIL::escape_id("O_FAB"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            if(remove_backslashes(portName.str()) == "O")
+            {
+              for (SigBit bit : conn.second)
+              {
+                if (bit.wire != nullptr) ofab_outs.insert(bit);
+              }
+            }
+          }
+        }
         for (auto conn : cell->connections()) {
           IdString portName = conn.first;
           RTLIL::SigSpec actual = conn.second;
@@ -1260,6 +1333,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     check_buf_conns();
+    check_buf_cntrls();
+    check_dly_cntrls();
     add_wire_btw_prims(original_mod);
     intersection_copy_remove(new_ins, new_outs, interface_wires);
     intersect(interface_wires, keep_wires);

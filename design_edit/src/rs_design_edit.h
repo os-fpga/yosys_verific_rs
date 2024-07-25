@@ -78,6 +78,8 @@ std::string io_config_json;
 std::string sdc_file;
 bool sdc_passed = false;
 std::string tech;
+std::unordered_set<std::string> dly_controls =
+      {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
 
 std::vector<std::string> tokenizeString(const std::string &input);
 void processSdcFile(std::istream &input);
