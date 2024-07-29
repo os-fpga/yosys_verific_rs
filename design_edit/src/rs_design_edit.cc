@@ -844,13 +844,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto &bit : dly_in_ctrls)
     {
       if (!ofab_outs.count(bit))
+      {
         netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
+        netlist_error = true;
+      }
     }
 
     for (auto &bit : dly_out_ctrls)
     {
       if (!ifab_ins.count(bit))
+      {
         netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
+        netlist_error = true;
+      }
     }
     netlist_checker << "================================================================\n";
   }
@@ -862,13 +868,19 @@ struct DesignEditRapidSilicon : public ScriptPass {
     for (auto &bit : i_buf_ctrls)
     {
       if (!ofab_outs.count(bit))
+      {
         netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
+        netlist_error = true;
+      }
     }
 
     for (auto &bit : o_buf_ctrls)
     {
       if (!ofab_outs.count(bit))
+      {
         netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
+        netlist_error = true;
+      }
     }
     netlist_checker << "================================================================\n";
   }
@@ -885,6 +897,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       {
         netlist_checker << "FCLK_BUF_IN : " << log_signal(elem) << "\n";
       }
+      netlist_error = true;
       diff.clear();
     }
     netlist_checker << "================================================================\n";
@@ -896,7 +909,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     if (orig_ins == i_buf_ins && orig_outs == o_buf_outs)
     {
       netlist_checker << "All IO connections are correct.\n";
-      //return;
     }
 
     set_difference(orig_ins, i_buf_ins);
@@ -909,7 +921,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         netlist_checker << "Input : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
-      //return;
+      netlist_error = true;
     }
 
     diff.clear();
@@ -923,7 +935,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         netlist_checker << "I_BUF Input : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
-      //return;
+      netlist_error = true;
     }
 
     diff.clear();
@@ -937,7 +949,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         netlist_checker << "Output : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
-      //return;
+      netlist_error = true;
     }
 
     diff.clear();
@@ -951,7 +963,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         netlist_checker << "O_BUF Output : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
-      //return;
+      netlist_error = true;
     }
 
     diff.clear();
@@ -965,7 +977,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         netlist_checker << "CLK_BUF Input : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
-      //return;
+      netlist_error = true;
     }
 
     diff.clear();
@@ -1688,6 +1700,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       extractor->write_json("io_config.simple.json", true);
     }
     delete extractor;
+    if(netlist_error)
+      std::cerr << "Error : Netlist is illegal, check netlist_checker.log for more details." << std::endl;
   }
 
   void script() override {

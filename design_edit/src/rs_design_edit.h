@@ -79,6 +79,7 @@ std::string sdc_file;
 bool sdc_passed = false;
 std::string tech;
 std::stringstream netlist_checker;
+bool netlist_error = false;
 std::unordered_set<std::string> dly_controls =
       {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
 
