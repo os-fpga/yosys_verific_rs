@@ -53,7 +53,8 @@ USING_YOSYS_NAMESPACE
 using namespace RTLIL;
 
 const std::vector<std::string> IN_PORTS = {"I", "I_P", "I_N", "D"};
-const std::vector<std::string> OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
+const std::vector<std::string> DATA_OUT_PORTS = {"O", "O_P", "O_N", "Q"};
+const std::vector<std::string> DATA_CLK_OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -260,23 +261,44 @@ struct DesignEditRapidSilicon : public ScriptPass {
             portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
-          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false);
+          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false, DATA_OUT_PORTS);
         }
       }
     }
 #endif
-    i = 0;
-    for (auto& inst : instances_array) {
-      if (inst["module"] == "BOOT_CLOCK") {
-        inst["linked_object"] = stringf("BOOT_CLOCK#%ld", i);
-        inst["direction"] = "IN";
-        inst["index"] = 0;
-        i++;
+	// Handle pure-data
+    link_instance_recursively(instances_array, 0, DATA_OUT_PORTS);
+    // Handle clock
+    for (std::string module : std::vector<std::string>({"BOOT_CLOCK", "FCLK_BUF"})) {
+      i = 0;
+      for (auto& inst : instances_array) {
+        if (inst["module"] == module) {
+          if (inst["connectivity"].contains("O")) {
+            inst["linked_object"] = inst["connectivity"]["O"];
+          } else {
+            inst["linked_object"] = stringf("%s#%ld", module.c_str(), i);
+          }
+          inst["direction"] = "IN";
+          inst["index"] = 0;
+          i++;
+        }
       }
     }
+	// Hnadle clock-data
+    link_instance_recursively(instances_array, 1, DATA_CLK_OUT_PORTS);
+
+    instances["instances"] = instances_array;
+    if (json_file.is_open()) {
+      json_file << std::setw(4) << instances << std::endl;
+      json_file.close();
+    }
+  }
+  
+  void link_instance_recursively(json& instances_array, int retry_start_index, const std::vector<std::string>& OUT_PORTS) {
+    log_assert(retry_start_index == 0 || retry_start_index == 1);
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
     // We need to loop this recursive loop twice
-    for (i = 0; i < 2; i++) {
+    for (int i = retry_start_index; i < 2; i++) {
       // first time : only link I_BUF_DS and O_BUF_DS, O_BUFT_DS (before they are used to link other instance)
       //              because the name needs to be "p+n"
       // second time: link the rest
@@ -304,12 +326,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   }
                   if (i == 0) {
                     linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
-                                            inst["direction"], uint32_t(inst["index"]) + 1, true, 
+                                            inst["direction"], uint32_t(inst["index"]) + 1, true, OUT_PORTS,
                                             {"I_BUF_DS", "O_BUF_DS", "O_BUFT_DS"});
                   } else {
                     // dont set allow_dual_name=true, it might become infinite loop
                     linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
-                                            inst["direction"], uint32_t(inst["index"]) + 1, false);
+                                            inst["direction"], uint32_t(inst["index"]) + 1, false, OUT_PORTS);
                   }
                 }
               }
@@ -323,16 +345,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-    instances["instances"] = instances_array;
-    if (json_file.is_open()) {
-      json_file << std::setw(4) << instances << std::endl;
-      json_file.close();
-    }
   }
   
   size_t link_instance(bool use_in_port, json& instances_array, const std::string& object, 
                         const std::string& net, const std::string& direction, uint32_t index, bool allow_dual_name, 
-                        std::vector<std::string> search_modules = {}) {
+                        const std::vector<std::string>& OUT_PORTS, std::vector<std::string> search_modules = {}) {
     size_t linked = 0;
     for (auto& inst : instances_array) {
       // Only if this instance had not been linked
@@ -482,8 +499,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       string module_name = remove_backslashes(cell->type.str());
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
           primitives.end()) {
-        bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
-        if (is_out_prim) continue;
+        //EDA-3010: output primitives cal also have danlging output wire 
+        //bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+        //if (is_out_prim) continue;
         // Upgrading dangling outs of input primtives to output ports
         for (auto port : cell->connections()){
           IdString portName = port.first;
@@ -854,6 +872,62 @@ struct DesignEditRapidSilicon : public ScriptPass {
     std::cout << "[" << totalTime << " sec.]\n";
   }
 
+  static bool sigName(const RTLIL::SigSpec &sig, std::string &name)
+  {
+    if (!sig.is_chunk())
+    {
+      return false;
+    }
+
+    const RTLIL::SigChunk chunk = sig.as_chunk();
+
+    if (chunk.wire == NULL)
+    {
+      return false;
+    }
+
+    if (chunk.width == chunk.wire->width && chunk.offset == 0)
+    {
+      name = (chunk.wire->name).substr(0);
+    }
+    else
+    {
+      name = "";
+    }
+
+    return true;
+  }
+
+  static int checkCell(Cell *cell, const string cellName,
+                const string &port, string &actual_name)
+  {
+    if (cell->type != RTLIL::escape_id(cellName))
+    {
+      return 0;
+    }
+
+    std::string name;
+    for (auto &conn : cell->connections())
+    {
+
+      IdString portName = conn.first;
+      RTLIL::SigSpec actual = conn.second;
+
+      if (portName == RTLIL::escape_id(port))
+      {
+        if (sigName(actual, name))
+        {
+          actual_name = name;
+          if (actual_name[0] == '\\') {
+            actual_name = actual_name.substr(1);
+          }
+          return 1;
+        }
+      }
+    }
+    return 1;
+  }
+
   bool is_flag(const std::string &arg) { return !arg.empty() && arg[0] == '-'; }
 
   std::string get_extension(const std::string &filename) {
@@ -863,6 +937,101 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     return ""; // If no extension found
   }
+
+ static void reportInfoFabricClocks(Module *original_mod) {
+  std::ofstream fabric_clocks("fabric_netlist_info.json");
+    json ports = json::object();
+    json ports_array = json::array();
+    std::set<std::string> reported;
+    for (auto cell : original_mod->cells())
+    {
+      string module_name = cell->type.str();
+      string actual_clock;
+      if (checkCell(cell, "DFFRE",
+                    "C", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_high");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+
+      if (checkCell(cell, "DFFNRE",
+                    "C", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_low");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+      if (checkCell(cell, "DSP38",
+                    "CLK", actual_clock) || checkCell(cell, "DSP19x2",
+                    "CLK", actual_clock))
+      {
+        if (reported.find(actual_clock) == reported.end())
+        {
+          json port_object;
+          port_object["name"] = actual_clock;
+          port_object["direction"] = (std::string)("input");
+          port_object["clock"] = (std::string)("active_high");
+          ports_array.push_back(port_object);
+          reported.insert(actual_clock);
+        }
+        continue;
+      }
+      for (auto formal_clock : {"CLK_A", "CLK_B"})
+      {
+        if (checkCell(cell, "TDP_RAM36K",
+                      formal_clock, actual_clock))
+        {
+          if (reported.find(actual_clock) == reported.end())
+          {
+            json port_object;
+            port_object["name"] = actual_clock;
+            port_object["direction"] = (std::string)("input");
+            port_object["clock"] = (std::string)("active_high");
+            ports_array.push_back(port_object);
+            reported.insert(actual_clock);
+          }
+        }
+      }
+      for (auto formal_clock : {"CLK_A1", "CLK_B1", "CLK_A2", "CLK_B2"})
+      {
+        if (checkCell(cell, "TDP_RAM18KX2",
+                      formal_clock, actual_clock))
+        {
+          if (reported.find(actual_clock) == reported.end())
+          {
+            json port_object;
+            port_object["name"] = actual_clock;
+            port_object["direction"] = (std::string)("input");
+            port_object["clock"] = (std::string)("active_high");
+            ports_array.push_back(port_object);
+            reported.insert(actual_clock);
+          }
+        }
+      }
+    }
+    ports["ports"] = ports_array;
+    if (fabric_clocks.is_open()) {
+      fabric_clocks << std::setw(4) << ports << std::endl;
+      fabric_clocks.close();
+    }
+}
+
+
 
   void execute(std::vector<std::string> args, RTLIL::Design *design) override {
     std::string run_from, run_to;
@@ -1259,6 +1428,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     Pass::call(_design, "clean");
     end = high_resolution_clock::now();
     elapsed_time (start, end);
+   
+    reportInfoFabricClocks(original_mod);
+    
     delete_wires(interface_mod, interface_intermediate_wires);
     interface_mod->fixup_ports();
 
