@@ -1701,7 +1701,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     delete extractor;
     if(netlist_error)
-      std::cerr << "Error : Netlist is illegal, check netlist_checker.log for more details." << std::endl;
+      std::cerr << "Error: Netlist is illegal, check netlist_checker.log for more details." << std::endl;
   }
 
   void script() override {
