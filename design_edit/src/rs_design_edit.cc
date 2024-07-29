@@ -903,12 +903,31 @@ struct DesignEditRapidSilicon : public ScriptPass {
     netlist_checker << "================================================================\n";
   }
 
+  void check_clkbuf_conns()
+  {
+    set_difference(clk_buf_ins, i_buf_outs);
+    if(!diff.empty())
+    {
+      netlist_checker << "================================================================\n";
+      netlist_checker << "The following CLK_BUF inputs are not connected to I_BUF outputs\n";
+      for (const auto &elem : diff)
+      {
+        netlist_checker << "CLK_BUF Input : " << log_signal(elem) << "\n";
+      }
+      netlist_checker << "================================================================\n";
+      netlist_error = true;
+    }
+
+    diff.clear();
+  }
+
   void check_buf_conns()
   {
     netlist_checker << "Checking Buffer connections\n";
     if (orig_ins == i_buf_ins && orig_outs == o_buf_outs)
     {
       netlist_checker << "All IO connections are correct.\n";
+      return;
     }
 
     set_difference(orig_ins, i_buf_ins);
@@ -961,20 +980,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       for (const auto &elem : diff)
       {
         netlist_checker << "O_BUF Output : " << log_signal(elem) << "\n";
-      }
-      netlist_checker << "================================================================\n";
-      netlist_error = true;
-    }
-
-    diff.clear();
-    set_difference(clk_buf_ins, i_buf_outs);
-    if(!diff.empty())
-    {
-      netlist_checker << "================================================================\n";
-      netlist_checker << "The following CLK_BUF inputs are not connected to I_BUF outputs\n";
-      for (const auto &elem : diff)
-      {
-        netlist_checker << "CLK_BUF Input : " << log_signal(elem) << "\n";
       }
       netlist_checker << "================================================================\n";
       netlist_error = true;
@@ -1222,46 +1227,108 @@ struct DesignEditRapidSilicon : public ScriptPass {
         io_prim.contains_io_prem = true;
         bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
         remove_prims.push_back(cell);
-        for (auto conn : cell->connections()) {
-          IdString portName = conn.first;
-          for (SigBit bit : conn.second)
+
+
+        if (cell->type == RTLIL::escape_id("I_BUF") ||
+          cell->type == RTLIL::escape_id("I_BUF_DS"))
+        {
+          for (auto conn : cell->connections())
           {
-            if (bit.wire != nullptr)
+            IdString portName = conn.first;
+            for (SigBit bit : conn.second)
             {
-              if (module_name.substr(0, 5) == "I_BUF")
+              if (bit.wire != nullptr)
               {
                 if (cell->input(portName) )
                   (remove_backslashes(portName.str()) != "EN") ? i_buf_ins.insert(bit) : i_buf_ctrls.insert(bit);
                 if (cell->output(portName)) i_buf_outs.insert(bit);
-                continue;
               }
-              if (module_name.substr(0, 5) == "O_BUF")
+            }
+          }
+        } else if (cell->type == RTLIL::escape_id("O_BUF") ||
+          cell->type == RTLIL::escape_id("O_BUF_DS"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            for (SigBit bit : conn.second)
+            {
+              if (bit.wire != nullptr)
               {
                 if(cell->output(portName)) o_buf_outs.insert(bit);
-                if (module_name.substr(5, 6) == "T"
-                  && remove_backslashes(portName.str()) == "T")
-                  o_buf_ctrls.insert(bit);
-                continue;
               }
-              if (module_name == "CLK_BUF" && cell->input(portName))
+            }
+          }
+        } else if (cell->type == RTLIL::escape_id("O_BUFT") ||
+          cell->type == RTLIL::escape_id("O_BUFT_DS"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            for (SigBit bit : conn.second)
+            {
+              if (bit.wire != nullptr)
               {
-                clk_buf_ins.insert(bit);
-                continue;
+                if(cell->output(portName)) o_buf_outs.insert(bit);
+                if (remove_backslashes(portName.str()) == "T") o_buf_ctrls.insert(bit);
               }
-              if (module_name == "FCLK_BUF" && cell->input(portName))
+            }
+          }
+        } else if (cell->type == RTLIL::escape_id("CLK_BUF"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            if(cell->input(portName))
+            {
+              for (SigBit bit : conn.second)
               {
-                fclk_buf_ins.insert(bit);
-                continue;
-              }
-              if (module_name.substr(1, 7) == "_DELAY")
-              {
-                if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
+                if (bit.wire != nullptr)
                 {
-                  cell->input(portName) ? dly_in_ctrls.insert(bit) : dly_out_ctrls.insert(bit);
+                  clk_buf_ins.insert(bit);
                 }
               }
             }
           }
+        } else if (cell->type == RTLIL::escape_id("FCLK_BUF"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            if(cell->input(portName))
+            {
+              for (SigBit bit : conn.second)
+              {
+                if (bit.wire != nullptr)
+                {
+                  fclk_buf_ins.insert(bit);
+                }
+              }
+            }
+          }
+        } else if (cell->type == RTLIL::escape_id("I_DELAY") ||
+        cell->type == RTLIL::escape_id("O_DELAY"))
+        {
+          for (auto conn : cell->connections())
+          {
+            IdString portName = conn.first;
+            if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
+            {
+              if(cell->input(portName))
+              {
+                for (SigBit bit : conn.second)
+                  if (bit.wire != nullptr) dly_in_ctrls.insert(bit);
+              } else if(cell->output(portName))
+              {
+                for (SigBit bit : conn.second)
+                  if (bit.wire != nullptr) dly_out_ctrls.insert(bit);
+              }
+            }
+          }
+        }
+
+        for (auto conn : cell->connections()) {
+          IdString portName = conn.first;
           RTLIL::SigSpec actual = conn.second;
           if (actual.is_chunk()) {
             RTLIL::Wire *wire = actual.as_chunk().wire;
@@ -1370,6 +1437,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     check_buf_conns();
+    check_clkbuf_conns();
     check_buf_cntrls();
     check_dly_cntrls();
     add_wire_btw_prims(original_mod);
