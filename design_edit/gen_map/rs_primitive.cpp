@@ -76,12 +76,14 @@ public:
 
     outFile << "}}};\n";
     outFile << "    bool contains_io_prem = false;\n\n";
+    outFile << "    bool supported_tech = false;\n\n";
 
     outFile << "    // Function to get the primitive names for a specific cell library\n";
     outFile << "    std::unordered_set<std::string> get_primitives(const std::string &lib) {\n";
     outFile << "        std::unordered_set<std::string> primitive_names;\n";
     outFile << "        auto it = io_primitives.find(lib);\n";
     outFile << "        if (it != io_primitives.end()) {\n";
+    outFile << "            supported_tech = true;\n";
     outFile << "            primitive_names = it->second;\n";
     outFile << "        }\n";
     outFile << "        return primitive_names;\n";

@@ -25,12 +25,14 @@ struct primitives_data_default {
             "O_BUF", "O_BUFT", "O_BUFT_DS", "O_BUF_DS", "O_DDR", "O_DELAY",
             "O_SERDES", "O_SERDES_CLK", "PLL"}}};
   bool contains_io_prem = false;
+  bool supported_tech = false;
 
   // Function to get the primitive names for a specific cell library
   std::unordered_set<std::string> get_primitives(const std::string &lib) {
     std::unordered_set<std::string> primitive_names;
     auto it = io_primitives.find(lib);
     if (it != io_primitives.end()) {
+      supported_tech = true;
       primitive_names = it->second;
     }
     return primitive_names;
