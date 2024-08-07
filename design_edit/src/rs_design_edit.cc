@@ -1200,6 +1200,17 @@ struct DesignEditRapidSilicon : public ScriptPass {
     // Extract the primitive information (before anything is modified)
     PRIMITIVES_EXTRACTOR* extractor = new PRIMITIVES_EXTRACTOR(tech);
     extractor->extract(_design);
+    
+    if (sdc_passed) {
+      std::ifstream input_sdc(sdc_file);
+      if (!input_sdc.is_open()) {
+        std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
+      }
+      processSdcFile(input_sdc);
+      for (auto &p : pins) {
+        extractor->assign_location(p->_name, p->_location, p->_properties, p->_internal_pin);
+      }
+    }
 
     Pass::call(_design, "splitnets");
     Module *original_mod = _design->top_module();
@@ -1627,17 +1638,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       connections_to_remove.clear();
       for (auto wire : del_interface_wires) {
         interface_mod->remove({wire});
-      }
-
-      if(sdc_passed) {
-        std::ifstream input_sdc(sdc_file);
-        if (!input_sdc.is_open()) {
-          std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
-        }
-        processSdcFile(input_sdc);
-        for (auto &p : pins) {
-          extractor->assign_location(p->_name, p->_location, p->_properties, p->_internal_pin);
-        }
       }
 
       delete_wires(original_mod, orig_intermediate_wires);
