@@ -114,6 +114,8 @@ class PRIMITIVES_EXTRACTOR {
   void assign_location(const std::string& port, const std::string& location,
                        std::unordered_map<std::string, std::string>& properties,
                        const std::string& internal_pin);
+  std::vector<std::string> get_primitive_locations_by_name(
+      const std::string& name);
   void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file,
                  const nlohmann::json& wrapped_instances);

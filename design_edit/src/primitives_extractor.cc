@@ -1613,6 +1613,25 @@ void PRIMITIVES_EXTRACTOR::assign_location(
 }
 
 /*
+  Query the location of a primitive by the instance/module/cell name
+*/
+std::vector<std::string> PRIMITIVES_EXTRACTOR::get_primitive_locations_by_name(
+    const std::string& name) {
+  std::vector<std::string> locations;
+  for (auto& instance : m_instances) {
+    if (instance->name == name) {
+      for (auto& location : instance->locations) {
+        if (!location.second.empty()) {
+          locations.push_back(location.second);
+        }
+      }
+      break;
+    }
+  }
+  return locations;
+}
+
+/*
   Auto determine the clock
 */
 void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
