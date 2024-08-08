@@ -82,8 +82,10 @@ bool sdc_passed = false;
 std::string tech;
 std::stringstream netlist_checker;
 bool netlist_error = false;
-std::unordered_set<std::string> dly_controls =
+std::unordered_set<std::string> shared_ports =
       {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
+std::unordered_set<std::string> mod_shared_ports =
+      {"I_DELAY", "O_DELAY"};
 
 std::vector<std::string> tokenizeString(const std::string &input);
 void processSdcFile(std::istream &input);

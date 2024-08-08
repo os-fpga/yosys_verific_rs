@@ -77,6 +77,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     log("\n");
   }
 
+  struct instance_connection {
+    std::string inst;
+    Yosys::RTLIL::SigSpec sigspec;
+
+    instance_connection(const std::string& inst, const Yosys::RTLIL::SigSpec& sigspec)
+        : inst(inst), sigspec(sigspec) {}
+  };
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
@@ -98,6 +105,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
+  std::map<std::string, std::map<std::string, std::vector<instance_connection>>> shared_ports_map;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -153,6 +161,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
+  }
+
+  bool contains_shared_ports(const std::string& mod)
+  {
+    return mod_shared_ports.count(mod) > 0;
   }
 
   void write_checker_file()
@@ -1240,6 +1253,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
             primitives.end()) {
           io_prim.contains_io_prem = true;
           bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+          bool has_shared_ports = contains_shared_ports(module_name);
+          std::string loc;
           remove_prims.push_back(cell);
 
           if (cell->type == RTLIL::escape_id("I_BUF") ||
@@ -1319,22 +1334,30 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
               }
             }
-          } else if (cell->type == RTLIL::escape_id("I_DELAY") ||
-          cell->type == RTLIL::escape_id("O_DELAY"))
+          }
+          
+          if (has_shared_ports)
           {
+            std::map<std::string, std::vector<Yosys::RTLIL::SigSpec>> port_location;
+            
+            std::vector<std::string> locs = extractor->get_primitive_locations_by_name(remove_backslashes(cell->name.str()));
+            if (!locs.empty())
+            {
+              loc = locs[0];
+              std::cout << "LOCATION :: " << loc << std::endl;
+            }
+
             for (auto conn : cell->connections())
             {
               IdString portName = conn.first;
-              if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
+              RTLIL::SigSpec actual = conn.second;
+              std::string pName = remove_backslashes(portName.str());
+
+              if(shared_ports.count(pName))
               {
-                if(cell->input(portName))
+                if(!loc.empty())
                 {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_in_ctrls.insert(bit);
-                } else if(cell->output(portName))
-                {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_out_ctrls.insert(bit);
+                  shared_ports_map[pName][loc].push_back(instance_connection(cell->name.str(), actual));
                 }
               }
             }
@@ -1343,6 +1366,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
           for (auto conn : cell->connections()) {
             IdString portName = conn.first;
             RTLIL::SigSpec actual = conn.second;
+            
             if (actual.is_chunk()) {
               RTLIL::Wire *wire = actual.as_chunk().wire;
               if (wire != NULL) {
