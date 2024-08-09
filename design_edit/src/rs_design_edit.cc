@@ -981,27 +981,50 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::string extract_half_bank(const string& str)
   {
     size_t last_underscore = str.rfind('_');
+    if (last_underscore == std::string::npos)
+      log_error("Invalid pin location");
     string pin_index = str.substr(last_underscore + 1, str.length() - last_underscore);
     pin_index = (pin_index.back() == 'P' || pin_index.back() == 'N') ?
                   pin_index.substr(0, pin_index.size() - 1) : pin_index;
     string bank_pin = str.substr(0, last_underscore);
     last_underscore = bank_pin.rfind('_');
+    if (last_underscore == std::string::npos)
+      log_error("Invalid pin location");
     string bank_name = bank_pin.substr(0, last_underscore);
     int half_bank = stoi(pin_index);
     return bank_name + (half_bank < 10 ? "_firsthalf" : "_secondhalf");
+  }
+
+  bool is_identical_sig(const std::vector<Yosys::RTLIL::SigSpec>& signals)
+  {
+    const Yosys::RTLIL::SigSpec first = signals[0];
+    for (size_t i = 1; i < signals.size(); ++i)
+    {
+      if (signals[i] != first) 
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   void handle_shared_ports()
   {
     for (const auto& p : shared_ports_map)
     {
-      std::cout << "pName: " << p.first << std::endl;
-      for (const auto& l : p.second)
+      for (const auto& bank : p.second)
       {
-        std::cout << "  loc: " << l.first << std::endl;
-        for (const auto& c : l.second)
+        std::vector<Yosys::RTLIL::SigSpec> signals;
+        std::unordered_set<string> insts;
+        for (const auto& connection : bank.second)
         {
-          std::cout << "    connection: " << c.inst << std::endl;
+          insts.insert(connection.inst);
+          signals.push_back(connection.sigspec);
+        }
+        if(signals.empty()) continue;
+        if(is_identical_sig(signals))
+        {
+          std::cout << " cons are same in : " << bank.first << std::endl;
         }
       }
     }
