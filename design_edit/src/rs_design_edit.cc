@@ -102,7 +102,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> used_bits;
   pool<SigBit> orig_ins, orig_outs, fab_outs, ofab_outs, ifab_ins;
   pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
-  pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
+  pool<SigBit> clk_buf_ins;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
   std::map<std::string, std::map<std::string, std::vector<instance_connection>>> shared_ports_map;
@@ -850,30 +850,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  void check_dly_cntrls()
-  {
-    netlist_checker << "\nChecking I_DELAY/O_DELAY control signals\n";
-    netlist_checker << "================================================================\n";
-    for (auto &bit : dly_in_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-
-    for (auto &bit : dly_out_ctrls)
-    {
-      if (!ifab_ins.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
-        netlist_error = true;
-      }
-    }
-    netlist_checker << "================================================================\n";
-  }
-
   void check_buf_cntrls()
   {
     netlist_checker << "\nChecking Buffer control signals\n";
@@ -1000,6 +976,35 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     diff.clear();
     return;
+  }
+
+  std::string extract_half_bank(const string& str)
+  {
+    size_t last_underscore = str.rfind('_');
+    string pin_index = str.substr(last_underscore + 1, str.length() - last_underscore);
+    pin_index = (pin_index.back() == 'P' || pin_index.back() == 'N') ?
+                  pin_index.substr(0, pin_index.size() - 1) : pin_index;
+    string bank_pin = str.substr(0, last_underscore);
+    last_underscore = bank_pin.rfind('_');
+    string bank_name = bank_pin.substr(0, last_underscore);
+    int half_bank = stoi(pin_index);
+    return bank_name + (half_bank < 10 ? "_firsthalf" : "_secondhalf");
+  }
+
+  void handle_shared_ports()
+  {
+    for (const auto& p : shared_ports_map)
+    {
+      std::cout << "pName: " << p.first << std::endl;
+      for (const auto& l : p.second)
+      {
+        std::cout << "  loc: " << l.first << std::endl;
+        for (const auto& c : l.second)
+        {
+          std::cout << "    connection: " << c.inst << std::endl;
+        }
+      }
+    }
   }
 
   static bool sigName(const RTLIL::SigSpec &sig, std::string &name)
@@ -1357,52 +1362,75 @@ struct DesignEditRapidSilicon : public ScriptPass {
               {
                 if(!loc.empty())
                 {
-                  shared_ports_map[pName][loc].push_back(instance_connection(cell->name.str(), actual));
+                  std::string half_bank_name = extract_half_bank(loc);
+                  shared_ports_map[pName][half_bank_name].push_back(instance_connection(cell->name.str(), actual));
+                }
+              } else {
+                if (actual.is_chunk()) {
+                  RTLIL::Wire *wire = actual.as_chunk().wire;
+                  if (wire != NULL) {
+                    process_wire(cell, portName, wire);
+                    if (is_out_prim) {
+                      if (cell->input(portName)) {
+                        if (portName.str() != "\\CLK_IN" &&
+                          portName.str() != "\\C")
+                          out_prim_ins.insert(wire->name.str());
+                      }
+                    } else {
+                      if (cell->output(portName)) {
+                        in_prim_outs.insert(wire->name.str());
+                        for (auto bit : conn.second){
+                          prim_out_bits.insert(bit);
+                        }
+                      }
+                    }
+                  } else {
+                    RTLIL::SigSpec const_sig = actual;
+                    if (GetSize(const_sig) != 0)
+                    {
+                      RTLIL::SigSig new_conn;
+                      RTLIL::Wire *new_wire = original_mod->addWire(NEW_ID, GetSize(const_sig));
+                      cell->unsetPort(portName);
+                      cell->setPort(portName, new_wire);
+                      new_conn.first = new_wire;
+                      new_conn.second = const_sig;
+                      original_mod->connect(new_conn);
+                      process_wire(cell, portName, new_wire);
+                    }
+                  }
+                } else {
+                  for (auto it = actual.chunks().rbegin();
+                       it != actual.chunks().rend(); ++it) {
+                    RTLIL::Wire *wire = (*it).wire;
+                    if (wire != NULL) {
+                      process_wire(cell, portName, wire);
+                      if (is_out_prim) {
+                        if (cell->input(portName)) {
+                          if (portName.str() != "\\CLK_IN" &&
+                            portName.str() != "\\C")
+                            out_prim_ins.insert(wire->name.str());
+                        }
+                      } else {
+                        if (cell->output(portName)) {
+                          in_prim_outs.insert(wire->name.str());
+                          for (auto bit : conn.second){
+                            prim_out_bits.insert(bit);
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           }
+          else{
+            for (auto conn : cell->connections()) {
+              IdString portName = conn.first;
+              RTLIL::SigSpec actual = conn.second;
 
-          for (auto conn : cell->connections()) {
-            IdString portName = conn.first;
-            RTLIL::SigSpec actual = conn.second;
-            
-            if (actual.is_chunk()) {
-              RTLIL::Wire *wire = actual.as_chunk().wire;
-              if (wire != NULL) {
-                process_wire(cell, portName, wire);
-                if (is_out_prim) {
-                  if (cell->input(portName)) {
-                    if (portName.str() != "\\CLK_IN" &&
-                      portName.str() != "\\C")
-                      out_prim_ins.insert(wire->name.str());
-                  }
-                } else {
-                  if (cell->output(portName)) {
-                    in_prim_outs.insert(wire->name.str());
-                    for (auto bit : conn.second){
-                      prim_out_bits.insert(bit);
-                    }
-                  }
-                }
-              } else {
-                RTLIL::SigSpec const_sig = actual;
-                if (GetSize(const_sig) != 0)
-                {
-                  RTLIL::SigSig new_conn;
-                  RTLIL::Wire *new_wire = original_mod->addWire(NEW_ID, GetSize(const_sig));
-                  cell->unsetPort(portName);
-                  cell->setPort(portName, new_wire);
-                  new_conn.first = new_wire;
-                  new_conn.second = const_sig;
-                  original_mod->connect(new_conn);
-                  process_wire(cell, portName, new_wire);
-                }
-              }
-            } else {
-              for (auto it = actual.chunks().rbegin();
-                   it != actual.chunks().rend(); ++it) {
-                RTLIL::Wire *wire = (*it).wire;
+              if (actual.is_chunk()) {
+                RTLIL::Wire *wire = actual.as_chunk().wire;
                 if (wire != NULL) {
                   process_wire(cell, portName, wire);
                   if (is_out_prim) {
@@ -1416,6 +1444,41 @@ struct DesignEditRapidSilicon : public ScriptPass {
                       in_prim_outs.insert(wire->name.str());
                       for (auto bit : conn.second){
                         prim_out_bits.insert(bit);
+                      }
+                    }
+                  }
+                } else {
+                  RTLIL::SigSpec const_sig = actual;
+                  if (GetSize(const_sig) != 0)
+                  {
+                    RTLIL::SigSig new_conn;
+                    RTLIL::Wire *new_wire = original_mod->addWire(NEW_ID, GetSize(const_sig));
+                    cell->unsetPort(portName);
+                    cell->setPort(portName, new_wire);
+                    new_conn.first = new_wire;
+                    new_conn.second = const_sig;
+                    original_mod->connect(new_conn);
+                    process_wire(cell, portName, new_wire);
+                  }
+                }
+              } else {
+                for (auto it = actual.chunks().rbegin();
+                     it != actual.chunks().rend(); ++it) {
+                  RTLIL::Wire *wire = (*it).wire;
+                  if (wire != NULL) {
+                    process_wire(cell, portName, wire);
+                    if (is_out_prim) {
+                      if (cell->input(portName)) {
+                        if (portName.str() != "\\CLK_IN" &&
+                          portName.str() != "\\C")
+                          out_prim_ins.insert(wire->name.str());
+                      }
+                    } else {
+                      if (cell->output(portName)) {
+                        in_prim_outs.insert(wire->name.str());
+                        for (auto bit : conn.second){
+                          prim_out_bits.insert(bit);
+                        }
                       }
                     }
                   }
@@ -1476,7 +1539,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       check_buf_conns();
       check_clkbuf_conns();
       check_buf_cntrls();
-      check_dly_cntrls();
+      handle_shared_ports();
       add_wire_btw_prims(original_mod);
       intersection_copy_remove(new_ins, new_outs, interface_wires);
       intersect(interface_wires, keep_wires);
