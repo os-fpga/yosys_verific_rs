@@ -87,6 +87,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::vector<Cell *> remove_prims;
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
+  std::unordered_set<Cell *> shared_port_cells;
   std::unordered_set<Wire *> wires_interface;
   std::unordered_set<Wire *> del_ins;
   std::unordered_set<Wire *> del_outs;
@@ -105,7 +106,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> clk_buf_ins;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
-  std::map<std::string, std::map<std::string, std::vector<instance_connection>>> shared_ports_map;
+  std::map<IdString, std::map<std::string, std::vector<instance_connection>>> shared_ports_map;
 
   RTLIL::Design *_design;
   RTLIL::Design *new_design = new RTLIL::Design;
@@ -1008,11 +1009,49 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return true;
   }
 
-  void handle_shared_ports()
+  void connect_shared_ports(const Yosys::RTLIL::SigSpec& signal,
+        const std::unordered_set<string>& insts, IdString port, Module* mod)
   {
-    for (const auto& p : shared_ports_map)
+    RTLIL::Wire *new_wire = mod->addWire(NEW_ID, signal.size());
+    for(auto inst : insts)
     {
-      for (const auto& bank : p.second)
+      for(auto cell : shared_port_cells)
+      {
+        if(cell->name.str() != inst) continue;
+        if(cell->input(port))
+        {
+          RTLIL::SigSig new_conn;
+          cell->unsetPort(port);
+          cell->setPort(port, new_wire);
+          new_conn.first = new_wire;
+          new_conn.second = signal;
+          mod->connect(new_conn);
+          new_outs.insert(new_wire->name.str());
+        }
+        if(cell->output(port))
+        {
+          for(auto bit : signal)
+          {
+            if(bit.wire == nullptr)
+             log_error("%s is output port of %s driven by constant", port.str().c_str(), inst.c_str());
+          }
+          RTLIL::SigSig new_conn;
+          cell->unsetPort(port);
+          cell->setPort(port, new_wire);
+          new_conn.first = signal;
+          new_conn.second = new_wire;
+          mod->connect(new_conn);
+          new_ins.insert(new_wire->name.str());
+        }
+      }
+    }
+  }
+
+  void handle_shared_ports(Module* mod)
+  {
+    for (const auto& port : shared_ports_map)
+    {
+      for (const auto& bank : port.second)
       {
         std::vector<Yosys::RTLIL::SigSpec> signals;
         std::unordered_set<string> insts;
@@ -1022,10 +1061,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
           signals.push_back(connection.sigspec);
         }
         if(signals.empty()) continue;
-        if(is_identical_sig(signals))
+        if(!is_identical_sig(signals))
         {
-          std::cout << " cons are same in : " << bank.first << std::endl;
+          log_error("Different signals on shared ports.\n");
         }
+        connect_shared_ports(signals[0], insts, port.first, mod);
       }
     }
   }
@@ -1372,8 +1412,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
             if (!locs.empty())
             {
               loc = locs[0];
-              std::cout << "LOCATION :: " << loc << std::endl;
             }
+            shared_port_cells.insert(cell);
 
             for (auto conn : cell->connections())
             {
@@ -1386,7 +1426,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 if(!loc.empty())
                 {
                   std::string half_bank_name = extract_half_bank(loc);
-                  shared_ports_map[pName][half_bank_name].push_back(instance_connection(cell->name.str(), actual));
+                  shared_ports_map[portName][half_bank_name].push_back(instance_connection(cell->name.str(), actual));
                 }
               } else {
                 if (actual.is_chunk()) {
@@ -1562,7 +1602,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       check_buf_conns();
       check_clkbuf_conns();
       check_buf_cntrls();
-      handle_shared_ports();
+      handle_shared_ports(original_mod);
       add_wire_btw_prims(original_mod);
       intersection_copy_remove(new_ins, new_outs, interface_wires);
       intersect(interface_wires, keep_wires);
