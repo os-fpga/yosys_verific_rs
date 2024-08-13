@@ -45,32 +45,8 @@ struct PRIMITIVE;
 struct PORT_PRIMITIVE;
 struct INSTANCE;
 struct PIN_PORT;
-/*
-  Structure Fabric Clock
-  Mainly used to track how the original JSON (io_config.json) mapped to wrapped
-  JSON (config.json)
-*/
-struct FABRIC_CLOCK {
-  FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
-               const std::string& ip, const std::string& op,
-               const std::string& in, const std::string& on, bool fc)
-      : linked_object(l),
-        module(m),
-        name(i),
-        iport(ip),
-        oport(op),
-        inet(in),
-        onet(on),
-        is_fabric_clkbuf(fc) {}
-  const std::string linked_object = "";
-  const std::string module = "";
-  const std::string name = "";
-  const std::string iport = "";
-  const std::string oport = "";
-  const std::string inet = "";
-  const std::string onet = "";
-  const bool is_fabric_clkbuf = false;
-};
+struct FABRIC_CLOCK;
+
 
 /*
   Both structures are for SDC
@@ -115,7 +91,7 @@ class PRIMITIVES_EXTRACTOR {
                        std::unordered_map<std::string, std::string>& properties,
                        const std::string& internal_pin);
   std::vector<std::string> get_primitive_locations_by_name(
-      const std::string& name);
+      const std::string& name, bool unique_location = false);
   void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file,
                  const nlohmann::json& wrapped_instances);
