@@ -1305,6 +1305,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
             }
           } else if (cell->type == RTLIL::escape_id("FCLK_BUF"))
           {
+            feedback_clocks++;
+            if(feedback_clocks > 8)
+              log_error("Feedback clock count exceeded, upto 8 feedback clocks are allowed.\n");
             for (auto conn : cell->connections())
             {
               IdString portName = conn.first;
