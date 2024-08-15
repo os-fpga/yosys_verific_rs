@@ -584,6 +584,11 @@ struct PRIMITIVE {
     log_assert(connections.find(db->outtrace_connection) != connections.end());
     return connections.at(db->outtrace_connection);
   }
+  void set_instance(INSTANCE* inst) const {
+    log_assert(inst != nullptr);
+    log_assert(instance == nullptr);
+    instance = inst;
+  }
   // Constructor
   const PRIMITIVE_DB* db = nullptr;
   const std::string name = "";
@@ -597,6 +602,7 @@ struct PRIMITIVE {
   std::map<std::string, std::vector<std::string>> child_connections;
   std::map<std::string, std::vector<const PRIMITIVE*>> gearbox_clocks;
   std::vector<std::string> errors;
+  mutable INSTANCE* instance = nullptr;
 };
 
 /*
@@ -706,26 +712,77 @@ struct INSTANCE {
     name.erase(0, 1);
     return sort_name(name);
   }
-  std::string get_location_with_priority(std::vector<std::string> ports) {
+  std::string get_location_object_with_priority(
+      std::vector<std::string> ports = {"I_P", "O_P"}) const {
     // Check the design port name from the connectivity
-    std::string design_port_name = "";
-    for (auto port : ports) {
-      if (connections.find(port) != connections.end()) {
-        design_port_name = connections.at(port);
-        break;
+    std::string location_object = "";
+    if (primitive != nullptr) {
+      // none-WIRE
+      if (primitive->grandparent == nullptr) {
+        std::string design_object = "";
+        for (auto port : ports) {
+          if (connections.find(port) != connections.end()) {
+            design_object = connections.at(port);
+            break;
+          }
+        }
+        if (design_object.size() > 0 &&
+            locations.find(design_object) != locations.end() &&
+            locations.at(design_object).size() > 0) {
+          // good
+          location_object = design_object;
+        } else {
+          // Just loop through locations, first non-empty will be used
+          for (auto iter : locations) {
+            if (iter.second.size()) {
+              location_object = iter.first;
+              break;
+            }
+          }
+        }
+        if (location_object.size() == 0 && design_object.size() > 0) {
+          location_object = design_object;
+        }
+        if (location_object.size() == 0) {
+          // Just loop through locations, first will be used
+          for (auto iter : locations) {
+            location_object = iter.first;
+            break;
+          }
+        }
+      } else {
+        // This checking prevent unlimited recursive loop
+        log_assert(primitive->grandparent->instance != nullptr);
+        log_assert(primitive->grandparent->instance->primitive != nullptr);
+        log_assert(primitive->grandparent->instance->primitive->grandparent ==
+                   nullptr);
+        location_object =
+            primitive->grandparent->instance->get_location_object_with_priority(
+                ports);
       }
     }
+    return location_object;
+  }
+  std::string get_location_with_priority(std::vector<std::string> ports = {
+                                             "I_P", "O_P"}) const {
+    // Check the design port name from the connectivity
     std::string location = "";
-    if (design_port_name.size() > 0 &&
-        locations.find(design_port_name) != locations.end()) {
-      location = locations.at(design_port_name);
-    } else {
-      // Just loop through locations, first non-empty will be used
-      for (auto iter : locations) {
-        if (iter.second.size()) {
-          location = iter.second;
-          break;
+    if (primitive != nullptr) {
+      // none-WIRE
+      if (primitive->grandparent == nullptr) {
+        std::string location_object = get_location_object_with_priority(ports);
+        if (location_object.size()) {
+          log_assert(locations.find(location_object) != locations.end());
+          location = locations.at(location_object);
         }
+      } else {
+        // This checking prevent unlimited recursive loop
+        log_assert(primitive->grandparent->instance != nullptr);
+        log_assert(primitive->grandparent->instance->primitive != nullptr);
+        log_assert(primitive->grandparent->instance->primitive->grandparent ==
+                   nullptr);
+        location =
+            primitive->grandparent->instance->get_location_with_priority(ports);
       }
     }
     return location;
@@ -1497,33 +1554,38 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
   for (auto& clock_primitive : m_child_primitives) {
     if (clock_primitive->db->is_gearbox_clock()) {
       log_assert(clock_primitive->db->fast_clock.size());
-      if (clock_primitive->connections.find(clock_primitive->db->fast_clock) !=
-          clock_primitive->connections.end()) {
-        std::string port_name =
-            get_original_name(clock_primitive->db->fast_clock);
-        std::string clock =
-            clock_primitive->connections.at(clock_primitive->db->fast_clock);
-        POST_MSG(2, "%s %s port %s: %s", clock_primitive->db->name.c_str(),
-                 clock_primitive->name.c_str(),
-                 clock_primitive->db->fast_clock.c_str(), clock.c_str());
-        for (auto& primitive : m_child_primitives) {
-          if (!primitive->db->is_clock() && primitive->db->fast_clock.size()) {
-            log_assert(primitive->connections.find(primitive->db->fast_clock) !=
-                       primitive->connections.end());
-            if (primitive->connections.at(primitive->db->fast_clock) == clock) {
-              POST_MSG(3, "Driving %s %s port %s", primitive->db->name.c_str(),
-                       primitive->name.c_str(),
-                       primitive->db->fast_clock.c_str());
-              if (clock_primitive->gearbox_clocks.find(port_name) ==
-                  clock_primitive->gearbox_clocks.end()) {
-                clock_primitive->gearbox_clocks[port_name] =
-                    std::vector<const PRIMITIVE*>({});
+      log_assert(clock_primitive->db->outputs.size());
+      for (auto& clock_out_port : clock_primitive->db->outputs) {
+        if (clock_primitive->connections.find(clock_out_port) !=
+            clock_primitive->connections.end()) {
+          std::string port_name = get_original_name(clock_out_port);
+          std::string clock = clock_primitive->connections.at(clock_out_port);
+          POST_MSG(2, "%s %s port %s: %s", clock_primitive->db->name.c_str(),
+                   clock_primitive->name.c_str(), clock_out_port.c_str(),
+                   clock.c_str());
+          for (auto& primitive : m_child_primitives) {
+            if (!primitive->db->is_clock() &&
+                primitive->db->fast_clock.size()) {
+              log_assert(
+                  primitive->connections.find(primitive->db->fast_clock) !=
+                  primitive->connections.end());
+              if (primitive->connections.at(primitive->db->fast_clock) ==
+                  clock) {
+                POST_MSG(3, "Driving %s %s port %s",
+                         primitive->db->name.c_str(), primitive->name.c_str(),
+                         primitive->db->fast_clock.c_str());
+                if (clock_primitive->gearbox_clocks.find(port_name) ==
+                    clock_primitive->gearbox_clocks.end()) {
+                  clock_primitive->gearbox_clocks[port_name] =
+                      std::vector<const PRIMITIVE*>({});
+                }
+                log_assert(std::find(clocked_primitives.begin(),
+                                     clocked_primitives.end(),
+                                     primitive->name) ==
+                           clocked_primitives.end());
+                clocked_primitives.push_back(primitive->name);
+                clock_primitive->gearbox_clocks[port_name].push_back(primitive);
               }
-              log_assert(std::find(clocked_primitives.begin(),
-                                   clocked_primitives.end(), primitive->name) ==
-                         clocked_primitives.end());
-              clocked_primitives.push_back(primitive->name);
-              clock_primitive->gearbox_clocks[port_name].push_back(primitive);
             }
           }
         }
@@ -1667,6 +1729,7 @@ void PRIMITIVES_EXTRACTOR::gen_instance(std::vector<std::string> linked_objects,
       pre_primitive, child_primitive_type, primitive->gearbox_clocks));
   m_instances.back()->add_connections(primitive->connections);
   m_instances.back()->add_parameters(primitive->parameters);
+  primitive->set_instance(m_instances.back());
 }
 
 /*
@@ -1736,8 +1799,7 @@ std::vector<std::string> PRIMITIVES_EXTRACTOR::get_primitive_locations_by_name(
   for (auto& instance : m_instances) {
     if (instance->name == name) {
       if (unique_location) {
-        std::string location =
-            instance->get_location_with_priority({"I_P", "O_P"});
+        std::string location = instance->get_location_with_priority();
         locations.push_back(location);
       } else {
         for (auto& location : instance->locations) {
@@ -1762,13 +1824,14 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
   POST_MSG(1, "Figure unique core clock (which will be driven to fabric)");
   log_assert(m_fabric_clocks.size() == 0);
   for (auto& instance : m_instances) {
-    if (instance->primitive->gearbox_clocks.size()) {
+    if (instance->primitive->db->is_gearbox_clock()) {
       log_assert(instance->primitive->db->fast_clock.size());
-      log_assert(instance->primitive->db->is_gearbox_clock());
       std::string oport =
           get_original_name(instance->primitive->db->fast_clock);
-      log_assert(instance->primitive->gearbox_clocks.find(oport) !=
-                 instance->primitive->gearbox_clocks.end());
+      if (instance->primitive->gearbox_clocks.find(oport) ==
+          instance->primitive->gearbox_clocks.end()) {
+        continue;
+      }
       std::vector<const PRIMITIVE*> primitives =
           instance->primitive->gearbox_clocks.at(oport);
       std::vector<std::string> checked_linked_objects;
@@ -2428,6 +2491,12 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << ",\n";
   write_json_object(3, "name", instance->name, json);
   json << ",\n";
+  write_json_object(3, "location_object",
+                    instance->get_location_object_with_priority(), json);
+  json << ",\n";
+  write_json_object(3, "location", instance->get_location_with_priority(),
+                    json);
+  json << ",\n";
   write_json_object(3, "linked_object", instance->linked_object(), json);
   json << ",\n";
   json << "      \"linked_objects\" : {\n";
@@ -2782,7 +2851,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       const PRIMITIVE_DB* db = inst->primitive->db;
       log_assert(db != nullptr);
       std::string linked_object = inst->linked_object();
-      std::string location = inst->get_location_with_priority({"I_P", "O_P"});
+      std::string location = inst->get_location_with_priority();
       for (auto iter : db->control_signal_map) {
         write_sdc_internal_control_signal(sdc_entries, wrapped_instances,
                                           inst->module, linked_object, location,

@@ -47,7 +47,6 @@ struct INSTANCE;
 struct PIN_PORT;
 struct FABRIC_CLOCK;
 
-
 /*
   Both structures are for SDC
 */
