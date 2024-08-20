@@ -150,7 +150,7 @@ class PRIMITIVES_EXTRACTOR {
                                const std::string& module_name,
                                const std::string& port_name,
                                const std::string& net_name);
-  PIN_PORT* get_pin_info(const std::string& name);
+  PIN_PORT* get_pin_info(const std::string& name, IO_DIR dir);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);

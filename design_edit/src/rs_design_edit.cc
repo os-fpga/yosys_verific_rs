@@ -276,7 +276,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
             portname = stringf("%s[%d]", wire->name.c_str(), wire->start_offset + index);
           }
           portname = remove_backslashes(portname);
-          link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false, DATA_OUT_PORTS);
+          if (dir == "INOUT") {
+            link_instance(true, instances_array, portname, portname, "IN", 0, false, DATA_OUT_PORTS);
+            link_instance(false, instances_array, portname, portname, "OUT", 0, false, DATA_OUT_PORTS);
+          } else {
+            link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false, DATA_OUT_PORTS);
+          }
         }
       }
     }
