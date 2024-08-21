@@ -872,7 +872,11 @@ struct FABRIC_CLOCK {
   Structure to store core clock information
 */
 struct CORE_CLOCK_INFO {
-  CORE_CLOCK_INFO(const std::string& l, uint32_t i) : location(l), index(i) {}
+  CORE_CLOCK_INFO(const std::string& m, const std::string& n,
+                  const std::string& l, uint32_t i)
+      : module(m), name(n), location(l), index(i) {}
+  const std::string module = "";
+  const std::string name = "";
   const std::string location = "";
   const uint32_t index = 0;
 };
@@ -2758,6 +2762,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
         std::string location = inst->get_location_with_priority();
         entry->comments.push_back(
             stringf("# Module: %s", inst->module.c_str()));
+        entry->comments.push_back(stringf("# Name: %s", inst->name.c_str()));
         entry->comments.push_back(stringf("# Location: %s", location.c_str()));
         entry->comments.push_back(stringf("# Port: %s", core_clk.c_str()));
         if (inst->connections.find(core_clk) != inst->connections.end()) {
@@ -2783,7 +2788,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                     stringf("%s_%s_%d", parsed_pin.type.c_str(),
                             parsed_pin.bank.c_str(), parsed_pin.index / 2);
                 if (core_clocks.find(key) == core_clocks.end()) {
-                  core_clocks[key] = new CORE_CLOCK_INFO(location, index);
+                  core_clocks[key] = new CORE_CLOCK_INFO(
+                      inst->module, inst->name, location, index);
                   entry->assignments.push_back(SDC_ASSIGNMENT(
                       "set_core_clk", location, stringf("%d", index), ""));
                 } else if (core_clocks.at(key)->index == index) {
@@ -2792,9 +2798,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                               core_clocks.at(key)->location.c_str()));
                 } else {
                   entry->comments.push_back(
-                      stringf("# Fail reason: Conflict with %s (location "
-                              "already use slot=%d)",
-                              core_clocks.at(key)->location.c_str(),
+                      stringf("# Fail reason: Conflict - %s %s "
+                              "already use slot=%d",
+                              core_clocks.at(key)->module.c_str(),
+                              core_clocks.at(key)->name.c_str(),
                               core_clocks.at(key)->index));
                 }
               } else {
