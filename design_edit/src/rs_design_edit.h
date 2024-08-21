@@ -25,12 +25,14 @@ struct primitives_data_default {
             "O_BUF", "O_BUFT", "O_BUFT_DS", "O_BUF_DS", "O_DDR", "O_DELAY",
             "O_SERDES", "O_SERDES_CLK", "PLL"}}};
   bool contains_io_prem = false;
+  bool supported_tech = false;
 
   // Function to get the primitive names for a specific cell library
   std::unordered_set<std::string> get_primitives(const std::string &lib) {
     std::unordered_set<std::string> primitive_names;
     auto it = io_primitives.find(lib);
     if (it != io_primitives.end()) {
+      supported_tech = true;
       primitive_names = it->second;
     }
     return primitive_names;
@@ -78,9 +80,15 @@ std::string io_config_json;
 std::string sdc_file;
 bool sdc_passed = false;
 std::string tech;
+std::stringstream netlist_checker;
+bool netlist_error = false;
+int feedback_clocks = 0;
+std::unordered_set<std::string> dly_controls =
+      {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
 
 std::vector<std::string> tokenizeString(const std::string &input);
 void processSdcFile(std::istream &input);
 void get_loc_map_by_io();
+void write_checker_file();
 
 #endif // DESIGN_EDIT_UTILS_H

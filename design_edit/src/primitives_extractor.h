@@ -45,32 +45,7 @@ struct PRIMITIVE;
 struct PORT_PRIMITIVE;
 struct INSTANCE;
 struct PIN_PORT;
-/*
-  Structure Fabric Clock
-  Mainly used to track how the original JSON (io_config.json) mapped to wrapped
-  JSON (config.json)
-*/
-struct FABRIC_CLOCK {
-  FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
-               const std::string& ip, const std::string& op,
-               const std::string& in, const std::string& on, bool fc)
-      : linked_object(l),
-        module(m),
-        name(i),
-        iport(ip),
-        oport(op),
-        inet(in),
-        onet(on),
-        is_fabric_clkbuf(fc) {}
-  const std::string linked_object = "";
-  const std::string module = "";
-  const std::string name = "";
-  const std::string iport = "";
-  const std::string oport = "";
-  const std::string inet = "";
-  const std::string onet = "";
-  const bool is_fabric_clkbuf = false;
-};
+struct FABRIC_CLOCK;
 
 /*
   Both structures are for SDC
@@ -114,6 +89,8 @@ class PRIMITIVES_EXTRACTOR {
   void assign_location(const std::string& port, const std::string& location,
                        std::unordered_map<std::string, std::string>& properties,
                        const std::string& internal_pin);
+  std::vector<std::string> get_primitive_locations_by_name(
+      const std::string& name, bool unique_location = false);
   void write_json(const std::string& file, bool simple = false);
   void write_sdc(const std::string& file,
                  const nlohmann::json& wrapped_instances);
@@ -153,7 +130,7 @@ class PRIMITIVES_EXTRACTOR {
                             Yosys::RTLIL::Cell* cell,
                             const std::string& connection);
   void trace_fabric_clkbuf(Yosys::RTLIL::Module* module);
-  void trace_gearbox_clock();
+  void trace_gearbox_fast_clock();
   static void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
                          std::vector<std::string>& signals);
   void gen_instances();
@@ -168,12 +145,11 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock(Yosys::RTLIL::Module* module);
-  bool need_to_route_to_fabric(Yosys::RTLIL::Module* module,
-                               const std::string& module_type,
-                               const std::string& module_name,
-                               const std::string& port_name,
-                               const std::string& net_name);
-  PIN_PORT* get_pin_info(const std::string& name);
+  std::pair<std::vector<std::string>, bool> need_to_route_to_fabric(
+      Yosys::RTLIL::Module* module, const std::string& module_type,
+      const std::string& module_name, const std::string& port_name,
+      const std::string& net_name, bool is_clock_primitive);
+  PIN_PORT* get_pin_info(const std::string& name, IO_DIR dir);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);

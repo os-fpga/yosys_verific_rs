@@ -87,7 +87,6 @@ USING_YOSYS_NAMESPACE
 
 #define ENABLE_DEBUG_MSG (0)
 #define GENERATION_ALWAYS_INWARD_DIRECTION (1)
-#define ROUTE_ALL_CLOCK_TO_FABRIC (0)
 #define ENABLE_INSTANCE_CROSS_CHECK (1)
 
 #define P_IS_NULL (0)
@@ -98,8 +97,10 @@ USING_YOSYS_NAMESPACE
 #define P_IS_GEARBOX_CLOCK (1 << 4)
 #define P_IS_ANY_INPUTS (1 << 5)
 #define P_IS_ANY_OUTPUTS (1 << 6)
-#define P_IS_IN_DIR (1 << 7)
-#define P_IS_FABRIC_CLKBUF (1 << 8)
+#define P_IS_OPTIONAL_INPUT (1 << 7)
+#define P_IS_OPTIONAL_OUTPUT (1 << 8)
+#define P_IS_IN_DIR (1 << 9)
+#define P_IS_FABRIC_CLKBUF (1 << 10)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -112,6 +113,24 @@ std::string get_original_name(const std::string& name) {
     return name.substr(1);
   }
   return name;
+}
+
+/*
+  Split the string using the delimiter
+*/
+std::vector<std::string> split_string(std::string str,
+                                      const std::string& delimiter) {
+  log_assert(str.size());
+  log_assert(delimiter.size());
+  std::vector<std::string> strs;
+  size_t index = str.find(delimiter);
+  while (index != std::string::npos) {
+    strs.push_back(str.substr(0, index));
+    str = str.substr(index + delimiter.size());
+    index = str.find(delimiter);
+  }
+  strs.push_back(str);
+  return strs;
 }
 
 /*
@@ -187,19 +206,21 @@ struct MSG {
 struct PRIMITIVE_DB {
   PRIMITIVE_DB(const std::string& n, uint32_t f, std::vector<std::string> is,
                std::vector<std::string> os, const std::string& it,
-               const std::string& ot, const std::string& c,
-               const std::string& cc, std::map<std::string, std::string> csm,
-               const std::string& d)
+               const std::string& ot, const std::string& fc,
+               const std::string& cc, const std::string& d,
+               std::map<std::string, std::string> csm,
+               std::map<std::string, std::string> p)
       : name(n),
         feature(f),
         inputs(is),
         outputs(os),
         intrace_connection(it),
         outtrace_connection(ot),
-        fast_clock(c),
+        fast_clock(fc),
         core_clock(cc),
+        data_signal(d),
         control_signal_map(csm),
-        data_signal(d) {}
+        properties(p) {}
   std::vector<std::string> get_checking_ports() const {
     if (is_in_dir()) {
       return inputs;
@@ -224,6 +245,12 @@ struct PRIMITIVE_DB {
   bool is_any_outputs() const {
     return (feature & P_IS_ANY_OUTPUTS) != P_IS_NULL;
   }
+  bool is_optional_input() const {
+    return (feature & P_IS_OPTIONAL_INPUT) != P_IS_NULL;
+  }
+  bool is_optional_output() const {
+    return (feature & P_IS_OPTIONAL_OUTPUT) != P_IS_NULL;
+  }
   bool is_in_dir() const { return (feature & P_IS_IN_DIR) != P_IS_NULL; }
   bool is_out_dir() const { return (feature & P_IS_IN_DIR) == P_IS_NULL; }
   const std::string name = "";
@@ -234,8 +261,9 @@ struct PRIMITIVE_DB {
   const std::string outtrace_connection = "";
   const std::string fast_clock = "";
   const std::string core_clock = "";
-  const std::map<std::string, std::string> control_signal_map;
   const std::string data_signal = "";
+  const std::map<std::string, std::string> control_signal_map;
+  const std::map<std::string, std::string> properties;
 };
 
 /*
@@ -258,10 +286,11 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\O",                                // data_signal
           {                                     // control_signal_map
             {"EN", "in:f2g_in_en_{A|B}"}
           },
-          "\\O"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -273,10 +302,11 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\O",                                // data_signal
           {                                     // control_signal_map
             {"EN", "in:f2g_in_en_{A|B}"}
           },
-          "\\O"                                 // data_signal
+          {}                                    // properties
       )},
       // Output
       {
@@ -289,8 +319,9 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\I",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\I",                                // data_signal
           {},                                   // control_signal_map
-          "\\I"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -302,10 +333,11 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\I",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\I",                                // data_signal
           {                                     // control_signal_map
             {"T", "in:f2g_tx_oe_{A|B}"}
           },
-          "\\I"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -317,8 +349,9 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\I",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\I",                                // data_signal
           {},                                   // control_signal_map
-          "\\I"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -330,10 +363,11 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\I",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "\\I",                                // data_signal
           {                                     // control_signal_map
             {"T", "in:f2g_tx_oe_{A|B}"}
           },
-          "\\I"                                 // data_signal
+          {}                                    // properties
       )},
       // These are none-Port Primitive
       // In direction
@@ -347,8 +381,9 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "",                                   // data_signal
           {},                                   // control_signal_map
-          ""                                    // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -358,15 +393,16 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
           "\\O",                                // outtrace_connection
-          "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
-          "",                                   // core_clock 
+          "\\CLK_IN",                           // fast_clock
+          "\\CLK_IN",                           // core_clock
+          "\\O",                                // data_signal
           {                                     // control_signal_map
             {"DLY_LOAD", "in:rule=half-first:f2g_trx_dly_ld"},
             {"DLY_ADJ", "in:rule=half-first:f2g_trx_dly_adj"},
             {"DLY_INCDEC", "in:rule=half-first:f2g_trx_dly_inc"},
             {"DLY_TAP_VALUE", "out:rule=half-first:g2f_trx_dly_tap"}
           },
-          "\\O"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -378,32 +414,37 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "\\C",                                // fast_clock
           "",                                   // core_clock
+          "\\Q",                                // data_signal
           {                                     // control_signal_map
             {"R", "in:TO_BE_DETERMINED"},
             {"E", "in:TO_BE_DETERMINED"}
           },
-          "\\Q"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
           "\\I_SERDES",
-          P_IS_IN_DIR,
+          P_IS_IN_DIR | P_IS_OPTIONAL_OUTPUT,
           {"\\D", "\\CLK_IN", "\\PLL_CLK"},     // inputs
-          {},                                   // outputs
+          {"\\CLK_OUT"},                        // outputs
           "\\D",                                // intrace_connection
           "",                                   // outtrace_connection
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
+          "\\Q",                                // data_signal
           {                                     // control_signal_map
             {"RST", "in:f2g_trx_reset_n_{A|B}"},
-            {"BITSLIP_ADJ", "in:TO_BE_DETERMINED"},
+            {"BITSLIP_ADJ", "in:rule=half-first:f2g_rx_bitslip_adj"},
             {"EN", "in:TO_BE_DETERMINED"},
             {"DATA_VALID", "out:g2f_rx_dvalid_{A|B}"},
-            {"DPA_LOCK", "out:TO_BE_DETERMINED"},
-            {"DPA_ERROR", "out:TO_BE_DETERMINED"},
-            {"PLL_LOCK", "in:TO_BE_DETERMINED"}
+            {"DPA_LOCK", "out:rule=half-first:g2f_rx_dpa_lock"},
+            {"DPA_ERROR", "out:rule=half-first:g2f_rx_dpa_error"}
           },
-          "\\Q"                                 // data_signal
+          {                                     // properties
+            {"MUST_HAVE_PARAMS", "\\WIDTH" },
+            {"DEFINE_DATA_WIDTH_FROM_PARAMS", "\\WIDTH" },
+            {"CLK_OUT_PORT", "\\CLK_OUT" }
+          }
       )},
       {
         PRIMITIVE_DB(
@@ -415,8 +456,9 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "",                                   // data_signal
           {},                                   // control_signal_map
-          ""                                    // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -429,11 +471,12 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "",                                   // data_signal
           {                                     // control_signal_map
             {"PLL_EN", "in:TO_BE_DETERMINED"},
             {"LOCK", "out:TO_BE_DETERMINED"}
           },
-          ""                                    // data_signal
+          {}                                    // properties
       )},
       // Out direction
       {
@@ -444,15 +487,16 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           {"\\O"},                              // outputs
           "\\O",                                // intrace_connection
           "\\I",                                // outtrace_connection
-          "\\CLK_IN",                           // fast_clock (Ashraf mention CLK_IN is core_clk, but I think one clock port is missing)
-          "",                                   // core_clock
+          "\\CLK_IN",                           // fast_clock
+          "\\CLK_IN",                           // core_clock
+          "\\I",                                // data_signal
           {                                     // control_signal_map
             {"DLY_LOAD", "in:rule=half-first:f2g_trx_dly_ld"},
             {"DLY_ADJ", "in:rule=half-first:f2g_trx_dly_adj"},
             {"DLY_INCDEC", "in:rule=half-first:f2g_trx_dly_inc"},
             {"DLY_TAP_VALUE", "out:rule=half-first:g2f_trx_dly_tap"}
           },
-          "\\I"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -464,11 +508,12 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "",                                   // fast_clock
           "\\C",                                // core_clock
+          "\\D",                                // data_signal
           {                                     // control_signal_map
             {"R", "in:TO_BE_DETERMINED"},
             {"E", "in:TO_BE_DETERMINED"}
           },
-          "\\D"                                 // data_signal
+          {}                                    // properties
       )},
       {
         PRIMITIVE_DB(
@@ -480,6 +525,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "\\PLL_CLK",                          // fast_clock
           "\\CLK_IN",                           // core_clock
+          "\\D",                                // data_signal
           {                                     // control_signal_map
             {"RST", "in:f2g_trx_reset_n_{A|B}"},
             {"DATA_VALID", "in:f2g_tx_dvalid_{A|B}"},
@@ -489,7 +535,10 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
             {"CHANNEL_BOND_SYNC_OUT", "out:TO_BE_DETERMINED"},
             {"PLL_LOCK", "in:TO_BE_DETERMINED"}
           },
-          "\\D"                                 // data_signal
+          {                                     // properties
+            {"MUST_HAVE_PARAMS", "\\WIDTH" },
+            {"DEFINE_DATA_WIDTH_FROM_PARAMS", "\\WIDTH" }
+          }                                    
       )},
       {
         PRIMITIVE_DB(
@@ -501,11 +550,11 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "",                                   // outtrace_connection
           "\\PLL_CLK",                          // fast_clock
           "",                                   // core_clock
+          "",                                   // data_signal
           {                                     // control_signal_map
-            {"CLK_EN", "in:TO_BE_DETERMINED"},
-            {"PLL_LOCK", "in:TO_BE_DETERMINED"}
+            {"CLK_EN", "in:f2g_tx_clk_en_{A|B} "}
           },
-          ""                                    // data_signal
+          {}                                    // properties
       )},
       // Special: Fabric Clock Buffer
       {
@@ -518,8 +567,9 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           "\\O",                                // outtrace_connection
           "",                                   // fast_clock
           "",                                   // core_clock
+          "",                                   // data_signal
           {},                                   // control_signal_map
-          ""                                    // data_signal
+          {}                                    // properties
       )}
     }
   }
@@ -532,7 +582,14 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
 struct PRIMITIVE {
   PRIMITIVE(const PRIMITIVE_DB* d, const std::string& n, PRIMITIVE* p,
             std::map<std::string, std::string> c, bool i)
-      : db(d), name(n), parent(p), connections(c), is_port_primitive(i) {
+      : db(d),
+        name(n),
+        parent(p),
+        grandparent(p == nullptr
+                        ? nullptr
+                        : (p->grandparent == nullptr ? p : p->grandparent)),
+        connections(c),
+        is_port_primitive(i) {
     log_assert(db != nullptr);
   }
   std::string get_intrace_connection() const {
@@ -543,18 +600,25 @@ struct PRIMITIVE {
     log_assert(connections.find(db->outtrace_connection) != connections.end());
     return connections.at(db->outtrace_connection);
   }
+  void set_instance(INSTANCE* inst) const {
+    log_assert(inst != nullptr);
+    log_assert(instance == nullptr);
+    instance = inst;
+  }
   // Constructor
   const PRIMITIVE_DB* db = nullptr;
   const std::string name = "";
   const PRIMITIVE* parent = nullptr;
+  const PRIMITIVE* grandparent = nullptr;
   const std::map<std::string, std::string> connections;
   const bool is_port_primitive = false;
   int data_width = -2;
   std::map<std::string, std::string> parameters;
   std::map<std::string, PRIMITIVE*> child;
   std::map<std::string, std::vector<std::string>> child_connections;
-  std::map<std::string, std::vector<std::string>> gearbox_clocks;
+  std::map<std::string, std::vector<const PRIMITIVE*>> gearbox_clocks;
   std::vector<std::string> errors;
+  mutable INSTANCE* instance = nullptr;
 };
 
 /*
@@ -616,6 +680,7 @@ struct PORT_PRIMITIVE : PRIMITIVE {
   const std::vector<PORT_INFO> port_infos;
   const IO_DIR dir = IO_DIR::UNKNOWN;
   std::string standalone_name = "";
+  int chain_data_width = -2;
 };
 
 /*
@@ -625,18 +690,23 @@ struct INSTANCE {
   INSTANCE(const std::string& m, const std::string& n,
            std::vector<std::string> ls, const PRIMITIVE* p,
            const std::string& pre, std::vector<std::string> post,
-           std::map<std::string, std::vector<std::string>> gc)
+           std::map<std::string, std::vector<const PRIMITIVE*>> gcs)
       : module(get_original_name(m)),
         name(get_original_name(n)),
         linked_objects(ls),
         primitive(p),
         pre_primitive(pre),
-        post_primitives(post),
-        gearbox_clocks(gc) {
+        post_primitives(post) {
     log_assert(linked_objects.size());
     for (auto o : linked_objects) {
       properties[o] = {};
       locations[o] = "";
+    }
+    for (auto& gc : gcs) {
+      gearbox_clocks[gc.first] = std::vector<std::string>({});
+      for (auto& p : gc.second) {
+        gearbox_clocks[gc.first].push_back(get_original_name(p->name));
+      }
     }
   }
   void add_connections(const std::map<std::string, std::string>& cs) {
@@ -658,26 +728,77 @@ struct INSTANCE {
     name.erase(0, 1);
     return sort_name(name);
   }
-  std::string get_location_with_priority(std::vector<std::string> ports) {
+  std::string get_location_object_with_priority(
+      std::vector<std::string> ports = {"I_P", "O_P"}) const {
     // Check the design port name from the connectivity
-    std::string design_port_name = "";
-    for (auto port : ports) {
-      if (connections.find(port) != connections.end()) {
-        design_port_name = connections.at(port);
-        break;
+    std::string location_object = "";
+    if (primitive != nullptr) {
+      // none-WIRE
+      if (primitive->grandparent == nullptr) {
+        std::string design_object = "";
+        for (auto port : ports) {
+          if (connections.find(port) != connections.end()) {
+            design_object = connections.at(port);
+            break;
+          }
+        }
+        if (design_object.size() > 0 &&
+            locations.find(design_object) != locations.end() &&
+            locations.at(design_object).size() > 0) {
+          // good
+          location_object = design_object;
+        } else {
+          // Just loop through locations, first non-empty will be used
+          for (auto iter : locations) {
+            if (iter.second.size()) {
+              location_object = iter.first;
+              break;
+            }
+          }
+        }
+        if (location_object.size() == 0 && design_object.size() > 0) {
+          location_object = design_object;
+        }
+        if (location_object.size() == 0) {
+          // Just loop through locations, first will be used
+          for (auto iter : locations) {
+            location_object = iter.first;
+            break;
+          }
+        }
+      } else {
+        // This checking prevent unlimited recursive loop
+        log_assert(primitive->grandparent->instance != nullptr);
+        log_assert(primitive->grandparent->instance->primitive != nullptr);
+        log_assert(primitive->grandparent->instance->primitive->grandparent ==
+                   nullptr);
+        location_object =
+            primitive->grandparent->instance->get_location_object_with_priority(
+                ports);
       }
     }
+    return location_object;
+  }
+  std::string get_location_with_priority(std::vector<std::string> ports = {
+                                             "I_P", "O_P"}) const {
+    // Check the design port name from the connectivity
     std::string location = "";
-    if (design_port_name.size() > 0 &&
-        locations.find(design_port_name) != locations.end()) {
-      location = locations.at(design_port_name);
-    } else {
-      // Just loop through locations, first non-empty will be used
-      for (auto iter : locations) {
-        if (iter.second.size()) {
-          location = iter.second;
-          break;
+    if (primitive != nullptr) {
+      // none-WIRE
+      if (primitive->grandparent == nullptr) {
+        std::string location_object = get_location_object_with_priority(ports);
+        if (location_object.size()) {
+          log_assert(locations.find(location_object) != locations.end());
+          location = locations.at(location_object);
         }
+      } else {
+        // This checking prevent unlimited recursive loop
+        log_assert(primitive->grandparent->instance != nullptr);
+        log_assert(primitive->grandparent->instance->primitive != nullptr);
+        log_assert(primitive->grandparent->instance->primitive->grandparent ==
+                   nullptr);
+        location =
+            primitive->grandparent->instance->get_location_with_priority(ports);
       }
     }
     return location;
@@ -688,7 +809,7 @@ struct INSTANCE {
   const PRIMITIVE* primitive = nullptr;
   const std::string pre_primitive = "";
   const std::vector<std::string> post_primitives;
-  const std::map<std::string, std::vector<std::string>> gearbox_clocks;
+  std::map<std::string, std::vector<std::string>> gearbox_clocks;
   std::map<std::string, std::string> connections;
   std::map<std::string, std::string> parameters;
   std::map<std::string, std::string> locations;
@@ -714,10 +835,48 @@ struct PIN_PORT {
 };
 
 /*
+  Structure Fabric Clock
+  Mainly used to track how the original JSON (io_config.json) mapped to wrapped
+  JSON (config.json)
+*/
+struct FABRIC_CLOCK {
+  FABRIC_CLOCK(const std::string& l, const std::string& m, const std::string& i,
+               const std::string& ip, const std::string& op,
+               const std::string& in, const std::string& on, bool fc,
+               std::vector<std::string> g, bool c)
+      : linked_object(l),
+        module(m),
+        name(i),
+        iport(ip),
+        oport(op),
+        inet(in),
+        onet(on),
+        is_fabric_clkbuf(fc),
+        gearboxes(g),
+        core_logic(c) {
+    log_assert(gearboxes.size() > 0 || core_logic);
+  }
+  const std::string linked_object = "";
+  const std::string module = "";
+  const std::string name = "";
+  const std::string iport = "";
+  const std::string oport = "";
+  const std::string inet = "";
+  const std::string onet = "";
+  const bool is_fabric_clkbuf = false;
+  const std::vector<std::string> gearboxes;
+  const bool core_logic = false;
+};
+
+/*
   Structure to store core clock information
 */
 struct CORE_CLOCK_INFO {
-  CORE_CLOCK_INFO(const std::string& l, uint32_t i) : location(l), index(i) {}
+  CORE_CLOCK_INFO(const std::string& m, const std::string& n,
+                  const std::string& l, uint32_t i)
+      : module(m), name(n), location(l), index(i) {}
+  const std::string module = "";
+  const std::string name = "";
   const std::string location = "";
   const uint32_t index = 0;
 };
@@ -825,7 +984,7 @@ bool PRIMITIVES_EXTRACTOR::extract(RTLIL::Design* design) {
 
   // Step 11: Trace primitive that the clock need to routed to gearbox (does not
   // need to add to the chain)
-  trace_gearbox_clock();
+  trace_gearbox_fast_clock();
 
   // Lastly generate instance(s)
   if (m_status) {
@@ -886,7 +1045,7 @@ bool PRIMITIVES_EXTRACTOR::get_ports(Yosys::RTLIL::Module* module) {
     } else if (wire->port_input && wire->port_output) {
       dir = IO_DIR::INOUT;
     }
-    if (dir == IO_DIR::IN || dir == IO_DIR::OUT) {
+    if (dir == IO_DIR::IN || dir == IO_DIR::OUT || dir == IO_DIR::INOUT) {
       for (int index = 0; index < wire->width; index++) {
         std::string port_name = wire->name.str();
         std::string port_fullname = wire->name.str();
@@ -899,13 +1058,16 @@ bool PRIMITIVES_EXTRACTOR::get_ports(Yosys::RTLIL::Module* module) {
         POST_MSG(2, "Detect %s port %s (index=%d, width=%d, offset=%d)",
                  get_dir_name(dir).c_str(), port_name.c_str(), index,
                  wire->width, wire->start_offset);
-        port_infos.push_back(PORT_INFO(
-            dir, port_name, port_fullname, port_realname,
-            wire->start_offset + index, index, (uint32_t)(wire->width)));
+        port_infos.push_back(PORT_INFO(dir == IO_DIR::INOUT ? IO_DIR::IN : dir,
+                                       port_name, port_fullname, port_realname,
+                                       wire->start_offset + index, index,
+                                       (uint32_t)(wire->width)));
+        if (dir == IO_DIR::INOUT) {
+          port_infos.push_back(PORT_INFO(
+              IO_DIR::OUT, port_name, port_fullname, port_realname,
+              wire->start_offset + index, index, (uint32_t)(wire->width)));
+        }
       }
-    } else if (dir == IO_DIR::INOUT) {
-      POST_MSG(2, "Warning: Need to understand how to handle INOUT %s",
-               wire->name.c_str());
     }
   }
   if (port_infos.size()) {
@@ -948,17 +1110,31 @@ void PRIMITIVES_EXTRACTOR::get_primitive_parameters(Yosys::RTLIL::Cell* cell,
     RTLIL_BACKEND::dump_const(parameter, it.second);
     primitive->parameters[it.first.str()] = parameter.str();
   }
-  primitive->data_width = -2;
-  if (primitive->db->data_signal.size()) {
-    primitive->data_width = -1;
-    for (auto& it : cell->connections()) {
-      if (it.first.str() == primitive->db->data_signal) {
-        std::vector<std::string> signals;
-        get_signals(it.second, signals);
-        primitive->data_width = int(signals.size());
-        break;
-      }
+  if (primitive->db->properties.find("MUST_HAVE_PARAMS") !=
+      primitive->db->properties.end()) {
+    std::string param = primitive->db->properties.at("MUST_HAVE_PARAMS");
+    log_assert(param.size());
+    std::vector<std::string> params = split_string(param, ";");
+    for (auto& p : params) {
+      log_assert(primitive->parameters.find(p) != primitive->parameters.end());
     }
+  }
+  if (primitive->db->properties.find("DEFINE_DATA_WIDTH_FROM_PARAMS") !=
+      primitive->db->properties.end()) {
+    std::string param =
+        primitive->db->properties.at("DEFINE_DATA_WIDTH_FROM_PARAMS");
+    log_assert(param.size());
+    log_assert(primitive->parameters.find(param) !=
+               primitive->parameters.end());
+    param = primitive->parameters.at(param);
+    primitive->data_width = std::stoi(param);
+    log_assert(primitive->data_width > 0);
+    log_assert(!primitive->is_port_primitive);
+    log_assert(primitive->grandparent != nullptr);
+    PRIMITIVE* ptr = const_cast<PRIMITIVE*>(primitive->grandparent);
+    log_assert(ptr->is_port_primitive);
+    PORT_PRIMITIVE* port = reinterpret_cast<PORT_PRIMITIVE*>(ptr);
+    port->chain_data_width = primitive->data_width;
   }
   for (auto& it : primitive->parameters) {
     POST_MSG(4, "Parameter %s: %s", it.first.c_str(), it.second.c_str());
@@ -1054,9 +1230,11 @@ std::map<std::string, std::string> PRIMITIVES_EXTRACTOR::is_connected_cell(
     }
   }
   if ((db->inputs.size() == input_connections ||
-       (db->is_any_inputs() && input_connections > 0)) &&
+       (db->is_any_inputs() && input_connections > 0) ||
+       db->is_optional_input()) &&
       (db->outputs.size() == output_connections ||
-       (db->is_any_outputs() && output_connections > 0))) {
+       (db->is_any_outputs() && output_connections > 0) ||
+       db->is_optional_output())) {
     bool found = false;
     for (auto& key : db->get_checking_ports()) {
       if (connections.at(key) == connection) {
@@ -1138,22 +1316,13 @@ bool PRIMITIVES_EXTRACTOR::get_connected_port(
   log_assert(port_trackers.size() <= port_infos.size());
   size_t index = 0;
   while (index < port_infos.size()) {
-    if (connection == port_infos[index].fullname) {
+    if (connection == port_infos[index].fullname &&
+        dir == port_infos[index].dir) {
       POST_MSG(3, "Cell port %s is connected to %s port %s",
                cell_port_name.c_str(),
                get_dir_name(port_infos[index].dir).c_str(),
                port_infos[index].fullname.c_str());
-      if (dir == port_infos[index].dir) {
-        connected_ports.push_back(port_infos[index]);
-      } else {
-        POST_MSG(4,
-                 "Error: But there is direction conflict. Port Primitive "
-                 "direction is %s, but port direction is %s\n",
-                 get_dir_name(dir).c_str(),
-                 get_dir_name(port_infos[index].dir).c_str());
-        status = false;
-        break;
-      }
+      connected_ports.push_back(port_infos[index]);
       if (std::find(port_trackers.begin(), port_trackers.end(), index) ==
           port_trackers.end()) {
         port_trackers.push_back(index);
@@ -1379,8 +1548,8 @@ void PRIMITIVES_EXTRACTOR::trace_fabric_clkbuf(Yosys::RTLIL::Module* module) {
 /*
   Function to trace primitive which clock need to route to gearbox
 */
-void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
-  POST_MSG(1, "Trace gearbox clock source");
+void PRIMITIVES_EXTRACTOR::trace_gearbox_fast_clock() {
+  POST_MSG(1, "Trace gearbox fast clock source");
   for (auto& primitive : m_child_primitives) {
     if (primitive->db->fast_clock.size()) {
       log_assert(!primitive->db->is_clock());
@@ -1404,10 +1573,9 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
               if (clock_primitive->gearbox_clocks.find(port_name) ==
                   clock_primitive->gearbox_clocks.end()) {
                 clock_primitive->gearbox_clocks[port_name] =
-                    std::vector<std::string>({});
+                    std::vector<const PRIMITIVE*>({});
               }
-              clock_primitive->gearbox_clocks[port_name].push_back(
-                  get_original_name(primitive->name));
+              clock_primitive->gearbox_clocks[port_name].push_back(primitive);
               found = true;
               break;
             }
@@ -1419,9 +1587,10 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_clock() {
       }
       if (!found) {
         std::string msg =
-            stringf("Not able to route signal %s to port %s", clock.c_str(),
-                    primitive->db->fast_clock.c_str());
-        POST_MSG(3, "Warning: %s", msg.c_str());
+            stringf("%s %s fast clock port %s (net: %s) is not routable",
+                    primitive->db->name.c_str(), primitive->name.c_str(),
+                    primitive->db->fast_clock.c_str(), clock.c_str());
+        POST_MSG(3, "Error: %s", msg.c_str());
         primitive->errors.push_back(msg);
       }
     }
@@ -1552,6 +1721,7 @@ void PRIMITIVES_EXTRACTOR::gen_instance(std::vector<std::string> linked_objects,
       pre_primitive, child_primitive_type, primitive->gearbox_clocks));
   m_instances.back()->add_connections(primitive->connections);
   m_instances.back()->add_parameters(primitive->parameters);
+  primitive->set_instance(m_instances.back());
 }
 
 /*
@@ -1592,7 +1762,9 @@ void PRIMITIVES_EXTRACTOR::assign_location(
     if (std::find(instance->linked_objects.begin(),
                   instance->linked_objects.end(),
                   port) != instance->linked_objects.end()) {
-      PIN_PORT* p = get_pin_info(port);
+      PIN_PORT* p = get_pin_info(port, instance->primitive->db->is_in_dir()
+                                           ? IO_DIR::IN
+                                           : IO_DIR::OUT);
       log_assert(p != nullptr);
       p->location = location;
       p->internal_pin = internal_pin;
@@ -1613,29 +1785,62 @@ void PRIMITIVES_EXTRACTOR::assign_location(
 }
 
 /*
+  Query the location of a primitive by the instance/module/cell name
+*/
+std::vector<std::string> PRIMITIVES_EXTRACTOR::get_primitive_locations_by_name(
+    const std::string& name, bool unique_location) {
+  std::vector<std::string> locations;
+  for (auto& instance : m_instances) {
+    if (instance->name == name) {
+      if (unique_location) {
+        std::string location = instance->get_location_with_priority();
+        locations.push_back(location);
+      } else {
+        for (auto& location : instance->locations) {
+          if (!location.second.empty()) {
+            locations.push_back(location.second);
+          }
+        }
+      }
+      break;
+    }
+  }
+  return locations;
+}
+
+/*
   Auto determine the clock
 */
 void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
     Yosys::RTLIL::Module* module) {
   log_assert(m_status);
   // log_assert(m_instances.size());
-  POST_MSG(1, "Trace Fabric Clock");
+  POST_MSG(1, "Trace Core/Fabric Clock");
   for (auto& instance : m_instances) {
     if (instance->primitive->db->is_clock() ||
-        instance->primitive->db->is_fabric_clkbuf()) {
+        instance->primitive->db->is_fabric_clkbuf() ||
+        instance->primitive->db->properties.find("CLK_OUT_PORT") !=
+            instance->primitive->db->properties.end()) {
       // If it is clock, the direction should be in
       log_assert(instance->primitive->db->is_in_dir());
       log_assert(instance->primitive->db->outputs.size());
+      std::vector<std::string> outputs = instance->primitive->db->outputs;
+      bool is_clock_primitive = true;
+      if (!instance->primitive->db->is_clock() &&
+          !instance->primitive->db->is_fabric_clkbuf()) {
+        outputs = {instance->primitive->db->properties.at("CLK_OUT_PORT")};
+        is_clock_primitive = false;
+      }
       size_t i = 0;
       for (auto& out : instance->primitive->db->outputs) {
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
           // Input
-          log_assert(instance->primitive->db->inputs.size() == 0 ||
-                     instance->primitive->db->inputs.size() == 1);
           std::string iport = "";
           std::string inet = "";
-          if (instance->primitive->db->inputs.size()) {
+          if (is_clock_primitive &&
+              instance->primitive->db->inputs.size() > 0) {
+            log_assert(instance->primitive->db->inputs.size() == 1);
             iport = get_original_name(instance->primitive->db->inputs[0]);
             log_assert(instance->connections.find(iport) !=
                        instance->connections.end());
@@ -1646,10 +1851,12 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           log_assert(instance->connections.find(oport) !=
                      instance->connections.end());
           std::string onet = instance->connections[oport];
-          if (need_to_route_to_fabric(
-                  module, instance->primitive->db->name,
-                  instance->primitive->name, out,
-                  instance->primitive->connections.at(out))) {
+          std::pair<std::vector<std::string>, bool> fabric_status =
+              need_to_route_to_fabric(module, instance->primitive->db->name,
+                                      instance->primitive->name, out,
+                                      instance->primitive->connections.at(out),
+                                      is_clock_primitive);
+          if (fabric_status.first.size() > 0 || fabric_status.second) {
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             std::string name = "ROUTE_TO_FABRIC_CLK";
@@ -1681,10 +1888,32 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
             std::string linked_object = instance->linked_object();
             m_fabric_clocks.push_back(new FABRIC_CLOCK(
                 linked_object, instance->module, instance->name, iport, oport,
-                inet, onet, instance->primitive->db->is_fabric_clkbuf()));
+                inet, onet, instance->primitive->db->is_fabric_clkbuf(),
+                fabric_status.first, fabric_status.second));
           }
         }
         i++;
+      }
+    }
+  }
+  POST_MSG(1, "Double check Core/Fabric Clock");
+  for (auto& instance : m_instances) {
+    if (instance->primitive->db->core_clock.size()) {
+      POST_MSG(2, "%s %s port %s", instance->primitive->db->name.c_str(),
+               instance->primitive->name.c_str(),
+               instance->primitive->db->core_clock.c_str());
+      int found = 0;
+      for (auto& f : m_fabric_clocks) {
+        if (std::find(f->gearboxes.begin(), f->gearboxes.end(),
+                      instance->name) != f->gearboxes.end()) {
+          found++;
+        }
+      }
+      log_assert(found == 0 || found == 1);
+      if (found) {
+        POST_MSG(3, "Good. Found clocking");
+      } else {
+        POST_MSG(3, "Warning: Bad. No clocking");
       }
     }
   }
@@ -1693,19 +1922,18 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
 /*
   Determine if the clock need to route to fabric
 */
-bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
-    Yosys::RTLIL::Module* module, const std::string& module_type,
-    const std::string& module_name, const std::string& port_name,
-    const std::string& net_name) {
-#if ROUTE_ALL_CLOCK_TO_FABRIC
-  bool fabric = true;
-#else
-  bool fabric = false;
-#endif
+std::pair<std::vector<std::string>, bool>
+PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(Yosys::RTLIL::Module* module,
+                                              const std::string& module_type,
+                                              const std::string& module_name,
+                                              const std::string& port_name,
+                                              const std::string& net_name,
+                                              bool is_clock_primitive) {
+  std::pair<std::vector<std::string>, bool> fabric;
   POST_MSG(2, "Module %s %s: clock port %s, net %s", module_type.c_str(),
            module_name.c_str(), port_name.c_str(), net_name.c_str());
   for (auto cell : module->cells()) {
-    if (cell->name.str() != module_name) {
+    if (cell->name.str() != module_name || !is_clock_primitive) {
       for (auto& it : cell->connections()) {
         std::ostringstream wire;
         RTLIL_BACKEND::dump_sigspec(wire, it.second, true, true);
@@ -1720,15 +1948,9 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
             std::string core_clk = db->core_clock;
             size_t index = core_clk.find(":");
             if (index != std::string::npos) {
-              std::string temp = db->core_clock.substr(0, index);
+              source_modules =
+                  split_string(db->core_clock.substr(0, index), ",");
               core_clk = db->core_clock.substr(index + 1);
-              index = temp.find(",");
-              while (index != std::string::npos) {
-                source_modules.push_back(temp.substr(0, index));
-                temp = temp.substr(index + 1);
-                index = temp.find(",");
-              }
-              source_modules.push_back(temp);
             }
             if (it.first.str() == core_clk &&
                 (source_modules.size() == 0 ||
@@ -1738,24 +1960,18 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
               //    But we need to route it to fabric, in case only fabric can
               //    do something on it in IO Tile
               POST_MSG(4, "This is gearbox core_clk. Send to fabric");
-              fabric = true;
+              fabric.first.push_back(get_original_name(cell->name.str()));
             } else {
               POST_MSG(4,
                        "Does not meet core_clk checking criteria. Not sending "
                        "to fabric");
             }
-          } else {
+          } else if (!fabric.second) {
             // If it is not connected to primitive, then it must be fabric
             POST_MSG(4, "Which is not a IO primitive. Send to fabric");
-            fabric = true;
-          }
-          if (fabric) {
-            break;
+            fabric.second = true;
           }
         }
-      }
-      if (fabric) {
-        break;
       }
     }
   }
@@ -1765,10 +1981,13 @@ bool PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(
 /*
   Function to get pin info
 */
-PIN_PORT* PRIMITIVES_EXTRACTOR::get_pin_info(const std::string& name) {
+PIN_PORT* PRIMITIVES_EXTRACTOR::get_pin_info(const std::string& name,
+                                             IO_DIR dir) {
+  log_assert(dir == IO_DIR::IN || dir == IO_DIR::OUT);
   PIN_PORT* port = nullptr;
   for (auto& p : m_pin_infos) {
-    if (p->name == name) {
+    if (p->name == name && ((p->is_input && dir == IO_DIR::IN) ||
+                            (!p->is_input && dir == IO_DIR::OUT))) {
       port = p;
       break;
     }
@@ -1827,7 +2046,7 @@ void PRIMITIVES_EXTRACTOR::summarize() {
            m_max_out_object_name + 1, "");
   for (PORT_PRIMITIVE*& port : m_ports) {
     for (auto& object : port->linked_objects()) {
-      log_assert(get_pin_info(object) == nullptr);
+      log_assert(get_pin_info(object, port->dir) == nullptr);
       m_pin_infos.push_back(new PIN_PORT(object, port->db->is_in_dir(),
                                          port->db->is_standalone(),
                                          port->db->is_fabric_clkbuf()));
@@ -1910,7 +2129,7 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
     }
   } else {
     for (auto& object : objects) {
-      PIN_PORT* p = get_pin_info(object);
+      PIN_PORT* p = get_pin_info(object, is_in_dir ? IO_DIR::IN : IO_DIR::OUT);
       log_assert(p != nullptr);
       update_pin_traces(p->traces, traces, is_in_dir);
       update_pin_traces(p->full_traces, full_traces, is_in_dir);
@@ -1964,7 +2183,8 @@ void PRIMITIVES_EXTRACTOR::summarize(const PRIMITIVE* primitive,
 */
 void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
                                            const PRIMITIVE* primitive) {
-  PIN_PORT* pin = get_pin_info(pin_name);
+  PIN_PORT* pin = get_pin_info(
+      pin_name, primitive->db->is_in_dir() ? IO_DIR::IN : IO_DIR::OUT);
   log_assert(pin != nullptr);
   if (primitive->db->name == "\\I_DDR" || primitive->db->name == "\\O_DDR") {
     log_assert(pin->mode.size() == 0);
@@ -1976,8 +2196,6 @@ void PRIMITIVES_EXTRACTOR::update_pin_info(const std::string& pin_name,
     if (primitive->parameters.find("\\WIDTH") != primitive->parameters.end()) {
       int width = std::stoi(primitive->parameters.at("\\WIDTH"));
       pin->mode = stringf("RATE_%d", width);
-    } else if (primitive->data_width > 0) {
-      pin->mode = stringf("RATE_%d", primitive->data_width);
     } else if (primitive->parameters.find("\\DATA_RATE") !=
                primitive->parameters.end()) {
       pin->mode = get_param_string(primitive->parameters.at("\\DATA_RATE"));
@@ -2158,6 +2376,12 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << ",\n";
   write_json_object(3, "name", instance->name, json);
   json << ",\n";
+  write_json_object(3, "location_object",
+                    instance->get_location_object_with_priority(), json);
+  json << ",\n";
+  write_json_object(3, "location", instance->get_location_with_priority(),
+                    json);
+  json << ",\n";
   write_json_object(3, "linked_object", instance->linked_object(), json);
   json << ",\n";
   json << "      \"linked_objects\" : {\n";
@@ -2316,66 +2540,79 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   uint32_t i = 0;
   uint32_t j = 0;
   for (auto clk : m_fabric_clocks) {
-    if (clk->is_fabric_clkbuf) {
-      sdc << "# This is fabric clock buffer\n";
-    }
-    std::string wrapped_net = get_output_wrapped_net(
-        wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
-        clk);
-    if (!wrapped_net.size()) {
-      sdc << "# Fail reason: Failed to find the mapped name\n";
-    }
-    // Always print the port name
-    sdc << stringf(
-               "# set_clock_pin -device_clock clk[%d] -design_clock "
-               "%s (Physical port name)\n",
-               i, clk->linked_object.c_str())
-               .c_str();
-    if (wrapped_net.size()) {
-      sdc << stringf(
-                 "# set_clock_pin -device_clock clk[%d] -design_clock "
-                 "%s (Original clock primitive out-net to fabric)\n",
-                 i, clk->onet.c_str())
-                 .c_str();
-      sdc << stringf(
-                 "set_clock_pin   -device_clock clk[%d] -design_clock "
-                 "%s\n",
-                 i, wrapped_net.c_str())
-                 .c_str();
-    } else {
-      sdc << stringf(
-                 "set_clock_pin   -device_clock clk[%d] -design_clock "
-                 "%s\n",
-                 i, clk->onet.c_str())
-                 .c_str();
-    }
-    if (clk->is_fabric_clkbuf) {
-      sdc << "\n# For fabric clock buffer output\n";
-      std::string wrapped_net = get_input_wrapped_net(
+    if (clk->core_logic) {
+      sdc << "# This clock need to route to fabric slot #" << i << "\n";
+      if (clk->is_fabric_clkbuf) {
+        sdc << "# This is fabric clock buffer\n";
+      }
+      std::string wrapped_net = get_output_wrapped_net(
           wrapped_instances, get_wrapped_instance(wrapped_instances, clk->name),
           clk);
+      if (!wrapped_net.size()) {
+        sdc << "# Fail reason: Failed to find the mapped name\n";
+      }
+      // Always print the port name
+      sdc << stringf(
+                 "# set_clock_pin -device_clock clk[%d] -design_clock "
+                 "%s (Physical port name)\n",
+                 i, clk->linked_object.c_str())
+                 .c_str();
       if (wrapped_net.size()) {
         sdc << stringf(
-                   "# set_clock_out -device_clock clk[%d] -design_clock "
-                   "%s\n",
-                   j, clk->inet.c_str())
+                   "# set_clock_pin -device_clock clk[%d] -design_clock "
+                   "%s (Original clock primitive out-net to fabric)\n",
+                   i, clk->onet.c_str())
                    .c_str();
         sdc << stringf(
-                   "set_clock_out   -device_clock clk[%d] -design_clock "
+                   "set_clock_pin   -device_clock clk[%d] -design_clock "
                    "%s\n",
-                   j, wrapped_net.c_str())
+                   i, wrapped_net.c_str())
                    .c_str();
       } else {
-        sdc << "# Fail reason: Failed to find the mapped name\n";
         sdc << stringf(
-                   "set_clock_out   -device_clock clk[%d] -design_clock "
+                   "set_clock_pin   -device_clock clk[%d] -design_clock "
                    "%s\n",
-                   j, clk->inet.c_str())
+                   i, clk->onet.c_str())
                    .c_str();
       }
-      j++;
+      if (clk->is_fabric_clkbuf) {
+        sdc << "\n# For fabric clock buffer output\n";
+        std::string wrapped_net = get_input_wrapped_net(
+            wrapped_instances,
+            get_wrapped_instance(wrapped_instances, clk->name), clk);
+        if (wrapped_net.size()) {
+          sdc << stringf(
+                     "# set_clock_out -device_clock clk[%d] -design_clock "
+                     "%s\n",
+                     j, clk->inet.c_str())
+                     .c_str();
+          sdc << stringf(
+                     "set_clock_out   -device_clock clk[%d] -design_clock "
+                     "%s\n",
+                     j, wrapped_net.c_str())
+                     .c_str();
+        } else {
+          sdc << "# Fail reason: Failed to find the mapped name\n";
+          sdc << stringf(
+                     "set_clock_out   -device_clock clk[%d] -design_clock "
+                     "%s\n",
+                     j, clk->inet.c_str())
+                     .c_str();
+        }
+        j++;
+      }
+      sdc << "\n";
+    } else {
+      log_assert(clk->gearboxes.size());
+      sdc << "# This clock is only used by gearbox, does not need to route to "
+             "fabric slot #"
+          << i << "\n";
+      sdc << stringf(
+                 "# set_clock_pin -device_clock clk[%d] -design_clock "
+                 "%s (Physical port name)\n\n",
+                 i, clk->linked_object.c_str())
+                 .c_str();
     }
-    sdc << "\n";
     i++;
   }
   if (i == 0) {
@@ -2494,7 +2731,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       const PRIMITIVE_DB* db = inst->primitive->db;
       log_assert(db != nullptr);
       std::string linked_object = inst->linked_object();
-      std::string location = inst->get_location_with_priority({"I_P", "O_P"});
+      std::string location = inst->get_location_with_priority();
       for (auto iter : db->control_signal_map) {
         write_sdc_internal_control_signal(sdc_entries, wrapped_instances,
                                           inst->module, linked_object, location,
@@ -2522,9 +2759,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       }
       if (core_clk.size()) {
         SDC_ENTRY* entry = new SDC_ENTRY;
-        std::string location = inst->get_location_with_priority({"I_P", "O_P"});
+        std::string location = inst->get_location_with_priority();
         entry->comments.push_back(
             stringf("# Module: %s", inst->module.c_str()));
+        entry->comments.push_back(stringf("# Name: %s", inst->name.c_str()));
         entry->comments.push_back(stringf("# Location: %s", location.c_str()));
         entry->comments.push_back(stringf("# Port: %s", core_clk.c_str()));
         if (inst->connections.find(core_clk) != inst->connections.end()) {
@@ -2535,20 +2773,23 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                 m_location_mode.find(location) != m_location_mode.end()) {
               uint32_t index = 0;
               for (auto& fabric_clk : m_fabric_clocks) {
-                if (!fabric_clk->is_fabric_clkbuf &&
-                    fabric_clk->onet == clk_net) {
+                if (std::find(fabric_clk->gearboxes.begin(),
+                              fabric_clk->gearboxes.end(),
+                              inst->name) != fabric_clk->gearboxes.end()) {
                   break;
                 }
                 index++;
               }
               if (index < (uint32_t)(m_fabric_clocks.size())) {
+                entry->comments.push_back(stringf("# Slot: %d", index));
                 PIN_PARSER parsed_pin;
                 log_assert(validate_location(location, parsed_pin));
                 std::string key =
                     stringf("%s_%s_%d", parsed_pin.type.c_str(),
                             parsed_pin.bank.c_str(), parsed_pin.index / 2);
                 if (core_clocks.find(key) == core_clocks.end()) {
-                  core_clocks[key] = new CORE_CLOCK_INFO(location, index);
+                  core_clocks[key] = new CORE_CLOCK_INFO(
+                      inst->module, inst->name, location, index);
                   entry->assignments.push_back(SDC_ASSIGNMENT(
                       "set_core_clk", location, stringf("%d", index), ""));
                 } else if (core_clocks.at(key)->index == index) {
@@ -2557,8 +2798,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                               core_clocks.at(key)->location.c_str()));
                 } else {
                   entry->comments.push_back(
-                      stringf("# Fail reason: Conflict with %s (index=%d)",
-                              core_clocks.at(key)->location.c_str(),
+                      stringf("# Fail reason: Conflict - %s %s "
+                              "already use slot=%d",
+                              core_clocks.at(key)->module.c_str(),
+                              core_clocks.at(key)->name.c_str(),
                               core_clocks.at(key)->index));
                 }
               } else {
@@ -3029,7 +3272,7 @@ PRIMITIVES_EXTRACTOR::get_wrapped_instance_net_by_port(
   bool found_port = false;
   std::pair<std::string, std::string> reason("", "");
   for (auto& instance : wrapped_instances) {
-    if (instance["module"] == module &&
+    if (instance["module"] == module && instance.contains("linked_object") &&
         sort_name(instance["linked_object"]) == linked_object) {
       found_instance = true;
       for (auto iter : instance["connectivity"].items()) {
