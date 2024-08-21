@@ -130,7 +130,7 @@ class PRIMITIVES_EXTRACTOR {
                             Yosys::RTLIL::Cell* cell,
                             const std::string& connection);
   void trace_fabric_clkbuf(Yosys::RTLIL::Module* module);
-  void trace_gearbox_clock();
+  void trace_gearbox_fast_clock();
   static void get_chunks(const Yosys::RTLIL::SigChunk& chunk,
                          std::vector<std::string>& signals);
   void gen_instances();
@@ -145,12 +145,11 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock(Yosys::RTLIL::Module* module);
-  bool need_to_route_to_fabric(Yosys::RTLIL::Module* module,
-                               const std::string& module_type,
-                               const std::string& module_name,
-                               const std::string& port_name,
-                               const std::string& net_name);
-  PIN_PORT* get_pin_info(const std::string& name);
+  std::pair<std::vector<std::string>, bool> need_to_route_to_fabric(
+      Yosys::RTLIL::Module* module, const std::string& module_type,
+      const std::string& module_name, const std::string& port_name,
+      const std::string& net_name, bool is_clock_primitive);
+  PIN_PORT* get_pin_info(const std::string& name, IO_DIR dir);
   void summarize();
   void summarize(const PRIMITIVE* primitive,
                  const std::vector<std::string> traces, bool is_in_dir);
