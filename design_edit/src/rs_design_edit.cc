@@ -205,7 +205,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       json instance_object;
       instance_object["module"] = remove_backslashes(cell->type.str());
       instance_object["name"] = remove_backslashes(cell->name.str());
-      for(auto &conn : cell->connections()) {
+      for(auto conn : cell->connections()) {
         std::string port_name = remove_backslashes(conn.first.str());
         std::vector<std::string> signals;
         PRIMITIVES_EXTRACTOR::get_signals(conn.second, signals);
@@ -230,7 +230,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     // enhancement to auto create wire primitives
     size_t i = 0;
-    for (auto &it : mod->connections()) {
+    for (auto it : mod->connections()) {
       std::vector<std::string> lefts;
       std::vector<std::string> rights;
       PRIMITIVES_EXTRACTOR::get_signals(it.first, lefts);
@@ -1668,7 +1668,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       delete_wires(original_mod, del_ins);
       delete_wires(original_mod, del_outs);
       end = high_resolution_clock::now();
-      elapsed_time (start, end)
+      elapsed_time (start, end);
 
       for (const auto& prim_conn : io_prim_conn) {
         const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
@@ -1881,6 +1881,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     end = high_resolution_clock::now();
     elapsed_time (start, end);
+    start = high_resolution_clock::now();
+    log("Flattening wrapper module\n");
     Pass::call(new_design, "flatten");
     end = high_resolution_clock::now();
     elapsed_time (start, end);
@@ -1966,6 +1968,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
       delete extractor;
       end = high_resolution_clock::now();
       elapsed_time (start, end);
+      auto end_time = end;
+      auto duration = duration_cast<nanoseconds>(end_time - start_time);
+      float totalTime = duration.count() * 1e-9;
+      std::cout << "Time elapsed in design editing : " << " [" << totalTime << " sec.]\n";
       if(netlist_error)
         log_error("Netlist is illegal, check netlist_checker.log for more details.\n");
     }
