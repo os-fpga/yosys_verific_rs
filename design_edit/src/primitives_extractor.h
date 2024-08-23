@@ -24,14 +24,15 @@ struct MSG;
 */
 struct PORT_INFO {
   PORT_INFO(IO_DIR d, const std::string& pn, const std::string& pf,
-            const std::string& pr, int oidx, uint32_t idx, uint32_t w)
+            const std::string& pr, int oidx, uint32_t idx, uint32_t w, bool b)
       : dir(d),
         name(pn),
         fullname(pf),
         realname(pr),
         offset_index(oidx),
         index(idx),
-        width(w) {}
+        width(w),
+        bidir(b) {}
   const IO_DIR dir = IO_DIR::UNKNOWN;
   const std::string name = "";
   const std::string fullname = "";
@@ -39,6 +40,7 @@ struct PORT_INFO {
   const int offset_index = 0;
   const int index = 0;
   const uint32_t width = 0;
+  const bool bidir = false;
 };
 struct PRIMITIVE_DB;
 struct PRIMITIVE;
@@ -115,7 +117,7 @@ class PRIMITIVES_EXTRACTOR {
                           std::vector<PORT_INFO>& port_infos,
                           std::vector<size_t>& port_trackers,
                           std::vector<PORT_INFO>& connected_ports,
-                          int loop = 0);
+                          bool& is_bidir, int loop = 0);
   bool get_port_cell_connections(
       Yosys::RTLIL::Cell* cell, const PRIMITIVE_DB* db,
       std::map<std::string, std::string>& primary_connections,
