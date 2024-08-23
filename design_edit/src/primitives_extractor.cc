@@ -101,6 +101,7 @@ USING_YOSYS_NAMESPACE
 #define P_IS_OPTIONAL_OUTPUT (1 << 8)
 #define P_IS_IN_DIR (1 << 9)
 #define P_IS_FABRIC_CLKBUF (1 << 10)
+#define P_IS_LOWER_FAST_CLOCK_PRIORITY (1 << 11)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -251,6 +252,9 @@ struct PRIMITIVE_DB {
   bool is_optional_output() const {
     return (feature & P_IS_OPTIONAL_OUTPUT) != P_IS_NULL;
   }
+  bool is_lower_fast_clock_priority() const {
+    return (feature & P_IS_LOWER_FAST_CLOCK_PRIORITY) != P_IS_NULL;
+  }
   bool is_in_dir() const { return (feature & P_IS_IN_DIR) != P_IS_NULL; }
   bool is_out_dir() const { return (feature & P_IS_IN_DIR) == P_IS_NULL; }
   const std::string name = "";
@@ -388,7 +392,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\I_DELAY",
-          P_IS_IN_DIR,
+          P_IS_IN_DIR | P_IS_LOWER_FAST_CLOCK_PRIORITY,
           {"\\I", "\\CLK_IN"},                  // inputs
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
@@ -482,7 +486,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\O_DELAY",
-          P_IS_NULL,
+          P_IS_LOWER_FAST_CLOCK_PRIORITY,
           {"\\I", "\\CLK_IN"},                  // inputs
           {"\\O"},                              // outputs
           "\\O",                                // intrace_connection
@@ -1559,7 +1563,30 @@ void PRIMITIVES_EXTRACTOR::trace_fabric_clkbuf(Yosys::RTLIL::Module* module) {
 void PRIMITIVES_EXTRACTOR::trace_gearbox_fast_clock() {
   POST_MSG(1, "Trace gearbox fast clock source");
   for (auto& primitive : m_child_primitives) {
-    if (primitive->db->fast_clock.size()) {
+    /*
+      There are two type of fast clock
+        1. A real fast clock port
+        2. A fake fast clock port where it is only needed if in the chain, there
+           is no other primitive with real fast clock port
+    */
+    bool need_fast_clock = primitive->db->fast_clock.size() > 0;
+    std::string high_priority_fast_clock_primitive = "";
+    if (need_fast_clock) {
+      if (primitive->db->is_lower_fast_clock_priority()) {
+        for (auto& second_primitive : m_child_primitives) {
+          if (primitive->name != second_primitive->name &&
+              primitive->grandparent == second_primitive->grandparent &&
+              second_primitive->db->fast_clock.size() > 0 &&
+              !second_primitive->db->is_lower_fast_clock_priority()) {
+            high_priority_fast_clock_primitive =
+                stringf("%s %s", second_primitive->db->name.c_str(),
+                        second_primitive->name.c_str());
+            break;
+          }
+        }
+      }
+    }
+    if (need_fast_clock) {
       log_assert(!primitive->db->is_clock());
       log_assert(primitive->connections.find(primitive->db->fast_clock) !=
                  primitive->connections.end());
@@ -1567,6 +1594,13 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_fast_clock() {
       POST_MSG(2, "%s %s port %s: %s", primitive->db->name.c_str(),
                primitive->name.c_str(), primitive->db->fast_clock.c_str(),
                clock.c_str());
+      if (high_priority_fast_clock_primitive.size()) {
+        POST_MSG(3,
+                 "Ignore this because %s in chain has higher priority fast "
+                 "clock port",
+                 high_priority_fast_clock_primitive.c_str());
+        continue;
+      }
       bool found = false;
       for (auto& clock_primitive : m_child_primitives) {
         if (clock_primitive->db->is_gearbox_clock()) {
@@ -2803,8 +2837,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                       "set_core_clk", location, stringf("%d", index), ""));
                 } else if (core_clocks.at(key)->index == index) {
                   entry->comments.push_back(
-                      stringf("# Skip reason: Had been defined by %s",
-                              core_clocks.at(key)->location.c_str()));
+                      stringf("# Skip reason: Had been defined by %s %s",
+                              core_clocks.at(key)->module.c_str(),
+                              core_clocks.at(key)->name.c_str()));
                 } else {
                   entry->comments.push_back(
                       stringf("# Fail reason: Conflict - %s %s "
