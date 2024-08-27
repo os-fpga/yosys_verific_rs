@@ -274,6 +274,7 @@ add_custom_target(
     COMMAND $(MAKE) install ${YOSYS_RS_PLUGIN_MK_ARGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/design_edit
     COMMENT "Compile Yosys Design Edit plugin with given Makefile"
+    DEPENDS GeneratePrimitive
 )
 add_custom_target(
     yosys-rs-plugin_clean
@@ -298,7 +299,6 @@ add_dependencies(yosys_clean yosys-rs-plugin_clean)
 
 add_dependencies(pow_extract yosys)
 add_dependencies(yosys_clean pow_extract_clean)
-add_dependencies(design_edit rs_primitive)
 add_dependencies(design_edit yosys )
 add_dependencies(yosys_clean design_edit_clean)
 
