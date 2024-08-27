@@ -2717,10 +2717,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       } else {
         std::vector<std::string> data_nets;
         std::vector<bool> found_data_nets;
-        bool data_input = false;
         std::string data_reason =
             get_fabric_data(wrapped_instances, pin->name, data_nets,
-                            found_data_nets, data_input);
+                            found_data_nets, pin->is_input);
         if (data_reason.size()) {
           if (data_reason.find("but data signal is not defined") ==
                   std::string::npos &&
@@ -2746,7 +2745,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
             entry->assignments.push_back(SDC_ASSIGNMENT(
                 (std::string)(found_data_nets[data_i] ? "" : "# ") + "set_io",
                 data_nets[data_i], location, "-mode", mode, "-internal_pin",
-                stringf("%s[%ld]_A", data_input ? "g2f_rx_in" : "f2g_tx_out",
+                stringf("%s[%ld]_A", pin->is_input ? "g2f_rx_in" : "f2g_tx_out",
                         data_j)));
           }
         }
@@ -3217,7 +3216,7 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
 std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     const nlohmann::json& wrapped_instances, const std::string& object,
     std::vector<std::string>& data_nets, std::vector<bool>& found_nets,
-    bool& input) {
+    const bool input) {
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
@@ -3226,7 +3225,8 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   POST_MSG(4, "Data signal from object %s", object.c_str());
   size_t i = 0;
   for (auto& inst : m_instances) {
-    if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
+    if (input == inst->primitive->db->is_in_dir() &&
+        std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
       if (inst->module != "WIRE" && inst->module != "CLK_BUF") {
         instance = inst;
@@ -3238,7 +3238,6 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   if (instance != nullptr) {
     const PRIMITIVE_DB* db = instance->primitive->db;
     log_assert(db != nullptr);
-    input = db->is_in_dir();
     if (db->data_signal.size()) {
       std::string linked_object = instance->linked_object();
       std::string data_port = get_original_name(db->data_signal);
