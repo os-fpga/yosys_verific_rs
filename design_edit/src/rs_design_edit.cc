@@ -90,6 +90,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn;
+  std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
@@ -583,6 +584,57 @@ struct DesignEditRapidSilicon : public ScriptPass {
         ++it;
       }
     }
+  }
+
+  void handle_inout_connection(Module* mod)
+  {
+    for(auto &conn : mod->connections())
+      {
+        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+        std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+        bool remove_conn = false;
+        for (size_t i = 0; i < conn_lhs.size(); ++i)
+        {
+          if (conn_rhs[i].wire != nullptr)
+            if (conn_rhs[i].wire->port_input && conn_rhs[i].wire->port_output)
+            {
+              inout_conn_map[conn_lhs[i]] = conn_rhs[i];
+              remove_conn = true;
+            }
+        }
+        if (remove_conn)
+        {
+          connections_to_remove.insert(conn);
+        }
+      }
+
+      remove_extra_conns(mod);
+      connections_to_remove.clear();
+
+      for (auto cell : mod->cells())
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          bool unset_port = true;
+          RTLIL::SigSpec sigspec;
+          for (SigBit bit : conn.second)
+          {
+            if (inout_conn_map.count(bit) > 0)
+            {
+              if (unset_port)
+              {
+                cell->unsetPort(portName);
+                unset_port = false;
+              }
+              sigspec.append(inout_conn_map[bit]);
+            } else {
+              sigspec.append(bit);
+            }
+          }
+          if (!unset_port) cell->setPort(portName, sigspec);
+        }
+      }
   }
 
   void process_wire(Cell *cell, const IdString &portName, RTLIL::Wire *wire) {
@@ -1735,6 +1787,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       new_design->add(interface_mod);
     }
     Pass::call(new_design, "flatten");
+    handle_inout_connection(wrapper_mod);
 
     for (auto file : wrapper_files) {
       std::string extension = get_extension(file);
