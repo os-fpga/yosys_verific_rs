@@ -741,7 +741,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   static bool fixup_ports_compare_(const RTLIL::Wire *a, const RTLIL::Wire *b)
   {
-  	bool has_index_a = a->name.str().back() == ']';
+    bool has_index_a = a->name.str().back() == ']';
     bool has_index_b = b->name.str().back() == ']';
     if (!has_index_a && !has_index_b)
     {
