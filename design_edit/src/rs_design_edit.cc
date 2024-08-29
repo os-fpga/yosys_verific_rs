@@ -741,8 +741,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   static bool fixup_ports_compare_(const RTLIL::Wire *a, const RTLIL::Wire *b)
   {
-  	size_t pos_a = a->name.str().find("[");
-    size_t pos_b = b->name.str().find("[");
+  	bool has_index_a = a->name.str().back() == ']';
+    bool has_index_b = b->name.str().back() == ']';
+    if (!has_index_a && !has_index_b)
+    {
+      return a->name.str() < b->name.str();
+    }
+    size_t pos_a = has_index_a ? a->name.str().rfind("[") : std::string::npos;
+    size_t pos_b = has_index_b ? b->name.str().rfind("[") : std::string::npos;
     std::string prefix_a = pos_a == std::string::npos ? a->name.str() : a->name.str().substr(0, pos_a);
     std::string prefix_b = pos_b == std::string::npos ? b->name.str() : b->name.str().substr(0, pos_b);
 
@@ -756,9 +762,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       return false;
     }
 
-    std::string a_index_str = a->name.str().substr(pos_a + 1, a->name.str().find("]"));
-    std::string b_index_str = b->name.str().substr(pos_b + 1, b->name.str().find("]"));
-    return std::stoi(a_index_str) < std::stoi(b_index_str);
+    std::string a_index_str = a->name.str().substr(pos_a + 1,  a->name.str().length() - pos_a - 2);
+    std::string b_index_str = b->name.str().substr(pos_b + 1,  b->name.str().length() - pos_b - 2);
+    int a_index = std::stoi(a_index_str);
+    int b_index = std::stoi(b_index_str);
+    return a_index < b_index;
   }
 
   void fixup_mod_ports (Module* mod)
