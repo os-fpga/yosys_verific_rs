@@ -93,15 +93,16 @@ USING_YOSYS_NAMESPACE
 #define P_IS_NOT_READY (1 << 0)
 #define P_IS_PORT (1 << 1)
 #define P_IS_STANDALONE (1 << 2)
-#define P_IS_CLOCK (1 << 3)
-#define P_IS_GEARBOX_CLOCK (1 << 4)
-#define P_IS_ANY_INPUTS (1 << 5)
-#define P_IS_ANY_OUTPUTS (1 << 6)
-#define P_IS_OPTIONAL_INPUT (1 << 7)
-#define P_IS_OPTIONAL_OUTPUT (1 << 8)
-#define P_IS_IN_DIR (1 << 9)
-#define P_IS_FABRIC_CLKBUF (1 << 10)
-#define P_IS_LOWER_FAST_CLOCK_PRIORITY (1 << 11)
+#define P_IS_PORT_CLOCK (1 << 3)
+#define P_IS_CLOCK (1 << 4)
+#define P_IS_GEARBOX_CLOCK (1 << 5)
+#define P_IS_ANY_INPUTS (1 << 6)
+#define P_IS_ANY_OUTPUTS (1 << 7)
+#define P_IS_OPTIONAL_INPUT (1 << 8)
+#define P_IS_OPTIONAL_OUTPUT (1 << 9)
+#define P_IS_IN_DIR (1 << 10)
+#define P_IS_FABRIC_CLKBUF (1 << 11)
+#define P_IS_LOWER_FAST_CLOCK_PRIORITY (1 << 12)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -232,6 +233,9 @@ struct PRIMITIVE_DB {
   bool is_port() const { return (feature & P_IS_PORT) != P_IS_NULL; }
   bool is_standalone() const {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
+  }
+  bool is_port_clock() const {
+    return (feature & P_IS_PORT_CLOCK) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
   bool is_fabric_clkbuf() const {
@@ -378,7 +382,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\CLK_BUF",
-          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
+          P_IS_PORT_CLOCK | P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
           {"\\I"},                              // inputs
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
@@ -1896,12 +1900,16 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           log_assert(instance->connections.find(oport) !=
                      instance->connections.end());
           std::string onet = instance->connections[oport];
-          std::pair<std::vector<std::string>, bool> fabric_status =
+          std::tuple<std::vector<std::string>, bool, bool> fabric_status =
               need_to_route_to_fabric(module, instance->primitive->db->name,
                                       instance->primitive->name, out,
                                       instance->primitive->connections.at(out),
                                       is_clock_primitive);
-          if (fabric_status.first.size() > 0 || fabric_status.second) {
+          std::vector<std::string> primitive_core_clks =
+              std::get<0>(fabric_status);
+          bool used_by_fabirc_logic = std::get<1>(fabric_status);
+          bool used_by_primitive_non_core_clk = std::get<2>(fabric_status);
+          if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
@@ -1935,7 +1943,12 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
             m_fabric_clocks.push_back(new FABRIC_CLOCK(
                 linked_object, instance->module, instance->name, iport, oport,
                 inet, onet, instance->primitive->db->is_fabric_clkbuf(),
-                fabric_status.first, fabric_status.second));
+                primitive_core_clks, used_by_fabirc_logic));
+            if (instance->primitive->db->is_port_clock() &&
+                !used_by_primitive_non_core_clk &&
+                instance->gearbox_clocks.size() == 0) {
+              instance->flags.push_back("PIN_CLOCK_CORE_ONLY");
+            }
           }
         }
         i++;
@@ -1968,14 +1981,14 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
 /*
   Determine if the clock need to route to fabric
 */
-std::pair<std::vector<std::string>, bool>
+std::tuple<std::vector<std::string>, bool, bool>
 PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(Yosys::RTLIL::Module* module,
                                               const std::string& module_type,
                                               const std::string& module_name,
                                               const std::string& port_name,
                                               const std::string& net_name,
                                               bool is_clock_primitive) {
-  std::pair<std::vector<std::string>, bool> fabric;
+  std::tuple<std::vector<std::string>, bool, bool> fabric({}, false, false);
   POST_MSG(2, "Module %s %s: clock port %s, net %s", module_type.c_str(),
            module_name.c_str(), port_name.c_str(), net_name.c_str());
   for (auto cell : module->cells()) {
@@ -2006,16 +2019,18 @@ PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(Yosys::RTLIL::Module* module,
               //    But we need to route it to fabric, in case only fabric can
               //    do something on it in IO Tile
               POST_MSG(4, "This is gearbox core_clk. Send to fabric");
-              fabric.first.push_back(get_original_name(cell->name.str()));
+              (std::get<0>(fabric))
+                  .push_back(get_original_name(cell->name.str()));
             } else {
+              std::get<2>(fabric) = true;
               POST_MSG(4,
                        "Does not meet core_clk checking criteria. Not sending "
                        "to fabric");
             }
-          } else if (!fabric.second) {
+          } else if (std::get<1>(fabric) == false) {
             // If it is not connected to primitive, then it must be fabric
             POST_MSG(4, "Which is not a IO primitive. Send to fabric");
-            fabric.second = true;
+            std::get<1>(fabric) = true;
           }
         }
       }
