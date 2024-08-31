@@ -147,7 +147,7 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock(Yosys::RTLIL::Module* module);
-  std::pair<std::vector<std::string>, bool> need_to_route_to_fabric(
+  std::tuple<std::vector<std::string>, bool, bool> need_to_route_to_fabric(
       Yosys::RTLIL::Module* module, const std::string& module_type,
       const std::string& module_name, const std::string& port_name,
       const std::string& net_name, bool is_clock_primitive);
