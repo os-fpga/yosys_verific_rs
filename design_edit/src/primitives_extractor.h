@@ -176,7 +176,8 @@ class PRIMITIVES_EXTRACTOR {
       std::vector<SDC_ENTRY*>& sdc_entries,
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& location,
-      const std::string& port, const std::string& internal_signal);
+      const std::string& port, const std::string& internal_signal,
+      bool is_in_dir);
   bool validate_location(const std::string& location, PIN_PARSER& pin);
   std::string get_assigned_location(SDC_ENTRY*& entry, const std::string& rule,
                                     const std::string& location,
