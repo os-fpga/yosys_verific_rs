@@ -474,7 +474,8 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR,
           {"\\CLK_IN"},                         // inputs
           {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
-           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4",
+           "\\FAST_CLK:NOT_CORE"},
           "\\CLK_IN",                           // intrace_connection
           "",                                   // outtrace_connection
           "",                                   // fast_clock
@@ -1881,7 +1882,15 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
         is_clock_primitive = false;
       }
       size_t i = 0;
-      for (auto& out : instance->primitive->db->outputs) {
+      for (std::string out : instance->primitive->db->outputs) {
+        bool not_core = false;
+        std::vector<std::string> temp = split_string(out, ":");
+        if (temp.size() > 1) {
+          log_assert(temp.size() == 2);
+          out = temp[0];
+          log_assert(temp[1] == "NOT_CORE");
+          not_core = temp[1] == "NOT_CORE";
+        }
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
           // Input
@@ -1910,6 +1919,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           bool used_by_fabirc_logic = std::get<1>(fabric_status);
           bool used_by_primitive_non_core_clk = std::get<2>(fabric_status);
           if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
+            if (not_core) {
+              POST_MSG(3, "Error: Cannot be used as core clock");
+              continue;
+            }
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
@@ -2722,8 +2735,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
         mode = stringf("MODE_%s", pin->mode.c_str());
       }
       mode = stringf("%s_%c_%s", mode.c_str(), ab, pin->is_input ? "RX" : "TX");
-      if (m_location_mode.find(pin->location) == m_location_mode.end()) {
-        m_location_mode[pin->location] = mode;
+      std::string location_key =
+          stringf("%s:%s", pin->is_input ? "I" : "O", pin->location.c_str());
+      if (m_location_mode.find(location_key) == m_location_mode.end()) {
+        m_location_mode[location_key] = mode;
       }
       if (pin->skip_reason.size()) {
         POST_MSG(4, "Skip this because \'%s\'", pin->skip_reason.c_str());
@@ -2790,9 +2805,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       std::string linked_object = inst->linked_object();
       std::string location = inst->get_location_with_priority();
       for (auto iter : db->control_signal_map) {
-        write_sdc_internal_control_signal(sdc_entries, wrapped_instances,
-                                          inst->module, linked_object, location,
-                                          iter.first, iter.second);
+        write_sdc_internal_control_signal(
+            sdc_entries, wrapped_instances, inst->module, linked_object,
+            location, iter.first, iter.second, db->is_in_dir());
       }
     }
   }
@@ -2826,8 +2841,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
           std::string clk_net = inst->connections.at(core_clk);
           entry->comments.push_back(stringf("# Net: %s", clk_net.c_str()));
           if (clk_net.size() > 0) {
+            std::string location_key =
+                stringf("%s:%s", inst->primitive->db->is_in_dir() ? "I" : "O",
+                        location.c_str());
             if (location.size() > 0 &&
-                m_location_mode.find(location) != m_location_mode.end()) {
+                m_location_mode.find(location_key) != m_location_mode.end()) {
               uint32_t index = 0;
               for (auto& fabric_clk : m_fabric_clocks) {
                 if (std::find(fabric_clk->gearboxes.begin(),
@@ -2892,7 +2910,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
     std::vector<SDC_ENTRY*>& sdc_entries,
     const nlohmann::json& wrapped_instances, const std::string& module,
     const std::string& linked_object, const std::string& location,
-    const std::string& port, const std::string& internal_signal) {
+    const std::string& port, const std::string& internal_signal,
+    bool is_in_dir) {
   bool input = true;
   std::string internal_signal_name = "";
   if (internal_signal.find("in:") == 0) {
@@ -2921,7 +2940,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
 #endif
   // If the mode is available, then the location had been parsed correctly in
   // the first place
-  if (m_location_mode.find(location) != m_location_mode.end()) {
+  std::string location_key =
+      stringf("%s:%s", is_in_dir ? "I" : "O", location.c_str());
+  if (m_location_mode.find(location_key) != m_location_mode.end()) {
     PIN_PARSER pin;
     log_assert(validate_location(location, pin));
     std::vector<std::string> wrapped_nets;
@@ -3025,8 +3046,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
             std::string set_io = stringf("%sset_io", skip.c_str());
             entry->assignments.push_back(
                 SDC_ASSIGNMENT(set_io, wrapped_net, assigned_location, "-mode",
-                               m_location_mode.at(location), "-internal_pin",
-                               final_internal_signal));
+                               m_location_mode.at(location_key),
+                               "-internal_pin", final_internal_signal));
           } else {
             post_sdc_comment(
                 entry, 4, "Fail",
