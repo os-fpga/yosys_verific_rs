@@ -474,7 +474,8 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR,
           {"\\CLK_IN"},                         // inputs
           {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
-           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4",
+           "\\FAST_CLK:NOT_CORE"},
           "\\CLK_IN",                           // intrace_connection
           "",                                   // outtrace_connection
           "",                                   // fast_clock
@@ -1881,7 +1882,15 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
         is_clock_primitive = false;
       }
       size_t i = 0;
-      for (auto& out : instance->primitive->db->outputs) {
+      for (std::string out : instance->primitive->db->outputs) {
+        bool not_core = false;
+        std::vector<std::string> temp = split_string(out, ":");
+        if (temp.size() > 1) {
+          log_assert(temp.size() == 2);
+          out = temp[0];
+          log_assert(temp[1] == "NOT_CORE");
+          not_core = temp[1] == "NOT_CORE";
+        }
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
           // Input
@@ -1910,6 +1919,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           bool used_by_fabirc_logic = std::get<1>(fabric_status);
           bool used_by_primitive_non_core_clk = std::get<2>(fabric_status);
           if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
+            if (not_core) {
+              POST_MSG(3, "Error: Cannot be used as core clock");
+              continue;
+            }
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
