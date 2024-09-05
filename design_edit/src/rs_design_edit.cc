@@ -1772,7 +1772,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     wrapper_mod->connections_.clear();
 
     // Add instances of the original and interface modules to the wrapper module
-    Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
+    Cell *orig_mod_inst = wrapper_mod->addCell("\\fabric_instance", original_mod->name);
     for (auto wire : original_mod->wires()) {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
