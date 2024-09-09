@@ -64,6 +64,8 @@ std::vector<std::string> wrapper_files;
 std::vector<std::string> post_route_wrapper;
 std::unordered_set<std::string> clk_outs;
 std::unordered_set<std::string> primitives;
+std::unordered_set<std::string> out_prims;
+std::unordered_set<std::string> soc_intf_prims;
 std::unordered_set<std::string> new_ins;
 std::unordered_set<std::string> new_outs;
 std::unordered_set<std::string> interface_wires;
