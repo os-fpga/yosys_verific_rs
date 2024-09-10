@@ -427,6 +427,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return result;
   }
 
+  void categorize_primitives()
+  {
+    for (const std::string& primitive : primitives)
+    {
+      if (primitive.substr(0, 2) == "O_")
+      {
+        out_prims.insert(primitive);
+      } else if (primitive.substr(0, 9) == "SOC_FPGA_")
+      {
+        soc_intf_prims.insert(primitive);
+      }
+    }
+  }
+
   void delete_cells(Module *module, vector<Cell *> cells) {
     for (auto cell : cells) {
       module->remove(cell);
@@ -683,8 +697,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
-      bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
-      bool is_intf_prim = (module_name.rfind("SOC_FPGA_", 0) == 0) ? true : false;
+      bool is_out_prim = (out_prims.count(module_name) > 0) ? true : false;
+      bool is_intf_prim = (soc_intf_prims.count(module_name) > 0) ? true : false;
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
           primitives.end()) {
         for (auto conn : cell->connections()) {
@@ -1282,6 +1296,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       break;
     }
     primitives = io_prim.get_primitives(tech);
+    categorize_primitives();
     bool supported_tech = io_prim.supported_tech;
 
     // Extract the primitive information (before anything is modified)
@@ -1326,8 +1341,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (std::find(primitives.begin(), primitives.end(), module_name) !=
             primitives.end()) {
           io_prim.contains_io_prem = true;
-          bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
-          bool is_intf_prim = (module_name.rfind("SOC_FPGA_", 0) == 0) ? true : false;
+          bool is_out_prim = (out_prims.count(module_name) > 0) ? true : false;
+          bool is_intf_prim = (soc_intf_prims.count(module_name) > 0) ? true : false;
           remove_prims.push_back(cell);
 
           if (cell->type == RTLIL::escape_id("I_BUF") ||
@@ -1619,27 +1634,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       remove_extra_conns(original_mod);
       connections_to_remove.clear();
       update_prim_connections(original_mod, primitives, orig_intermediate_wires);
-      handle_dangling_outs(original_mod);
-      delete_cells(original_mod, remove_prims);
-
-      for (auto &conn : original_mod->connections()) {
-        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
-        std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
-        for (size_t i = 0; i < conn_lhs.size(); i++) {
-          if (conn_lhs[i].wire != nullptr) {
-            keep_wires.insert(conn_lhs[i].wire->name.str());
-          }
-          if (conn_rhs[i].wire != nullptr) {
-            keep_wires.insert(conn_rhs[i].wire->name.str());
-          }
-        }
-      }
-
-      get_fabric_outputs(original_mod);
-      check_fclkbuf_conns();
-      delete_wires(original_mod, wires_interface);
-      delete_wires(original_mod, del_ins);
-      delete_wires(original_mod, del_outs);
 
       for (const auto& prim_conn : io_prim_conn) {
         const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
@@ -1675,6 +1669,28 @@ struct DesignEditRapidSilicon : public ScriptPass {
           original_mod->connect(new_conn);
         }
       }
+
+      handle_dangling_outs(original_mod);
+      delete_cells(original_mod, remove_prims);
+
+      for (auto &conn : original_mod->connections()) {
+        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+        std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+        for (size_t i = 0; i < conn_lhs.size(); i++) {
+          if (conn_lhs[i].wire != nullptr) {
+            keep_wires.insert(conn_lhs[i].wire->name.str());
+          }
+          if (conn_rhs[i].wire != nullptr) {
+            keep_wires.insert(conn_rhs[i].wire->name.str());
+          }
+        }
+      }
+
+      get_fabric_outputs(original_mod);
+      check_fclkbuf_conns();
+      delete_wires(original_mod, wires_interface);
+      delete_wires(original_mod, del_ins);
+      delete_wires(original_mod, del_outs);
 
       fixup_mod_ports(original_mod);
 
