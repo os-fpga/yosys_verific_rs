@@ -147,7 +147,7 @@ class PRIMITIVES_EXTRACTOR {
                 std::vector<std::string> linked_objects, const PRIMITIVE* port,
                 const std::string& child);
   void determine_fabric_clock(Yosys::RTLIL::Module* module);
-  std::pair<std::vector<std::string>, bool> need_to_route_to_fabric(
+  std::tuple<std::vector<std::string>, bool, bool> need_to_route_to_fabric(
       Yosys::RTLIL::Module* module, const std::string& module_type,
       const std::string& module_name, const std::string& port_name,
       const std::string& net_name, bool is_clock_primitive);
@@ -176,7 +176,8 @@ class PRIMITIVES_EXTRACTOR {
       std::vector<SDC_ENTRY*>& sdc_entries,
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& location,
-      const std::string& port, const std::string& internal_signal);
+      const std::string& port, const std::string& internal_signal,
+      bool is_in_dir);
   bool validate_location(const std::string& location, PIN_PARSER& pin);
   std::string get_assigned_location(SDC_ENTRY*& entry, const std::string& rule,
                                     const std::string& location,
@@ -190,7 +191,7 @@ class PRIMITIVES_EXTRACTOR {
   std::string get_fabric_data(const nlohmann::json& wrapped_instances,
                               const std::string& object,
                               std::vector<std::string>& data_nets,
-                              std::vector<bool>& found_nets, bool& input);
+                              std::vector<bool>& found_nets, const bool input);
   std::pair<std::string, std::string> get_wrapped_instance_net_by_port(
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& port,

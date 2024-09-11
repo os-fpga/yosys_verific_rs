@@ -93,15 +93,16 @@ USING_YOSYS_NAMESPACE
 #define P_IS_NOT_READY (1 << 0)
 #define P_IS_PORT (1 << 1)
 #define P_IS_STANDALONE (1 << 2)
-#define P_IS_CLOCK (1 << 3)
-#define P_IS_GEARBOX_CLOCK (1 << 4)
-#define P_IS_ANY_INPUTS (1 << 5)
-#define P_IS_ANY_OUTPUTS (1 << 6)
-#define P_IS_OPTIONAL_INPUT (1 << 7)
-#define P_IS_OPTIONAL_OUTPUT (1 << 8)
-#define P_IS_IN_DIR (1 << 9)
-#define P_IS_FABRIC_CLKBUF (1 << 10)
-#define P_IS_LOWER_FAST_CLOCK_PRIORITY (1 << 11)
+#define P_IS_PORT_CLOCK (1 << 3)
+#define P_IS_CLOCK (1 << 4)
+#define P_IS_GEARBOX_CLOCK (1 << 5)
+#define P_IS_ANY_INPUTS (1 << 6)
+#define P_IS_ANY_OUTPUTS (1 << 7)
+#define P_IS_OPTIONAL_INPUT (1 << 8)
+#define P_IS_OPTIONAL_OUTPUT (1 << 9)
+#define P_IS_IN_DIR (1 << 10)
+#define P_IS_FABRIC_CLKBUF (1 << 11)
+#define P_IS_LOWER_FAST_CLOCK_PRIORITY (1 << 12)
 
 std::map<std::string, uint32_t> g_standalone_tracker;
 bool g_enable_debug = false;
@@ -232,6 +233,9 @@ struct PRIMITIVE_DB {
   bool is_port() const { return (feature & P_IS_PORT) != P_IS_NULL; }
   bool is_standalone() const {
     return (feature & P_IS_STANDALONE) != P_IS_NULL;
+  }
+  bool is_port_clock() const {
+    return (feature & P_IS_PORT_CLOCK) != P_IS_NULL;
   }
   bool is_clock() const { return (feature & P_IS_CLOCK) != P_IS_NULL; }
   bool is_fabric_clkbuf() const {
@@ -378,7 +382,7 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
       {
         PRIMITIVE_DB(
           "\\CLK_BUF",
-          P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
+          P_IS_PORT_CLOCK | P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_IN_DIR,
           {"\\I"},                              // inputs
           {"\\O"},                              // outputs
           "\\I",                                // intrace_connection
@@ -470,7 +474,8 @@ const std::map<std::string, std::vector<PRIMITIVE_DB>> SUPPORTED_PRIMITIVES = {
           P_IS_CLOCK | P_IS_GEARBOX_CLOCK | P_IS_ANY_OUTPUTS | P_IS_IN_DIR,
           {"\\CLK_IN"},                         // inputs
           {"\\CLK_OUT", "\\CLK_OUT_DIV2",       // outputs
-           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4"},
+           "\\CLK_OUT_DIV3", "\\CLK_OUT_DIV4",
+           "\\FAST_CLK:NOT_CORE"},
           "\\CLK_IN",                           // intrace_connection
           "",                                   // outtrace_connection
           "",                                   // fast_clock
@@ -1877,7 +1882,15 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
         is_clock_primitive = false;
       }
       size_t i = 0;
-      for (auto& out : instance->primitive->db->outputs) {
+      for (std::string out : instance->primitive->db->outputs) {
+        bool not_core = false;
+        std::vector<std::string> temp = split_string(out, ":");
+        if (temp.size() > 1) {
+          log_assert(temp.size() == 2);
+          out = temp[0];
+          log_assert(temp[1] == "NOT_CORE");
+          not_core = temp[1] == "NOT_CORE";
+        }
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
           // Input
@@ -1896,12 +1909,20 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           log_assert(instance->connections.find(oport) !=
                      instance->connections.end());
           std::string onet = instance->connections[oport];
-          std::pair<std::vector<std::string>, bool> fabric_status =
+          std::tuple<std::vector<std::string>, bool, bool> fabric_status =
               need_to_route_to_fabric(module, instance->primitive->db->name,
                                       instance->primitive->name, out,
                                       instance->primitive->connections.at(out),
                                       is_clock_primitive);
-          if (fabric_status.first.size() > 0 || fabric_status.second) {
+          std::vector<std::string> primitive_core_clks =
+              std::get<0>(fabric_status);
+          bool used_by_fabirc_logic = std::get<1>(fabric_status);
+          bool used_by_primitive_non_core_clk = std::get<2>(fabric_status);
+          if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
+            if (not_core) {
+              POST_MSG(3, "Error: Cannot be used as core clock");
+              continue;
+            }
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
@@ -1935,7 +1956,12 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
             m_fabric_clocks.push_back(new FABRIC_CLOCK(
                 linked_object, instance->module, instance->name, iport, oport,
                 inet, onet, instance->primitive->db->is_fabric_clkbuf(),
-                fabric_status.first, fabric_status.second));
+                primitive_core_clks, used_by_fabirc_logic));
+            if (instance->primitive->db->is_port_clock() &&
+                !used_by_primitive_non_core_clk &&
+                instance->gearbox_clocks.size() == 0) {
+              instance->flags.push_back("PIN_CLOCK_CORE_ONLY");
+            }
           }
         }
         i++;
@@ -1968,14 +1994,14 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
 /*
   Determine if the clock need to route to fabric
 */
-std::pair<std::vector<std::string>, bool>
+std::tuple<std::vector<std::string>, bool, bool>
 PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(Yosys::RTLIL::Module* module,
                                               const std::string& module_type,
                                               const std::string& module_name,
                                               const std::string& port_name,
                                               const std::string& net_name,
                                               bool is_clock_primitive) {
-  std::pair<std::vector<std::string>, bool> fabric;
+  std::tuple<std::vector<std::string>, bool, bool> fabric({}, false, false);
   POST_MSG(2, "Module %s %s: clock port %s, net %s", module_type.c_str(),
            module_name.c_str(), port_name.c_str(), net_name.c_str());
   for (auto cell : module->cells()) {
@@ -2006,16 +2032,18 @@ PRIMITIVES_EXTRACTOR::need_to_route_to_fabric(Yosys::RTLIL::Module* module,
               //    But we need to route it to fabric, in case only fabric can
               //    do something on it in IO Tile
               POST_MSG(4, "This is gearbox core_clk. Send to fabric");
-              fabric.first.push_back(get_original_name(cell->name.str()));
+              (std::get<0>(fabric))
+                  .push_back(get_original_name(cell->name.str()));
             } else {
+              std::get<2>(fabric) = true;
               POST_MSG(4,
                        "Does not meet core_clk checking criteria. Not sending "
                        "to fabric");
             }
-          } else if (!fabric.second) {
+          } else if (std::get<1>(fabric) == false) {
             // If it is not connected to primitive, then it must be fabric
             POST_MSG(4, "Which is not a IO primitive. Send to fabric");
-            fabric.second = true;
+            std::get<1>(fabric) = true;
           }
         }
       }
@@ -2707,8 +2735,10 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
         mode = stringf("MODE_%s", pin->mode.c_str());
       }
       mode = stringf("%s_%c_%s", mode.c_str(), ab, pin->is_input ? "RX" : "TX");
-      if (m_location_mode.find(pin->location) == m_location_mode.end()) {
-        m_location_mode[pin->location] = mode;
+      std::string location_key =
+          stringf("%s:%s", pin->is_input ? "I" : "O", pin->location.c_str());
+      if (m_location_mode.find(location_key) == m_location_mode.end()) {
+        m_location_mode[location_key] = mode;
       }
       if (pin->skip_reason.size()) {
         POST_MSG(4, "Skip this because \'%s\'", pin->skip_reason.c_str());
@@ -2717,10 +2747,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       } else {
         std::vector<std::string> data_nets;
         std::vector<bool> found_data_nets;
-        bool data_input = false;
         std::string data_reason =
             get_fabric_data(wrapped_instances, pin->name, data_nets,
-                            found_data_nets, data_input);
+                            found_data_nets, pin->is_input);
         if (data_reason.size()) {
           if (data_reason.find("but data signal is not defined") ==
                   std::string::npos &&
@@ -2746,7 +2775,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
             entry->assignments.push_back(SDC_ASSIGNMENT(
                 (std::string)(found_data_nets[data_i] ? "" : "# ") + "set_io",
                 data_nets[data_i], location, "-mode", mode, "-internal_pin",
-                stringf("%s[%ld]_A", data_input ? "g2f_rx_in" : "f2g_tx_out",
+                stringf("%s[%ld]_A", pin->is_input ? "g2f_rx_in" : "f2g_tx_out",
                         data_j)));
           }
         }
@@ -2776,9 +2805,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       std::string linked_object = inst->linked_object();
       std::string location = inst->get_location_with_priority();
       for (auto iter : db->control_signal_map) {
-        write_sdc_internal_control_signal(sdc_entries, wrapped_instances,
-                                          inst->module, linked_object, location,
-                                          iter.first, iter.second);
+        write_sdc_internal_control_signal(
+            sdc_entries, wrapped_instances, inst->module, linked_object,
+            location, iter.first, iter.second, db->is_in_dir());
       }
     }
   }
@@ -2812,8 +2841,11 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
           std::string clk_net = inst->connections.at(core_clk);
           entry->comments.push_back(stringf("# Net: %s", clk_net.c_str()));
           if (clk_net.size() > 0) {
+            std::string location_key =
+                stringf("%s:%s", inst->primitive->db->is_in_dir() ? "I" : "O",
+                        location.c_str());
             if (location.size() > 0 &&
-                m_location_mode.find(location) != m_location_mode.end()) {
+                m_location_mode.find(location_key) != m_location_mode.end()) {
               uint32_t index = 0;
               for (auto& fabric_clk : m_fabric_clocks) {
                 if (std::find(fabric_clk->gearboxes.begin(),
@@ -2878,7 +2910,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
     std::vector<SDC_ENTRY*>& sdc_entries,
     const nlohmann::json& wrapped_instances, const std::string& module,
     const std::string& linked_object, const std::string& location,
-    const std::string& port, const std::string& internal_signal) {
+    const std::string& port, const std::string& internal_signal,
+    bool is_in_dir) {
   bool input = true;
   std::string internal_signal_name = "";
   if (internal_signal.find("in:") == 0) {
@@ -2907,7 +2940,9 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
 #endif
   // If the mode is available, then the location had been parsed correctly in
   // the first place
-  if (m_location_mode.find(location) != m_location_mode.end()) {
+  std::string location_key =
+      stringf("%s:%s", is_in_dir ? "I" : "O", location.c_str());
+  if (m_location_mode.find(location_key) != m_location_mode.end()) {
     PIN_PARSER pin;
     log_assert(validate_location(location, pin));
     std::vector<std::string> wrapped_nets;
@@ -3011,8 +3046,8 @@ void PRIMITIVES_EXTRACTOR::write_sdc_internal_control_signal(
             std::string set_io = stringf("%sset_io", skip.c_str());
             entry->assignments.push_back(
                 SDC_ASSIGNMENT(set_io, wrapped_net, assigned_location, "-mode",
-                               m_location_mode.at(location), "-internal_pin",
-                               final_internal_signal));
+                               m_location_mode.at(location_key),
+                               "-internal_pin", final_internal_signal));
           } else {
             post_sdc_comment(
                 entry, 4, "Fail",
@@ -3217,7 +3252,7 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
 std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     const nlohmann::json& wrapped_instances, const std::string& object,
     std::vector<std::string>& data_nets, std::vector<bool>& found_nets,
-    bool& input) {
+    const bool input) {
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
@@ -3226,7 +3261,8 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   POST_MSG(4, "Data signal from object %s", object.c_str());
   size_t i = 0;
   for (auto& inst : m_instances) {
-    if (std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
+    if (input == inst->primitive->db->is_in_dir() &&
+        std::find(inst->linked_objects.begin(), inst->linked_objects.end(),
                   object) != inst->linked_objects.end()) {
       if (inst->module != "WIRE" && inst->module != "CLK_BUF") {
         instance = inst;
@@ -3238,7 +3274,6 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   if (instance != nullptr) {
     const PRIMITIVE_DB* db = instance->primitive->db;
     log_assert(db != nullptr);
-    input = db->is_in_dir();
     if (db->data_signal.size()) {
       std::string linked_object = instance->linked_object();
       std::string data_port = get_original_name(db->data_signal);

@@ -91,8 +91,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::set<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec>> connections_to_remove;
   std::unordered_set<Wire *> orig_intermediate_wires;
   std::unordered_set<Wire *> interface_intermediate_wires;
-  std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn;
   std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> wrapper_conns;
+  std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn, intf_prim_conn;
+  std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
@@ -429,6 +430,20 @@ struct DesignEditRapidSilicon : public ScriptPass {
     return result;
   }
 
+  void categorize_primitives()
+  {
+    for (const std::string& primitive : primitives)
+    {
+      if (primitive.substr(0, 2) == "O_")
+      {
+        out_prims.insert(primitive);
+      } else if (primitive.substr(0, 9) == "SOC_FPGA_")
+      {
+        soc_intf_prims.insert(primitive);
+      }
+    }
+  }
+
   void delete_cells(Module *module, vector<Cell *> cells) {
     for (auto cell : cells) {
       module->remove(cell);
@@ -588,6 +603,57 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  void handle_inout_connection(Module* mod)
+  {
+    for(auto &conn : mod->connections())
+      {
+        std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+        std::vector<RTLIL::SigBit> conn_rhs = conn.second.to_sigbit_vector();
+        bool remove_conn = false;
+        for (size_t i = 0; i < conn_lhs.size(); ++i)
+        {
+          if (conn_rhs[i].wire != nullptr)
+            if (conn_rhs[i].wire->port_input && conn_rhs[i].wire->port_output)
+            {
+              inout_conn_map[conn_lhs[i]] = conn_rhs[i];
+              remove_conn = true;
+            }
+        }
+        if (remove_conn)
+        {
+          connections_to_remove.insert(conn);
+        }
+      }
+
+      remove_extra_conns(mod);
+      connections_to_remove.clear();
+
+      for (auto cell : mod->cells())
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          bool unset_port = true;
+          RTLIL::SigSpec sigspec;
+          for (SigBit bit : conn.second)
+          {
+            if (inout_conn_map.count(bit) > 0)
+            {
+              if (unset_port)
+              {
+                cell->unsetPort(portName);
+                unset_port = false;
+              }
+              sigspec.append(inout_conn_map[bit]);
+            } else {
+              sigspec.append(bit);
+            }
+          }
+          if (!unset_port) cell->setPort(portName, sigspec);
+        }
+      }
+  }
+
   void process_wire(Cell *cell, const IdString &portName, RTLIL::Wire *wire) {
     if (cell->input(portName)) {
       if (wire->port_input) {
@@ -634,7 +700,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     for (auto cell : mod->cells()) {
       string module_name = remove_backslashes(cell->type.str());
-      bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+      bool is_out_prim = (out_prims.count(module_name) > 0) ? true : false;
+      bool is_intf_prim = (soc_intf_prims.count(module_name) > 0) ? true : false;
       if (std::find(primitives.begin(), primitives.end(), module_name) !=
           primitives.end()) {
         for (auto conn : cell->connections()) {
@@ -649,7 +716,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   io_prim_wires.end()) {
                 if (cell->input(portName) &&
                   portName.str() != "\\CLK_IN" &&
-                  portName.str() != "\\C" && is_out_prim) {
+                  portName.str() != "\\C" &&
+                  (is_out_prim || is_intf_prim)) {
                   if (unset_port)
                   {
                     cell->unsetPort(portName);
@@ -668,9 +736,29 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   new_outs.insert(new_wire->name.str());
                   sigspec.append(new_wire);
                 } else if (cell->output(portName)) {
-                  new_ins.insert(bit.wire->name.str());
-                  keep_wires.insert(bit.wire->name.str());
-                  sigspec.append(bit.wire);
+                  if (is_intf_prim)
+                  {
+                    if (unset_port)
+                    {
+                      cell->unsetPort(portName);
+                      unset_port = false;
+                    }
+                    RTLIL::Wire *new_wire = mod->addWire(NEW_ID, 1);
+                    auto it = intf_prim_conn.find(bit);
+                    if (it != intf_prim_conn.end()) {
+                      it->second.push_back(new_wire);
+                    } else {
+                      std::vector<RTLIL::Wire *> new_wires;
+                      new_wires.push_back(new_wire);
+                      intf_prim_conn.insert({bit, new_wires});
+                    }
+                    new_ins.insert(new_wire->name.str());
+                    sigspec.append(new_wire);
+                  } else {
+                    new_ins.insert(bit.wire->name.str());
+                    keep_wires.insert(bit.wire->name.str());
+                    sigspec.append(bit.wire);
+                  }
                 }
               }
               else {
@@ -692,8 +780,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   static bool fixup_ports_compare_(const RTLIL::Wire *a, const RTLIL::Wire *b)
   {
-  	size_t pos_a = a->name.str().find("[");
-    size_t pos_b = b->name.str().find("[");
+    bool has_index_a = a->name.str().back() == ']';
+    bool has_index_b = b->name.str().back() == ']';
+    if (!has_index_a && !has_index_b)
+    {
+      return a->name.str() < b->name.str();
+    }
+    size_t pos_a = has_index_a ? a->name.str().rfind("[") : std::string::npos;
+    size_t pos_b = has_index_b ? b->name.str().rfind("[") : std::string::npos;
     std::string prefix_a = pos_a == std::string::npos ? a->name.str() : a->name.str().substr(0, pos_a);
     std::string prefix_b = pos_b == std::string::npos ? b->name.str() : b->name.str().substr(0, pos_b);
 
@@ -707,9 +801,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       return false;
     }
 
-    std::string a_index_str = a->name.str().substr(pos_a + 1, a->name.str().find("]"));
-    std::string b_index_str = b->name.str().substr(pos_b + 1, b->name.str().find("]"));
-    return std::stoi(a_index_str) < std::stoi(b_index_str);
+    std::string a_index_str = a->name.str().substr(pos_a + 1,  a->name.str().length() - pos_a - 2);
+    std::string b_index_str = b->name.str().substr(pos_b + 1,  b->name.str().length() - pos_b - 2);
+    int a_index = std::stoi(a_index_str);
+    int b_index = std::stoi(b_index_str);
+    return a_index < b_index;
   }
 
   void fixup_mod_ports (Module* mod)
@@ -1280,6 +1376,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       break;
     }
     primitives = io_prim.get_primitives(tech);
+    categorize_primitives();
     bool supported_tech = io_prim.supported_tech;
 
     auto start = high_resolution_clock::now();
@@ -1335,7 +1432,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (std::find(primitives.begin(), primitives.end(), module_name) !=
             primitives.end()) {
           io_prim.contains_io_prem = true;
-          bool is_out_prim = (module_name.substr(0, 2) == "O_") ? true : false;
+          bool is_out_prim = (out_prims.count(module_name) > 0) ? true : false;
+          bool is_intf_prim = (soc_intf_prims.count(module_name) > 0) ? true : false;
           remove_prims.push_back(cell);
 
           if (cell->type == RTLIL::escape_id("I_BUF") ||
@@ -1446,13 +1544,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
               RTLIL::Wire *wire = actual.as_chunk().wire;
               if (wire != NULL) {
                 process_wire(cell, portName, wire);
-                if (is_out_prim) {
+                if (is_out_prim || is_intf_prim) {
                   if (cell->input(portName)) {
                     if (portName.str() != "\\CLK_IN" &&
                       portName.str() != "\\C")
                       out_prim_ins.insert(wire->name.str());
                   }
-                } else {
+                }
+                if (!is_out_prim) {
                   if (cell->output(portName)) {
                     in_prim_outs.insert(wire->name.str());
                     for (auto bit : conn.second){
@@ -1480,13 +1579,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 RTLIL::Wire *wire = (*it).wire;
                 if (wire != NULL) {
                   process_wire(cell, portName, wire);
-                  if (is_out_prim) {
+                  if (is_out_prim || is_intf_prim) {
                     if (cell->input(portName)) {
                       if (portName.str() != "\\CLK_IN" &&
                         portName.str() != "\\C")
                         out_prim_ins.insert(wire->name.str());
                     }
-                  } else {
+                  } 
+                  if (!is_out_prim) {
                     if (cell->output(portName)) {
                       in_prim_outs.insert(wire->name.str());
                       for (auto bit : conn.second){
@@ -1640,6 +1740,42 @@ struct DesignEditRapidSilicon : public ScriptPass {
       update_prim_connections(original_mod, primitives, orig_intermediate_wires);
       end = high_resolution_clock::now();
       elapsed_time (start, end);
+
+      for (const auto& prim_conn : io_prim_conn) {
+        const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
+        if(connected_wires.size() < 1) continue;
+        RTLIL::SigSpec in_prim_out;
+        pool<RTLIL::SigSpec> out_prim_in;
+        for(const auto conn_wire : connected_wires) {
+          std::string wire_name = conn_wire->name.str();
+          out_prim_in.insert(conn_wire);
+        }
+        for(const auto& prim_in : out_prim_in)
+        {
+          RTLIL::SigSig new_conn;
+          new_conn.first = prim_in;
+          new_conn.second = prim_conn.first;
+          original_mod->connect(new_conn);
+        }
+      }
+
+      for (const auto& prim_conn : intf_prim_conn) {
+        const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
+        if(connected_wires.size() < 1) continue;
+        pool<RTLIL::SigSpec> in_prim_out;
+        for(const auto conn_wire : connected_wires) {
+          std::string wire_name = conn_wire->name.str();
+          in_prim_out.insert(conn_wire);
+        }
+        for(const auto& prim_in : in_prim_out)
+        {
+          RTLIL::SigSig new_conn;
+          new_conn.first = prim_conn.first;
+          new_conn.second = prim_in;
+          original_mod->connect(new_conn);
+        }
+      }
+
       start = high_resolution_clock::now();
       log("Handling Dangling outs\n");
       handle_dangling_outs(original_mod);
@@ -1669,24 +1805,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       delete_wires(original_mod, del_outs);
       end = high_resolution_clock::now();
       elapsed_time (start, end);
-
-      for (const auto& prim_conn : io_prim_conn) {
-        const std::vector<RTLIL::Wire *>& connected_wires = prim_conn.second;
-        if(connected_wires.size() < 1) continue;
-        RTLIL::SigSpec in_prim_out;
-        pool<RTLIL::SigSpec> out_prim_in;
-        for(const auto conn_wire : connected_wires) {
-          std::string wire_name = conn_wire->name.str();
-          out_prim_in.insert(conn_wire);
-        }
-        for(const auto& prim_in : out_prim_in)
-        {
-          RTLIL::SigSig new_conn;
-          new_conn.first = prim_in;
-          new_conn.second = prim_conn.first;
-          original_mod->connect(new_conn);
-        }
-      }
 
       fixup_mod_ports(original_mod);
 
@@ -1807,7 +1925,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     start = high_resolution_clock::now();
     log("Instantiating fabric and interface modules\n");
     // Add instances of the original and interface modules to the wrapper module
-    Cell *orig_mod_inst = wrapper_mod->addCell(NEW_ID, original_mod->name);
+    Cell *orig_mod_inst = wrapper_mod->addCell("\\fabric_instance", original_mod->name);
     for (auto wire : original_mod->wires()) {
       RTLIL::SigSpec conn = wire;
       std::string wire_name = wire->name.str();
@@ -1886,6 +2004,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
     Pass::call(new_design, "flatten");
     end = high_resolution_clock::now();
     elapsed_time (start, end);
+    handle_inout_connection(wrapper_mod);
 
     start = high_resolution_clock::now();
     log("Removing extra assigns from wrapper module\n");
