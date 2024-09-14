@@ -118,6 +118,44 @@ std::string get_original_name(const std::string& name) {
 }
 
 /*
+  Get rid the trait
+*/
+std::vector<std::string> get_rid_trait(std::vector<std::string> strings) {
+  std::vector<std::string> temp;
+  for (auto str : strings) {
+    log_assert(str.size());
+    size_t index = str.find(":");
+    log_assert(index == std::string::npos || index > 0);
+    if (index > 0) {
+      temp.push_back(str.substr(0, index));
+    } else {
+      temp.push_back(str);
+    }
+  }
+  return temp;
+}
+
+/*
+  Get the trait
+*/
+std::map<std::string, std::string> get_trait(std::vector<std::string> strings) {
+  std::map<std::string, std::string> temp;
+  for (auto str : strings) {
+    log_assert(str.size());
+    size_t index = str.find(":");
+    log_assert(index == std::string::npos || index > 0);
+    if (index > 0) {
+      std::string k = str.substr(0, index);
+      std::string v = str.substr(index + 1);
+      log_assert(v.size());
+      log_assert(temp.find(k) == temp.end());
+      temp[k] = v;
+    }
+  }
+  return temp;
+}
+
+/*
   Split the string using the delimiter
 */
 std::vector<std::string> split_string(std::string str,
@@ -215,7 +253,8 @@ struct PRIMITIVE_DB {
       : name(n),
         feature(f),
         inputs(is),
-        outputs(os),
+        outputs(get_rid_trait(os)),
+        output_traits(get_trait(os)),
         intrace_connection(it),
         outtrace_connection(ot),
         fast_clock(fc),
@@ -265,6 +304,7 @@ struct PRIMITIVE_DB {
   const uint32_t feature = 0;
   const std::vector<std::string> inputs;
   const std::vector<std::string> outputs;
+  const std::map<std::string, std::string> output_traits;
   const std::string intrace_connection = "";
   const std::string outtrace_connection = "";
   const std::string fast_clock = "";
@@ -1884,12 +1924,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
       size_t i = 0;
       for (std::string out : instance->primitive->db->outputs) {
         bool not_core = false;
-        std::vector<std::string> temp = split_string(out, ":");
-        if (temp.size() > 1) {
-          log_assert(temp.size() == 2);
-          out = temp[0];
-          log_assert(temp[1] == "NOT_CORE");
-          not_core = temp[1] == "NOT_CORE";
+        if (instance->primitive->db->output_traits.find(out) !=
+            instance->primitive->db->output_traits.end()) {
+          not_core =
+              instance->primitive->db->output_traits.at(out) == "NOT_CORE";
         }
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
