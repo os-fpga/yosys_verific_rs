@@ -1913,18 +1913,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
       extractor->write_sdc("design_edit.sdc", instances["instances"]);
       std::string io_file = "io_" + io_config_json;
       extractor->write_json(io_file);
-      if (io_file.size() > 5 &&
-          io_file.rfind(".json") == (io_file.size() - 5)) {
-        std::string simple_file =
-            io_file.substr(0, io_file.size() - 5) + ".simple.json";
-        extractor->write_json(simple_file, true);
-      } else {
-        extractor->write_json("io_config.simple.json", true);
-      }
-      delete extractor;
       if(netlist_error)
         log_error("Netlist is illegal, check netlist_checker.log for more details.\n");
     }
+    delete extractor;
   }
 
   void script() override {
