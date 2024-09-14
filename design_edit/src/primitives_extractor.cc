@@ -2672,6 +2672,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
           clk);
       if (!wrapped_net.size()) {
         sdc << "# Fail reason: Failed to find the mapped name\n";
+        m_netlist_status = false;
       }
       // Always print the port name
       sdc << original_setting.c_str();
@@ -2716,6 +2717,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                      "%s\n",
                      j, clk->inet.c_str())
                      .c_str();
+          m_netlist_status = false;
         }
         j++;
       }
@@ -2799,6 +2801,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
               data_reason.find("Clock data from object") == std::string::npos) {
             entry->comments.push_back(
                 stringf("# Fail reason: %s", data_reason.c_str()));
+            m_netlist_status = false;
           } else {
             entry->comments.push_back(stringf("# %s", data_reason.c_str()));
           }
@@ -2922,21 +2925,26 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                               core_clocks.at(key)->module.c_str(),
                               core_clocks.at(key)->name.c_str(),
                               core_clocks.at(key)->index));
+                  m_netlist_status = false;
                 }
               } else {
                 entry->comments.push_back(
                     "# Fail reason: Cannot locate the fabric clock");
+                m_netlist_status = false;
               }
             } else {
               entry->comments.push_back("# Fail reason: Location is invalid");
+              m_netlist_status = false;
             }
           } else {
             entry->comments.push_back(
                 "# Fail reason: Port does not connect to valid net");
+            m_netlist_status = false;
           }
         } else {
           entry->comments.push_back(
               "# Fail reason: Port does not connect to valid net");
+          m_netlist_status = false;
         }
         sdc_entries.push_back(entry);
       }
@@ -3377,6 +3385,7 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
   }
   if (reason.size()) {
     POST_MSG(5, "Fail reason: %s", reason.c_str());
+    m_netlist_status = false;
   }
   return reason;
 }
