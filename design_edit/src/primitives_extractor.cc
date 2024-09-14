@@ -2792,18 +2792,18 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       } else {
         std::vector<std::string> data_nets;
         std::vector<bool> found_data_nets;
+        bool not_an_error = false;
         std::string data_reason =
             get_fabric_data(wrapped_instances, pin->name, data_nets,
-                            found_data_nets, pin->is_input);
+                            found_data_nets, pin->is_input, not_an_error);
         if (data_reason.size()) {
-          if (data_reason.find("but data signal is not defined") ==
-                  std::string::npos &&
-              data_reason.find("Clock data from object") == std::string::npos) {
+          if (not_an_error) {
+            entry->comments.push_back(
+                stringf("# Skip reason: %s", data_reason.c_str()));
+          } else {
             entry->comments.push_back(
                 stringf("# Fail reason: %s", data_reason.c_str()));
             m_netlist_status = false;
-          } else {
-            entry->comments.push_back(stringf("# %s", data_reason.c_str()));
           }
         } else {
           entry->assignments.push_back(
@@ -3303,12 +3303,13 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
 std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     const nlohmann::json& wrapped_instances, const std::string& object,
     std::vector<std::string>& data_nets, std::vector<bool>& found_nets,
-    const bool input) {
+    const bool input, bool& not_an_error) {
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
   size_t instance_index = 0;
   std::string reason = "";
+  not_an_error = false;
   POST_MSG(4, "Data signal from object %s", object.c_str());
   size_t i = 0;
   for (auto& inst : m_instances) {
@@ -3364,8 +3365,10 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
                   instance->linked_object() ==
                       m_instances[instance_index + 2]->linked_object()))) {
               reason = stringf(
-                  "Clock data from object %s port %s is not routed to fabric",
+                  "Clock data from object %s port %s does not need to route to "
+                  "fabric",
                   object.c_str(), data_port.c_str());
+              not_an_error = true;
             } else {
               reason = stringf(
                   "Fail to map all data signal(s) from object %s port %s to "
@@ -3379,13 +3382,18 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
       reason =
           stringf("Object %s is primitive %s but data signal is not defined",
                   object.c_str(), db->name.c_str());
+      not_an_error = true;
     }
   } else {
     reason = stringf("Unable to find instance for object %s", object.c_str());
   }
   if (reason.size()) {
-    POST_MSG(5, "Fail reason: %s", reason.c_str());
-    m_netlist_status = false;
+    if (not_an_error) {
+      POST_MSG(5, "Skip reason: %s", reason.c_str());
+    } else {
+      POST_MSG(5, "Fail reason: %s", reason.c_str());
+      m_netlist_status = false;
+    }
   }
   return reason;
 }

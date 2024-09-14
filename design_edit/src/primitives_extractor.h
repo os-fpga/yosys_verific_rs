@@ -190,7 +190,8 @@ class PRIMITIVES_EXTRACTOR {
   std::string get_fabric_data(const nlohmann::json& wrapped_instances,
                               const std::string& object,
                               std::vector<std::string>& data_nets,
-                              std::vector<bool>& found_nets, const bool input);
+                              std::vector<bool>& found_nets, const bool input,
+                              bool& not_an_error);
   std::pair<std::string, std::string> get_wrapped_instance_net_by_port(
       const nlohmann::json& wrapped_instances, const std::string& module,
       const std::string& linked_object, const std::string& port,
