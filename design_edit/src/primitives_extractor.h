@@ -93,7 +93,7 @@ class PRIMITIVES_EXTRACTOR {
                        const std::string& internal_pin);
   std::vector<std::string> get_primitive_locations_by_name(
       const std::string& name, bool unique_location = false);
-  void write_json(const std::string& file, bool simple = false);
+  void write_json(const std::string& file);
   void write_sdc(const std::string& file,
                  const nlohmann::json& wrapped_instances);
   static void get_signals(const Yosys::RTLIL::SigSpec& sig,
@@ -163,8 +163,7 @@ class PRIMITIVES_EXTRACTOR {
   void update_pin_traces(std::vector<std::string>& pin_traces,
                          const std::vector<std::string> traces, bool is_in_dir);
   void finalize(Yosys::RTLIL::Module* module);
-  void write_instance(const INSTANCE* instance, std::ofstream& json,
-                      bool simple);
+  void write_instance(const INSTANCE* instance, std::ofstream& json);
   void write_instance_map(std::map<std::string, std::string> map,
                           std::ofstream& json, uint32_t space = 4);
   void write_instance_array(std::vector<std::string> array, std::ofstream& json,

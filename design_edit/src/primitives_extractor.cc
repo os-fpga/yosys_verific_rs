@@ -2451,7 +2451,7 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
 /*
   Write out message and instances information into JSON
 */
-void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
+void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
   std::ofstream json(file.c_str());
   json << "{\n";
   json << "    \"status\": "
@@ -2467,23 +2467,20 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
     json << "\",\n";
     json.flush();
   }
-  json << "    \"End of IO Analysis\"\n  ]";
+  json << "    \"End of IO Analysis\"\n  ],\n";
+  json << "  \"instances\": [";
   if (m_status && m_instances.size() > 0) {
-    json << ",\n  \"instances\": [";
     size_t index = 0;
     for (auto& instance : m_instances) {
       if (index) {
         json << ",";
       }
-      write_instance(instance, json, simple);
+      write_instance(instance, json);
       json.flush();
       index++;
     }
-    json << "\n  ]";
-  } else {
-    json << ",\n  \"instances\": [";
-    json << "\n  ]";
   }
+  json << "\n  ]";
   json << "\n}\n";
   json.close();
 }
@@ -2492,7 +2489,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
   Write out instance information into JSON
 */
 void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
-                                          std::ofstream& json, bool simple) {
+                                          std::ofstream& json) {
   json << "\n    {\n";
   write_json_object(3, "module", instance->module, json);
   json << ",\n";
@@ -2533,28 +2530,26 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << "      \"flags\": [\n";
   write_instance_array(instance->flags, json, 4);
   json << "      ],\n";
-  if (!simple) {
-    write_json_object(3, "pre_primitive", instance->pre_primitive, json);
-    json << ",\n";
-    json << "      \"post_primitives\": [\n",
-        write_instance_array(instance->post_primitives, json, 4);
-    json << "      ],\n";
-    index = 0;
-    json << "      \"route_clock_to\": {\n";
-    for (auto c : instance->gearbox_clocks) {
-      if (index) {
-        json << ",\n";
-      }
-      json << "        \"" << c.first.c_str() << "\" : [\n";
-      write_instance_array(c.second, json, 5);
-      json << "        ]";
-      index++;
-    }
+  write_json_object(3, "pre_primitive", instance->pre_primitive, json);
+  json << ",\n";
+  json << "      \"post_primitives\": [\n",
+      write_instance_array(instance->post_primitives, json, 4);
+  json << "      ],\n";
+  index = 0;
+  json << "      \"route_clock_to\": {\n";
+  for (auto c : instance->gearbox_clocks) {
     if (index) {
-      json << "\n";
+      json << ",\n";
     }
-    json << "      },\n";
+    json << "        \"" << c.first.c_str() << "\" : [\n";
+    write_instance_array(c.second, json, 5);
+    json << "        ]";
+    index++;
   }
+  if (index) {
+    json << "\n";
+  }
+  json << "      },\n";
   json << "      \"errors\": [\n";
   write_instance_array(instance->primitive->errors, json, 4);
   json << "      ]\n";
