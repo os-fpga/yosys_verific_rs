@@ -209,6 +209,7 @@ class PRIMITIVES_EXTRACTOR {
  private:
   const std::string m_technology = "";
   bool m_status = true;
+  bool m_netlist_status = true;
   int m_max_in_object_name = 0;
   int m_max_out_object_name = 0;
   int m_max_object_name = 0;

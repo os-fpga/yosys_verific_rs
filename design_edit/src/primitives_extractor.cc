@@ -1335,6 +1335,7 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
                                   port_infos, port_trackers, connected_ports,
                                   is_bidir)) {
             status = false;
+            m_netlist_status = false;
             break;
           }
         }
@@ -1355,6 +1356,7 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
       } else {
         POST_MSG(3, "Error: Ignore cell %s", cell->name.c_str());
         status = false;
+        m_netlist_status = false;
       }
     }
   }
@@ -1420,6 +1422,7 @@ bool PRIMITIVES_EXTRACTOR::get_connected_port(
       // Not connected
       POST_MSG(3, "Error: There is no port connection to cell port %s",
                cell_port_name.c_str());
+      m_netlist_status = false;
     }
   }
   return status;
@@ -1679,6 +1682,7 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_fast_clock() {
                     primitive->db->fast_clock.c_str(), clock.c_str());
         POST_MSG(3, "Error: %s", msg.c_str());
         primitive->errors.push_back(msg);
+        m_netlist_status = false;
       }
     }
   }
@@ -1959,8 +1963,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
             if (not_core) {
               POST_MSG(3, "Error: Cannot be used as core clock");
+              m_netlist_status = false;
               continue;
             }
+
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
@@ -2391,6 +2397,7 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
              "Error: Final checking failed. Design count: %ld, Primitive "
              "count: %ld, Instance count: %ld",
              design_count, primitive_count, instance_count);
+    m_netlist_status = false;
     if (design_count != primitive_count) {
       for (auto cell : module->cells()) {
         if (is_supported_primitive(cell->type.str(),
@@ -2446,7 +2453,10 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
 */
 void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
   std::ofstream json(file.c_str());
-  json << "{\n  \"messages\" : [\n";
+  json << "{\n";
+  json << "    \"status\": "
+       << ((m_status && m_netlist_status) ? "true" : "false") << ",\n",
+      json << "    \"messages\": [\n";
   json << "    \"Start of IO Analysis\",\n";
   for (auto& msg : m_msgs) {
     json << "    \"";
@@ -2459,7 +2469,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
   }
   json << "    \"End of IO Analysis\"\n  ]";
   if (m_status && m_instances.size() > 0) {
-    json << ",\n  \"instances\" : [";
+    json << ",\n  \"instances\": [";
     size_t index = 0;
     for (auto& instance : m_instances) {
       if (index) {
@@ -2471,7 +2481,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
     }
     json << "\n  ]";
   } else {
-    json << ",\n  \"instances\" : [";
+    json << ",\n  \"instances\": [";
     json << "\n  ]";
   }
   json << "\n}\n";
@@ -2496,17 +2506,17 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << ",\n";
   write_json_object(3, "linked_object", instance->linked_object(), json);
   json << ",\n";
-  json << "      \"linked_objects\" : {\n";
+  json << "      \"linked_objects\": {\n";
   log_assert(instance->linked_objects.size());
   size_t index = 0;
   for (auto& object : instance->linked_objects) {
     if (index) {
       json << ",\n";
     }
-    json << "        \"" << object.c_str() << "\" : {\n";
+    json << "        \"" << object.c_str() << "\": {\n";
     write_json_object(5, "location", instance->locations.at(object), json);
     json << ",\n";
-    json << "          \"properties\" : {\n";
+    json << "          \"properties\": {\n";
     write_instance_map(instance->properties.at(object), json, 6);
     json << "          }\n";
     json << "        }";
@@ -2514,23 +2524,23 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   }
   json << "\n";
   json << "      },\n";
-  json << "      \"connectivity\" : {\n";
+  json << "      \"connectivity\": {\n";
   write_instance_map(instance->connections, json);
   json << "      },\n";
-  json << "      \"parameters\" : {\n";
+  json << "      \"parameters\": {\n";
   write_instance_map(instance->parameters, json);
   json << "      },\n";
-  json << "      \"flags\" : [\n";
+  json << "      \"flags\": [\n";
   write_instance_array(instance->flags, json, 4);
   json << "      ],\n";
   if (!simple) {
     write_json_object(3, "pre_primitive", instance->pre_primitive, json);
     json << ",\n";
-    json << "      \"post_primitives\" : [\n",
+    json << "      \"post_primitives\": [\n",
         write_instance_array(instance->post_primitives, json, 4);
     json << "      ],\n";
     index = 0;
-    json << "      \"route_clock_to\" : {\n";
+    json << "      \"route_clock_to\": {\n";
     for (auto c : instance->gearbox_clocks) {
       if (index) {
         json << ",\n";
@@ -2545,7 +2555,7 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
     }
     json << "      },\n";
   }
-  json << "      \"errors\" : [\n";
+  json << "      \"errors\": [\n";
   write_instance_array(instance->primitive->errors, json, 4);
   json << "      ]\n";
   json << "    }";
@@ -2608,7 +2618,7 @@ void PRIMITIVES_EXTRACTOR::write_json_object(uint32_t space,
   json << "\"";
   write_json_data(key, json);
   json << "\"";
-  json << " : ";
+  json << ": ";
   json << "\"";
   write_json_data(value, json);
   json << "\"";
