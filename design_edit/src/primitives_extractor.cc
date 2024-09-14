@@ -2455,8 +2455,8 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
   std::ofstream json(file.c_str());
   json << "{\n";
   json << "    \"status\": "
-       << ((m_status && m_netlist_status) ? "true" : "false") << ",\n",
-      json << "    \"messages\": [\n";
+       << ((m_status && m_netlist_status) ? "true" : "false") << ",\n";
+  json << "    \"messages\": [\n";
   json << "    \"Start of IO Analysis\",\n";
   for (auto& msg : m_msgs) {
     json << "    \"";
