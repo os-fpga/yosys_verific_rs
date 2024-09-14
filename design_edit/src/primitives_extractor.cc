@@ -2541,7 +2541,7 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
     if (index) {
       json << ",\n";
     }
-    json << "        \"" << c.first.c_str() << "\" : [\n";
+    json << "        \"" << c.first.c_str() << "\": [\n";
     write_instance_array(c.second, json, 5);
     json << "        ]";
     index++;
