@@ -931,6 +931,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     for (auto cell : mod->cells()) {
+      string module_name = cell->type.str();
+      bool is_fabric_instance = (module_name.substr(0, 8) == "\\fabric_") ? true : false;
+      if (is_fabric_instance) continue;
       for (auto conn : cell->connections()) {
         IdString portName = conn.first;
         bool unset_port = true;
@@ -948,7 +951,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
                 sigspec.append(it->first);
                 appended = true;
-                wrapper_conns.erase(it);
                 break;
               } else if (it->first == bit) {
                 if (unset_port) {
@@ -957,7 +959,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 }
                 sigspec.append(it->second);
                 appended = true;
-                wrapper_conns.erase(it);
                 break;
               }
             }
@@ -975,12 +976,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
 
     mod->connections_.clear();
-
-    for(auto &conn : wrapper_conns)
-    {
-      mod->connect(conn);
-    }
-
   }
 
   void elapsed_time (time_point<high_resolution_clock> start,
