@@ -118,6 +118,44 @@ std::string get_original_name(const std::string& name) {
 }
 
 /*
+  Get rid the trait
+*/
+std::vector<std::string> get_rid_trait(std::vector<std::string> strings) {
+  std::vector<std::string> temp;
+  for (auto str : strings) {
+    log_assert(str.size());
+    size_t index = str.find(":");
+    log_assert(index == std::string::npos || index > 0);
+    if (index > 0) {
+      temp.push_back(str.substr(0, index));
+    } else {
+      temp.push_back(str);
+    }
+  }
+  return temp;
+}
+
+/*
+  Get the trait
+*/
+std::map<std::string, std::string> get_trait(std::vector<std::string> strings) {
+  std::map<std::string, std::string> temp;
+  for (auto str : strings) {
+    log_assert(str.size());
+    size_t index = str.find(":");
+    log_assert(index == std::string::npos || index > 0);
+    if (index > 0) {
+      std::string k = str.substr(0, index);
+      std::string v = str.substr(index + 1);
+      log_assert(v.size());
+      log_assert(temp.find(k) == temp.end());
+      temp[k] = v;
+    }
+  }
+  return temp;
+}
+
+/*
   Split the string using the delimiter
 */
 std::vector<std::string> split_string(std::string str,
@@ -215,7 +253,8 @@ struct PRIMITIVE_DB {
       : name(n),
         feature(f),
         inputs(is),
-        outputs(os),
+        outputs(get_rid_trait(os)),
+        output_traits(get_trait(os)),
         intrace_connection(it),
         outtrace_connection(ot),
         fast_clock(fc),
@@ -265,6 +304,7 @@ struct PRIMITIVE_DB {
   const uint32_t feature = 0;
   const std::vector<std::string> inputs;
   const std::vector<std::string> outputs;
+  const std::map<std::string, std::string> output_traits;
   const std::string intrace_connection = "";
   const std::string outtrace_connection = "";
   const std::string fast_clock = "";
@@ -1295,6 +1335,7 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
                                   port_infos, port_trackers, connected_ports,
                                   is_bidir)) {
             status = false;
+            m_netlist_status = false;
             break;
           }
         }
@@ -1315,6 +1356,7 @@ void PRIMITIVES_EXTRACTOR::trace_and_create_port(
       } else {
         POST_MSG(3, "Error: Ignore cell %s", cell->name.c_str());
         status = false;
+        m_netlist_status = false;
       }
     }
   }
@@ -1380,6 +1422,7 @@ bool PRIMITIVES_EXTRACTOR::get_connected_port(
       // Not connected
       POST_MSG(3, "Error: There is no port connection to cell port %s",
                cell_port_name.c_str());
+      m_netlist_status = false;
     }
   }
   return status;
@@ -1639,6 +1682,7 @@ void PRIMITIVES_EXTRACTOR::trace_gearbox_fast_clock() {
                     primitive->db->fast_clock.c_str(), clock.c_str());
         POST_MSG(3, "Error: %s", msg.c_str());
         primitive->errors.push_back(msg);
+        m_netlist_status = false;
       }
     }
   }
@@ -1884,12 +1928,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
       size_t i = 0;
       for (std::string out : instance->primitive->db->outputs) {
         bool not_core = false;
-        std::vector<std::string> temp = split_string(out, ":");
-        if (temp.size() > 1) {
-          log_assert(temp.size() == 2);
-          out = temp[0];
-          log_assert(temp[1] == "NOT_CORE");
-          not_core = temp[1] == "NOT_CORE";
+        if (instance->primitive->db->output_traits.find(out) !=
+            instance->primitive->db->output_traits.end()) {
+          not_core =
+              instance->primitive->db->output_traits.at(out) == "NOT_CORE";
         }
         if (instance->primitive->connections.find(out) !=
             instance->primitive->connections.end()) {
@@ -1921,8 +1963,10 @@ void PRIMITIVES_EXTRACTOR::determine_fabric_clock(
           if (primitive_core_clks.size() > 0 || used_by_fabirc_logic) {
             if (not_core) {
               POST_MSG(3, "Error: Cannot be used as core clock");
+              m_netlist_status = false;
               continue;
             }
+
             std::string clock =
                 stringf("%d", (uint32_t)(m_fabric_clocks.size()));
             POST_MSG(3, "Use slot %s", clock.c_str());
@@ -2353,6 +2397,7 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
              "Error: Final checking failed. Design count: %ld, Primitive "
              "count: %ld, Instance count: %ld",
              design_count, primitive_count, instance_count);
+    m_netlist_status = false;
     if (design_count != primitive_count) {
       for (auto cell : module->cells()) {
         if (is_supported_primitive(cell->type.str(),
@@ -2406,9 +2451,12 @@ void PRIMITIVES_EXTRACTOR::finalize(Yosys::RTLIL::Module* module) {
 /*
   Write out message and instances information into JSON
 */
-void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
+void PRIMITIVES_EXTRACTOR::write_json(const std::string& file) {
   std::ofstream json(file.c_str());
-  json << "{\n  \"messages\" : [\n";
+  json << "{\n";
+  json << "    \"status\": "
+       << ((m_status && m_netlist_status) ? "true" : "false") << ",\n";
+  json << "    \"messages\": [\n";
   json << "    \"Start of IO Analysis\",\n";
   for (auto& msg : m_msgs) {
     json << "    \"";
@@ -2419,23 +2467,20 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
     json << "\",\n";
     json.flush();
   }
-  json << "    \"End of IO Analysis\"\n  ]";
+  json << "    \"End of IO Analysis\"\n  ],\n";
+  json << "  \"instances\": [";
   if (m_status && m_instances.size() > 0) {
-    json << ",\n  \"instances\" : [";
     size_t index = 0;
     for (auto& instance : m_instances) {
       if (index) {
         json << ",";
       }
-      write_instance(instance, json, simple);
+      write_instance(instance, json);
       json.flush();
       index++;
     }
-    json << "\n  ]";
-  } else {
-    json << ",\n  \"instances\" : [";
-    json << "\n  ]";
   }
+  json << "\n  ]";
   json << "\n}\n";
   json.close();
 }
@@ -2444,7 +2489,7 @@ void PRIMITIVES_EXTRACTOR::write_json(const std::string& file, bool simple) {
   Write out instance information into JSON
 */
 void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
-                                          std::ofstream& json, bool simple) {
+                                          std::ofstream& json) {
   json << "\n    {\n";
   write_json_object(3, "module", instance->module, json);
   json << ",\n";
@@ -2458,17 +2503,17 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   json << ",\n";
   write_json_object(3, "linked_object", instance->linked_object(), json);
   json << ",\n";
-  json << "      \"linked_objects\" : {\n";
+  json << "      \"linked_objects\": {\n";
   log_assert(instance->linked_objects.size());
   size_t index = 0;
   for (auto& object : instance->linked_objects) {
     if (index) {
       json << ",\n";
     }
-    json << "        \"" << object.c_str() << "\" : {\n";
+    json << "        \"" << object.c_str() << "\": {\n";
     write_json_object(5, "location", instance->locations.at(object), json);
     json << ",\n";
-    json << "          \"properties\" : {\n";
+    json << "          \"properties\": {\n";
     write_instance_map(instance->properties.at(object), json, 6);
     json << "          }\n";
     json << "        }";
@@ -2476,38 +2521,36 @@ void PRIMITIVES_EXTRACTOR::write_instance(const INSTANCE* instance,
   }
   json << "\n";
   json << "      },\n";
-  json << "      \"connectivity\" : {\n";
+  json << "      \"connectivity\": {\n";
   write_instance_map(instance->connections, json);
   json << "      },\n";
-  json << "      \"parameters\" : {\n";
+  json << "      \"parameters\": {\n";
   write_instance_map(instance->parameters, json);
   json << "      },\n";
-  json << "      \"flags\" : [\n";
+  json << "      \"flags\": [\n";
   write_instance_array(instance->flags, json, 4);
   json << "      ],\n";
-  if (!simple) {
-    write_json_object(3, "pre_primitive", instance->pre_primitive, json);
-    json << ",\n";
-    json << "      \"post_primitives\" : [\n",
-        write_instance_array(instance->post_primitives, json, 4);
-    json << "      ],\n";
-    index = 0;
-    json << "      \"route_clock_to\" : {\n";
-    for (auto c : instance->gearbox_clocks) {
-      if (index) {
-        json << ",\n";
-      }
-      json << "        \"" << c.first.c_str() << "\" : [\n";
-      write_instance_array(c.second, json, 5);
-      json << "        ]";
-      index++;
-    }
+  write_json_object(3, "pre_primitive", instance->pre_primitive, json);
+  json << ",\n";
+  json << "      \"post_primitives\": [\n",
+      write_instance_array(instance->post_primitives, json, 4);
+  json << "      ],\n";
+  index = 0;
+  json << "      \"route_clock_to\": {\n";
+  for (auto c : instance->gearbox_clocks) {
     if (index) {
-      json << "\n";
+      json << ",\n";
     }
-    json << "      },\n";
+    json << "        \"" << c.first.c_str() << "\": [\n";
+    write_instance_array(c.second, json, 5);
+    json << "        ]";
+    index++;
   }
-  json << "      \"errors\" : [\n";
+  if (index) {
+    json << "\n";
+  }
+  json << "      },\n";
+  json << "      \"errors\": [\n";
   write_instance_array(instance->primitive->errors, json, 4);
   json << "      ]\n";
   json << "    }";
@@ -2570,7 +2613,7 @@ void PRIMITIVES_EXTRACTOR::write_json_object(uint32_t space,
   json << "\"";
   write_json_data(key, json);
   json << "\"";
-  json << " : ";
+  json << ": ";
   json << "\"";
   write_json_data(value, json);
   json << "\"";
@@ -2629,6 +2672,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
           clk);
       if (!wrapped_net.size()) {
         sdc << "# Fail reason: Failed to find the mapped name\n";
+        m_netlist_status = false;
       }
       // Always print the port name
       sdc << original_setting.c_str();
@@ -2673,6 +2717,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                      "%s\n",
                      j, clk->inet.c_str())
                      .c_str();
+          m_netlist_status = false;
         }
         j++;
       }
@@ -2747,17 +2792,18 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       } else {
         std::vector<std::string> data_nets;
         std::vector<bool> found_data_nets;
+        bool not_an_error = false;
         std::string data_reason =
             get_fabric_data(wrapped_instances, pin->name, data_nets,
-                            found_data_nets, pin->is_input);
+                            found_data_nets, pin->is_input, not_an_error);
         if (data_reason.size()) {
-          if (data_reason.find("but data signal is not defined") ==
-                  std::string::npos &&
-              data_reason.find("Clock data from object") == std::string::npos) {
+          if (not_an_error) {
+            entry->comments.push_back(
+                stringf("# Skip reason: %s", data_reason.c_str()));
+          } else {
             entry->comments.push_back(
                 stringf("# Fail reason: %s", data_reason.c_str()));
-          } else {
-            entry->comments.push_back(stringf("# %s", data_reason.c_str()));
+            m_netlist_status = false;
           }
         } else {
           entry->assignments.push_back(
@@ -2879,21 +2925,26 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                               core_clocks.at(key)->module.c_str(),
                               core_clocks.at(key)->name.c_str(),
                               core_clocks.at(key)->index));
+                  m_netlist_status = false;
                 }
               } else {
                 entry->comments.push_back(
                     "# Fail reason: Cannot locate the fabric clock");
+                m_netlist_status = false;
               }
             } else {
               entry->comments.push_back("# Fail reason: Location is invalid");
+              m_netlist_status = false;
             }
           } else {
             entry->comments.push_back(
                 "# Fail reason: Port does not connect to valid net");
+            m_netlist_status = false;
           }
         } else {
           entry->comments.push_back(
               "# Fail reason: Port does not connect to valid net");
+          m_netlist_status = false;
         }
         sdc_entries.push_back(entry);
       }
@@ -3252,12 +3303,13 @@ std::string PRIMITIVES_EXTRACTOR::get_output_wrapped_net(
 std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
     const nlohmann::json& wrapped_instances, const std::string& object,
     std::vector<std::string>& data_nets, std::vector<bool>& found_nets,
-    const bool input) {
+    const bool input, bool& not_an_error) {
   log_assert(data_nets.size() == 0);
   log_assert(found_nets.size() == 0);
   INSTANCE* instance = nullptr;
   size_t instance_index = 0;
   std::string reason = "";
+  not_an_error = false;
   POST_MSG(4, "Data signal from object %s", object.c_str());
   size_t i = 0;
   for (auto& inst : m_instances) {
@@ -3313,8 +3365,10 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
                   instance->linked_object() ==
                       m_instances[instance_index + 2]->linked_object()))) {
               reason = stringf(
-                  "Clock data from object %s port %s is not routed to fabric",
+                  "Clock data from object %s port %s does not need to route to "
+                  "fabric",
                   object.c_str(), data_port.c_str());
+              not_an_error = true;
             } else {
               reason = stringf(
                   "Fail to map all data signal(s) from object %s port %s to "
@@ -3328,12 +3382,18 @@ std::string PRIMITIVES_EXTRACTOR::get_fabric_data(
       reason =
           stringf("Object %s is primitive %s but data signal is not defined",
                   object.c_str(), db->name.c_str());
+      not_an_error = true;
     }
   } else {
     reason = stringf("Unable to find instance for object %s", object.c_str());
   }
   if (reason.size()) {
-    POST_MSG(5, "Fail reason: %s", reason.c_str());
+    if (not_an_error) {
+      POST_MSG(5, "Skip reason: %s", reason.c_str());
+    } else {
+      POST_MSG(5, "Fail reason: %s", reason.c_str());
+      m_netlist_status = false;
+    }
   }
   return reason;
 }

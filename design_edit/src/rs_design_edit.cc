@@ -2076,15 +2076,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       extractor->write_sdc("design_edit.sdc", instances["instances"]);
       std::string io_file = "io_" + io_config_json;
       extractor->write_json(io_file);
-      if (io_file.size() > 5 &&
-          io_file.rfind(".json") == (io_file.size() - 5)) {
-        std::string simple_file =
-            io_file.substr(0, io_file.size() - 5) + ".simple.json";
-        extractor->write_json(simple_file, true);
-      } else {
-        extractor->write_json("io_config.simple.json", true);
-      }
-      delete extractor;
       end = high_resolution_clock::now();
       elapsed_time (start, end);
       auto end_time = end;
@@ -2094,6 +2085,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       if(netlist_error)
         log_error("Netlist is illegal, check netlist_checker.log for more details.\n");
     }
+    delete extractor;
   }
 
   void script() override {
