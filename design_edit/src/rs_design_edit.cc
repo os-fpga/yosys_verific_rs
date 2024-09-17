@@ -54,7 +54,7 @@ using namespace RTLIL;
 
 const std::vector<std::string> IN_PORTS = {"I", "I_P", "I_N", "D"};
 const std::vector<std::string> DATA_OUT_PORTS = {"O", "O_P", "O_N", "Q"};
-const std::vector<std::string> DATA_CLK_OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "OUTPUT_CLK"};
+const std::vector<std::string> DATA_CLK_OUT_PORTS = {"O", "O_P", "O_N", "Q", "CLK_OUT", "CLK_OUT_DIV2", "CLK_OUT_DIV3", "CLK_OUT_DIV4", "FAST_CLK", "OUTPUT_CLK"};
 
 struct DesignEditRapidSilicon : public ScriptPass {
   DesignEditRapidSilicon()
@@ -281,16 +281,16 @@ struct DesignEditRapidSilicon : public ScriptPass {
           }
           portname = remove_backslashes(portname);
           if (dir == "INOUT") {
-            link_instance(true, instances_array, portname, portname, "IN", 0, false, DATA_OUT_PORTS);
-            link_instance(false, instances_array, portname, portname, "OUT", 0, false, DATA_OUT_PORTS);
+            link_instance(true, instances_array, portname, portname, "IN", 0, true, DATA_OUT_PORTS);
+            link_instance(false, instances_array, portname, portname, "OUT", 0, true, DATA_OUT_PORTS);
           } else {
-            link_instance(dir == "IN", instances_array, portname, portname, dir, 0, false, DATA_OUT_PORTS);
+            link_instance(dir == "IN", instances_array, portname, portname, dir, 0, true, DATA_OUT_PORTS);
           }
         }
       }
     }
 #endif
-	// Handle pure-data
+    // Handle pure-data
     link_instance_recursively(instances_array, 0, DATA_OUT_PORTS);
     // Handle clock
     for (std::string module : std::vector<std::string>({"BOOT_CLOCK", "FCLK_BUF"})) {
@@ -308,16 +308,59 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
     }
-	// Hnadle clock-data
+    // Handle clock-data
     link_instance_recursively(instances_array, 1, DATA_CLK_OUT_PORTS);
-
     instances["instances"] = instances_array;
     if (json_file.is_open()) {
       json_file << std::setw(4) << instances << std::endl;
       json_file.close();
     }
   }
-  
+
+#if 1
+  void link_instance_recursively(json& instances_array, int retry_start_index, const std::vector<std::string>& OUT_PORTS) {
+    log_assert(retry_start_index == 0 || retry_start_index == 1);
+    // Compare to original link_instance_recursively() which had been commented out:
+    //    This code does not need to specially handle I_BUF_DS and O_BUF_DS, O_BUFT_DS because
+    //    netlist editor had removed the extra wire
+    while (true) {
+      // Recursively marks other primitives
+      size_t linked = 0;
+      for (auto& inst : instances_array) {
+        if (inst.contains("linked_object")) {
+          for (auto& iter : inst["connectivity"].items()) {
+            bool src_is_in = std::find(IN_PORTS.begin(), IN_PORTS.end(), (std::string)(iter.key())) != IN_PORTS.end();
+            bool src_is_out = std::find(OUT_PORTS.begin(), OUT_PORTS.end(), (std::string)(iter.key())) !=  OUT_PORTS.end();
+            if (src_is_in || src_is_out) {
+              log_assert((src_is_in & src_is_out) == false);
+              nlohmann::json signals = iter.value();
+              if (signals.is_string()) {
+                signals = nlohmann::json::array();
+                signals.push_back((std::string)(iter.value()));
+              } else {
+                log_assert(signals.is_array());
+              }
+              for (auto& s : signals) {
+                std::string net = (std::string)(s);
+                if (!PRIMITIVES_EXTRACTOR::is_real_net(net)) {
+                  continue;
+                }
+                // dont set allow_dual_name=true, it might become infinite loop
+                linked += link_instance(!src_is_in, instances_array, inst["linked_object"], net, 
+                                        inst["direction"], uint32_t(inst["index"]) + 1, false, OUT_PORTS);
+              }
+            }
+          }
+        }
+      }
+      if (linked == 0) {
+        // 1st time: we do not need recursive loop. One time is enough
+        // 2nd time: we need recursive until we cannot link anymore
+        break;
+      }
+    }
+  }
+#else
   void link_instance_recursively(json& instances_array, int retry_start_index, const std::vector<std::string>& OUT_PORTS) {
     log_assert(retry_start_index == 0 || retry_start_index == 1);
     // Special case for I_BUF_DS and O_BUF_DS, O_BUFT_DS, because they have multiple objects
@@ -370,6 +413,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
   }
+#endif
   
   size_t link_instance(bool use_in_port, json& instances_array, const std::string& object, 
                         const std::string& net, const std::string& direction, uint32_t index, bool allow_dual_name, 
