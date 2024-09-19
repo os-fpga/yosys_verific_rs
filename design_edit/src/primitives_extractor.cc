@@ -1066,6 +1066,7 @@ void PRIMITIVES_EXTRACTOR::post_sdc_comment(SDC_ENTRY*& entry, uint32_t offset,
                                             const std::string& type,
                                             const std::string& comment) {
   log_assert(type == "Skip" || type == "Fail");
+  m_netlist_status = m_netlist_status && type != "Fail";
   POST_MSG(offset, "%s reason: %s", type.c_str(), comment.c_str());
   entry->comments.push_back(
       stringf("# %s reason: %s", type.c_str(), comment.c_str()));
