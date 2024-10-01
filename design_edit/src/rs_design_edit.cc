@@ -2112,7 +2112,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       input.close();
       log_assert(instances.is_object());
       log_assert(instances.contains("instances"));
-      extractor->write_sdc("design_edit.sdc", instances["instances"]);
+      extractor->write_sdc("design_edit.sdc", "clk_pin.xml", instances["instances"]);
       std::string io_file = "io_" + io_config_json;
       extractor->write_json(io_file);
       end = high_resolution_clock::now();

@@ -94,7 +94,7 @@ class PRIMITIVES_EXTRACTOR {
   std::vector<std::string> get_primitive_locations_by_name(
       const std::string& name, bool unique_location = false);
   void write_json(const std::string& file);
-  void write_sdc(const std::string& file,
+  void write_sdc(const std::string& sdc_file, const std::string& clk_pin_xml,
                  const nlohmann::json& wrapped_instances);
   static void get_signals(const Yosys::RTLIL::SigSpec& sig,
                           std::vector<std::string>& signals);
