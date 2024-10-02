@@ -80,6 +80,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<Cell *> remove_prims;
+  std::vector<Cell *> remove_fab_prims;                  // TODO : change to unoredred set later
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
   std::unordered_set<Wire *> wires_interface;
@@ -94,6 +95,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> wrapper_conns;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn, intf_prim_conn;
   std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
+  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> ofab_sig_map;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
@@ -501,6 +503,63 @@ struct DesignEditRapidSilicon : public ScriptPass {
         module->remove({wire});
       }
     }
+  }
+
+  void remove_io_fab_prim(Module *mod)
+  {
+    for(auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("O_FAB"))
+      {
+        SigBit in_bit, out_bit;
+        for (auto &conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (cell->input(portName))
+          {
+            in_bit = conn.second;
+          } else {
+            out_bit = conn.second;
+          }
+        }
+        if (in_bit.wire != nullptr)
+        {
+          remove_fab_prims.push_back(cell);
+          ofab_sig_map.insert(std::make_pair(in_bit, out_bit));
+        }
+      }
+    }
+
+    delete_cells(mod, remove_fab_prims);
+
+    for (auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("O_FAB") ||
+        cell->type == RTLIL::escape_id("I_FAB")) continue;
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        bool unset_port = true;
+        RTLIL::SigSpec sigspec;
+        for (SigBit bit : conn.second)
+        {
+          if (ofab_sig_map.count(bit) > 0)
+          {
+            if (unset_port)
+            {
+              cell->unsetPort(portName);
+              unset_port = false;
+            }
+            sigspec.append(ofab_sig_map[bit]);
+          } else {
+            sigspec.append(bit);
+          }
+        }
+        if (!unset_port) cell->setPort(portName, sigspec);
+      }
+    }
+    
+    std::cout << "O_FABS REMOVED" << std::endl;
   }
 
   void handle_dangling_outs(Module *module)
@@ -1461,6 +1520,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (is_output) orig_outs.insert(bit);
       }
     }
+
+    remove_io_fab_prim(original_mod);
 
     start = high_resolution_clock::now();
     log("Gathering Wires Data\n");
