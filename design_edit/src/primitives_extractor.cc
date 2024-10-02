@@ -2638,7 +2638,8 @@ void PRIMITIVES_EXTRACTOR::write_json_data(const std::string& str,
 /*
   Write out fabric clock or mode SDC
 */
-void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
+void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& sdc_file,
+                                     const std::string& clk_pin_xml,
                                      const nlohmann::json& wrapped_instances) {
 #if ENABLE_INSTANCE_CROSS_CHECK
   POST_MSG(1, "Cross-check instances vs wrapped-instances");
@@ -2649,13 +2650,15 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
   }
 #endif
   POST_MSG(1, "Generate SDC");
-  std::ofstream sdc(file.c_str());
+  std::ofstream sdc(sdc_file.c_str());
+  std::ofstream xml(clk_pin_xml.c_str());
   // Clock
   sdc << "#############\n";
   sdc << "#\n";
   sdc << "# Fabric clock assignment\n";
   sdc << "#\n";
   sdc << "#############\n";
+  xml << "<pin_constraints>\n";
   uint32_t i = 0;
   uint32_t j = 0;
   for (auto clk : m_fabric_clocks) {
@@ -2688,11 +2691,17 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
                    "%s\n",
                    i, wrapped_net.c_str())
                    .c_str();
+        xml << stringf("  <set_io pin=\"clk[%d]\" net=\"%s\"/>\n", i,
+                       wrapped_net.c_str())
+                   .c_str();
       } else {
         sdc << stringf(
                    "set_clock_pin   -device_clock clk[%d] -design_clock "
                    "%s\n",
                    i, clk->onet.c_str())
+                   .c_str();
+        xml << stringf("  <set_io pin=\"clk[%d]\" net=\"%s\"/>\n", i,
+                       clk->onet.c_str())
                    .c_str();
       }
       if (clk->is_fabric_clkbuf) {
@@ -2729,12 +2738,18 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
              "fabric slot #"
           << i << "\n";
       sdc << original_setting.c_str() << "\n";
+      xml << stringf("  <set_io pin=\"clk[%d]\" net=\"OPEN\"/>\n", i).c_str();
     }
     i++;
   }
   if (i == 0) {
     sdc << "\n";
   }
+  for (; i < 16; i++) {
+    xml << stringf("  <set_io pin=\"clk[%d]\" net=\"OPEN\"/>\n", i).c_str();
+  }
+  xml << "</pin_constraints>\n";
+  xml.close();
   // Mode
   sdc << "#############\n";
   sdc << "#\n";
@@ -2756,7 +2771,7 @@ void PRIMITIVES_EXTRACTOR::write_sdc(const std::string& file,
       continue;
     }
     SDC_ENTRY* entry = new SDC_ENTRY;
-    size_t i = 0;
+    i = 0;
     for (auto& trace : pin->traces) {
       if (i == 0) {
         entry->assignments.push_back(
