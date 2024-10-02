@@ -99,9 +99,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> orig_ins, orig_outs, fab_outs, ofab_outs, ifab_ins;
-  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
-  pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
+  pool<SigBit> orig_ins, orig_outs, fab_outs;
+  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
+  pool<SigBit> clk_buf_ins;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
 
@@ -1134,54 +1134,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  void check_dly_cntrls()
-  {
-    netlist_checker << "\nChecking I_DELAY/O_DELAY control signals\n";
-    netlist_checker << "================================================================\n";
-    for (auto &bit : dly_in_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-
-    for (auto &bit : dly_out_ctrls)
-    {
-      if (!ifab_ins.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
-        netlist_error = true;
-      }
-    }
-    netlist_checker << "================================================================\n";
-  }
-
-  void check_buf_cntrls()
-  {
-    netlist_checker << "\nChecking Buffer control signals\n";
-    netlist_checker << "================================================================\n";
-    for (auto &bit : i_buf_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-
-    for (auto &bit : o_buf_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-    netlist_checker << "================================================================\n";
-  }
-
   void check_fclkbuf_conns()
   {
     netlist_checker << "\nChecking FCLK_BUF connections\n";
@@ -1564,8 +1516,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
               {
                 if (bit.wire != nullptr)
                 {
-                  if (cell->input(portName) )
-                    (remove_backslashes(portName.str()) != "EN") ? i_buf_ins.insert(bit) : i_buf_ctrls.insert(bit);
+                  if (cell->input(portName) &&
+                    (remove_backslashes(portName.str()) != "EN")) i_buf_ins.insert(bit);
                   if (cell->output(portName)) i_buf_outs.insert(bit);
                 }
               }
@@ -1595,7 +1547,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 if (bit.wire != nullptr)
                 {
                   if(cell->output(portName)) o_buf_outs.insert(bit);
-                  if (remove_backslashes(portName.str()) == "T") o_buf_ctrls.insert(bit);
                 }
               }
             }
@@ -1631,25 +1582,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   {
                     fclk_buf_ins.insert(bit);
                   }
-                }
-              }
-            }
-          } else if (cell->type == RTLIL::escape_id("I_DELAY") ||
-          cell->type == RTLIL::escape_id("O_DELAY"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
-              {
-                if(cell->input(portName))
-                {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_in_ctrls.insert(bit);
-                } else if(cell->output(portName))
-                {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_out_ctrls.insert(bit);
                 }
               }
             }
@@ -1717,34 +1649,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
             }
           }
         } else {
-          if (cell->type == RTLIL::escape_id("I_FAB"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(remove_backslashes(portName.str()) == "I")
-              {
-                for (SigBit bit : conn.second)
-                {
-                  if (bit.wire != nullptr) ifab_ins.insert(bit);
-                }
-              }
-            }
-          }
-          if (cell->type == RTLIL::escape_id("O_FAB"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(remove_backslashes(portName.str()) == "O")
-              {
-                for (SigBit bit : conn.second)
-                {
-                  if (bit.wire != nullptr) ofab_outs.insert(bit);
-                }
-              }
-            }
-          }
           for (auto conn : cell->connections()) {
             IdString portName = conn.first;
             RTLIL::SigSpec actual = conn.second;
@@ -1768,8 +1672,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
       check_buf_conns();
       check_clkbuf_conns();
-      check_buf_cntrls();
-      check_dly_cntrls();
       end = high_resolution_clock::now();
       elapsed_time (start, end);
 
