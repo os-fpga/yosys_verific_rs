@@ -95,7 +95,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> wrapper_conns;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn, intf_prim_conn;
   std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
-  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> ofab_sig_map;
+  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> fab_sig_map;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
@@ -525,7 +525,27 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (in_bit.wire != nullptr)
         {
           remove_fab_prims.push_back(cell);
-          ofab_sig_map.insert(std::make_pair(in_bit, out_bit));
+          fab_sig_map.insert(std::make_pair(in_bit, out_bit));
+        }
+      }
+
+      if (cell->type == RTLIL::escape_id("I_FAB"))
+      {
+        SigBit in_bit, out_bit;
+        for (auto &conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (cell->input(portName))
+          {
+            in_bit = conn.second;
+          } else {
+            out_bit = conn.second;
+          }
+        }
+        if (in_bit.wire != nullptr)
+        {
+          remove_fab_prims.push_back(cell);
+          fab_sig_map.insert(std::make_pair(out_bit, in_bit));
         }
       }
     }
@@ -543,14 +563,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
         RTLIL::SigSpec sigspec;
         for (SigBit bit : conn.second)
         {
-          if (ofab_sig_map.count(bit) > 0)
+          if (fab_sig_map.count(bit) > 0)
           {
             if (unset_port)
             {
               cell->unsetPort(portName);
               unset_port = false;
             }
-            sigspec.append(ofab_sig_map[bit]);
+            sigspec.append(fab_sig_map[bit]);
           } else {
             sigspec.append(bit);
           }
@@ -558,8 +578,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (!unset_port) cell->setPort(portName, sigspec);
       }
     }
-    
-    std::cout << "O_FABS REMOVED" << std::endl;
   }
 
   void handle_dangling_outs(Module *module)
