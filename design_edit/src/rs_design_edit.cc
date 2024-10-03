@@ -95,7 +95,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> wrapper_conns;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn, intf_prim_conn;
   std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
-  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> fab_sig_map;
+  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> ifab_sig_map;
+  std::map<RTLIL::SigBit, std::vector<RTLIL::SigBit>> ofab_sig_map, ofab_conns;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
@@ -525,7 +526,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (in_bit.wire != nullptr)
         {
           remove_fab_prims.push_back(cell);
-          fab_sig_map.insert(std::make_pair(in_bit, out_bit));
+          auto it = ofab_sig_map.find(in_bit);
+
+          if (it != ofab_sig_map.end()) {
+            it->second.push_back(out_bit);
+          } else {
+            std::vector<RTLIL::SigBit> out_bits;
+            out_bits.push_back(out_bit);
+            ofab_sig_map.insert({in_bit, out_bits});
+          }
         }
       }
 
@@ -545,7 +554,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (in_bit.wire != nullptr)
         {
           remove_fab_prims.push_back(cell);
-          fab_sig_map.insert(std::make_pair(out_bit, in_bit));
+          ifab_sig_map.insert(std::make_pair(out_bit, in_bit));
         }
       }
     }
@@ -563,14 +572,48 @@ struct DesignEditRapidSilicon : public ScriptPass {
         RTLIL::SigSpec sigspec;
         for (SigBit bit : conn.second)
         {
-          if (fab_sig_map.count(bit) > 0)
+          if (ifab_sig_map.count(bit) > 0)
           {
             if (unset_port)
             {
               cell->unsetPort(portName);
               unset_port = false;
             }
-            sigspec.append(fab_sig_map[bit]);
+            sigspec.append(ifab_sig_map[bit]);
+          } else {
+            sigspec.append(bit);
+          }
+        }
+        if (!unset_port) cell->setPort(portName, sigspec);
+      }
+
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        bool unset_port = true;
+        RTLIL::SigSpec sigspec;
+        for (SigBit bit : conn.second)
+        {
+          if (ofab_sig_map.count(bit) > 0)
+          {
+            const std::vector<RTLIL::SigBit> outbits = ofab_sig_map[bit];
+            if(outbits.size() < 1) sigspec.append(bit);
+            if(outbits.size() == 1)
+            {
+              if (unset_port)
+              {
+                cell->unsetPort(portName);
+                unset_port = false;
+              }
+              sigspec.append(outbits[0]);
+            } else if (outbits.size() > 1)
+            {
+              sigspec.append(bit);
+              if (ofab_conns.find(bit) == ofab_conns.end())
+              {
+                ofab_conns.insert({bit, outbits});
+              }
+            }
           } else {
             sigspec.append(bit);
           }
@@ -578,6 +621,71 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (!unset_port) cell->setPort(portName, sigspec);
       }
     }
+
+    for (const auto& ofab_conn : ofab_conns)
+    {
+      const std::vector<RTLIL::SigBit> out_bits = ofab_conn.second;
+      if(out_bits.size() <= 1) continue;
+      for(const auto& out_bit : out_bits)
+      {
+        RTLIL::SigSig new_conn;
+        new_conn.first = out_bit;
+        new_conn.second = ofab_conn.first;
+        mod->connect(new_conn);
+      }
+    }
+  }
+
+  void rem_extra_assigns(Module *module)
+  {
+    pool<SigBit> assign_bits;
+    std::unordered_set<Wire *> del_wires;
+    for(auto cell : module->cells())
+    {
+      for (auto &conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        if (cell->input(portName))
+        {
+          for (SigBit bit : conn.second)
+          {
+            if (bit.wire != nullptr) assign_bits.insert(bit);
+          }
+        }
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      for (SigBit bit : conn.second)
+      {
+        if (bit.wire != nullptr) assign_bits.insert(bit);
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+      if (conn_lhs.size() != 1) continue;
+      for (SigBit bit : conn.first)
+      {
+        if (bit.wire != nullptr)
+        {
+          if(!assign_bits.count(bit) && !bit.wire->port_output)
+          {
+            connections_to_remove.insert(conn);
+            del_wires.insert(bit.wire);
+          }
+        }
+      }
+    }
+
+    remove_extra_conns(module);
+    connections_to_remove.clear();
+    for (auto wire : del_wires) {
+      module->remove({wire});
+    }
+    del_wires.clear();
   }
 
   void handle_dangling_outs(Module *module)
@@ -1920,6 +2028,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       Pass::call(_design, "clean");
       end = high_resolution_clock::now();
       elapsed_time (start, end);
+
+      rem_extra_assigns(original_mod);
 
       reportInfoFabricClocks(original_mod);
 
