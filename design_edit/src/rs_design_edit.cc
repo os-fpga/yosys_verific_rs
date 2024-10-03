@@ -510,34 +510,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
   {
     for(auto cell : mod->cells())
     {
-      if (cell->type == RTLIL::escape_id("O_FAB"))
-      {
-        SigBit in_bit, out_bit;
-        for (auto &conn : cell->connections())
-        {
-          IdString portName = conn.first;
-          if (cell->input(portName))
-          {
-            in_bit = conn.second;
-          } else {
-            out_bit = conn.second;
-          }
-        }
-        if (in_bit.wire != nullptr)
-        {
-          remove_fab_prims.push_back(cell);
-          auto it = ofab_sig_map.find(in_bit);
-
-          if (it != ofab_sig_map.end()) {
-            it->second.push_back(out_bit);
-          } else {
-            std::vector<RTLIL::SigBit> out_bits;
-            out_bits.push_back(out_bit);
-            ofab_sig_map.insert({in_bit, out_bits});
-          }
-        }
-      }
-
       if (cell->type == RTLIL::escape_id("I_FAB"))
       {
         SigBit in_bit, out_bit;
@@ -559,33 +531,51 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
+    for(auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("O_FAB"))
+      {
+        SigBit in_bit, out_bit;
+        for (auto &conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (cell->input(portName))
+          {
+            in_bit = conn.second;
+          } else {
+            out_bit = conn.second;
+          }
+        }
+        if (in_bit.wire != nullptr)
+        {
+          remove_fab_prims.push_back(cell);
+          if(ifab_sig_map.count(in_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = ifab_sig_map[in_bit];
+            mod->connect(new_conn);
+          } else {
+            auto it = ofab_sig_map.find(in_bit);
+
+            if (it != ofab_sig_map.end()) {
+              it->second.push_back(out_bit);
+            } else {
+              std::vector<RTLIL::SigBit> out_bits;
+              out_bits.push_back(out_bit);
+              ofab_sig_map.insert({in_bit, out_bits});
+            }
+          }
+        }
+      }
+    }
+
     delete_cells(mod, remove_fab_prims);
 
     for (auto cell : mod->cells())
     {
       if (cell->type == RTLIL::escape_id("O_FAB") ||
         cell->type == RTLIL::escape_id("I_FAB")) continue;
-      for (auto conn : cell->connections())
-      {
-        IdString portName = conn.first;
-        bool unset_port = true;
-        RTLIL::SigSpec sigspec;
-        for (SigBit bit : conn.second)
-        {
-          if (ifab_sig_map.count(bit) > 0)
-          {
-            if (unset_port)
-            {
-              cell->unsetPort(portName);
-              unset_port = false;
-            }
-            sigspec.append(ifab_sig_map[bit]);
-          } else {
-            sigspec.append(bit);
-          }
-        }
-        if (!unset_port) cell->setPort(portName, sigspec);
-      }
 
       for (auto conn : cell->connections())
       {
@@ -594,7 +584,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
         RTLIL::SigSpec sigspec;
         for (SigBit bit : conn.second)
         {
-          if (ofab_sig_map.count(bit) > 0)
+          if (ofab_sig_map.count(bit))
           {
             const std::vector<RTLIL::SigBit> outbits = ofab_sig_map[bit];
             if(outbits.size() < 1) sigspec.append(bit);
@@ -614,6 +604,28 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 ofab_conns.insert({bit, outbits});
               }
             }
+          } else {
+            sigspec.append(bit);
+          }
+        }
+        if (!unset_port) cell->setPort(portName, sigspec);
+      }
+
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        bool unset_port = true;
+        RTLIL::SigSpec sigspec;
+        for (SigBit bit : conn.second)
+        {
+          if (ifab_sig_map.count(bit))
+          {
+            if (unset_port)
+            {
+              cell->unsetPort(portName);
+              unset_port = false;
+            }
+            sigspec.append(ifab_sig_map[bit]);
           } else {
             sigspec.append(bit);
           }
