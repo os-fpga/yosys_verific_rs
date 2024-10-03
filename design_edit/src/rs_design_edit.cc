@@ -1434,7 +1434,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       processSdcFile(input_sdc);
       for (auto &p : pins) {
-        extractor->assign_location(p->_name, p->_location, p->_properties, p->_internal_pin);
+        extractor->assign_location(p->_name, p->_location, p->_properties);
       }
     }
 
