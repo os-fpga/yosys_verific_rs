@@ -100,7 +100,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> orig_ins, orig_outs, fab_outs;
+  pool<SigBit> orig_ins, orig_outs, fab_outs, fab_ins;
   pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
   pool<SigBit> clk_buf_ins;
   pool<SigBit> fclk_buf_ins;
@@ -526,7 +526,15 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (in_bit.wire != nullptr)
         {
           remove_fab_prims.push_back(cell);
-          ifab_sig_map.insert(std::make_pair(out_bit, in_bit));
+          if (fab_ins.count(in_bit) && fab_outs.count(out_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = in_bit;
+            mod->connect(new_conn);
+          } else {
+            ifab_sig_map.insert(std::make_pair(out_bit, in_bit));
+          }
         }
       }
     }
@@ -549,7 +557,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
         if (in_bit.wire != nullptr)
         {
           remove_fab_prims.push_back(cell);
-          if(ifab_sig_map.count(in_bit))
+          if (fab_ins.count(in_bit) && fab_outs.count(out_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = in_bit;
+            mod->connect(new_conn);
+          } else if(ifab_sig_map.count(in_bit))
           {
             RTLIL::SigSig new_conn;
             new_conn.first = out_bit;
@@ -1239,17 +1253,24 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  void get_fabric_outputs(Module* mod)
+  void get_fabric_ios(Module* mod)
   {
     for (auto wire : mod->wires())
     {
       bool is_output = wire->port_output ? true :false;
-      if (!is_output) continue;
+      bool is_input = wire->port_input ? true :false;
+      if (!is_output && !is_input) continue;
 
-      RTLIL::SigSpec wire_ = wire;
-      for (auto bit : wire_)
+      if (is_input)
       {
-        if(!orig_outs.count(bit)) fab_outs.insert(bit);
+        RTLIL::SigSpec wire_ = wire;
+        for (auto bit : wire_) fab_ins.insert(bit);
+      }
+
+      if (is_output)
+      {
+        RTLIL::SigSpec wire_ = wire;
+        for (auto bit : wire_) fab_outs.insert(bit);
       }
     }
   }
@@ -1611,8 +1632,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
     }
 
-    remove_io_fab_prim(original_mod);
-
     start = high_resolution_clock::now();
     log("Gathering Wires Data\n");
     if (supported_tech)
@@ -1938,8 +1957,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
 
-      get_fabric_outputs(original_mod);
-      check_fclkbuf_conns();
       delete_wires(original_mod, wires_interface);
       delete_wires(original_mod, del_ins);
       delete_wires(original_mod, del_outs);
@@ -1947,6 +1964,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       elapsed_time (start, end);
 
       fixup_mod_ports(original_mod);
+
+      get_fabric_ios(original_mod);
+      check_fclkbuf_conns();
+
+      remove_io_fab_prim(original_mod);
 
       start = high_resolution_clock::now();
       log("Deleting non-primitive cells and upgrading wires to ports in interface module\n");
