@@ -80,6 +80,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
   }
 
   std::vector<Cell *> remove_prims;
+  std::vector<Cell *> remove_fab_prims;                  // TODO : change to unoredred set later
   std::vector<Cell *> remove_non_prims;
   std::vector<Cell *> remove_wrapper_cells;
   std::unordered_set<Wire *> wires_interface;
@@ -94,12 +95,14 @@ struct DesignEditRapidSilicon : public ScriptPass {
   std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> wrapper_conns;
   std::map<RTLIL::SigBit, std::vector<RTLIL::Wire *>> io_prim_conn, intf_prim_conn;
   std::map<RTLIL::SigBit, RTLIL::SigBit> inout_conn_map;
+  std::map<Yosys::RTLIL::SigBit, Yosys::RTLIL::SigBit> ifab_sig_map;
+  std::map<RTLIL::SigBit, std::vector<RTLIL::SigBit>> ofab_sig_map, ofab_conns;
   pool<SigBit> prim_out_bits;
   pool<SigBit> unused_prim_outs;
   pool<SigBit> used_bits;
-  pool<SigBit> orig_ins, orig_outs, fab_outs, ofab_outs, ifab_ins;
-  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
-  pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
+  pool<SigBit> orig_ins, orig_outs, fab_outs, fab_ins;
+  pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs;
+  pool<SigBit> clk_buf_ins;
   pool<SigBit> fclk_buf_ins;
   pool<SigBit> diff;
 
@@ -501,6 +504,214 @@ struct DesignEditRapidSilicon : public ScriptPass {
         module->remove({wire});
       }
     }
+  }
+
+  void remove_io_fab_prim(Module *mod)
+  {
+    for(auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("I_FAB"))
+      {
+        SigBit in_bit, out_bit;
+        for (auto &conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (cell->input(portName))
+          {
+            in_bit = conn.second;
+          } else {
+            out_bit = conn.second;
+          }
+        }
+        if (in_bit.wire != nullptr)
+        {
+          remove_fab_prims.push_back(cell);
+          if (fab_ins.count(in_bit) && fab_outs.count(out_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = in_bit;
+            mod->connect(new_conn);
+          } else {
+            ifab_sig_map.insert(std::make_pair(out_bit, in_bit));
+          }
+        }
+      }
+    }
+
+    for(auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("O_FAB"))
+      {
+        SigBit in_bit, out_bit;
+        for (auto &conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (cell->input(portName))
+          {
+            in_bit = conn.second;
+          } else {
+            out_bit = conn.second;
+          }
+        }
+        if (in_bit.wire != nullptr)
+        {
+          remove_fab_prims.push_back(cell);
+          if (fab_ins.count(in_bit) && fab_outs.count(out_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = in_bit;
+            mod->connect(new_conn);
+          } else if(ifab_sig_map.count(in_bit))
+          {
+            RTLIL::SigSig new_conn;
+            new_conn.first = out_bit;
+            new_conn.second = ifab_sig_map[in_bit];
+            mod->connect(new_conn);
+          } else {
+            auto it = ofab_sig_map.find(in_bit);
+
+            if (it != ofab_sig_map.end()) {
+              it->second.push_back(out_bit);
+            } else {
+              std::vector<RTLIL::SigBit> out_bits;
+              out_bits.push_back(out_bit);
+              ofab_sig_map.insert({in_bit, out_bits});
+            }
+          }
+        }
+      }
+    }
+
+    delete_cells(mod, remove_fab_prims);
+
+    for (auto cell : mod->cells())
+    {
+      if (cell->type == RTLIL::escape_id("O_FAB") ||
+        cell->type == RTLIL::escape_id("I_FAB")) continue;
+
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        bool unset_port = true;
+        RTLIL::SigSpec sigspec;
+        for (SigBit bit : conn.second)
+        {
+          if (ofab_sig_map.count(bit))
+          {
+            const std::vector<RTLIL::SigBit> outbits = ofab_sig_map[bit];
+            if(outbits.size() < 1) sigspec.append(bit);
+            if(outbits.size() == 1)
+            {
+              if (unset_port)
+              {
+                cell->unsetPort(portName);
+                unset_port = false;
+              }
+              sigspec.append(outbits[0]);
+            } else if (outbits.size() > 1)
+            {
+              sigspec.append(bit);
+              if (ofab_conns.find(bit) == ofab_conns.end())
+              {
+                ofab_conns.insert({bit, outbits});
+              }
+            }
+          } else {
+            sigspec.append(bit);
+          }
+        }
+        if (!unset_port) cell->setPort(portName, sigspec);
+      }
+
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        bool unset_port = true;
+        RTLIL::SigSpec sigspec;
+        for (SigBit bit : conn.second)
+        {
+          if (ifab_sig_map.count(bit))
+          {
+            if (unset_port)
+            {
+              cell->unsetPort(portName);
+              unset_port = false;
+            }
+            sigspec.append(ifab_sig_map[bit]);
+          } else {
+            sigspec.append(bit);
+          }
+        }
+        if (!unset_port) cell->setPort(portName, sigspec);
+      }
+    }
+
+    for (const auto& ofab_conn : ofab_conns)
+    {
+      const std::vector<RTLIL::SigBit> out_bits = ofab_conn.second;
+      if(out_bits.size() <= 1) continue;
+      for(const auto& out_bit : out_bits)
+      {
+        RTLIL::SigSig new_conn;
+        new_conn.first = out_bit;
+        new_conn.second = ofab_conn.first;
+        mod->connect(new_conn);
+      }
+    }
+  }
+
+  void rem_extra_assigns(Module *module)
+  {
+    pool<SigBit> assign_bits;
+    std::unordered_set<Wire *> del_wires;
+    for(auto cell : module->cells())
+    {
+      for (auto &conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        if (cell->input(portName))
+        {
+          for (SigBit bit : conn.second)
+          {
+            if (bit.wire != nullptr) assign_bits.insert(bit);
+          }
+        }
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      for (SigBit bit : conn.second)
+      {
+        if (bit.wire != nullptr) assign_bits.insert(bit);
+      }
+    }
+
+    for(auto &conn : module->connections())
+    {
+      std::vector<RTLIL::SigBit> conn_lhs = conn.first.to_sigbit_vector();
+      if (conn_lhs.size() != 1) continue;
+      for (SigBit bit : conn.first)
+      {
+        if (bit.wire != nullptr)
+        {
+          if(!assign_bits.count(bit) && !bit.wire->port_output)
+          {
+            connections_to_remove.insert(conn);
+            del_wires.insert(bit.wire);
+          }
+        }
+      }
+    }
+
+    remove_extra_conns(module);
+    connections_to_remove.clear();
+    for (auto wire : del_wires) {
+      module->remove({wire});
+    }
+    del_wires.clear();
   }
 
   void handle_dangling_outs(Module *module)
@@ -1042,67 +1253,26 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
-  void get_fabric_outputs(Module* mod)
+  void get_fabric_ios(Module* mod)
   {
     for (auto wire : mod->wires())
     {
       bool is_output = wire->port_output ? true :false;
-      if (!is_output) continue;
+      bool is_input = wire->port_input ? true :false;
+      if (!is_output && !is_input) continue;
 
-      RTLIL::SigSpec wire_ = wire;
-      for (auto bit : wire_)
+      if (is_input)
       {
-        if(!orig_outs.count(bit)) fab_outs.insert(bit);
+        RTLIL::SigSpec wire_ = wire;
+        for (auto bit : wire_) fab_ins.insert(bit);
+      }
+
+      if (is_output)
+      {
+        RTLIL::SigSpec wire_ = wire;
+        for (auto bit : wire_) fab_outs.insert(bit);
       }
     }
-  }
-
-  void check_dly_cntrls()
-  {
-    netlist_checker << "\nChecking I_DELAY/O_DELAY control signals\n";
-    netlist_checker << "================================================================\n";
-    for (auto &bit : dly_in_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-
-    for (auto &bit : dly_out_ctrls)
-    {
-      if (!ifab_ins.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
-        netlist_error = true;
-      }
-    }
-    netlist_checker << "================================================================\n";
-  }
-
-  void check_buf_cntrls()
-  {
-    netlist_checker << "\nChecking Buffer control signals\n";
-    netlist_checker << "================================================================\n";
-    for (auto &bit : i_buf_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-
-    for (auto &bit : o_buf_ctrls)
-    {
-      if (!ofab_outs.count(bit))
-      {
-        netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
-        netlist_error = true;
-      }
-    }
-    netlist_checker << "================================================================\n";
   }
 
   void check_fclkbuf_conns()
@@ -1485,8 +1655,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
               {
                 if (bit.wire != nullptr)
                 {
-                  if (cell->input(portName) )
-                    (remove_backslashes(portName.str()) != "EN") ? i_buf_ins.insert(bit) : i_buf_ctrls.insert(bit);
+                  if (cell->input(portName) &&
+                    (remove_backslashes(portName.str()) != "EN")) i_buf_ins.insert(bit);
                   if (cell->output(portName)) i_buf_outs.insert(bit);
                 }
               }
@@ -1516,7 +1686,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                 if (bit.wire != nullptr)
                 {
                   if(cell->output(portName)) o_buf_outs.insert(bit);
-                  if (remove_backslashes(portName.str()) == "T") o_buf_ctrls.insert(bit);
                 }
               }
             }
@@ -1552,25 +1721,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   {
                     fclk_buf_ins.insert(bit);
                   }
-                }
-              }
-            }
-          } else if (cell->type == RTLIL::escape_id("I_DELAY") ||
-          cell->type == RTLIL::escape_id("O_DELAY"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(dly_controls.find(remove_backslashes(portName.str())) != dly_controls.end())
-              {
-                if(cell->input(portName))
-                {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_in_ctrls.insert(bit);
-                } else if(cell->output(portName))
-                {
-                  for (SigBit bit : conn.second)
-                    if (bit.wire != nullptr) dly_out_ctrls.insert(bit);
                 }
               }
             }
@@ -1638,34 +1788,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
             }
           }
         } else {
-          if (cell->type == RTLIL::escape_id("I_FAB"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(remove_backslashes(portName.str()) == "I")
-              {
-                for (SigBit bit : conn.second)
-                {
-                  if (bit.wire != nullptr) ifab_ins.insert(bit);
-                }
-              }
-            }
-          }
-          if (cell->type == RTLIL::escape_id("O_FAB"))
-          {
-            for (auto conn : cell->connections())
-            {
-              IdString portName = conn.first;
-              if(remove_backslashes(portName.str()) == "O")
-              {
-                for (SigBit bit : conn.second)
-                {
-                  if (bit.wire != nullptr) ofab_outs.insert(bit);
-                }
-              }
-            }
-          }
           for (auto conn : cell->connections()) {
             IdString portName = conn.first;
             RTLIL::SigSpec actual = conn.second;
@@ -1689,8 +1811,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
       check_buf_conns();
       check_clkbuf_conns();
-      check_buf_cntrls();
-      check_dly_cntrls();
       end = high_resolution_clock::now();
       elapsed_time (start, end);
 
@@ -1837,8 +1957,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
         }
       }
 
-      get_fabric_outputs(original_mod);
-      check_fclkbuf_conns();
       delete_wires(original_mod, wires_interface);
       delete_wires(original_mod, del_ins);
       delete_wires(original_mod, del_outs);
@@ -1846,6 +1964,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
       elapsed_time (start, end);
 
       fixup_mod_ports(original_mod);
+
+      get_fabric_ios(original_mod);
+      check_fclkbuf_conns();
+
+      remove_io_fab_prim(original_mod);
 
       start = high_resolution_clock::now();
       log("Deleting non-primitive cells and upgrading wires to ports in interface module\n");
@@ -1939,6 +2062,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       Pass::call(_design, "clean");
       end = high_resolution_clock::now();
       elapsed_time (start, end);
+
+      rem_extra_assigns(original_mod);
 
       reportInfoFabricClocks(original_mod);
 
