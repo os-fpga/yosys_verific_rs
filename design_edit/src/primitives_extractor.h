@@ -75,11 +75,13 @@ struct SDC_ENTRY {
 /*
   Structure to store pin information
 */
-struct PIN_PARSER {
+struct PARSED_LOCATION {
+  std::string location = "";
   std::string type = "";
   std::string bank = "";
   bool is_clock = false;
   int index = 0;
+  uint8_t status = 0;  // 0: uninitialized, 1: Good, 2: Bad, 3: Skip
   std::string failure_reason = "";
 };
 
@@ -88,9 +90,9 @@ class PRIMITIVES_EXTRACTOR {
   PRIMITIVES_EXTRACTOR(const std::string& technology);
   ~PRIMITIVES_EXTRACTOR();
   bool extract(Yosys::RTLIL::Design* design);
-  void assign_location(const std::string& port, const std::string& location,
-                       std::unordered_map<std::string, std::string>& properties,
-                       const std::string& internal_pin);
+  void assign_location(
+      const std::string& port, const std::string& location,
+      std::unordered_map<std::string, std::string>& properties);
   std::vector<std::string> get_primitive_locations_by_name(
       const std::string& name, bool unique_location = false);
   void write_json(const std::string& file);
@@ -171,16 +173,8 @@ class PRIMITIVES_EXTRACTOR {
   void write_json_object(uint32_t space, const std::string& key,
                          const std::string& value, std::ofstream& json);
   void write_json_data(const std::string& str, std::ofstream& json);
-  void write_sdc_internal_control_signal(
-      std::vector<SDC_ENTRY*>& sdc_entries,
-      const nlohmann::json& wrapped_instances, const std::string& module,
-      const std::string& linked_object, const std::string& location,
-      const std::string& port, const std::string& internal_signal,
-      bool is_in_dir);
-  bool validate_location(const std::string& location, PIN_PARSER& pin);
   std::string get_assigned_location(SDC_ENTRY*& entry, const std::string& rule,
-                                    const std::string& location,
-                                    PIN_PARSER& pin);
+                                    const PARSED_LOCATION& parsed_location);
   size_t get_wrapped_instance(const nlohmann::json& wrapped_instances,
                               const std::string& name);
   std::string get_input_wrapped_net(const nlohmann::json& wrapped_instances,
@@ -203,6 +197,16 @@ class PRIMITIVES_EXTRACTOR {
                                       const std::vector<std::string> nets);
   void file_write_string(std::ofstream& file, const std::string& string,
                          int size = -1);
+  /*
+    All about SDC writing
+  */
+  void write_fabric_clock(std::ofstream& sdc, std::ofstream& xml,
+                          const nlohmann::json& wrapped_instances);
+  void write_data_mode_and_location(std::ofstream& sdc,
+                                    const nlohmann::json& wrapped_instances);
+  void write_control_signal(std::ofstream& sdc,
+                            const nlohmann::json& wrapped_instances);
+  void write_gearbox_core_clock(std::ofstream& sdc);
   void write_sdc_entries(std::ofstream& sdc,
                          std::vector<SDC_ENTRY*>& sdc_entries);
 
@@ -214,9 +218,7 @@ class PRIMITIVES_EXTRACTOR {
   int m_max_out_object_name = 0;
   int m_max_object_name = 0;
   int m_max_trace = 0;
-  std::vector<std::string> m_auto_assigned_location;
   std::map<std::string, std::string> m_location_mode;
-  std::vector<std::string> m_internal_signal_net;
   std::vector<MSG*> m_msgs;
   std::vector<PORT_PRIMITIVE*> m_ports;
   std::vector<PRIMITIVE*> m_child_primitives;
