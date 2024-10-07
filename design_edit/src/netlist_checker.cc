@@ -126,59 +126,24 @@ void NETLIST_CHECKER::gather_prims_data(Module* mod)
   }
 }
 
-void NETLIST_CHECKER::gather_fabric_data(Module* mod)
-{
-  for (auto cell : mod->cells())
-  {
-    if (cell->type == RTLIL::escape_id("I_FAB"))
-    {
-      for (auto conn : cell->connections())
-      {
-        IdString portName = conn.first;
-        if(escaped_id(portName.str()) == "I")
-        {
-          for (SigBit bit : conn.second)
-          {
-            if (bit.wire != nullptr) ifab_ins.insert(bit);
-          }
-        }
-      }
-    }
-    if (cell->type == RTLIL::escape_id("O_FAB"))
-    {
-      for (auto conn : cell->connections())
-      {
-        IdString portName = conn.first;
-        if(escaped_id(portName.str()) == "O")
-        {
-          for (SigBit bit : conn.second)
-          {
-            if (bit.wire != nullptr) ofab_outs.insert(bit);
-          }
-        }
-      }
-    }
-  }
-}
-
 void NETLIST_CHECKER::check_dly_cntrls()
 {
   netlist_checker << "\nChecking I_DELAY/O_DELAY control signals\n";
   netlist_checker << "================================================================\n";
   for (auto &bit : dly_in_ctrls)
   {
-    if (!ofab_outs.count(bit))
+    if (!fab_outs.count(bit))
     {
-      netlist_checker << log_signal(bit) << " is an input control signal and must be connected to O_FAB\n";
+      netlist_checker << log_signal(bit) << " is an input control signal and must be a fabric output\n";
       netlist_error = true;
     }
   }
 
   for (auto &bit : dly_out_ctrls)
   {
-    if (!ifab_ins.count(bit))
+    if (!fab_ins.count(bit))
     {
-      netlist_checker << log_signal(bit) << " is an output control signal and must be connected to I_FAB\n";
+      netlist_checker << log_signal(bit) << " is an output control signal and must be a fabric input\n";
       netlist_error = true;
     }
   }

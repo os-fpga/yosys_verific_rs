@@ -1736,7 +1736,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       end = high_resolution_clock::now();
       elapsed_time (start, end);
       checker.gather_prims_data(original_mod);
-      checker.gather_fabric_data(original_mod);
       checker.check_buf_cntrls();
       checker.check_fclkbuf_conns();
       checker.check_dly_cntrls();

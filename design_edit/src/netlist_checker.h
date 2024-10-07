@@ -33,7 +33,7 @@ struct NETLIST_CHECKER {
   std::unordered_set<std::string> prims;
   pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
   pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
-  pool<SigBit> fclk_buf_ins, fab_outs, fab_ins, ofab_outs, ifab_ins;
+  pool<SigBit> fclk_buf_ins, fab_outs, fab_ins;
   std::unordered_set<std::string> dly_controls =
       {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
   pool<SigBit> diff;
