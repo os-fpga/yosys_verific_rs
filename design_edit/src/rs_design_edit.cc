@@ -1766,7 +1766,6 @@ struct DesignEditRapidSilicon : public ScriptPass {
       fixup_mod_ports(original_mod);
 
       get_fabric_ios(original_mod);
-      check_fclkbuf_conns();
 
       remove_io_fab_prim(original_mod);
 
