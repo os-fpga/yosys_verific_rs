@@ -664,7 +664,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
   void rem_extra_assigns(Module *module)
   {
-    pool<SigBit> assign_bits;
+    pool<SigBit> assign_bits, bits_used;
     std::unordered_set<Wire *> del_wires;
     for(auto cell : module->cells())
     {
@@ -678,6 +678,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
             if (bit.wire != nullptr) assign_bits.insert(bit);
           }
         }
+        if (cell->output(portName))
+        {
+          for (SigBit bit : conn.second)
+          {
+            if (bit.wire != nullptr) bits_used.insert(bit);
+          }
+        }
       }
     }
 
@@ -686,6 +693,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
       for (SigBit bit : conn.second)
       {
         if (bit.wire != nullptr) assign_bits.insert(bit);
+      }
+      for (SigBit bit : conn.first)
+      {
+        if (bit.wire != nullptr) bits_used.insert(bit);
       }
     }
 
@@ -702,6 +713,18 @@ struct DesignEditRapidSilicon : public ScriptPass {
             connections_to_remove.insert(conn);
             del_wires.insert(bit.wire);
           }
+        }
+      }
+    }
+
+    for (auto wire : module->wires())
+    {
+      RTLIL::SigSpec wire_ = wire;
+      for (auto bit : wire_)
+      {
+        if(!bits_used.count(bit) && !bit.wire->port_output && !bit.wire->port_input)
+        {
+          if(bit.wire->width == 1) del_wires.insert(bit.wire);
         }
       }
     }
