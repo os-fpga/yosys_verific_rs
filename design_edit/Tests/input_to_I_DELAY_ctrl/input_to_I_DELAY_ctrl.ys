@@ -1,0 +1,25 @@
+ 
+# Yosys synthesis script for ${TOP_MODULE}
+# Read source files
+read_verilog -sv ../../../yosys-rs-plugin/genesis3/FPGA_PRIMITIVES_MODELS/blackbox_models/cell_sim_blackbox.v
+verilog_defines 
+read_verilog ./rtl/input_to_I_DELAY_ctrl.v
+
+# Technology mapping
+hierarchy -auto-top
+
+
+
+#plugin -i synth-rs
+#
+#synth_rs -tech genesis3 -de -goal mixed   -effort high -carry auto -new_dsp19x2 -new_tdp36k -max_lut 45408 -max_reg 90816 -max_device_dsp 176 -max_device_bram 176 -max_device_carry_length 528 -max_dsp 176 -max_bram 176 -max_carry_length 528  -fsm_encoding onehot   -de_max_threads -1   
+#write_rtlil design.rtlil
+#write_verilog -noexpr -nodec -v ./tmp/input_to_I_DELAY_ctrl.v
+#write_blif -param ./tmp/input_to_I_DELAY_ctrl.eblif
+plugin -i design-edit
+design_edit -tech genesis3 -sdc pin_constraints.pin -json ./tmp/io_config.json -w ./tmp//wrapper_input_to_I_DELAY_ctrl.v ./tmp//wrapper_input_to_I_DELAY_ctrl.eblif
+
+write_verilog -noexpr -nodec -norename -v ./tmp/fabric_input_to_I_DELAY_ctrl.v
+write_blif -param ./tmp/fabric_input_to_I_DELAY_ctrl.eblif
+
+  
