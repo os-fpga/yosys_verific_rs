@@ -129,14 +129,6 @@ module GJC19(clk_i_buf, data_i, dly_incdec_buf, dly_ld_buf, dly_adj_buf, data_o_
   (* src = "/nfs_eda_sw/softwares/Raptor/instl_dir/07_24_2024_09_15_01/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:17.38-17.69" *)
   LUT1 #(
     .INIT_VALUE(2'h1)
-  ) \$abc$480$auto_485  (
-    .A(\dly_tap_val[5] ),
-    .Y(\dly_tap_val_inv[5] )
-  );
-  (* module_not_derived = 32'h00000001 *)
-  (* src = "/nfs_eda_sw/softwares/Raptor/instl_dir/07_24_2024_09_15_01/bin/../share/yosys/rapidsilicon/genesis3/lut_map.v:17.38-17.69" *)
-  LUT1 #(
-    .INIT_VALUE(2'h1)
   ) \$abc$480$auto_486  (
     .A(\dly_tap_val[4] ),
     .Y(\dly_tap_val_inv[4] )
@@ -266,7 +258,7 @@ module GJC19(clk_i_buf, data_i, dly_incdec_buf, dly_ld_buf, dly_adj_buf, data_o_
     .DLY_ADJ(dly_adj_inv ),
     .DLY_INCDEC(\$f2g_trx_dly_inc_dly_incdec_inv ),
     .DLY_LOAD(\$f2g_trx_dly_ld_dly_ld_inv ),
-    .DLY_TAP_VALUE({ \dly_tap_val[5] , \$ifab_dly_tap_val[4] , \$ifab_dly_tap_val[3] , \$ifab_dly_tap_val[2] , \$ifab_dly_tap_val[1] , \$ifab_dly_tap_val[0]  }),
+    .DLY_TAP_VALUE({ \dly_tap_val_inv[5] , \$ifab_dly_tap_val[4] , \$ifab_dly_tap_val[3] , \$ifab_dly_tap_val[2] , \$ifab_dly_tap_val[1] , \$ifab_dly_tap_val[0]  }),
     .I(data_i_buf),
     .O(data_o)
   );
@@ -308,7 +300,8 @@ module GJC19(clk_i_buf, data_i, dly_incdec_buf, dly_ld_buf, dly_adj_buf, data_o_
   );
   (* module_not_derived = 32'h00000001 *)
   (* src = "/nfs_scratch/scratch/eda/behzad/Validation/RTL_testcases/GJC-IO-Testcases/GJC19/results_dir/.././rtl/GJC19.v:43.11-43.62" *)
-  O_BUF obuf5_ (
+  I_BUF obuf5_ (
+    .EN(1'h1),
     .I(\dly_tap_val_inv[5] ),
     .O(dly_tap_val_inv_buf[5])
   );
