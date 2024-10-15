@@ -1649,6 +1649,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.gather_bufs_data(original_mod);
       checker.check_buf_conns();
       checker.check_clkbuf_conns();
+      checker.check_idly_data_ins();
       end = high_resolution_clock::now();
       elapsed_time (start, end);
 
@@ -1784,6 +1785,7 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.gather_prims_data(original_mod);
       checker.check_buf_cntrls();
       checker.check_fclkbuf_conns();
+      //checker.check_odly_data_ins();
       checker.check_dly_cntrls();
       start = high_resolution_clock::now();
       log("Deleting primitive cells and extra wires\n");
