@@ -1786,8 +1786,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.gather_prims_data(original_mod);
       checker.check_buf_cntrls();
       checker.check_fclkbuf_conns();
-      //checker.check_odly_data_ins();
       checker.check_dly_cntrls();
+      checker.check_serdes_cntrls();
       start = high_resolution_clock::now();
       log("Deleting primitive cells and extra wires\n");
       delete_cells(original_mod, remove_prims);

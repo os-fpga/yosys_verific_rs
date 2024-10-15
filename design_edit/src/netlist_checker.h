@@ -24,6 +24,7 @@ struct NETLIST_CHECKER {
   void check_odly_data_outs();
   void check_odly_data_ins();
   void check_dly_cntrls();
+  void check_serdes_cntrls();
   void check_buf_cntrls();
   void check_fclkbuf_conns();
   void check_clkbuf_conns();
@@ -38,6 +39,12 @@ struct NETLIST_CHECKER {
   pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
   pool<SigBit> fclk_buf_ins, fab_outs, fab_ins, o_buf_ins;
   pool<SigBit> i_dly_ins, i_dly_outs, o_dly_ins, o_dly_outs;
+  pool<SigBit> i_serdes_in_ctrls, i_serdes_out_ctrls;
+  pool<SigBit> o_serdes_in_ctrls, o_serdes_out_ctrls;
+  std::unordered_set<std::string> i_serdes_controls =
+      {"RST", "BITSLIP_ADJ", "EN", "DATA_VALID", "DPA_LOCK", "DPA_ERROR", "PLL_LOCK"};
+  std::unordered_set<std::string> o_serdes_controls =
+      {"RST", "DATA_VALID", "OE_IN", "OE_OUT", "CHANNEL_BOND_SYNC_IN", "CHANNEL_BOND_SYNC_OUT", "PLL_LOCK"};
   std::unordered_set<std::string> dly_controls =
       {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
   pool<SigBit> diff;

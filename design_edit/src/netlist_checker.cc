@@ -139,6 +139,42 @@ void NETLIST_CHECKER::gather_prims_data(Module* mod)
           }
         }
       }
+    } else if (cell->type == RTLIL::escape_id("I_SERDES"))
+    {
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        if(i_serdes_controls.find(escaped_id(portName.str())) != i_serdes_controls.end())
+        {
+          if(cell->input(portName))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_serdes_in_ctrls.insert(bit);
+          } else if(cell->output(portName))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_serdes_out_ctrls.insert(bit);
+          }
+        }
+      }
+    } else if (cell->type == RTLIL::escape_id("O_SERDES"))
+    {
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        if(o_serdes_controls.find(escaped_id(portName.str())) != o_serdes_controls.end())
+        {
+          if(cell->input(portName))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_serdes_in_ctrls.insert(bit);
+          } else if(cell->output(portName))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_serdes_out_ctrls.insert(bit);
+          }
+        }
+      }
     }
   }
 }
@@ -202,6 +238,48 @@ void NETLIST_CHECKER::check_dly_cntrls()
   }
 
   for (auto &bit : dly_out_ctrls)
+  {
+    if (!fab_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is an output control signal and must be a fabric input\n";
+      netlist_error = true;
+    }
+  }
+  netlist_checker << "================================================================\n";
+}
+
+void NETLIST_CHECKER::check_serdes_cntrls()
+{
+  netlist_checker << "\nChecking I_SERDES/O_SERDES control signals\n";
+  netlist_checker << "================================================================\n";
+  for (auto &bit : i_serdes_in_ctrls)
+  {
+    if (!fab_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is an input control signal and must be a fabric output\n";
+      netlist_error = true;
+    }
+  }
+
+  for (auto &bit : i_serdes_out_ctrls)
+  {
+    if (!fab_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is an output control signal and must be a fabric input\n";
+      netlist_error = true;
+    }
+  }
+
+  for (auto &bit : o_serdes_in_ctrls)
+  {
+    if (!fab_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is an input control signal and must be a fabric output\n";
+      netlist_error = true;
+    }
+  }
+
+  for (auto &bit : o_serdes_out_ctrls)
   {
     if (!fab_ins.count(bit))
     {
