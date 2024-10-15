@@ -138,16 +138,6 @@ void NETLIST_CHECKER::gather_prims_data(Module* mod)
               if (bit.wire != nullptr) dly_out_ctrls.insert(bit);
           }
         }
-        if (portName == RTLIL::escape_id("I"))
-        {
-          for (SigBit bit : conn.second)
-            if (bit.wire != nullptr) o_dly_ins.insert(bit);
-        }
-        if (portName == RTLIL::escape_id("O"))
-        {
-          for (SigBit bit : conn.second)
-            if (bit.wire != nullptr) o_dly_outs.insert(bit);
-        }
       }
     }
   }
@@ -163,6 +153,21 @@ void NETLIST_CHECKER::check_idly_data_ins()
     if (!i_buf_outs.count(bit))
     {
       netlist_checker << log_signal(bit) << " is input data signal of I_DELAY and must be an I_BUF(DS) output\n";
+      netlist_error = true;
+    }
+  }
+}
+
+void NETLIST_CHECKER::check_odly_data_outs()
+{
+  netlist_checker << "\nChecking O_DELAY data outputs\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : o_dly_outs)
+  {
+    if (!o_buf_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of O_DELAY and must be an O_BUF(T/DS) input\n";
       netlist_error = true;
     }
   }
@@ -373,6 +378,7 @@ void NETLIST_CHECKER::gather_bufs_data(Yosys::RTLIL::Module* orig_mod)
             if (bit.wire != nullptr)
             {
               if(cell->output(portName)) o_buf_outs.insert(bit);
+              if (cell->input(portName)) o_buf_ins.insert(bit);
             }
           }
         }
@@ -387,6 +393,7 @@ void NETLIST_CHECKER::gather_bufs_data(Yosys::RTLIL::Module* orig_mod)
             if (bit.wire != nullptr)
             {
               if(cell->output(portName)) o_buf_outs.insert(bit);
+              if (portName == RTLIL::escape_id("I")) o_buf_ins.insert(bit);
             }
           }
         }
@@ -420,6 +427,22 @@ void NETLIST_CHECKER::gather_bufs_data(Yosys::RTLIL::Module* orig_mod)
           {
             for (SigBit bit : conn.second)
               if (bit.wire != nullptr) i_dly_outs.insert(bit);
+          }
+        }
+      } else if (cell->type == RTLIL::escape_id("O_DELAY"))
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (portName == RTLIL::escape_id("I"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_dly_ins.insert(bit);
+          }
+          if (portName == RTLIL::escape_id("O"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_dly_outs.insert(bit);
           }
         }
       }

@@ -21,6 +21,7 @@ struct NETLIST_CHECKER {
   void gather_prims_data(Module* mod);
   void gather_fabric_data(Module* mod);
   void check_idly_data_ins();
+  void check_odly_data_outs();
   void check_odly_data_ins();
   void check_dly_cntrls();
   void check_buf_cntrls();
@@ -35,7 +36,7 @@ struct NETLIST_CHECKER {
   std::unordered_set<std::string> prims;
   pool<SigBit> i_buf_ins, i_buf_outs, o_buf_outs, i_buf_ctrls, o_buf_ctrls;
   pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
-  pool<SigBit> fclk_buf_ins, fab_outs, fab_ins;
+  pool<SigBit> fclk_buf_ins, fab_outs, fab_ins, o_buf_ins;
   pool<SigBit> i_dly_ins, i_dly_outs, o_dly_ins, o_dly_outs;
   std::unordered_set<std::string> dly_controls =
       {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
