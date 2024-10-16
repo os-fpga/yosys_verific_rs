@@ -175,6 +175,19 @@ void NETLIST_CHECKER::gather_prims_data(Module* mod)
           }
         }
       }
+    } else if (cell->type == RTLIL::escape_id("I_DDR") ||
+      cell->type == RTLIL::escape_id("O_DDR"))
+    {
+      for (auto conn : cell->connections())
+      {
+        IdString portName = conn.first;
+        if (portName == RTLIL::escape_id("R") ||
+          portName == RTLIL::escape_id("E"))
+        {
+          for (SigBit bit : conn.second)
+            if (bit.wire != nullptr) ddr_ctrls.insert(bit);
+        }
+      }
     }
   }
 }
@@ -245,6 +258,22 @@ void NETLIST_CHECKER::check_dly_cntrls()
       netlist_error = true;
     }
   }
+  netlist_checker << "================================================================\n";
+}
+
+void NETLIST_CHECKER::check_ddr_cntrls()
+{
+  netlist_checker << "\nChecking I_DDR/O_DDR control signals\n";
+  netlist_checker << "================================================================\n";
+  for (auto &bit : ddr_ctrls)
+  {
+    if (!fab_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is an input control signal and must be a fabric output\n";
+      netlist_error = true;
+    }
+  }
+
   netlist_checker << "================================================================\n";
 }
 
