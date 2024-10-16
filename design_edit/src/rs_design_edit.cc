@@ -1787,6 +1787,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.check_buf_cntrls();
       checker.check_fclkbuf_conns();
       checker.check_dly_cntrls();
+      checker.check_iserdes_data_outs();
+      checker.check_oserdes_data_ins();
       checker.check_serdes_cntrls();
       start = high_resolution_clock::now();
       log("Deleting primitive cells and extra wires\n");

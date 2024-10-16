@@ -24,6 +24,8 @@ struct NETLIST_CHECKER {
   void check_odly_data_outs();
   void check_odly_data_ins();
   void check_dly_cntrls();
+  void check_iserdes_data_outs();
+  void check_oserdes_data_ins();
   void check_serdes_cntrls();
   void check_buf_cntrls();
   void check_fclkbuf_conns();
@@ -39,6 +41,7 @@ struct NETLIST_CHECKER {
   pool<SigBit> clk_buf_ins, dly_in_ctrls, dly_out_ctrls;
   pool<SigBit> fclk_buf_ins, fab_outs, fab_ins, o_buf_ins;
   pool<SigBit> i_dly_ins, i_dly_outs, o_dly_ins, o_dly_outs;
+  pool<SigBit> i_serdes_ins, i_serdes_outs, o_serdes_ins, o_serdes_outs;
   pool<SigBit> i_serdes_in_ctrls, i_serdes_out_ctrls;
   pool<SigBit> o_serdes_in_ctrls, o_serdes_out_ctrls;
   std::unordered_set<std::string> i_serdes_controls =

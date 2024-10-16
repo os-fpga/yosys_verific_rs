@@ -248,6 +248,36 @@ void NETLIST_CHECKER::check_dly_cntrls()
   netlist_checker << "================================================================\n";
 }
 
+void NETLIST_CHECKER::check_iserdes_data_outs()
+{
+  netlist_checker << "\nChecking I_SERDES data outputs\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : i_serdes_outs)
+  {
+    if (!fab_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of I_SERDES and must be a fabric input\n";
+      netlist_error = true;
+    }
+  }
+}
+
+void NETLIST_CHECKER::check_oserdes_data_ins()
+{
+  netlist_checker << "\nChecking O_SERDES data inputss\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : o_serdes_ins)
+  {
+    if (!fab_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is input data signal of O_SERDES and must be a fabric output\n";
+      netlist_error = true;
+    }
+  }
+}
+
 void NETLIST_CHECKER::check_serdes_cntrls()
 {
   netlist_checker << "\nChecking I_SERDES/O_SERDES control signals\n";
@@ -521,6 +551,38 @@ void NETLIST_CHECKER::gather_bufs_data(Yosys::RTLIL::Module* orig_mod)
           {
             for (SigBit bit : conn.second)
               if (bit.wire != nullptr) o_dly_outs.insert(bit);
+          }
+        }
+      } else if (cell->type == RTLIL::escape_id("I_SERDES"))
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (portName == RTLIL::escape_id("D"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_serdes_ins.insert(bit);
+          }
+          if (portName == RTLIL::escape_id("Q"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_serdes_outs.insert(bit);
+          }
+        }
+      } else if (cell->type == RTLIL::escape_id("O_SERDES"))
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (portName == RTLIL::escape_id("D"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_serdes_ins.insert(bit);
+          }
+          if (portName == RTLIL::escape_id("Q"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_serdes_outs.insert(bit);
           }
         }
       }
