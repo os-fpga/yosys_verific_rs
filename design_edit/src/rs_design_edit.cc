@@ -1651,6 +1651,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.check_clkbuf_conns();
       checker.check_idly_data_ins();
       checker.check_odly_data_outs();
+      checker.check_iserdes_data_ins();
+      checker.check_oserdes_data_outs();
       end = high_resolution_clock::now();
       elapsed_time (start, end);
 

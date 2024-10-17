@@ -716,25 +716,6 @@ module GJC46_post_synth(reset, enable_n, data_i, bitslip_ctrl_n, clkGHz, data_o,
     .O(clkGHz_clkbuf)
   );
   (* module_not_derived = 32'sh00000001 *)
-  (* src = "/nfs_scratch/scratch/eda/behzad/Validation/RTL_testcases/GJC-IO-Testcases/GJC46/results_dir/.././rtl/GJC46.v:134.12-138.6" *)
-  O_BUFT counter_o_buft (
-    .I(delay_out),
-    .O(data_o),
-    .T(\$f2g_tx_oe_buf_output_enable )
-  );
-  (* module_not_derived = 32'sh00000001 *)
-  (* src = "/nfs_scratch/scratch/eda/behzad/Validation/RTL_testcases/GJC-IO-Testcases/GJC46/results_dir/.././rtl/GJC46.v:125.7-132.6" *)
-  O_DELAY #(
-    .DELAY(32'sh00000000)
-  ) counter_o_delay (
-    .CLK_IN(clkGHz_clkbuf),
-    .DLY_ADJ(1'h0),
-    .DLY_INCDEC(1'h0),
-    .DLY_LOAD(1'h0),
-    .I(delay_in),
-    .O(delay_out)
-  );
-  (* module_not_derived = 32'sh00000001 *)
   (* src = "/nfs_scratch/scratch/eda/behzad/Validation/RTL_testcases/GJC-IO-Testcases/GJC46/results_dir/.././rtl/GJC46.v:111.7-121.6" *)
   O_SERDES #(
     .DATA_RATE("SDR"),
@@ -747,18 +728,8 @@ module GJC46_post_synth(reset, enable_n, data_i, bitslip_ctrl_n, clkGHz, data_o,
     .OE_OUT(\$ifab_buf_output_enable ),
     .PLL_CLK(pll_clk),
     .PLL_LOCK(1'h1),
-    .Q(delay_in_),
+    .Q(data_o),
     .RST(\$f2g_trx_reset_n_reset_buf_n_2 )
-  );
-  (* keep = 32'sh00000001 *)
-  (* module_not_derived = 32'sh00000001 *)
-  (* src = "/nfs_eda_sw/softwares/Raptor/instl_dir/10_12_2024_09_15_01/bin/../share/yosys/rapidsilicon/genesis3/io_cell_final_map.v:29.41-29.81" *)
-  I_BUF #(
-    .WEAK_KEEPER("NONE")
-  ) \$ibuf$GJC46.$delay_in  (
-    .EN(1'h1),
-    .I(delay_in_),
-    .O(delay_in)
   );
   (* module_not_derived = 32'sh00000001 *)
   (* src = "/nfs_scratch/scratch/eda/behzad/Validation/RTL_testcases/GJC-IO-Testcases/GJC46/results_dir/.././rtl/GJC46.v:67.13-74.6" *)

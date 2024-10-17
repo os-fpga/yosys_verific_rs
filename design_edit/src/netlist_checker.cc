@@ -307,6 +307,21 @@ void NETLIST_CHECKER::check_oddr_data_ins()
   }
 }
 
+void NETLIST_CHECKER::check_iserdes_data_ins()
+{
+  netlist_checker << "\nChecking I_SERDES data inputs\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : i_serdes_ins)
+  {
+    if (!i_dly_outs.count(bit) && !i_buf_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is input data signal of I_SERDES and must be an I_BUF/I_DELAY output\n";
+      netlist_error = true;
+    }
+  }
+}
+
 void NETLIST_CHECKER::check_iserdes_data_outs()
 {
   netlist_checker << "\nChecking I_SERDES data outputs\n";
@@ -336,6 +351,22 @@ void NETLIST_CHECKER::check_oserdes_data_ins()
     }
   }
 }
+
+void NETLIST_CHECKER::check_oserdes_data_outs()
+{
+  netlist_checker << "\nChecking O_SERDES data outputss\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : o_serdes_outs)
+  {
+    if (!o_buf_ins.count(bit) && !o_dly_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of O_SERDES and must be an O_DELAY/O_BUF input\n";
+      netlist_error = true;
+    }
+  }
+}
+
 
 void NETLIST_CHECKER::check_serdes_cntrls()
 {

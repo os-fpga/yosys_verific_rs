@@ -27,8 +27,10 @@ struct NETLIST_CHECKER {
   void check_ddr_cntrls();
   void check_iddr_data_outs();
   void check_oddr_data_ins();
+  void check_iserdes_data_ins();
   void check_iserdes_data_outs();
   void check_oserdes_data_ins();
+  void check_oserdes_data_outs();
   void check_serdes_cntrls();
   void check_buf_cntrls();
   void check_fclkbuf_conns();
