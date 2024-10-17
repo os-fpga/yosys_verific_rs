@@ -261,6 +261,36 @@ void NETLIST_CHECKER::check_dly_cntrls()
   netlist_checker << "================================================================\n";
 }
 
+void NETLIST_CHECKER::check_iddr_data_ins()
+{
+  netlist_checker << "\nChecking I_DDR data inputs\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : i_ddr_ins)
+  {
+    if (!i_dly_outs.count(bit) && !i_buf_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is input data signal of I_DDR and must be an I_BUF/I_DELAY output\n";
+      netlist_error = true;
+    }
+  }
+}
+
+void NETLIST_CHECKER::check_oddr_data_outs()
+{
+  netlist_checker << "\nChecking O_DDR data outputss\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : o_ddr_outs)
+  {
+    if (!o_buf_ins.count(bit) && !o_dly_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of O_DDR and must be an O_DELAY/O_BUF input\n";
+      netlist_error = true;
+    }
+  }
+}
+
 void NETLIST_CHECKER::check_ddr_cntrls()
 {
   netlist_checker << "\nChecking I_DDR/O_DDR control signals\n";

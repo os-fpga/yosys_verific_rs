@@ -26,7 +26,9 @@ struct NETLIST_CHECKER {
   void check_dly_cntrls();
   void check_ddr_cntrls();
   void check_iddr_data_outs();
+  void check_iddr_data_ins();
   void check_oddr_data_ins();
+  void check_oddr_data_outs();
   void check_iserdes_data_ins();
   void check_iserdes_data_outs();
   void check_oserdes_data_ins();
