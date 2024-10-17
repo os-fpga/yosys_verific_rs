@@ -207,6 +207,21 @@ void NETLIST_CHECKER::check_idly_data_ins()
   }
 }
 
+void NETLIST_CHECKER::check_idly_data_outs()
+{
+  netlist_checker << "\nChecking I_DELAY data outputss\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : i_dly_outs)
+  {
+    if (!fab_ins.count(bit) && !i_serdes_ins.count(bit) && !i_ddr_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of I_DELAY and must be a fabric/I_SERDES/I_DDR input\n";
+      netlist_error = true;
+    }
+  }
+}
+
 void NETLIST_CHECKER::check_odly_data_outs()
 {
   netlist_checker << "\nChecking O_DELAY data outputs\n";

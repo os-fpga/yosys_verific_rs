@@ -21,6 +21,7 @@ struct NETLIST_CHECKER {
   void gather_prims_data(Module* mod);
   void gather_fabric_data(Module* mod);
   void check_idly_data_ins();
+  void check_idly_data_outs();
   void check_odly_data_outs();
   void check_odly_data_ins();
   void check_dly_cntrls();
