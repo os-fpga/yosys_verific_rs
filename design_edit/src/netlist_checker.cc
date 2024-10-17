@@ -229,9 +229,9 @@ void NETLIST_CHECKER::check_odly_data_ins()
 
   for (auto &bit : o_dly_ins)
   {
-    if (!fab_outs.count(bit))
+    if (!fab_outs.count(bit) && !o_serdes_outs.count(bit) && !o_ddr_outs.count(bit))
     {
-      netlist_checker << log_signal(bit) << " is input data signal of O_DELAY and must be a fabric output\n";
+      netlist_checker << log_signal(bit) << " is input data signal of O_DELAY and must be a fabric/O_SERDES/O_DDR output\n";
       netlist_error = true;
     }
   }
