@@ -1788,6 +1788,8 @@ struct DesignEditRapidSilicon : public ScriptPass {
       checker.check_fclkbuf_conns();
       checker.check_dly_cntrls();
       checker.check_ddr_cntrls();
+      checker.check_iddr_data_outs();
+      checker.check_oddr_data_ins();
       checker.check_iserdes_data_outs();
       checker.check_oserdes_data_ins();
       checker.check_serdes_cntrls();

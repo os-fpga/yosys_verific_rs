@@ -277,6 +277,36 @@ void NETLIST_CHECKER::check_ddr_cntrls()
   netlist_checker << "================================================================\n";
 }
 
+void NETLIST_CHECKER::check_iddr_data_outs()
+{
+  netlist_checker << "\nChecking I_DDR data outputs\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : i_ddr_outs)
+  {
+    if (!fab_ins.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is output data signal of I_DDR and must be a fabric input\n";
+      netlist_error = true;
+    }
+  }
+}
+
+void NETLIST_CHECKER::check_oddr_data_ins()
+{
+  netlist_checker << "\nChecking O_DDR data inputss\n";
+  netlist_checker << "================================================================\n";
+
+  for (auto &bit : o_ddr_ins)
+  {
+    if (!fab_outs.count(bit))
+    {
+      netlist_checker << log_signal(bit) << " is input data signal of O_DDR and must be a fabric output\n";
+      netlist_error = true;
+    }
+  }
+}
+
 void NETLIST_CHECKER::check_iserdes_data_outs()
 {
   netlist_checker << "\nChecking I_SERDES data outputs\n";
@@ -612,6 +642,38 @@ void NETLIST_CHECKER::gather_bufs_data(Yosys::RTLIL::Module* orig_mod)
           {
             for (SigBit bit : conn.second)
               if (bit.wire != nullptr) o_serdes_outs.insert(bit);
+          }
+        }
+      } else if (cell->type == RTLIL::escape_id("I_DDR"))
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (portName == RTLIL::escape_id("D"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_ddr_ins.insert(bit);
+          }
+          if (portName == RTLIL::escape_id("Q"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) i_ddr_outs.insert(bit);
+          }
+        }
+      } else if (cell->type == RTLIL::escape_id("O_DDR"))
+      {
+        for (auto conn : cell->connections())
+        {
+          IdString portName = conn.first;
+          if (portName == RTLIL::escape_id("D"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_ddr_ins.insert(bit);
+          }
+          if (portName == RTLIL::escape_id("Q"))
+          {
+            for (SigBit bit : conn.second)
+              if (bit.wire != nullptr) o_ddr_outs.insert(bit);
           }
         }
       }
