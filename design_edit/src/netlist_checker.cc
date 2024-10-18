@@ -486,7 +486,7 @@ void NETLIST_CHECKER::check_fclkbuf_conns()
   set_difference(fclk_buf_ins, fab_outs);
   if(!diff.empty())
   {
-    netlist_checker << "The following fclk_buf_outputs are not fabric outputs\n";
+    netlist_checker << "The following FCLK_BUF inputs are not fabric outputs\n";
     for (const auto &elem : diff)
     {
       netlist_checker << "FCLK_BUF_IN : " << log_signal(elem) << "\n";
