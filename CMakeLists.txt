@@ -17,7 +17,7 @@ set(VERSION_MINOR 0)
 
 
 
-set(VERSION_PATCH 378)
+set(VERSION_PATCH 379)
 
 
 
