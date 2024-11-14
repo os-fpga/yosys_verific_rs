@@ -475,6 +475,13 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
   }
 
+  // Function to clean the prefix "$auto_*." from the instance name
+  std::string rename_flattened_inst(const std::string& instance) {
+    // Regular expression to match "$auto_*."
+    std::regex apppended_prefix(R"(^\$\auto_\d+\.)");
+    return std::regex_replace(instance, apppended_prefix, "");
+  }
+
   void delete_cells(Module *module, vector<Cell *> cells) {
     for (auto cell : cells) {
       module->remove(cell);
@@ -2037,11 +2044,23 @@ struct DesignEditRapidSilicon : public ScriptPass {
     }
     end = high_resolution_clock::now();
     elapsed_time (start, end);
+    for (auto cell : interface_mod->cells()) {
+      string inst_name = remove_backslashes(cell->name.str());
+      orig_intf_insts.insert(inst_name);
+    }
     start = high_resolution_clock::now();
     log("Flattening wrapper module\n");
     Pass::call(new_design, "flatten");
     end = high_resolution_clock::now();
     elapsed_time (start, end);
+    for (auto cell : wrapper_mod->cells()) {
+      string inst_name = (cell->name.str());
+      std::string renamed_inst = rename_flattened_inst(inst_name);
+
+      if (orig_intf_insts.find(renamed_inst) != orig_intf_insts.end()) {
+          cell->name = Yosys::RTLIL::escape_id(renamed_inst);
+      }
+    }
     handle_inout_connection(wrapper_mod);
 
     start = high_resolution_clock::now();

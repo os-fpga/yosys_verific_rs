@@ -78,6 +78,7 @@ std::unordered_set<std::string> common_clks_resets;
 std::unordered_set<std::string> orig_inst_conns;
 std::unordered_set<std::string> interface_inst_conns;
 std::unordered_set<std::string> keep_wires;
+std::unordered_set<std::string> orig_intf_insts;
 std::string io_config_json;
 std::string sdc_file;
 bool sdc_passed = false;
