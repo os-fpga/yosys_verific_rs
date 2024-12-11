@@ -57,8 +57,7 @@ struct NETLIST_CHECKER {
       {"RST", "BITSLIP_ADJ", "EN", "DATA_VALID", "DPA_LOCK", "DPA_ERROR", "PLL_LOCK"};
   std::unordered_set<std::string> o_serdes_controls =
       {"RST", "DATA_VALID", "OE_IN", "OE_OUT", "CHANNEL_BOND_SYNC_IN", "CHANNEL_BOND_SYNC_OUT", "PLL_LOCK"};
-  std::unordered_set<std::string> dly_controls =
-      {"DLY_LOAD", "DLY_ADJ", "DLY_INCDEC", "DLY_TAP_VALUE"};
+  std::unordered_set<std::string> dly_controls = {};
   pool<SigBit> diff;
   std::stringstream netlist_checker;
   bool netlist_error = false;

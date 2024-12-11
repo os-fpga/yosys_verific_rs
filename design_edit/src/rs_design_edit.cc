@@ -1028,6 +1028,10 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   portName != RTLIL::escape_id("CLK_IN") &&
                   portName != RTLIL::escape_id("C") &&
                   portName != RTLIL::escape_id("PLL_CLK") &&
+                  portName != RTLIL::escape_id("DLY_LOAD") &&
+                  portName != RTLIL::escape_id("DLY_ADJ") &&
+                  portName != RTLIL::escape_id("DLY_INCDEC") &&
+                  portName != RTLIL::escape_id("DMA_CLK") &&
                   (is_out_prim || is_intf_prim)) {
                   if (unset_port)
                   {
@@ -1524,6 +1528,9 @@ struct DesignEditRapidSilicon : public ScriptPass {
       }
       break;
     }
+    // Write out RTLIL
+    run_pass("write_rtlil design.rtlil", _design);
+    
     primitives = io_prim.get_primitives(tech);
     categorize_primitives();
     bool supported_tech = io_prim.supported_tech;
@@ -1532,28 +1539,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
     auto start_time = start;
     NETLIST_CHECKER checker;
     checker.prims = primitives;
-    log("Extracting primitives\n");
-    // Extract the primitive information (before anything is modified)
-    PRIMITIVES_EXTRACTOR* extractor = new PRIMITIVES_EXTRACTOR(tech);
-    extractor->extract(_design);
-    auto end = high_resolution_clock::now();
-    elapsed_time (start, end);
     
-    if (sdc_passed) {
-      std::ifstream input_sdc(sdc_file);
-      if (!input_sdc.is_open()) {
-        std::cerr << "Error opening input sdc file: " << sdc_file << std::endl;
-      }
-      processSdcFile(input_sdc);
-      for (auto &p : pins) {
-        extractor->assign_location(p->_name, p->_location, p->_properties);
-      }
-    }
-
     start = high_resolution_clock::now();
     log("Running SplitNets\n");
     Pass::call(_design, "splitnets");
-    end = high_resolution_clock::now();
+    auto end = high_resolution_clock::now();
     elapsed_time (start, end);
     Module *original_mod = _design->top_module();
     std::string original_mod_name =
@@ -1602,7 +1592,11 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   if (cell->input(portName)) {
                     if (portName != RTLIL::escape_id("CLK_IN") &&
                       portName != RTLIL::escape_id("C") &&
-                      portName != RTLIL::escape_id("PLL_CLK"))
+                      portName != RTLIL::escape_id("PLL_CLK") &&
+                      portName != RTLIL::escape_id("DLY_LOAD") &&
+                      portName != RTLIL::escape_id("DLY_ADJ") &&
+                      portName != RTLIL::escape_id("DLY_INCDEC") &&
+                      portName != RTLIL::escape_id("DMA_CLK"))
                       out_prim_ins.insert(wire->name.str());
                   }
                 }
@@ -1624,8 +1618,12 @@ struct DesignEditRapidSilicon : public ScriptPass {
                   if (is_out_prim || is_intf_prim) {
                     if (cell->input(portName)) {
                       if (portName != RTLIL::escape_id("CLK_IN") &&
-                      portName != RTLIL::escape_id("C") &&
-                      portName != RTLIL::escape_id("PLL_CLK"))
+                          portName != RTLIL::escape_id("C") &&
+                          portName != RTLIL::escape_id("PLL_CLK") &&
+                          portName != RTLIL::escape_id("DLY_LOAD") &&
+                          portName != RTLIL::escape_id("DLY_ADJ") &&
+                          portName != RTLIL::escape_id("DLY_INCDEC") &&
+                          portName != RTLIL::escape_id("DMA_CLK"))
                         out_prim_ins.insert(wire->name.str());
                     }
                   } 
@@ -2123,33 +2121,52 @@ struct DesignEditRapidSilicon : public ScriptPass {
 
     run_script(new_design);
     checker.write_checker_file();
-    if (supported_tech)
+    if (supported_tech && !checker.netlist_error)
     {
+      // Dump entire wrap design using "config.json" naming (by default)
       start = high_resolution_clock::now();
       log("Dumping config.json\n");
-      // Dump entire wrap design using "config.json" naming (by default)
       dump_io_config_json(wrapper_mod, io_config_json);
       end = high_resolution_clock::now();
       elapsed_time (start, end);
+      
+      std::map<std::string, bool> fabric_ports_dir;
+      for (const RTLIL::Wire* wire : design->top_module()->wires()) {
+        log_assert(!(wire->port_input && wire->port_output));
+        if (wire->port_input ^ wire->port_output) {
+          log_assert(wire->width == 1);
+          std::string port = remove_backslashes(wire->name.str());
+          log_assert(fabric_ports_dir.find(port) == fabric_ports_dir.end());
+          fabric_ports_dir[port] = wire->port_input;
+        }
+      }
+      
+      // Extractor 
       start = high_resolution_clock::now();
-      log("Updating sdc\n");
-      std::ifstream input(io_config_json.c_str());
-      log_assert(input.is_open() && input.good());
-      nlohmann::json instances = nlohmann::json::parse(input);
-      input.close();
-      log_assert(instances.is_object());
-      log_assert(instances.contains("instances"));
-      extractor->write_sdc("design_edit.sdc", "clk_pin.xml", instances["instances"]);
       std::string io_file = "io_" + io_config_json;
-      extractor->write_json(io_file);
+      log("Extracting primitives\n");
+      std::vector<std::string> errors;
+      PRIMITIVES_EXTRACTOR* extractor = new PRIMITIVES_EXTRACTOR(tech);
+      extractor->extract(new_design->top_module(),      // module to pass in
+                          sdc_passed ? sdc_file : "",   // user SDC file, mainly contain pin assignment
+                          io_file,                      // write out IO config JSON for bitstream generation
+                          "design_edit.sdc",            // write out SDC used in FOEDAG -> openfpga
+                          "clk_pin.xml",                // write out clock pin XML used in FOEDAG -> openfpga
+                          fabric_ports_dir,
+                          errors);
       end = high_resolution_clock::now();
-      elapsed_time (start, end);
-      auto end_time = end;
-      auto duration = duration_cast<nanoseconds>(end_time - start_time);
-      float totalTime = duration.count() * 1e-9;
-      std::cout << "Time elapsed in design editing : " << " [" << totalTime << " sec.]\n";
+      elapsed_time(start, end);
+      delete extractor;
+      for (auto& error : errors) {
+        log_error("%s\n", error.c_str());
+      }
     }
-    delete extractor;
+    
+    auto end_time = end;
+    auto duration = duration_cast<nanoseconds>(end_time - start_time);
+    float totalTime = duration.count() * 1e-9;
+    std::cout << "Time elapsed in design editing : " << " [" << totalTime << " sec.]\n";
+    
     if (checker.netlist_error)
       log_error("Netlist is illegal, check netlist_checker.log for more details.\n");
   }

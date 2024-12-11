@@ -73,7 +73,11 @@ OBJS := $(SOURCES:cc=o)
 
 all: $(NAME).so
 
-$(OBJS): %.o: %.cc $(DEPS)
+src/yaml_info_auto.h src/primitive_path_auto.h: src/yaml_info.py src/primitive_path.json
+	python3 src/yaml_info.py src/primitive_path.json src/yaml_info_auto.h src/primitive_path_auto.h \
+		genesis3 ../yosys-rs-plugin/genesis3/FPGA_PRIMITIVES_MODELS/specs_internal  
+
+$(OBJS): %.o: %.cc $(DEPS) src/yaml_info_auto.h src/primitive_path_auto.h src/primitive.h src/primitives_extractor.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(EXTRA_FLAGS) -c -o $@ $(filter %.cc, $^)
 
 $(NAME).so: $(OBJS)
