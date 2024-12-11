@@ -582,11 +582,11 @@ bool PRIMITIVES_EXTRACTOR::validate_data_port_iopad() {
     PRIMITIVE* primitive = dc.second;
     // Make sure all the iopad_external_pin must be connected to IOPAD
     for (auto& iter : primitive->yaml->ports) {
-      const std::string& portname = iter.first;
+      const std::string& port_name = iter.first;
       const PORT_BASIC& basic_port = iter.second;
       const PORT* port = nullptr;
-      if (primitive->ports.find(portname) != primitive->ports.end()) {
-        port = primitive->ports.at(portname);
+      if (primitive->ports.find(port_name) != primitive->ports.end()) {
+        port = primitive->ports.at(port_name);
       }
       if (basic_port.is_attribute("iopad_external_pin")) {
         // This port must exist and must connect to IOPAD
@@ -597,7 +597,7 @@ bool PRIMITIVES_EXTRACTOR::validate_data_port_iopad() {
             POST_ERR_MSG(3,
                          "%s should have PORT %s that connect to IOPAD, but no "
                          "connection is made",
-                         primitive->id().c_str(), portname.c_str());
+                         primitive->id().c_str(), port_name.c_str());
             break;
           }
           // Make sure every IOPAD is connected to one net
@@ -1406,28 +1406,31 @@ bool PRIMITIVES_EXTRACTOR::assign_location(std::vector<PRIMITIVE*>& datas,
       std::vector<std::string> tokens = tokenizeString(line);
       if (tokens.size()) {
         if (tokens.size() == 3 && tokens[0] == "set_pin_loc") {
-          std::string port = tokens[1];
+          std::string port_name = tokens[1];
           std::string location = tokens[2];
           bool found = false;
           for (auto& d : datas) {
-            if (d->objects.find(port) != d->objects.end()) {
-              POST_MSG(3, "Assign location %s to PORT %s", location.c_str(),
-                       port.c_str());
-              d->objects[port]->location = location;
+            if (d->objects.find(port_name) != d->objects.end()) {
+              OBJECT*& object = d->objects.at(port_name);
+              log_assert(d->ports.find(object->port_name) != d->ports.end());
+              const PORT* port = d->ports.at(object->port_name);
+              POST_MSG(3, "Assign location %s to IOPAD %s (%s)",
+                       location.c_str(), port_name.c_str(), port->id().c_str());
+              object->location = location;
               PARSED_LOCATION parsed_location;
               if (parsed_location.parse(location)) {
-                if (d->location_object == port) {
+                if (d->location_object == port_name) {
+                  found = true;
                   d->location = location;
                   log_assert(d->parsed_location.parse(d->location));
                 }
               } else {
                 m_netlist_status = false;
-                POST_ERR_MSG(4, "Port %s location (%s) assignment: %s",
-                             port.c_str(), location.c_str(),
+                POST_ERR_MSG(4, "%s location (%s) assignment failed: %s",
+                             port->id().c_str(), location.c_str(),
                              parsed_location.failure_reason.c_str());
+                break;
               }
-              found = true;
-              break;
             }
           }
           if (!found) {
@@ -2216,16 +2219,16 @@ void PRIMITIVES_EXTRACTOR::write_sdc_fabric_control_map(
   size -= 2;
   for (auto& iter : primitive->yaml->fabric_control_map) {
     entry = new SDC_ENTRY;
-    std::string portname = iter.first;
+    std::string port_name = iter.first;
     std::string map = iter.second;
-    POST_MSG(5, "Port: %s", portname.c_str());
+    POST_MSG(5, "Port: %s", port_name.c_str());
     POST_MSG(6, "Map: %s", map.c_str());
     entry->comments.push_back(
-        stringf("### %*s: %s", size, "Port", portname.c_str()));
+        stringf("### %*s: %s", size, "Port", port_name.c_str()));
     entry->comments.push_back(stringf("### %*s: %s", size, "Map", map.c_str()));
-    if (primitive->ports.find(portname) != primitive->ports.end()) {
+    if (primitive->ports.find(port_name) != primitive->ports.end()) {
       if (primitive->yaml->group == "SOC" || grandparent->location.size() > 0) {
-        const PORT* port = primitive->ports.at(portname);
+        const PORT* port = primitive->ports.at(port_name);
         std::string location = "VCC_HP_AUX";
         std::string mode = "Mode_GPIO";
         if (primitive->yaml->group == "DATA" ||
